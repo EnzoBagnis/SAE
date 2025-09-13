@@ -17,7 +17,7 @@ if(isset($_POST['ok'])){
     extract($_POST);
 
     $hashedPassword = password_hash($mdp, PASSWORD_DEFAULT);
-    $requete = $bdd->prepare("INSERT INTO users VALUES(0, :nom, :prenom, :mdp, :mail)");
+    $requete = $bdd->prepare("INSERT INTO utilisateurs VALUES(0, :nom, :prenom, :mdp, :mail)");
     $requete->execute(array(
         'nom' => $nom,
         'prenom' => $prenom,
