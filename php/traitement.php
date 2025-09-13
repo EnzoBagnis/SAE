@@ -4,12 +4,18 @@ $username   = getenv('DB_USER');
 $password   = getenv('DB_PASS');
 $dbname     = getenv('DB_NAME');
 
-try{
-    $bdd = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $bdd->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-}
-catch(PDOException $e){
-    echo "Erreur : " . $e->getMessage();
+try {
+    $bdd = new PDO(
+        "mysql:host=$servername;dbname=$dbname;charset=utf8mb4",
+        $username,
+        $password,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_PERSISTENT => false
+        ]
+    );
+} catch (PDOException $e) {
+    die("Erreur de connexion : " . $e->getMessage());
 }
 
 
