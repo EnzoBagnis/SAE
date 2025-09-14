@@ -9,6 +9,22 @@
 </head>
 <body>
 <div class="page-wrap">
+
+    <?php
+    // Afficher les messages d'erreur ou de succès
+    if (isset($_GET['erreur'])) {
+        switch($_GET['erreur']) {
+            case 'email_existe':
+                echo '<div class="error">Erreur : Cet email est déjà utilisé !</div>';
+                break;
+            case 'insertion':
+                echo '<div class="error">Erreur lors de l\'inscription</div>';
+                break;
+        }
+    }
+
+    ?>
+
     <form class="card" method="POST" action="../controllers/traitement.php">
 
         <label for="nom">Votre nom</label>
