@@ -9,7 +9,7 @@
 </head>
 <body>
 <div class="page-wrap">
-    <form class="card" method="POST" action="traitement.php">
+    <form class="card" method="POST" action="../controllers/traitement.php">
 
         <label for="nom">Votre nom</label>
         <input type="text" id="nom" name="nom" placeholder="Entrez votre nom..." required><br>
