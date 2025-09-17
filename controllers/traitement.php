@@ -45,6 +45,7 @@ function envoyerEmail($destinataire, $code_verif) {
 if(isset($_POST['ok']) && !isset($_POST['code'])){
     extract($_POST);
 
+    // Utilisation de la classe Database au lieu de refaire la connexion
     $bdd = Database::getConnection();
 
     $checkEmail = $bdd->prepare("SELECT COUNT(*) FROM utilisateurs WHERE mail = :mail");
