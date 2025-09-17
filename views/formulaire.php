@@ -8,6 +8,22 @@
     <!-- <link rel="stylesheet" href="formStyle.css"> -->
 </head>
 <body>
+
+<?php
+// Afficher les messages d'erreur ou de succés
+if (isset($_GET['erreur'])) {
+    switch($_GET['erreur']) {
+        case 'email_existe':
+            echo '<div class="error">Erreur : Cet email est déja  utilisé !</div>';
+            break;
+        case 'insertion':
+            echo '<div class="error">Erreur lors de l\'inscription</div>';
+            break;
+    }
+}
+
+?>
+
 <div class="page-wrap">
     <form class="card" method="POST" action="../controllers/traitement.php">
 
