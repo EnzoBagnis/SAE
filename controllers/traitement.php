@@ -29,7 +29,7 @@ function envoyerEmail($destinataire, $code_verif) {
         $mail->addAddress($destinataire);
 
         // Contenu du mail simple
-        $mail->Subject = 'Code de vérification - Mon Site';
+        $mail->Subject = 'Code de verification - StudTraj';
         $mail->Body    = "Bonjour,\n\nVotre code de vérification est : $code_verif\n\nCordialement,\nL'équipe StudTraj";
 
         $mail->send();
