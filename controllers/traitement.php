@@ -13,7 +13,7 @@ use PHPMailer\PHPMailer\Exception;
 
 function envoyerEmail($destinataire, $code_verif) {
     $mail = new PHPMailer(true);
-    $env = parse_ini_file(__DIR__ . '/../../config/.env');
+    $env = parse_ini_file(__DIR__ . '/../config/.env');
 
     try {
         $mail->isSMTP();

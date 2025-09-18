@@ -2,7 +2,7 @@
 class Database {
     public static function getConnection() {
         // Lire le fichier .env
-        $env = parse_ini_file(__DIR__ . '/../../config/.env');
+        $env = parse_ini_file(__DIR__ . '/../config/.env');
 
         $servername = $env['DB_HOST'];
         $username = $env['DB_USER'];
