@@ -1,12 +1,11 @@
 <?php
-require_once('/inscription.php');
 
-if (isset($_GET['action']) && $_GET['action'] !== ''){
-	if ($_GET['action'] === 'inscription'){
-		if (isset($_GET['id']) && $_GET['id'] >0){
-		$identifier = $_GET['id'];
-		inscription($identifier);
-		}else{bIndex();
-		}}
-		}
+if (isset($_GET["action"]) && $_GET["action"] !== ""){
+	$action = $_GET["action"];
+	if($action == 'index'){
+	header("Location: ../index.html");
+	}elseif($action == 'inscription'){
+	header("Location: ../views/formulaire");
+	}else{
+	header("Location: ../index.html");
 ?>	
