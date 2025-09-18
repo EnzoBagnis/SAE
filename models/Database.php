@@ -2,7 +2,7 @@
 class Database {
     public static function getConnection() {
         // Lire le fichier .env
-        $env = parse_ini_file(__DIR__ . '/../config/.env');
+        $env = parse_ini_file(__DIR__ . '/../../config/.env');
 
         $servername = $env['DB_HOST'];
         $username = $env['DB_USER'];
@@ -10,6 +10,12 @@ class Database {
         $dbname = $env['DB_NAME'];
 
         try {
+            var_dump($servername = $env['DB_HOST']);
+            var_dump($username = $env['DB_USER']);
+            var_dump($password = $env['DB_PASS']);
+            var_dump($dbname = $env['DB_NAME']);
+
+
             $bdd = new PDO(
                 "mysql:host=$servername;dbname=$dbname;charset=utf8mb4",
                 $username,
