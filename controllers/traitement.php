@@ -119,6 +119,7 @@ if(isset($_POST['code'])) {
 
 if(isset($_POST['connexion'])){
     extract($_POST);
+    session_start();
 
     // Utilisation de la classe Database au lieu de refaire la connexion
     $bdd = Database::getConnection();
