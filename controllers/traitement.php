@@ -115,6 +115,52 @@ if(isset($_POST['code'])) {
     }
 }
 
+
+
+if(isset($_POST['connexion'])){
+    extract($_POST);
+
+    // Utilisation de la classe Database au lieu de refaire la connexion
+    $bdd = Database::getConnection();
+
+    $check = $bdd->prepare("SELECT mail, mdp, id FROM utilisateurs WHERE mail = :mail");
+    $check->execute(['mail' => $mail]);
+    $ligne = $check->fetch(PDO::FETCH_ASSOC);
+    $id = $ligne['id'];
+
+    //Verification mail existe
+    if ($check->rowCount() > 0) {
+    }
+    else {
+        // Rediriger vers le formulaire avec erreur
+        header("Location: ../views/connexion.php?erreur=email_existe_pas");
+        exit;
+    }
+
+    //Verification mot de passe
+    $password = $ligne['mdp'];
+    if (password_verify($mdp, $password)) {}
+    else {
+        header("Location: ../views/connexion.php?erreur=mdp_incorrect");
+        exit;
+    }
+    //Mise en $_SESSION des infos principales
+    $conex = $bdd->prepare("SELECT * FROM utilisateurs WHERE id = :id");
+    $conex->execute(['id' => $id]);
+    $session = $conex->fetch(PDO::FETCH_ASSOC);
+
+    $_SESSION['id'] = $id;
+    $nom = $session['nom'];
+    $_SESSION['nom'] = $nom;
+    $prenom = $session['prenom'];
+    $_SESSION['prenom'] = $prenom;
+    header("Location: ../views/accueil.php?succes=connexion");
+
+
+
+
+}
+
 ?>
 
 

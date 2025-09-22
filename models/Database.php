@@ -10,10 +10,7 @@ class Database {
         $dbname = $env['DB_NAME'];
 
         try {
-            var_dump($servername = $env['DB_HOST']);
-            var_dump($username = $env['DB_USER']);
-            var_dump($password = $env['DB_PASS']);
-            var_dump($dbname = $env['DB_NAME']);
+
 
 
             $bdd = new PDO(

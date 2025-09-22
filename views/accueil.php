@@ -10,6 +10,11 @@
 <body>
 <div class="page-wrap">
     <h1>Ceci est la page d'accueil temporaire</h1>
+    <?php
+        session_start();
+        echo '<div class="succes">Bienvenue ' . $_SESSION['nom'] . ' ' . $_SESSION['prenom'] . '</div>';
+    ?>
+    <button onclick="window.location.href='./page2.php'">Changer de page</button>
 </div>
 </body>
 </html>
