@@ -52,7 +52,7 @@ if(isset($_POST['ok']) && !isset($_POST['code'])){
     $checkEmail->execute(['mail' => $mail]);
 
     if ($checkEmail->fetchColumn() > 0) {
-        // Rediriger vers le formulaire avec erreur
+            // Rediriger vers le formulaire avec erreur
         header("Location: ../views/formulaire.php?erreur=email_existe");
         exit;
     }

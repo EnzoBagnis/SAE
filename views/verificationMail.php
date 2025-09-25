@@ -6,6 +6,8 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+    <meta name="description" content="Ceci est une meta description">
     <title>Vérification Email</title>
     <!-- <link rel="stylesheet" href="../public/css/style.css"> -->
 </head>
