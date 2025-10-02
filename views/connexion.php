@@ -21,7 +21,7 @@
                 echo '<div class="error">Cet email n\'existe pas !</div>';
                 break;
             case 'mdp_incorrect':
-                echo '<div class="error">Mot de passe incorect</div>';
+                echo '<div class="error">Mot de passe incorrect</div>';
                 break;
             case 'insertion':
                 echo '<div class="error">Erreur lors de l\'inscription</div>';
@@ -29,6 +29,16 @@
         }
     }
 
+    if (isset($_GET['succes'])) {
+        switch($_GET['succes']) {
+            case 'reset_envoye':
+                echo '<div class="success">Un email de réinitialisation a été envoyé !</div>';
+                break;
+            case 'mdp_reinitialise':
+                echo '<div class="success">Votre mot de passe a été réinitialisé avec succès !</div>';
+                break;
+        }
+    }
     ?>
 
     <form class="card" method="POST" action="../controllers/traitement.php">
@@ -40,6 +50,9 @@
         <input type="password" id="mdp" name="mdp" placeholder="Entrez votre mdp..." required><br>
 
         <button type="submit" class="btn-submit" name="connexion">Me connecter</button><br>
+
+        <!-- Bouton avec type="button" pour éviter la soumission du formulaire -->
+        <button type="button" class="btn-submit" onclick="window.location.href='forgotPassword.php'">Mot de passe oublié</button><br>
 
     </form>
 </div>
