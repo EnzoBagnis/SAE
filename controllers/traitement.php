@@ -42,6 +42,21 @@ function envoyerEmail($destinataire, $code_verif) {
     }
 }
 
+function connexion($id, $bdd)
+{
+    $conex = $bdd->prepare("SELECT * FROM utilisateurs WHERE id = :id");
+    $conex->execute(['id' => $id]);
+    $session = $conex->fetch(PDO::FETCH_ASSOC);
+
+    $_SESSION['id'] = $id;
+    $nom = $session['nom'];
+    $_SESSION['nom'] = $nom;
+    $prenom = $session['prenom'];
+    $_SESSION['prenom'] = $prenom;
+    header("Location: ../views/accueil.php");
+
+}
+
 if(isset($_POST['ok']) && !isset($_POST['code'])){
     extract($_POST);
 
@@ -107,7 +122,10 @@ if(isset($_POST['code'])) {
         // Mettre Ã  jour la vÃ©rification
         $update = $bdd->prepare("UPDATE utilisateurs SET verifie = 1 WHERE mail = :mail");
         $update->execute(['mail' => $mail]);
-        header("Location: ../views/accueil.php?succes=verifie");
+        $rid = $bdd->prepare("SELECT id FROM utilisateurs WHERE mail = :mail");
+        $rid->execute(['mail' => $mail]);
+        $id = $rid->fetchColumn();
+        connexion($id, $bdd);
         exit;
     } else {
         header("Location: ../views/verificationMail.php?erreur=code_incorrect");
@@ -146,16 +164,7 @@ if(isset($_POST['connexion'])){
         exit;
     }
     //Mise en $_SESSION des infos principales
-    $conex = $bdd->prepare("SELECT * FROM utilisateurs WHERE id = :id");
-    $conex->execute(['id' => $id]);
-    $session = $conex->fetch(PDO::FETCH_ASSOC);
-
-    $_SESSION['id'] = $id;
-    $nom = $session['nom'];
-    $_SESSION['nom'] = $nom;
-    $prenom = $session['prenom'];
-    $_SESSION['prenom'] = $prenom;
-    header("Location: ../views/accueil.php?succes=connexion");
+    connexion($id, $bdd);
 
 
 
