@@ -1,0 +1,7 @@
+RewriteEngine on
+
+RewriteRule ^index$ index.php?action=index [L,QSA]
+
+RewriteRule înscription$ index.php?action=inscription [L, QSA]
+
+RewriteRule ^index$ index.php?action=index [L,QSA]
