@@ -10,5 +10,8 @@ if (isset($_GET['action']) && $_GET['action'] !== '') {
     } else {
         header("Location: index.html");
     }
+else {
+        header("Location: index.html");
+    }
 }
 
