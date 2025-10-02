@@ -1,6 +1,0 @@
-RewriteEngine on
-
-RewriteRule ^acceuil$ ../index.html [L]
-
-RewriteRule ^inscription$ ../views/verificationMail.php [L]
-RewriteRule ^$ ../index.html [  L]
