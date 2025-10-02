@@ -162,6 +162,118 @@ if(isset($_POST['connexion'])){
 
 }
 
+function forgotPassword($mail) {
+    $bdd = Database::getConnection();
+
+    // Vérifier si l'email existe
+    $checkEmail = $bdd->prepare("SELECT id FROM utilisateurs WHERE mail = :mail");
+    $checkEmail->execute(['mail' => $mail]);
+
+    if ($checkEmail->rowCount() == 0) {
+        return ['success' => false, 'error' => 'email_inexistant'];
+    }
+
+    // Générer un token unique
+    $token = bin2hex(random_bytes(32));
+    $expiration = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+    // Stocker le token en base de données
+    $updateToken = $bdd->prepare("UPDATE utilisateurs SET reset_token = :token, reset_expiration = :expiration WHERE mail = :mail");
+    $updateToken->execute([
+        'token' => $token,
+        'expiration' => $expiration,
+        'mail' => $mail
+    ]);
+
+    // Envoyer l'email avec le lien
+    if (envoyerEmailReset($mail, $token)) {
+        return ['success' => true];
+    } else {
+        return ['success' => false, 'error' => 'envoi_mail'];
+    }
+}
+
+// Fonction pour envoyer l'email de réinitialisation
+function envoyerEmailReset($destinataire, $token) {
+    $mail = new PHPMailer(true);
+    $env = parse_ini_file(__DIR__ . '/../../config/.env');
+
+    try {
+        $mail->isSMTP();
+        $mail->Host       = $env['MAIL_HOST'];
+        $mail->SMTPAuth   = true;
+        $mail->Username   = $env['MAIL_USERNAME'];
+        $mail->Password   = $env['MAIL_PASSWORD'];
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = $env['MAIL_PORT'];
+
+        $mail->setFrom($env['MAIL_USERNAME'], $env['MAIL_FROM_NAME']);
+        $mail->addAddress($destinataire);
+
+        // Créer le lien de réinitialisation
+        $lien = "http://votre-domaine.com/views/resetPassword.php?token=" . $token;
+
+        $mail->Subject = 'Réinitialisation de mot de passe - StudTraj';
+        $mail->Body    = "Bonjour,\n\nVous avez demandé à réinitialiser votre mot de passe.\n\nCliquez sur le lien suivant pour créer un nouveau mot de passe :\n$lien\n\nCe lien est valable pendant 1 heure.\n\nSi vous n'avez pas demandé cette réinitialisation, ignorez ce message.\n\nCordialement,\nL'équipe StudTraj";
+
+        $mail->send();
+        return true;
+
+    } catch (Exception $e) {
+        error_log("Erreur envoi mail reset : " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+// Traitement de la demande de réinitialisation
+if(isset($_POST['forgot_password'])) {
+    extract($_POST);
+
+    $result = forgotPassword($mail);
+
+    if($result['success']) {
+        header("Location: ../views/connexion.php?succes=reset_envoye");
+    } else {
+        header("Location: ../views/forgotPassword.php?erreur=" . $result['error']);
+    }
+    exit;
+}
+
+// Traitement du nouveau mot de passe
+if(isset($_POST['reset_password'])) {
+    extract($_POST);
+
+    $bdd = Database::getConnection();
+
+    // Vérifier le token
+    $checkToken = $bdd->prepare("SELECT id, reset_expiration FROM utilisateurs WHERE reset_token = :token");
+    $checkToken->execute(['token' => $token]);
+
+    if($checkToken->rowCount() == 0) {
+        header("Location: ../views/connexion.php?erreur=token_invalide");
+        exit;
+    }
+
+    $user = $checkToken->fetch(PDO::FETCH_ASSOC);
+
+    // Vérifier si le token n'est pas expiré
+    if(strtotime($user['reset_expiration']) < time()) {
+        header("Location: ../views/connexion.php?erreur=token_expire");
+        exit;
+    }
+
+    // Mettre à jour le mot de passe
+    $hashedPassword = password_hash($nouveau_mdp, PASSWORD_DEFAULT);
+    $updatePassword = $bdd->prepare("UPDATE utilisateurs SET mdp = :mdp, reset_token = NULL, reset_expiration = NULL WHERE id = :id");
+    $updatePassword->execute([
+        'mdp' => $hashedPassword,
+        'id' => $user['id']
+    ]);
+
+    header("Location: ../views/connexion.php?succes=mdp_reinitialise");
+    exit;
+}
+
 ?>
 
 
