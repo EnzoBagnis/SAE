@@ -1,58 +1,63 @@
 <?php
 $token = $_GET['token'] ?? '';
 if(empty($token)) {
-    header("Location: ../views/connexion.php?erreur=token_manquant");
+    header("Location: connexion.php?erreur=token_manquant");
     exit;
 }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>Réinitialiser le mot de passe - StudTraj</title>
     <style>
+        .error { color: red; padding: 10px; margin: 10px 0; }
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
+        #error_message {
+            color: red;
+            font-size: 14px;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
-<h2>Créer un nouveau mot de passe</h2>
 
-<?php if(isset($_GET['erreur'])): ?>
-    <p style="color: red;">
-        <?php
-        if($_GET['erreur'] == 'token_invalide') echo "Lien invalide.";
-        if($_GET['erreur'] == 'token_expire') echo "Ce lien a expiré.";
-        ?>
-    </p>
-<?php endif; ?>
+<div class="page-wrap">
+    <h2>Créer un nouveau mot de passe</h2>
 
-<form method="POST" action="../controllers/inscription.php" id="resetForm">
-    <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
+    <form class="card" method="POST" action="../controllers/traitement.php" id="resetForm">
+        <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
 
-    <input type="password"
-           name="nouveau_mdp"
-           id="password"
-           placeholder="Nouveau mot de passe (min. 6 caractères)"
-           required>
+        <label for="password">Nouveau mot de passe</label>
+        <input type="password"
+               name="nouveau_mdp"
+               id="password"
+               placeholder="Minimum 6 caractères"
+               required>
 
-    <input type="password"
-           id="confirm_password"
-           placeholder="Confirmer le mot de passe"
-           required>
+        <label for="confirm_password">Confirmer le mot de passe</label>
+        <input type="password"
+               id="confirm_password"
+               placeholder="Confirmez votre mot de passe"
+               required>
 
-    <p id="error_message" style="color: red; display: none;"></p>
+        <p id="error_message" style="display: none;"></p>
 
-    <button type="submit"
-            name="reset_password"
-            id="submitBtn"
-            disabled>
-        Réinitialiser le mot de passe
-    </button>
-</form>
+        <button type="submit"
+                name="reset_password"
+                id="submitBtn"
+                class="btn-submit"
+                disabled>
+            Réinitialiser le mot de passe
+        </button>
+    </form>
+</div>
 
 <script>
     const passwordInput = document.getElementById('password');
@@ -64,14 +69,12 @@ if(empty($token)) {
         const password = passwordInput.value;
         const confirm = confirmInput.value;
 
-        // Vérifier que les deux champs sont remplis
         if(password === '' || confirm === '') {
             submitBtn.disabled = true;
             errorMsg.style.display = 'none';
             return;
         }
 
-        // Vérifier la longueur minimale
         if(password.length < 6) {
             submitBtn.disabled = true;
             errorMsg.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
@@ -79,7 +82,6 @@ if(empty($token)) {
             return;
         }
 
-        // Vérifier que les mots de passe correspondent
         if(password !== confirm) {
             submitBtn.disabled = true;
             errorMsg.textContent = 'Les mots de passe ne correspondent pas.';
@@ -87,7 +89,6 @@ if(empty($token)) {
             return;
         }
 
-        // Tout est OK
         submitBtn.disabled = false;
         errorMsg.style.display = 'none';
     }

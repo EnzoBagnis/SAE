@@ -162,6 +162,48 @@ if(isset($_POST['connexion'])){
 
 }
 
+function envoyerEmailReset($destinataire, $token) {
+    $mail = new PHPMailer(true);
+    $env = parse_ini_file(__DIR__ . '/../../config/.env');
+
+    try {
+        $mail->isSMTP();
+        $mail->Host       = $env['MAIL_HOST'];
+        $mail->SMTPAuth   = true;
+        $mail->Username   = $env['MAIL_USERNAME'];
+        $mail->Password   = $env['MAIL_PASSWORD'];
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = $env['MAIL_PORT'];
+        $mail->CharSet    = 'UTF-8';
+
+        $mail->setFrom($env['MAIL_USERNAME'], $env['MAIL_FROM_NAME']);
+        $mail->addAddress($destinataire);
+
+        // Adapter l'URL selon votre configuration
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+        $host = $_SERVER['HTTP_HOST'];
+        $lien = $protocol . "://" . $host . "/SAE/views/resetPassword.php?token=" . $token;
+
+        $mail->Subject = 'Réinitialisation de mot de passe - StudTraj';
+        $mail->Body    = "Bonjour,\n\n";
+        $mail->Body   .= "Vous avez demandé à réinitialiser votre mot de passe sur StudTraj.\n\n";
+        $mail->Body   .= "Cliquez sur le lien suivant pour créer un nouveau mot de passe :\n";
+        $mail->Body   .= $lien . "\n\n";
+        $mail->Body   .= "Ce lien est valable pendant 1 heure.\n\n";
+        $mail->Body   .= "Si vous n'avez pas demandé cette réinitialisation, ignorez ce message.\n\n";
+        $mail->Body   .= "Cordialement,\n";
+        $mail->Body   .= "L'équipe StudTraj";
+
+        $mail->send();
+        return true;
+
+    } catch (Exception $e) {
+        error_log("Erreur envoi mail reset : " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+// Fonction pour gérer la demande de réinitialisation
 function forgotPassword($mail) {
     $bdd = Database::getConnection();
 
@@ -193,41 +235,9 @@ function forgotPassword($mail) {
     }
 }
 
-// Fonction pour envoyer l'email de réinitialisation
-function envoyerEmailReset($destinataire, $token) {
-    $mail = new PHPMailer(true);
-    $env = parse_ini_file(__DIR__ . '/../../config/.env');
-
-    try {
-        $mail->isSMTP();
-        $mail->Host       = $env['MAIL_HOST'];
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $env['MAIL_USERNAME'];
-        $mail->Password   = $env['MAIL_PASSWORD'];
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = $env['MAIL_PORT'];
-
-        $mail->setFrom($env['MAIL_USERNAME'], $env['MAIL_FROM_NAME']);
-        $mail->addAddress($destinataire);
-
-        // Créer le lien de réinitialisation
-        $lien = "http://votre-domaine.com/views/resetPassword.php?token=" . $token;
-
-        $mail->Subject = 'Réinitialisation de mot de passe - StudTraj';
-        $mail->Body    = "Bonjour,\n\nVous avez demandé à réinitialiser votre mot de passe.\n\nCliquez sur le lien suivant pour créer un nouveau mot de passe :\n$lien\n\nCe lien est valable pendant 1 heure.\n\nSi vous n'avez pas demandé cette réinitialisation, ignorez ce message.\n\nCordialement,\nL'équipe StudTraj";
-
-        $mail->send();
-        return true;
-
-    } catch (Exception $e) {
-        error_log("Erreur envoi mail reset : " . $mail->ErrorInfo);
-        return false;
-    }
-}
-
 // Traitement de la demande de réinitialisation
 if(isset($_POST['forgot_password'])) {
-    extract($_POST);
+    $mail = trim($_POST['mail']);
 
     $result = forgotPassword($mail);
 
@@ -273,7 +283,6 @@ if(isset($_POST['reset_password'])) {
     header("Location: ../views/connexion.php?succes=mdp_reinitialise");
     exit;
 }
-
 ?>
 
 
