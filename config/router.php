@@ -33,7 +33,7 @@ class Router {
     }
     
     private function loadController($controllerName, $method) {
-        $controllerFile = $_SERVER['DOCUMENT_ROOT'] . 'controllers/' . $controllerName . '.php';
+        $controllerFile = dirname(__DIR__) . '/controllers/' . $controllerName . '.php';
         if (file_exists($controllerFile)) {
             require_once $controllerFile;
             
