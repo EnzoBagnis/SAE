@@ -1,7 +1,12 @@
-RewriteEngine on
+RewriteEngine On
+RewriteBase /SAE/
 
-RewriteRule ^index$ index.php?action=index [L,QSA]
+# Empêcher l'accès direct aux dossiers sensibles
+RewriteRule ^(config|controllers|views)/ - [F,L]
 
-RewriteRule înscription$ index.php?action=inscription [L, QSA]
+# Si le fichier ou dossier existe, ne pas réécrire
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 
-RewriteRule ^index$ index.php?action=index [L,QSA]
+# Réécrire les URLs propres vers index.php?action=
+RewriteRule ^([a-zA-Z0-9_-]+)$ index.php?action=$1 [L,QSA]
