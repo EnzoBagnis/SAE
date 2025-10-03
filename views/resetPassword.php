@@ -38,7 +38,6 @@ if(empty($token)) {
         <input type="password"
                name="nouveau_mdp"
                id="password"
-               placeholder="Minimum 6 caractères"
                required>
 
         <label for="confirm_password">Confirmer le mot de passe</label>
@@ -72,13 +71,6 @@ if(empty($token)) {
         if(password === '' || confirm === '') {
             submitBtn.disabled = true;
             errorMsg.style.display = 'none';
-            return;
-        }
-
-        if(password.length < 6) {
-            submitBtn.disabled = true;
-            errorMsg.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
-            errorMsg.style.display = 'block';
             return;
         }
 

@@ -199,7 +199,7 @@ function envoyerEmailReset($destinataire, $token) {
         // Adapter l'URL selon votre configuration
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
         $host = $_SERVER['HTTP_HOST'];
-        $lien = $protocol . "://" . $host . "/SAE/views/resetPassword.php?token=" . $token;
+        $lien = $protocol . "://" . $host . "/views/resetPassword.php?token=" . $token;
 
         $mail->Subject = 'Réinitialisation de mot de passe - StudTraj';
         $mail->Body    = "Bonjour,\n\n";
