@@ -63,8 +63,7 @@
         </div>
 
     </form>
-
-    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+    <button onclick="window.location.href='./formulaire.php'">S'inscrire</button>
 
 </div>
 </body>
