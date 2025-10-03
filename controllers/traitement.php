@@ -9,6 +9,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+// Connexion unique à la base de données
+$bdd = Database::getConnection();
+
 
 
 function envoyerEmail($destinataire, $code_verif) {
@@ -45,68 +48,84 @@ function envoyerEmail($destinataire, $code_verif) {
 if(isset($_POST['ok']) && !isset($_POST['code'])){
     extract($_POST);
 
-    // Utilisation de la classe Database au lieu de refaire la connexion
-    $bdd = Database::getConnection();
-
     $checkEmail = $bdd->prepare("SELECT COUNT(*) FROM utilisateurs WHERE mail = :mail");
     $checkEmail->execute(['mail' => $mail]);
-
     if ($checkEmail->fetchColumn() > 0) {
-            // Rediriger vers le formulaire avec erreur
         header("Location: ../views/formulaire.php?erreur=email_existe");
         exit;
     }
 
-    $code_verif = rand(100000, 999999);
+    $deleteExpired = $bdd->prepare("DELETE FROM inscriptions_en_attente WHERE date_creation < DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+    $deleteExpired->execute();
 
-    $hashedPassword = password_hash($mdp, PASSWORD_DEFAULT);
-    $requete = $bdd->prepare("INSERT INTO utilisateurs (nom, prenom, mdp, mail, code_verif, verifie) VALUES (:nom, :prenom, :mdp, :mail, :code_verif, 0)");
-
-    try{
-
-    $requete->execute(array(
-        'nom' => $nom,
-        'prenom' => $prenom,
-        'mdp' => $hashedPassword,
-        'mail' => $mail,
-        'code_verif' => $code_verif
-    ));
-
-    session_start();
-    $_SESSION['mail'] = $mail;
-
-    if (envoyerEmail($mail, $code_verif)) {
-        header("Location: ../views/verificationMail.php?succes=inscription");
-    } else {
-        header("Location: ../views/formulaire.php?erreur=envoi_mail");
+    // Vérifier si déjà en attente
+    $checkAttente = $bdd->prepare("SELECT COUNT(*) FROM inscriptions_en_attente WHERE mail = :mail");
+    $checkAttente->execute(['mail' => $mail]);
+    if ($checkAttente->fetchColumn() > 0) {
+        header("Location: ../views/formulaire.php?erreur=attente_existe");
+        exit;
     }
 
-    exit;
+    $code_verif = rand(100000, 999999);
+    $hashedPassword = password_hash($mdp, PASSWORD_DEFAULT);
+
+    // Insérer dans inscription_en_attente
+    $requete = $bdd->prepare("INSERT INTO inscriptions_en_attente (nom, prenom, mdp, mail, code_verif, date_creation) VALUES (:nom, :prenom, :mdp, :mail, :code_verif, NOW())");
+    try{
+        $requete->execute(array(
+            'nom' => $nom,
+            'prenom' => $prenom,
+            'mdp' => $hashedPassword,
+            'mail' => $mail,
+            'code_verif' => $code_verif
+        ));
+
+        session_start();
+        $_SESSION['mail'] = $mail;
+
+        if (envoyerEmail($mail, $code_verif)) {
+            header("Location: ../views/verificationMail.php?succes=inscription");
+        } else {
+            header("Location: ../views/formulaire.php?erreur=envoi_mail");
+        }
+        exit;
 
     } catch (PDOException $e) {
         echo "Erreur lors de l'insertion : " . $e->getMessage();
         exit;
     }
-
-
-
-
 }
+
 
 if(isset($_POST['code'])) {
     $code = $_POST['code'];
     session_start();
-    $mail = $_SESSION['mail']; // Stocker l'email en session lors de l'inscription
+    $mail = $_SESSION['mail'];
 
-    $bdd = Database::getConnection();
-    $verif = $bdd->prepare("SELECT code_verif FROM utilisateurs WHERE mail = :mail");
+    // Récupérer l'inscription en attente
+    $verif = $bdd->prepare("SELECT * FROM inscriptions_en_attente WHERE mail = :mail");
     $verif->execute(['mail' => $mail]);
-    $code_enregistre = $verif->fetchColumn();
+    $userAttente = $verif->fetch(PDO::FETCH_ASSOC);
 
-    if($code == $code_enregistre) {
-        // Mettre Ã  jour la vÃ©rification
-        $update = $bdd->prepare("UPDATE utilisateurs SET verifie = 1 WHERE mail = :mail");
-        $update->execute(['mail' => $mail]);
+    if(!$userAttente) {
+        header("Location: ../views/verificationMail.php?erreur=inscription_expiree");
+        exit;
+    }
+
+    if($code == $userAttente['code_verif']) {
+        // Insérer dans utilisateurs
+        $insertUser = $bdd->prepare("INSERT INTO utilisateurs (nom, prenom, mdp, mail, code_verif, verifie) VALUES (:nom, :prenom, :mdp, :mail, :code_verif, 1)");
+        $insertUser->execute([
+            'nom' => $userAttente['nom'],
+            'prenom' => $userAttente['prenom'],
+            'mdp' => $userAttente['mdp'],
+            'mail' => $userAttente['mail'],
+            'code_verif' => $userAttente['code_verif']
+        ]);
+        // Supprimer de inscription_en_attente
+        $deleteAttente = $bdd->prepare("DELETE FROM inscriptions_en_attente WHERE mail = :mail");
+        $deleteAttente->execute(['mail' => $mail]);
+
         header("Location: ../views/accueil.php?succes=verifie");
         exit;
     } else {
@@ -122,8 +141,6 @@ if(isset($_POST['connexion'])){
     session_start();
 
     // Utilisation de la classe Database au lieu de refaire la connexion
-    $bdd = Database::getConnection();
-
     $check = $bdd->prepare("SELECT mail, mdp, id FROM utilisateurs WHERE mail = :mail");
     $check->execute(['mail' => $mail]);
     $ligne = $check->fetch(PDO::FETCH_ASSOC);
@@ -205,7 +222,7 @@ function envoyerEmailReset($destinataire, $token) {
 
 // Fonction pour gérer la demande de réinitialisation
 function forgotPassword($mail) {
-    $bdd = Database::getConnection();
+    global $bdd;
 
     // Vérifier si l'email existe
     $checkEmail = $bdd->prepare("SELECT id FROM utilisateurs WHERE mail = :mail");
@@ -249,11 +266,49 @@ if(isset($_POST['forgot_password'])) {
     exit;
 }
 
+// Traitement du renvoi de code
+if(isset($_POST['renvoyer_code'])) {
+    session_start();
+
+    if(!isset($_SESSION['mail'])) {
+        header("Location: ../views/formulaire.php?erreur=session_expiree");
+        exit;
+    }
+
+    $mail = $_SESSION['mail'];
+
+    // Vérifier si l'inscription en attente existe encore
+    $checkAttente = $bdd->prepare("SELECT * FROM inscriptions_en_attente WHERE mail = :mail");
+    $checkAttente->execute(['mail' => $mail]);
+    $userAttente = $checkAttente->fetch(PDO::FETCH_ASSOC);
+
+    if(!$userAttente) {
+        header("Location: ../views/verificationMail.php?erreur=inscription_expiree");
+        exit;
+    }
+
+    // Générer un nouveau code
+    $nouveau_code = rand(100000, 999999);
+
+    // Mettre à jour le code et le temps dans la base de données
+    $updateCode = $bdd->prepare("UPDATE inscriptions_en_attente SET code_verif = :code, date_creation = NOW() WHERE mail = :mail");
+    $updateCode->execute([
+        'code' => $nouveau_code,
+        'mail' => $mail
+    ]);
+
+    // Envoyer le nouveau code par email
+    if (envoyerEmail($mail, $nouveau_code)) {
+        header("Location: ../views/verificationMail.php?succes=code_renvoye");
+    } else {
+        header("Location: ../views/verificationMail.php?erreur=envoi_mail_echec");
+    }
+    exit;
+}
+
 // Traitement du nouveau mot de passe
 if(isset($_POST['reset_password'])) {
     extract($_POST);
-
-    $bdd = Database::getConnection();
 
     // Vérifier le token
     $checkToken = $bdd->prepare("SELECT id, reset_expiration FROM utilisateurs WHERE reset_token = :token");
@@ -284,5 +339,3 @@ if(isset($_POST['reset_password'])) {
     exit;
 }
 ?>
-
-

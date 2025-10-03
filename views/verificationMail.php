@@ -16,10 +16,26 @@ session_start();
 <?php if(isset($_GET['erreur']) && $_GET['erreur'] == 'code_incorrect'): ?>
     <p style="color:red;">Code incorrect, veuillez réessayer.</p>
 <?php endif; ?>
+<?php if(isset($_GET['erreur']) && $_GET['erreur'] == 'inscription_expiree'): ?>
+    <p style="color:red;">Votre inscription a expiré. Veuillez vous réinscrire.</p>
+<?php endif; ?>
+<?php if(isset($_GET['succes']) && $_GET['succes'] == 'code_renvoye'): ?>
+    <p style="color:green;">Un nouveau code de vérification vous a été envoyé par email.</p>
+<?php endif; ?>
+<?php if(isset($_GET['erreur']) && $_GET['erreur'] == 'envoi_mail_echec'): ?>
+    <p style="color:red;">Erreur lors de l'envoi de l'email. Veuillez réessayer.</p>
+<?php endif; ?>
+
 <form action="../controllers/traitement.php" method="POST">
     <label for="mailVerifcation">Code : </label>
     <input type="number" id="code" name="code" required>
     <button type="submit" name="verifier">Vérifier</button>
+</form>
+
+<br>
+<p>Vous n'avez pas reçu le code ?</p>
+<form action="../controllers/traitement.php" method="POST">
+    <button type="submit" name="renvoyer_code">Renvoyer le code</button>
 </form>
 </body>
 </html>
