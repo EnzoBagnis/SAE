@@ -111,7 +111,6 @@ if(isset($_POST['code'])) {
         header("Location: ../views/verificationMail.php?erreur=inscription_expiree");
         exit;
     }
-    }
 
     if($code == $userAttente['code_verif']) {
         // Insérer dans utilisateurs
@@ -129,7 +128,8 @@ if(isset($_POST['code'])) {
 
         header("Location: ../views/accueil.php?succes=verifie");
         exit;
-    } else {
+    }
+    else {
         header("Location: ../views/verificationMail.php?erreur=code_incorrect");
         exit;
     }
