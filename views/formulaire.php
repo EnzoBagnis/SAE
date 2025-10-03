@@ -54,9 +54,7 @@ if (isset($_GET['erreur'])) {
         </div>
 
     </form>
-
-    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
-
+    <button onclick="window.location.href='./connexion.php'">Se connecter</button>
 </div>
 </body>
 </html>

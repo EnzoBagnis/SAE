@@ -8,22 +8,26 @@
     <meta name="description" content="Ceci est une meta description">
     <title>StudTraj - Accueil</title>
     <link rel="stylesheet" href="../css/style.css">
+    <script src="main.js"></script>
 </head>
 <body>
 <div class="page-wrap">
     <div class="welcome-container">
-        <h1>Bienvenue sur StudTraj</h1>
-        <?php
+      <h1>Ceci est la page d'accueil temporaire</h1>
+      <?php
             session_start();
-            if(isset($_SESSION['nom']) && isset($_SESSION['prenom'])) {
-                echo '<div class="welcome-message">';
-                echo '<h2>Bonjour ' . htmlspecialchars($_SESSION['prenom']) . ' ' . htmlspecialchars($_SESSION['nom']) . ' !</h2>';
-                echo '<p>Vous êtes maintenant connecté à votre compte.</p>';
-                echo '</div>';
+            if (!isset($_SESSION['id'])) {
+                echo '<div class="error">Vous devez être connecté pour accéder à cette page.</div>';
+                echo '<button onclick="window.location.href=\'connexion.php\'">Aller à la page de connexion</button>';
+                exit;
             }
+            echo '<div class="welcome-message">';
+            echo '<h2>Bonjour ' . htmlspecialchars($_SESSION['prenom']) . ' ' . htmlspecialchars($_SESSION['nom']) . ' !</h2>';
+            echo '<p>Vous êtes maintenant connecté à votre compte.</p>';
+            echo '</div>';
         ?>
         <button class="btn-submit" onclick="window.location.href='./page2.php'">Accéder à la page 2</button>
-
+        <button onclick="confirmLogout()">Se déconnecter</button>
         <?php if(isset($_GET['succes']) && $_GET['succes'] == 'verifie'): ?>
             <div class="success mt-3">Votre compte a été vérifié avec succès !</div>
         <?php endif; ?>
