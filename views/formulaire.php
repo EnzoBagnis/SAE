@@ -7,44 +7,56 @@
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <meta name="description" content="Ceci est une meta description">
     <title>StudTraj - Inscription</title>
-    <!-- <link rel="stylesheet" href="formStyle.css"> -->
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+
+<div class="page-wrap">
 
 <?php
 // Afficher les messages d'erreur ou de succés
 if (isset($_GET['erreur'])) {
     switch($_GET['erreur']) {
         case 'email_existe':
-            echo '<div class="error">Erreur : Cet email est déja  utilisé !</div>';
+            echo '<div class="error">Cet email est déjà utilisé !</div>';
+            break;
+        case 'attente_existe':
+            echo '<div class="error">Un code de vérification a déjà été envoyé à cet email</div>';
             break;
         case 'insertion':
             echo '<div class="error">Erreur lors de l\'inscription</div>';
             break;
+        case 'envoi_mail':
+            echo '<div class="error">Erreur lors de l\'envoi de l\'email</div>';
+            break;
     }
 }
-
 ?>
-
-<div class="page-wrap">
 
     <form class="card" method="POST" action="../controllers/traitement.php">
 
-        <label for="nom">Votre nom</label>
-        <input type="text" id="nom" name="nom" placeholder="Entrez votre nom..." required><br>
+        <label for="nom">Nom</label>
+        <input type="text" id="nom" name="nom" placeholder="Valeur" required><br>
 
-        <label for="prenom">Votre prénom</label>
-        <input type="text" id="prenom" name="prenom" placeholder="Entrez votre prénom..." required><br>
+        <label for="prenom">Prénom</label>
+        <input type="text" id="prenom" name="prenom" placeholder="Valeur" required><br>
 
-        <label for="mail">Votre mail</label>
-        <input type="email" id="mail" name="mail" placeholder="Entrez votre mail..." required><br>
+        <label for="mail">Email</label>
+        <input type="email" id="mail" name="mail" placeholder="Valeur" required><br>
 
-        <label for="mdp">Votre mot de passe</label>
-        <input type="password" id="mdp" name="mdp" placeholder="Entrez votre mdp..." required><br>
+        <label for="mdp">Mot de passe</label>
+        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required><br>
 
-        <button type="submit" class="btn-submit" name="ok">M'inscrire</button><br>
+        <button type="submit" class="btn-submit" name="ok">Inscription</button>
+
+        <div class="text-center mt-2">
+            <a href="connexion.php">Déjà un compte ? Se connecter</a>
+        </div>
 
     </form>
+
+    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+
 </div>
 </body>
 </html>

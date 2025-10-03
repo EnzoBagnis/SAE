@@ -7,13 +7,25 @@
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <meta name="description" content="Ceci est une meta description">
     <title>StudTraj - Page2</title>
-    <!-- <link rel="stylesheet" href="formStyle.css"> -->
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-<!-- CECI EST UNE PAGE DE TEST POUR VOIR SI LES CONNEXIONS SONT TOUJOURS EFFECTIVES -->
+<div class="page-wrap">
+    <div class="welcome-container">
+        <!-- CECI EST UNE PAGE DE TEST POUR VOIR SI LES CONNEXIONS SONT TOUJOURS EFFECTIVES -->
+        <?php
+            session_start();
+            if(isset($_SESSION['nom']) && isset($_SESSION['prenom'])) {
+                echo '<div class="welcome-message">';
+                echo '<h1>Page 2</h1>';
+                echo '<p>Bienvenue ' . htmlspecialchars($_SESSION['prenom']) . ' ' . htmlspecialchars($_SESSION['nom']) . '</p>';
+                echo '</div>';
+            }
+        ?>
+        <button class="btn-submit" onclick="window.location.href='accueil.php'">Retour à l'accueil</button>
+    </div>
 
-<?php
-    session_start();
-    echo '<div class="succes">Bienvenue ' . $_SESSION['nom'] . ' ' . $_SESSION['prenom'] . '</div>';
-
-?>
+    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+</div>
+</body>
+</html>

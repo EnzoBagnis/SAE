@@ -6,19 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>Mot de passe oublié - StudTraj</title>
-    <style>
-        .error { color: red; padding: 10px; margin: 10px 0; }
-        .success { color: green; padding: 10px; margin: 10px 0; }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-    </style>
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
 <div class="page-wrap">
-    <h2>Mot de passe oublié</h2>
 
     <?php
     if (isset($_GET['erreur'])) {
@@ -34,11 +26,14 @@
     ?>
 
     <form class="card" method="POST" action="../controllers/traitement.php" id="forgotForm">
-        <label for="mail">Votre email</label>
+        <h2>Mot de passe oublié</h2>
+        <p>Entrez votre email pour recevoir un lien de réinitialisation</p>
+
+        <label for="email">Email</label>
         <input type="email"
                id="email"
                name="mail"
-               placeholder="Entrez votre email..."
+               placeholder="Valeur"
                required>
 
         <button type="submit"
@@ -49,9 +44,13 @@
             Envoyer le lien de réinitialisation
         </button>
 
-        <br>
-        <a href="connexion.php">Retour à la connexion</a>
+        <div class="text-center mt-2">
+            <a href="connexion.php">Retour à la connexion</a>
+        </div>
     </form>
+
+    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+
 </div>
 
 <script>

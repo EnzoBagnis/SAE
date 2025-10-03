@@ -7,10 +7,22 @@
     <link rel="icon" type="image/x-icon" href="images/favicon.ico">
     <meta name="description" content="Ceci est une meta description">
     <title>StudTraj</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>Bienvenue sur StudTraj</h1>
-<button onclick="window.location.href='views/formulaire.php'">S'inscrire</button>
-<button onclick="window.location.href='views/connexion.php'">Se connecter</button>
+
+<div class="page-wrap">
+    <div class="welcome-container">
+        <h1>Bienvenue sur StudTraj</h1>
+        <p>Plateforme de gestion de trajectoires étudiantes</p>
+
+        <div class="card" style="text-align: center;">
+            <h2>Accédez à votre compte</h2>
+            <button class="btn-submit" onclick="window.location.href='views/connexion.php'">Se connecter</button>
+            <button class="btn-secondary" onclick="window.location.href='views/formulaire.php'">S'inscrire</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

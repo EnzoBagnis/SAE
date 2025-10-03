@@ -13,25 +13,15 @@ if(empty($token)) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>Réinitialiser le mot de passe - StudTraj</title>
-    <style>
-        .error { color: red; padding: 10px; margin: 10px 0; }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        #error_message {
-            color: red;
-            font-size: 14px;
-            margin: 5px 0;
-        }
-    </style>
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
 <div class="page-wrap">
-    <h2>Créer un nouveau mot de passe</h2>
-
     <form class="card" method="POST" action="../controllers/traitement.php" id="resetForm">
+        <h2>Créer un nouveau mot de passe</h2>
+        <p>Entrez votre nouveau mot de passe</p>
+
         <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
 
         <label for="password">Nouveau mot de passe</label>

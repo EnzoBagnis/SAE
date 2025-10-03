@@ -7,7 +7,7 @@
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <meta name="description" content="Ceci est une meta description">
     <title>StudTraj - Connexion</title>
-    <!-- <link rel="stylesheet" href="formStyle.css"> -->
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
@@ -26,6 +26,12 @@
             case 'insertion':
                 echo '<div class="error">Erreur lors de l\'inscription</div>';
                 break;
+            case 'token_invalide':
+                echo '<div class="error">Lien de réinitialisation invalide</div>';
+                break;
+            case 'token_expire':
+                echo '<div class="error">Lien de réinitialisation expiré</div>';
+                break;
         }
     }
 
@@ -43,18 +49,23 @@
 
     <form class="card" method="POST" action="../controllers/traitement.php">
 
-        <label for="mail">Votre mail</label>
-        <input type="email" id="mail" name="mail" placeholder="Entrez votre mail..." required><br>
+        <label for="mail">Email</label>
+        <input type="email" id="mail" name="mail" placeholder="Valeur" required><br>
 
-        <label for="mdp">Votre mot de passe</label>
-        <input type="password" id="mdp" name="mdp" placeholder="Entrez votre mdp..." required><br>
+        <label for="mdp">Mot de passe</label>
+        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required><br>
 
-        <button type="submit" class="btn-submit" name="connexion">Me connecter</button><br>
+        <button type="submit" class="btn-submit" name="connexion">Connexion</button>
 
-        <!-- Bouton avec type="button" pour éviter la soumission du formulaire -->
-        <button type="button" class="btn-submit" onclick="window.location.href='forgotPassword.php'">Mot de passe oublié</button><br>
+        <div class="form-links">
+            <a href="forgotPassword.php">Mot de passe?</a>
+            <a href="formulaire.php">Inscription</a>
+        </div>
 
     </form>
+
+    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+
 </div>
 </body>
 </html>
