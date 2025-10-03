@@ -165,10 +165,6 @@ if(isset($_POST['connexion'])){
     }
     //Mise en $_SESSION des infos principales
     connexion($id, $bdd);
-
-
-
-
 }
 
 ?>

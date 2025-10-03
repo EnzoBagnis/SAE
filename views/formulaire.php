@@ -43,6 +43,7 @@ if (isset($_GET['erreur'])) {
         <button type="submit" class="btn-submit" name="ok">M'inscrire</button><br>
 
     </form>
+    <button onclick="window.location.href='./connexion.php'">Se connecter</button>
 </div>
 </body>
 </html>

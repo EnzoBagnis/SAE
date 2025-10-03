@@ -40,6 +40,7 @@
         <button type="submit" class="btn-submit" name="connexion">Me connecter</button><br>
 
     </form>
+    <button onclick="window.location.href='./formulaire.php'">S'inscrire</button>
 </div>
 </body>
 </html>
