@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <meta name="description" content="Ceci est une meta description">
     <title>StudTraj - Inscription</title>
@@ -36,16 +36,16 @@ if (isset($_GET['erreur'])) {
     <form class="card" method="POST" action="../controllers/traitement.php">
 
         <label for="nom">Nom</label>
-        <input type="text" id="nom" name="nom" placeholder="Valeur" required><br>
+        <input type="text" id="nom" name="nom" placeholder="Valeur" required>
 
         <label for="prenom">Prénom</label>
-        <input type="text" id="prenom" name="prenom" placeholder="Valeur" required><br>
+        <input type="text" id="prenom" name="prenom" placeholder="Valeur" required>
 
         <label for="mail">Email</label>
-        <input type="email" id="mail" name="mail" placeholder="Valeur" required><br>
+        <input type="email" id="mail" name="mail" placeholder="Valeur" required>
 
         <label for="mdp">Mot de passe</label>
-        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required><br>
+        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required>
 
         <button type="submit" class="btn-submit" name="ok">Inscription</button>
 
@@ -54,7 +54,9 @@ if (isset($_GET['erreur'])) {
         </div>
 
     </form>
-    <button onclick="window.location.href='./connexion.php'">Se connecter</button>
+
+    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+
 </div>
 </body>
 </html>

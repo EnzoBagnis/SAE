@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <meta name="description" content="Ceci est une meta description">
     <title>StudTraj - Connexion</title>
@@ -50,10 +50,10 @@
     <form class="card" method="POST" action="../controllers/traitement.php">
 
         <label for="mail">Email</label>
-        <input type="email" id="mail" name="mail" placeholder="Valeur" required><br>
+        <input type="email" id="mail" name="mail" placeholder="Valeur" required>
 
         <label for="mdp">Mot de passe</label>
-        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required><br>
+        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required>
 
         <button type="submit" class="btn-submit" name="connexion">Connexion</button>
 
@@ -63,7 +63,8 @@
         </div>
 
     </form>
-    <button onclick="window.location.href='./formulaire.php'">S'inscrire</button>
+
+    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
 
 </div>
 </body>
