@@ -1,10 +1,9 @@
 RewriteEngine On
-RewriteBase /SAE/
 
 # Empêcher l'accès direct aux dossiers sensibles
 RewriteRule ^(config|controllers|views)/ - [F,L]
 
-# Si le fichier ou dossier existe, ne pas réécrire
+# Si le fichier ou dossier existe réellement, ne pas réécrire
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
