@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# Empêcher l'accès direct aux dossiers sensibles
+RewriteRule ^(config|controllers|views)/ - [F,L]
+
+# Si le fichier ou dossier existe réellement, ne pas réécrire
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Réécrire les URLs propres vers index.php?action=
+RewriteRule ^([a-zA-Z0-9_-]+)$ index.php?action=$1 [L,QSA]
