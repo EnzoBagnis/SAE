@@ -18,7 +18,7 @@
             session_start();
             if (!isset($_SESSION['id'])) {
                 echo '<div class="error">Vous devez être connecté pour accéder à cette page.</div>';
-                echo '<button onclick="window.location.href=\'connexion.php\'">Aller à la page de connexion</button>';
+                echo '<button onclick="window.location.href=\'./connexion.php\'">Aller à la page de connexion</button>';
                 exit;
             }
             echo '<div class="welcome-message">';
