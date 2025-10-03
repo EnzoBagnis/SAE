@@ -137,17 +137,17 @@ if(isset($_POST['code'])) {
             'mail' => $userAttente['mail'],
             'code_verif' => $userAttente['code_verif']
         ]);
+
         // Supprimer de inscription_en_attente
         $deleteAttente = $bdd->prepare("DELETE FROM inscriptions_en_attente WHERE mail = :mail");
         $deleteAttente->execute(['mail' => $mail]);
 
-    if($code == $code_enregistre) {
-        // Mettre Ã  jour la vÃ©rification
-        $update = $bdd->prepare("UPDATE utilisateurs SET verifie = 1 WHERE mail = :mail");
-        $update->execute(['mail' => $mail]);
+        // Récupérer l'id de l'utilisateur créé
         $rid = $bdd->prepare("SELECT id FROM utilisateurs WHERE mail = :mail");
         $rid->execute(['mail' => $mail]);
         $id = $rid->fetchColumn();
+
+        // Connecter l'utilisateur
         connexion($id, $bdd);
         exit;
     }
