@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once 'config/Router.php';
+require_once 'config/router.php';
 
 $router = new Router();
 $router->route();
