@@ -6,7 +6,6 @@ require '../phpmailer/src/SMTP.php';
 require '../phpmailer/src/Exception.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 // Connexion unique à la base de données
@@ -137,21 +136,19 @@ if(isset($_POST['code'])) {
             'mail' => $userAttente['mail'],
             'code_verif' => $userAttente['code_verif']
         ]);
+
         // Supprimer de inscription_en_attente
         $deleteAttente = $bdd->prepare("DELETE FROM inscriptions_en_attente WHERE mail = :mail");
         $deleteAttente->execute(['mail' => $mail]);
 
-    if($code == $code_enregistre) {
-        // Mettre Ã  jour la vÃ©rification
-        $update = $bdd->prepare("UPDATE utilisateurs SET verifie = 1 WHERE mail = :mail");
-        $update->execute(['mail' => $mail]);
+        // Récupérer l'ID de l'utilisateur créé
         $rid = $bdd->prepare("SELECT id FROM utilisateurs WHERE mail = :mail");
         $rid->execute(['mail' => $mail]);
         $id = $rid->fetchColumn();
+
         connexion($id, $bdd);
         exit;
-    }
-    else {
+    } else {
         header("Location: ../views/verificationMail.php?erreur=code_incorrect");
         exit;
     }
