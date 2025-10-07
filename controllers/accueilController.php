@@ -4,9 +4,16 @@ require_once __DIR__ . '/baseController.php';
 class accueilController extends baseController {
 
     public function index() {
-        $this->loadView('accueil', [
-            'titre' => 'Accueil',
-            'message' => 'Bienvenue sur StudTraj'
-        ]);
+        session_start();
+
+        // Si l'utilisateur est connecté, rediriger vers le dashboard
+        if (isset($_SESSION['id'])) {
+            header('Location: views/dashboard.php');
+            exit;
+        } else {
+            // Sinon, rediriger vers la page de connexion
+            header('Location: views/connexion.php');
+            exit;
+        }
     }
 }
