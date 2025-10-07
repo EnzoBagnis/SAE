@@ -9,7 +9,7 @@ $authController = new authController();
 function connexion($user) {
     global $authController;
     $authController->createSession($user);
-    header("Location: ../views/accueil.php");
+    header("Location: ../views/dashboard.php");
     exit;
 }
 
