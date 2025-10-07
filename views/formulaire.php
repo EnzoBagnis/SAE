@@ -36,7 +36,7 @@ if (isset($_GET['erreur'])) {
     <form class="card" method="POST" action="../controllers/traitement.php">
 
         <label for="nom">Nom</label>
-        <input type="text" id="nom" name="nom" placeholder="Valeur" required><br>
+        <input type="text" id="nom" name="nom" placeholder="" required><br>
 
         <label for="prenom">Prénom</label>
         <input type="text" id="prenom" name="prenom" placeholder="Valeur" required><br>
