@@ -1,12 +1,12 @@
 <?php
 /**
- * Model InscriptionEnAttente - Gestion CRUD des inscriptions en attente avec PDO
+ * Model inscriptionEnAttente - Gestion CRUD des inscriptions en attente avec PDO
  */
-class InscriptionEnAttente {
+class inscriptionEnAttente {
     private $pdo;
 
     public function __construct() {
-        $this->pdo = Database::getConnection();
+        $this->pdo = database::getConnection();
     }
 
     /**

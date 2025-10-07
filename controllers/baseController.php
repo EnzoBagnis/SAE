@@ -1,8 +1,8 @@
 <?php
 /**
- * BaseController - Controller de base avec méthodes communes
+ * baseController - Controller de base avec méthodes communes
  */
-abstract class BaseController {
+abstract class baseController {
 
     /**
      * Charger une vue avec des données

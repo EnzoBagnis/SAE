@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '/../models/Database.php';
-require_once __DIR__ . '/AuthController.php';
+require_once __DIR__ . '/../models/database.php';
+require_once __DIR__ . '/authController.php';
 
 // Initialiser le controller
-$authController = new AuthController();
+$authController = new authController();
 
 // Fonction de connexion simplifiée
 function connexion($user) {

@@ -1,21 +1,21 @@
 <?php
-require_once __DIR__ . '/../models/Database.php';
-require_once __DIR__ . '/../models/User.php';
-require_once __DIR__ . '/../models/InscriptionEnAttente.php';
-require_once __DIR__ . '/../models/EmailService.php';
+require_once __DIR__ . '/../models/database.php';
+require_once __DIR__ . '/../models/user.php';
+require_once __DIR__ . '/../models/inscriptionEnAttente.php';
+require_once __DIR__ . '/../models/emailService.php';
 
 /**
- * Controller AuthController - Gestion de l'authentification avec CRUD
+ * Controller authController - Gestion de l'authentification avec CRUD
  */
-class AuthController {
+class authController {
     private $userModel;
     private $inscriptionModel;
     private $emailService;
 
     public function __construct() {
-        $this->userModel = new User();
-        $this->inscriptionModel = new InscriptionEnAttente();
-        $this->emailService = new EmailService();
+        $this->userModel = new user();
+        $this->inscriptionModel = new inscriptionEnAttente();
+        $this->emailService = new emailService();
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/BaseController.php';
+require_once __DIR__ . '/baseController.php';
 
-class accueil2Controller extends BaseController {
+class accueil2Controller extends baseController {
 
     public function showView() {
         $this->loadView('page2', ['titre' => 'Accueil2']);

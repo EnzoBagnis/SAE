@@ -1,12 +1,12 @@
 <?php
 /**
- * Model User - Gestion CRUD des utilisateurs avec PDO
+ * Model user - Gestion CRUD des utilisateurs avec PDO
  */
-class User {
+class user {
     private $pdo;
 
     public function __construct() {
-        $this->pdo = Database::getConnection();
+        $this->pdo = database::getConnection();
     }
 
     /**

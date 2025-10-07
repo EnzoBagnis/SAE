@@ -1,5 +1,5 @@
 <?php
-class Database {
+class database {
     public static function getConnection() {
         $env = parse_ini_file(__DIR__ . '/../../config/.env');
 

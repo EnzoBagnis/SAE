@@ -7,9 +7,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 /**
- * Service EmailService - Gestion de l'envoi d'emails
+ * Service emailService - Gestion de l'envoi d'emails
  */
-class EmailService {
+class emailService {
     private $env;
     
     public function __construct() {
