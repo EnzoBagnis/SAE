@@ -20,6 +20,38 @@ body {
     justify-content: center;
     min-height: 100vh;
     padding: 20px;
+    position: relative;
+}
+
+/* Flèche de retour à l'accueil */
+.back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.back-arrow:hover {
+    background-color: #2c3e50;
+    color: white;
+    transform: translateX(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+}
+
+.back-arrow svg {
+    display: block;
 }
 
 .card {
@@ -290,21 +322,6 @@ a:hover {
     animation: fadeIn 0.3s ease;
 }
 
-.back-arrow {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 24px;
-    color: #2c3e50;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.back-arrow:hover {
-    transform: translateX(-50%) translateY(3px);
-}
-
 .loader {
     border: 3px solid #f3f3f3;
     border-top: 3px solid #2c3e50;
@@ -326,4 +343,3 @@ a:hover {
     margin-top: 5px;
     display: block;
 }
-
