@@ -1,25 +1,12 @@
 <?php
-class accueilController {
-    
+require_once __DIR__ . '/BaseController.php';
+
+class accueilController extends BaseController {
+
     public function index() {
-        $titre = "Accueil";
-        $message = "Bienvenue sur StudTraj";
-        
         $this->loadView('accueil', [
-            'titre' => $titre,
-            'message' => $message
+            'titre' => 'Accueil',
+            'message' => 'Bienvenue sur StudTraj'
         ]);
-    }
-    
-    protected function loadView($viewName, $data = []) {
-        extract($data);
-        
-        $viewFile = __DIR__ . '/../views/' . $viewName . '.php';
-        
-        if (file_exists($viewFile)) {
-            require $viewFile;
-        } else {
-            die("Vue $viewName introuvable. Chemin testé: $viewFile");
-        }
     }
 }
