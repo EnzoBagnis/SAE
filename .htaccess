@@ -6,7 +6,7 @@
     RewriteEngine On
     RewriteBase /
 
-    # Allow direct access to sitemap.xml and robots.txt
+    # Allow direct access to sitemap.php and robots.txt
     RewriteRule ^(sitemap\.xml|robots\.txt)$ - [L]
 
     # Force HTTPS (décommentez quand vous avez un certificat SSL)
@@ -93,7 +93,7 @@ Options -Indexes
 AddDefaultCharset UTF-8
 AddCharset UTF-8 .html .css .js .xml .json .rss .atom
 
-# Force le bon Content-Type pour sitemap.xml
+# Force le bon Content-Type pour sitemap.php
 <Files "sitemap.xml">
     Header set Content-Type "application/xml; charset=utf-8"
     Header set X-Robots-Tag "noindex"
@@ -109,3 +109,6 @@ AddCharset UTF-8 .html .css .js .xml .json .rss .atom
     AddType application/xml xml
     AddType text/xml xml
 </IfModule>
+
+# Redirection sitemap.xml vers sitemap.php
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
