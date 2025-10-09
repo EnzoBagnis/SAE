@@ -6,6 +6,8 @@
     padding: 40px 0 0;
     font-size: 14px;
     width: 100%;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .footer-container {
@@ -262,4 +264,3 @@
 .modal-text::-webkit-scrollbar-thumb:hover {
     background: #2a5298;
 }
-

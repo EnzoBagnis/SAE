@@ -6,6 +6,11 @@ body {
     padding: 0;
 }
 
+/* Forcer l'affichage du header pour les utilisateurs connectés */
+body.logged-in .top-menu {
+    display: flex !important;
+}
+
 /* Ajustement pour le header fixe */
 .legal-container {
     max-width: 900px;
@@ -21,6 +26,11 @@ body {
 /* Ajustement pour les utilisateurs non connectés */
 body:not(.logged-in) .legal-container {
     margin-top: 50px;
+}
+
+/* Cacher la flèche retour pour les utilisateurs connectés */
+body.logged-in .back-arrow {
+    display: none;
 }
 
 .legal-container h1 {

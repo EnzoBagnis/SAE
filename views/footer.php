@@ -7,28 +7,16 @@
             <p>Plateforme dédiée à l'apprentissage et à la visualisation de données pour les étudiants.</p>
         </div>
 
-        <!-- Section 2: Navigation -->
-        <div class="footer-section">
-            <h3>Navigation</h3>
-            <ul class="footer-links">
-                <li><a href="dashboard.php">Tableau de bord</a></li>
-                <li><a href="#" onclick="openSiteMap()">Plan du site</a></li>
-                <li><a href="mentions-legales.php">Mentions légales</a></li>
-                <li><a href="#" onclick="showCGU()">CGU</a></li>
-                <li><a href="#" onclick="showPrivacy()">Politique de confidentialité</a></li>
-            </ul>
-        </div>
-
-        <!-- Section 3: Contact -->
+        <!-- Section 2: Contact -->
         <div class="footer-section">
             <h3>Contact</h3>
             <ul class="footer-contact">
-                <li><a href="mailto:StudTraj.amu@gmail.com">StudTraj.amu@gmail.com</a></li>
-                <li>+33 01 23 45 67 89</li>
+                <li>📧 <a href="mailto:StudTraj.amu@gmail.com">StudTraj.amu@gmail.com</a></li>
+                <li>📞 +33 01 23 45 67 89</li>
             </ul>
         </div>
 
-        <!-- Section 4: Labels & Certifications -->
+        <!-- Section 3: Labels & Certifications -->
         <div class="footer-section">
             <h3>Qualité & Accessibilité</h3>
             <div class="footer-badges">
