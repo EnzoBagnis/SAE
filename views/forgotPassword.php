@@ -13,8 +13,8 @@
 <div class="page-wrap">
 
     <?php
-    if (isset($_GET['erreur'])) {
-        switch($_GET['erreur']) {
+    if (isset($_GET['error'])) {
+        switch($_GET['error']) {
             case 'email_inexistant':
                 echo '<div class="error">Aucun compte trouvé avec cet email.</div>';
                 break;

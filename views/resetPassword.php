@@ -65,13 +65,6 @@ if(empty($token)) {
             return;
         }
 
-        if(password.length < 6) {
-            submitBtn.disabled = true;
-            errorMsg.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
-            errorMsg.style.display = 'block';
-            return;
-        }
-
         if(password !== confirm) {
             submitBtn.disabled = true;
             errorMsg.textContent = 'Les mots de passe ne correspondent pas.';

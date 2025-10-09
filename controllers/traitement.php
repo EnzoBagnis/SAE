@@ -34,7 +34,7 @@ if(isset($_POST['ok']) && !isset($_POST['code'])){
         $_SESSION['mail'] = $result['email'];
         header("Location: ../views/verificationMail.php?succes=inscription");
     } else {
-        header("Location: ../views/formulaire.php?erreur=" . $result['error']);
+        header("Location: ../views/formulaire.php?error=" . $result['error']);
     }
     exit;
 }
@@ -67,7 +67,7 @@ if(isset($_POST['connexion'])){
     if($result['success']) {
         loginUser($result['user']);
     } else {
-        header("Location: ../views/connexion.php?erreur=" . $result['error']);
+        header("Location: ../views/connexion.php?error=" . $result['error']);
     }
     exit;
 }
@@ -82,7 +82,7 @@ if(isset($_POST['forgot_password'])) {
     if($result['success']) {
         header("Location: ../views/connexion.php?succes=reset_envoye");
     } else {
-        header("Location: ../views/forgotPassword.php?erreur=" . $result['error']);
+        header("Location: ../views/forgotPassword.php?error=" . $result['error']);
     }
     exit;
 }
