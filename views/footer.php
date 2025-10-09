@@ -11,8 +11,8 @@
         <div class="footer-section">
             <h3>Contact</h3>
             <ul class="footer-contact">
-                <li>📧 <a href="mailto:StudTraj.amu@gmail.com">StudTraj.amu@gmail.com</a></li>
-                <li>📞 +33 01 23 45 67 89</li>
+                <li><a href="mailto:StudTraj.amu@gmail.com">StudTraj.amu@gmail.com</a></li>
+                <li>+33 01 23 45 67 89</li>
             </ul>
         </div>
 
@@ -29,7 +29,7 @@
                          alt="CSS Valide" width="88" height="31">
                 </a>
                 <a href="https://www.ecoindex.fr" target="_blank" rel="noopener" title="Performance environnementale">
-                    <span class="eco-badge">🌱 EcoIndex</span>
+                    <span class="eco-badge">EcoIndex</span>
                 </a>
             </div>
         </div>
