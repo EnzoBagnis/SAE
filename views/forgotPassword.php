@@ -7,6 +7,10 @@
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>Mot de passe oublié - StudTraj</title>
     <link rel="stylesheet" href="../public/css/style.css">
+    <!-- SEO Meta Tags -->
+    <meta name="forgotPassword" content="Si tu as oublié ton mot de passe, tu es au bon endroit.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/forgotPassword.php">
 </head>
 <body>
 
