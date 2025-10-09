@@ -15,7 +15,7 @@ class Router {
         switch($action) {
             case 'index':
             case 'home':
-                $this->loadController('accueilController', 'index');
+                $this->loadController('HomeController', 'index');
                 break;
                 
             case 'signup':
