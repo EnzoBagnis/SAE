@@ -10,12 +10,15 @@ if (!isset($_SESSION['id'])) {
 
 header('Content-Type: application/json');
 
-// Fonction pour récupérer les TPs
-function getTPs() {
+// Fonction pour récupérer les TPs avec pagination
+function getTPs($page = 1, $perPage = 10) {
+    $offset = ($page - 1) * $perPage;
     $tps = [];
 
-    // Génération de TPs simples pour l'exemple
-    for ($i = 1; $i <= 25; $i++) {
+    // Génération de TPs simples pour l'exemple (total de 50 TPs)
+    $totalTPs = 50;
+
+    for ($i = $offset + 1; $i <= min($offset + $perPage, $totalTPs); $i++) {
         $tps[] = [
             'id' => $i,
             'title' => "TP $i",
@@ -23,7 +26,13 @@ function getTPs() {
         ];
     }
 
-    return $tps;
+    return [
+        'tps' => $tps,
+        'total' => $totalTPs,
+        'page' => $page,
+        'perPage' => $perPage,
+        'hasMore' => ($offset + $perPage) < $totalTPs
+    ];
 }
 
 // Router simple
@@ -32,8 +41,11 @@ $action = $_GET['action'] ?? 'list';
 try {
     switch ($action) {
         case 'list':
-            $tps = getTPs();
-            echo json_encode(['success' => true, 'data' => $tps]);
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $perPage = isset($_GET['perPage']) ? (int)$_GET['perPage'] : 10;
+
+            $result = getTPs($page, $perPage);
+            echo json_encode(['success' => true, 'data' => $result]);
             break;
 
         case 'get':
