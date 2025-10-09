@@ -1,13 +1,17 @@
 <?php
 /**
- * baseController - Controller de base avec méthodes communes
+ * BaseController - Base controller class with common methods
+ * All controllers should extend this class
  */
-abstract class baseController {
+abstract class BaseController {
 
     /**
-     * Charger une vue avec des données
+     * Load a view file with data
+     * @param string $viewName Name of the view file (without .php extension)
+     * @param array $data Associative array of data to pass to the view
      */
     protected function loadView($viewName, $data = []) {
+        // Extract data array to variables
         extract($data);
 
         $viewFile = __DIR__ . '/../views/' . $viewName . '.php';
@@ -15,8 +19,7 @@ abstract class baseController {
         if (file_exists($viewFile)) {
             require $viewFile;
         } else {
-            die("Vue $viewName introuvable. Chemin testé: $viewFile");
+            die("View $viewName not found. Path tested: $viewFile");
         }
     }
 }
-

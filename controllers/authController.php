@@ -5,67 +5,87 @@ require_once __DIR__ . '/../models/inscriptionEnAttente.php';
 require_once __DIR__ . '/../models/emailService.php';
 
 /**
- * Controller authController - Gestion de l'authentification avec CRUD
+ * AuthController - Authentication controller with CRUD operations
+ * Handles user registration, login, and password management
  */
-class authController {
+class AuthController {
     private $userModel;
-    private $inscriptionModel;
+    private $pendingRegistrationModel;
     private $emailService;
 
     public function __construct() {
-        $this->userModel = new user();
-        $this->inscriptionModel = new inscriptionEnAttente();
-        $this->emailService = new emailService();
+        $this->userModel = new User();
+        $this->pendingRegistrationModel = new PendingRegistration();
+        $this->emailService = new EmailService();
     }
 
     /**
-     * CREATE - Inscription d'un nouvel utilisateur
+     * CREATE - Register a new user
+     * @param string $lastName User's last name
+     * @param string $firstName User's first name
+     * @param string $email User's email
+     * @param string $password User's password
+     * @return array Result with success status and data/error
      */
-    public function inscription($nom, $prenom, $mail, $mdp) {
-        $this->inscriptionModel->deleteExpired();
+    public function register($lastName, $firstName, $email, $password) {
+        // Clean up expired registrations
+        $this->pendingRegistrationModel->deleteExpired();
 
-        if ($this->userModel->emailExists($mail)) {
-            return ['success' => false, 'error' => 'email_existe'];
+        // Check if email already exists in users table
+        if ($this->userModel->emailExists($email)) {
+            return ['success' => false, 'error' => 'email_exists'];
         }
 
-        if ($this->inscriptionModel->emailExists($mail)) {
-            return ['success' => false, 'error' => 'attente_existe'];
+        // Check if email exists in pending registrations
+        if ($this->pendingRegistrationModel->emailExists($email)) {
+            return ['success' => false, 'error' => 'pending_exists'];
         }
 
-        $code_verif = rand(100000, 999999);
+        // Generate 6-digit verification code
+        $verificationCode = rand(100000, 999999);
 
-        if ($this->inscriptionModel->create($nom, $prenom, $mail, $mdp, $code_verif)) {
-            if ($this->emailService->envoyerCodeVerification($mail, $code_verif)) {
-                return ['success' => true, 'mail' => $mail];
+        // Create pending registration
+        if ($this->pendingRegistrationModel->create($lastName, $firstName, $email, $password, $verificationCode)) {
+            // Send verification code by email
+            if ($this->emailService->sendVerificationCode($email, $verificationCode)) {
+                return ['success' => true, 'email' => $email];
             }
-            return ['success' => false, 'error' => 'envoi_mail'];
+            return ['success' => false, 'error' => 'email_send_failed'];
         }
 
-        return ['success' => false, 'error' => 'creation_echouee'];
+        return ['success' => false, 'error' => 'creation_failed'];
     }
 
     /**
-     * CREATE - Validation du code et création de l'utilisateur
+     * CREATE - Validate verification code and create user account
+     * @param string $email User's email
+     * @param string $code Verification code
+     * @return array Result with success status and user data/error
      */
-    public function validerCode($mail, $code) {
-        $inscription = $this->inscriptionModel->findByEmail($mail);
+    public function validateCode($email, $code) {
+        $registration = $this->pendingRegistrationModel->findByEmail($email);
 
-        if (!$inscription) {
-            return ['success' => false, 'error' => 'inscription_expiree'];
+        if (!$registration) {
+            return ['success' => false, 'error' => 'registration_expired'];
         }
 
-        if ($this->inscriptionModel->verifyCode($mail, $code)) {
+        // Verify the code
+        if ($this->pendingRegistrationModel->verifyCode($email, $code)) {
+            // Create user account
             $this->userModel->create(
-                $inscription['nom'],
-                $inscription['prenom'],
-                $inscription['mail'],
-                $inscription['mdp'],
-                $inscription['code_verif'],
-                1
+                $registration['nom'],
+                $registration['prenom'],
+                $registration['mail'],
+                $registration['mdp'],
+                $registration['code_verif'],
+                1 // Email verified
             );
 
-            $this->inscriptionModel->delete($mail);
-            $user = $this->userModel->findByEmail($mail);
+            // Delete pending registration
+            $this->pendingRegistrationModel->delete($email);
+
+            // Get created user
+            $user = $this->userModel->findByEmail($email);
 
             return ['success' => true, 'user' => $user];
         }
@@ -74,98 +94,119 @@ class authController {
     }
 
     /**
-     * READ - Connexion d'un utilisateur
+     * READ - Login user
+     * @param string $email User's email
+     * @param string $password User's password
+     * @return array Result with success status and user data/error
      */
-    public function connexion($mail, $mdp) {
-        $user = $this->userModel->verifyCredentials($mail, $mdp);
+    public function login($email, $password) {
+        $user = $this->userModel->verifyCredentials($email, $password);
 
         if (!$user) {
-            if (!$this->userModel->emailExists($mail)) {
-                return ['success' => false, 'error' => 'email_existe_pas'];
+            // Check if email exists to provide specific error
+            if (!$this->userModel->emailExists($email)) {
+                return ['success' => false, 'error' => 'email_not_found'];
             }
-            return ['success' => false, 'error' => 'mdp_incorrect'];
+            return ['success' => false, 'error' => 'password_incorrect'];
         }
 
         return ['success' => true, 'user' => $user];
     }
 
     /**
-     * UPDATE - Renvoyer un code de vérification
+     * UPDATE - Resend verification code
+     * @param string $email User's email
+     * @return array Result with success status and error
      */
-    public function renvoyerCode($mail) {
-        $inscription = $this->inscriptionModel->findByEmail($mail);
+    public function resendCode($email) {
+        $registration = $this->pendingRegistrationModel->findByEmail($email);
 
-        if (!$inscription) {
-            return ['success' => false, 'error' => 'inscription_expiree'];
+        if (!$registration) {
+            return ['success' => false, 'error' => 'registration_expired'];
         }
 
-        $nouveau_code = rand(100000, 999999);
+        // Generate new verification code
+        $newCode = rand(100000, 999999);
 
-        if ($this->inscriptionModel->updateCode($mail, $nouveau_code)) {
-            if ($this->emailService->envoyerCodeVerification($mail, $nouveau_code)) {
+        // Update code in database
+        if ($this->pendingRegistrationModel->updateCode($email, $newCode)) {
+            // Send new code by email
+            if ($this->emailService->sendVerificationCode($email, $newCode)) {
                 return ['success' => true];
             }
-            return ['success' => false, 'error' => 'envoi_mail_echec'];
+            return ['success' => false, 'error' => 'email_send_failed'];
         }
 
-        return ['success' => false, 'error' => 'update_echec'];
+        return ['success' => false, 'error' => 'update_failed'];
     }
 
     /**
-     * UPDATE - Demande de réinitialisation de mot de passe
+     * UPDATE - Request password reset
+     * @param string $email User's email
+     * @return array Result with success status and error
      */
-    public function demanderResetPassword($mail) {
-        if (!$this->userModel->emailExists($mail)) {
-            return ['success' => false, 'error' => 'email_inexistant'];
+    public function requestPasswordReset($email) {
+        if (!$this->userModel->emailExists($email)) {
+            return ['success' => false, 'error' => 'email_not_found'];
         }
 
+        // Generate secure reset token
         $token = bin2hex(random_bytes(32));
         $expiration = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
-        if ($this->userModel->setResetToken($mail, $token, $expiration)) {
-            if ($this->emailService->envoyerLienReset($mail, $token)) {
+        // Save token to database
+        if ($this->userModel->setResetToken($email, $token, $expiration)) {
+            // Send reset link by email
+            if ($this->emailService->sendResetLink($email, $token)) {
                 return ['success' => true];
             }
-            return ['success' => false, 'error' => 'envoi_mail'];
+            return ['success' => false, 'error' => 'email_send_failed'];
         }
 
-        return ['success' => false, 'error' => 'update_echec'];
+        return ['success' => false, 'error' => 'update_failed'];
     }
 
     /**
-     * UPDATE - Réinitialiser le mot de passe
+     * UPDATE - Reset password with token
+     * @param string $token Reset token
+     * @param string $newPassword New password
+     * @return array Result with success status and error
      */
-    public function resetPassword($token, $nouveauMdp) {
+    public function resetPassword($token, $newPassword) {
         $user = $this->userModel->findByResetToken($token);
 
         if (!$user) {
-            return ['success' => false, 'error' => 'token_invalide'];
+            return ['success' => false, 'error' => 'token_invalid'];
         }
 
+        // Check if token is expired
         if (strtotime($user['reset_expiration']) < time()) {
-            return ['success' => false, 'error' => 'token_expire'];
+            return ['success' => false, 'error' => 'token_expired'];
         }
 
-        if ($this->userModel->updatePassword($user['id'], $nouveauMdp)) {
+        // Update password
+        if ($this->userModel->updatePassword($user['id'], $newPassword)) {
+            // Clear reset token
             $this->userModel->clearResetToken($user['id']);
             return ['success' => true];
         }
 
-        return ['success' => false, 'error' => 'update_echec'];
+        return ['success' => false, 'error' => 'update_failed'];
     }
 
     /**
-     * Créer une session pour l'utilisateur
+     * Create user session
+     * @param array $user User data
      */
     public function createSession($user) {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
+        // Store user data in session
         $_SESSION['id'] = $user['id'];
         $_SESSION['nom'] = $user['nom'];
         $_SESSION['prenom'] = $user['prenom'];
         $_SESSION['mail'] = $user['mail'];
     }
 }
-

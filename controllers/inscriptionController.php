@@ -1,9 +1,15 @@
 <?php
 require_once __DIR__ . '/baseController.php';
 
-class inscriptionController extends baseController {
+/**
+ * RegistrationController - Handles registration page display
+ */
+class RegistrationController extends BaseController {
 
+    /**
+     * Show registration view
+     */
     public function showView() {
-        $this->loadView('formulaire', ['titre' => 'inscription']);
+        $this->loadView('formulaire', ['titre' => 'registration']);
     }
 }

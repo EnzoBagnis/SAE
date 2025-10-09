@@ -2,27 +2,36 @@
 require_once __DIR__ . '/../models/database.php';
 require_once __DIR__ . '/authController.php';
 
-// Initialiser le controller
-$authController = new authController();
+/**
+ * Form Processing Script
+ * Handles all authentication-related form submissions
+ */
 
-// Fonction de connexion simplifiée
-function connexion($user) {
+// Initialize authentication controller
+$authController = new AuthController();
+
+/**
+ * Login helper function
+ * Creates session and redirects to dashboard
+ * @param array $user User data
+ */
+function loginUser($user) {
     global $authController;
     $authController->createSession($user);
     header("Location: ../views/dashboard.php");
     exit;
 }
 
-// INSCRIPTION - CREATE avec PDO
+// ========== REGISTRATION - CREATE with PDO ==========
 if(isset($_POST['ok']) && !isset($_POST['code'])){
     extract($_POST);
     
-    // CREATE - Créer une inscription en attente
-    $result = $authController->inscription($nom, $prenom, $mail, $mdp);
-    
+    // CREATE - Create pending registration
+    $result = $authController->register($nom, $prenom, $mail, $mdp);
+
     if($result['success']) {
         session_start();
-        $_SESSION['mail'] = $result['mail'];
+        $_SESSION['mail'] = $result['email'];
         header("Location: ../views/verificationMail.php?succes=inscription");
     } else {
         header("Location: ../views/formulaire.php?erreur=" . $result['error']);
@@ -30,46 +39,46 @@ if(isset($_POST['ok']) && !isset($_POST['code'])){
     exit;
 }
 
-// VALIDATION CODE - CREATE utilisateur + DELETE inscription en attente avec PDO
+// ========== CODE VALIDATION - CREATE user + DELETE pending registration with PDO ==========
 if(isset($_POST['code'])) {
     $code = $_POST['code'];
     session_start();
-    $mail = $_SESSION['mail'];
-    
-    // CREATE utilisateur + DELETE inscription
-    $result = $authController->validerCode($mail, $code);
-    
+    $email = $_SESSION['mail'];
+
+    // CREATE user account + DELETE pending registration
+    $result = $authController->validateCode($email, $code);
+
     if($result['success']) {
-        connexion($result['user']);
+        loginUser($result['user']);
     } else {
         header("Location: ../views/verificationMail.php?erreur=" . $result['error']);
     }
     exit;
 }
 
-// CONNEXION - READ avec PDO
+// ========== LOGIN - READ with PDO ==========
 if(isset($_POST['connexion'])){
     extract($_POST);
     session_start();
     
-    // READ - Vérifier les credentials
-    $result = $authController->connexion($mail, $mdp);
-    
+    // READ - Verify user credentials
+    $result = $authController->login($mail, $mdp);
+
     if($result['success']) {
-        connexion($result['user']);
+        loginUser($result['user']);
     } else {
         header("Location: ../views/connexion.php?erreur=" . $result['error']);
     }
     exit;
 }
 
-// FORGOT PASSWORD - UPDATE avec PDO
+// ========== FORGOT PASSWORD - UPDATE with PDO ==========
 if(isset($_POST['forgot_password'])) {
-    $mail = trim($_POST['mail']);
-    
-    // UPDATE - Créer un token de reset
-    $result = $authController->demanderResetPassword($mail);
-    
+    $email = trim($_POST['mail']);
+
+    // UPDATE - Create reset token
+    $result = $authController->requestPasswordReset($email);
+
     if($result['success']) {
         header("Location: ../views/connexion.php?succes=reset_envoye");
     } else {
@@ -78,7 +87,7 @@ if(isset($_POST['forgot_password'])) {
     exit;
 }
 
-// RENVOYER CODE - UPDATE avec PDO
+// ========== RESEND CODE - UPDATE with PDO ==========
 if(isset($_POST['renvoyer_code'])) {
     session_start();
     
@@ -87,30 +96,15 @@ if(isset($_POST['renvoyer_code'])) {
         exit;
     }
     
-    $mail = $_SESSION['mail'];
-    
-    // UPDATE - Mettre à jour le code de vérification
-    $result = $authController->renvoyerCode($mail);
-    
+    $email = $_SESSION['mail'];
+
+    // UPDATE - Update verification code
+    $result = $authController->resendCode($email);
+
     if($result['success']) {
         header("Location: ../views/verificationMail.php?succes=code_renvoye");
     } else {
         header("Location: ../views/verificationMail.php?erreur=" . $result['error']);
-    }
-    exit;
-}
-
-// RESET PASSWORD - UPDATE avec PDO
-if(isset($_POST['reset_password'])) {
-    extract($_POST);
-    
-    // UPDATE - Réinitialiser le mot de passe
-    $result = $authController->resetPassword($token, $nouveau_mdp);
-    
-    if($result['success']) {
-        header("Location: ../views/connexion.php?succes=mdp_reinitialise");
-    } else {
-        header("Location: ../views/connexion.php?erreur=" . $result['error']);
     }
     exit;
 }

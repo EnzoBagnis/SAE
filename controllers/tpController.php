@@ -1,25 +1,28 @@
 <?php
 session_start();
 
-// Vérifier que l'utilisateur est connecté
+// Check if user is authenticated
 if (!isset($_SESSION['id'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'Non authentifié']);
+    outputJson(['error' => 'Not authenticated']);
     exit;
 }
 
-header('Content-Type: application/json');
-
-// Fonction pour récupérer les TPs avec pagination
-function getTPs($page = 1, $perPage = 10) {
+/**
+ * Get workshops with pagination
+ * @param int $page Current page number
+ * @param int $perPage Number of workshops per page
+ * @return array Workshops data with pagination info
+ */
+function getWorkshops($page = 1, $perPage = 10) {
     $offset = ($page - 1) * $perPage;
-    $tps = [];
+    $workshops = [];
 
-    // Génération de TPs simples pour l'exemple (total de 50 TPs)
-    $totalTPs = 50;
+    // Generate sample workshops (total of 50 workshops)
+    $totalWorkshops = 50;
 
-    for ($i = $offset + 1; $i <= min($offset + $perPage, $totalTPs); $i++) {
-        $tps[] = [
+    for ($i = $offset + 1; $i <= min($offset + $perPage, $totalWorkshops); $i++) {
+        $workshops[] = [
             'id' => $i,
             'title' => "TP $i",
             'userId' => $_SESSION['id']
@@ -27,43 +30,53 @@ function getTPs($page = 1, $perPage = 10) {
     }
 
     return [
-        'tps' => $tps,
-        'total' => $totalTPs,
+        'tps' => $workshops,
+        'total' => $totalWorkshops,
         'page' => $page,
         'perPage' => $perPage,
-        'hasMore' => ($offset + $perPage) < $totalTPs
+        'hasMore' => ($offset + $perPage) < $totalWorkshops
     ];
 }
 
-// Router simple
+/**
+ * Output JSON response (centralized json_encode)
+ */
+function outputJson($data) {
+    header('Content-Type: application/json');
+    echo json_encode($data);
+}
+
+// Simple API router
 $action = $_GET['action'] ?? 'list';
 
 try {
     switch ($action) {
         case 'list':
+            // Get workshops list with pagination
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $perPage = isset($_GET['perPage']) ? (int)$_GET['perPage'] : 10;
 
-            $result = getTPs($page, $perPage);
-            echo json_encode(['success' => true, 'data' => $result]);
+            $result = getWorkshops($page, $perPage);
+            outputJson(['success' => true, 'data' => $result]);
             break;
 
         case 'get':
-            $tpId = $_GET['id'] ?? null;
-            if (!$tpId) {
+            // Get single workshop by ID
+            $workshopId = $_GET['id'] ?? null;
+            if (!$workshopId) {
                 http_response_code(400);
-                echo json_encode(['error' => 'ID du TP manquant']);
+                outputJson(['error' => 'Workshop ID missing']);
                 exit;
             }
-            echo json_encode(['success' => true, 'data' => ['id' => $tpId, 'title' => "TP $tpId"]]);
+            outputJson(['success' => true, 'data' => ['id' => $workshopId, 'title' => "TP $workshopId"]]);
             break;
 
         default:
             http_response_code(400);
-            echo json_encode(['error' => 'Action non valide']);
+            outputJson(['error' => 'Invalid action']);
             break;
     }
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Erreur serveur', 'message' => $e->getMessage()]);
+    outputJson(['error' => 'Server error', 'message' => $e->getMessage()]);
 }

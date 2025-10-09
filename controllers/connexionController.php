@@ -1,9 +1,15 @@
 <?php
 require_once __DIR__ . '/baseController.php';
 
-class connexionController extends baseController {
+/**
+ * LoginController - Handles login page display
+ */
+class LoginController extends BaseController {
 
+    /**
+     * Show login view
+     */
     public function showView() {
-        $this->loadView('connexion', ['titre' => 'connexion']);
+        $this->loadView('connexion', ['titre' => 'login']);
     }
 }

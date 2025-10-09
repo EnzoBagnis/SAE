@@ -1,17 +1,27 @@
 <?php
-class database {
+/**
+ * Database class - Database connection manager
+ * Handles PDO connection with configuration from .env file
+ */
+class Database {
+
+    /**
+     * Get PDO database connection
+     * @return PDO Database connection instance
+     */
     public static function getConnection() {
+        // Load environment variables from .env file
         $env = parse_ini_file(__DIR__ . '/../../config/.env');
 
-        $servername = $env['DB_HOST'];
+        $serverName = $env['DB_HOST'];
         $username = $env['DB_USER'];
         $password = $env['DB_PASS'];
-        $dbname = $env['DB_NAME'];
+        $databaseName = $env['DB_NAME'];
 
         try {
-
-            $bdd = new PDO(
-                "mysql:host=$servername;dbname=$dbname;charset=utf8mb4",
+            // Create PDO connection with UTF-8 charset
+            $pdo = new PDO(
+                "mysql:host=$serverName;dbname=$databaseName;charset=utf8mb4",
                 $username,
                 $password,
                 [
@@ -19,9 +29,9 @@ class database {
                     PDO::ATTR_PERSISTENT => false
                 ]
             );
-            return $bdd;
+            return $pdo;
         } catch (PDOException $e) {
-            die("Erreur de connexion : " . $e->getMessage());
+            die("Connection error: " . $e->getMessage());
         }
     }
 }
