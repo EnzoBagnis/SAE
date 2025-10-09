@@ -8,6 +8,10 @@
     <title>StudTraj - Mentions légales</title>
     <link rel="stylesheet" href="../public/css/style.css">
     <link rel="stylesheet" href="../public/css/mentions-legales.css">
+    <!-- SEO Meta Tags -->
+    <meta name="mentions-legales" content="Je vous assure qu’on est ici en toute légalité.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/mentions-legales.php">
 </head>
 <body>
     <a href="dashboard.php" class="back-arrow">←</a>
