@@ -5,8 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
-    <meta name="description" content="Ceci est une meta description">
-    <title>StudTraj - Inscription</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Créez votre compte StudTraj gratuitement et commencez à suivre votre trajectoire étudiante. Inscription simple et rapide.">
+    <meta name="keywords" content="inscription studtraj, créer compte étudiant, inscription gratuite">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/formulaire.php">
+
+    <title>Inscription gratuite - StudTraj | Créez votre compte étudiant</title>
     <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>

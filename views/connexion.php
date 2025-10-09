@@ -5,8 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
-    <meta name="description" content="Ceci est une meta description">
-    <title>StudTraj - Connexion</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Connectez-vous à votre compte StudTraj pour accéder à votre suivi de trajectoire étudiante et gérer votre parcours académique.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/connexion.php">
+
+    <title>Connexion - StudTraj | Accédez à votre compte</title>
     <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>

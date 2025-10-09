@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /config/
+Disallow: /controllers/
+Disallow: /models/
+Disallow: /cron/
+Disallow: /phpmailer/
+
+Sitemap: http://studtraj.alwaysdata.net/sitemap.xml
