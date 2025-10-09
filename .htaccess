@@ -99,4 +99,6 @@ AddCharset UTF-8 .html .css .js .xml .json .rss .atom
     AddType text/css css
     AddType image/svg+xml svg
     AddType application/font-woff2 woff2
+    AddType application/xml xml
+    AddType text/xml xml
 </IfModule>
