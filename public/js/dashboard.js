@@ -1,7 +1,7 @@
 // Variables globales
 let currentTPId = null;
 let currentPage = 1;
-const TPsPerPage = 10;
+const TPsPerPage = 15;
 let isLoading = false;
 let hasMoreTPs = true;
 let allTPs = []; // Stockage de tous les TPs pour le menu burger
