@@ -14,6 +14,10 @@ if(empty($token)) {
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>Réinitialiser le mot de passe - StudTraj</title>
     <link rel="stylesheet" href="../public/css/style.css">
+    <!-- SEO Meta Tags -->
+    <meta name="resetPassword" content="Tout est dans le nom, mais pour les non anglophones c'est ici pour changer son mot de passe.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/resetPassword.php">
 </head>
 <body>
 
