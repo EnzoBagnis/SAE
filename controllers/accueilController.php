@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/baseController.php';
+require_once __DIR__ . '/BaseController.php';
 
 /**
  * HomeController - Handles home page routing

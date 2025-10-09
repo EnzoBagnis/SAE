@@ -19,11 +19,11 @@ class Router {
                 break;
                 
             case 'signup':
-                $this->loadController('inscriptionController', 'showView');
+                $this->loadController('RegistrationController', 'showView');
                 break;
 
             case 'login':
-                $this->loadController('connexionController', 'showView');
+                $this->loadController('LoginController', 'showView');
                 break;
 
             case 'home2':
@@ -31,7 +31,7 @@ class Router {
                 break;
 
             case 'emailverification':
-                $this->loadController('mailVerifController', 'showView');
+                $this->loadController('EmailVerificationController', 'showView');
                 break;
                 
             default:

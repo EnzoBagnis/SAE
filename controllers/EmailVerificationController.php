@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/baseController.php';
+require_once __DIR__ . '/BaseController.php';
 
 /**
  * EmailVerificationController - Handles email verification page display

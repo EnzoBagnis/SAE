@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../models/database.php';
-require_once __DIR__ . '/authController.php';
+require_once __DIR__ . '/AuthController.php';
 
 /**
  * Form Processing Script
