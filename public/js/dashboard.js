@@ -4,6 +4,7 @@ let currentPage = 1;
 const TPsPerPage = 10;
 let isLoading = false;
 let hasMoreTPs = true;
+let allTPs = []; // Stockage de tous les TPs pour le menu burger
 
 // Fonction de confirmation de déconnexion
 function confirmLogout() {
@@ -32,6 +33,7 @@ window.onclick = function(event) {
 document.addEventListener('DOMContentLoaded', function() {
     loadTPs();
     setupInfiniteScroll();
+    loadBurgerTPs(); // Charger les TPs pour le menu burger
 });
 
 // Fonction pour charger la liste des TPs depuis le serveur
@@ -102,6 +104,11 @@ function displayTPs(tps) {
     }
 
     tps.forEach(function(tp) {
+        // Stocker dans la liste globale pour le menu burger
+        if (!allTPs.find(t => t.id === tp.id)) {
+            allTPs.push(tp);
+        }
+
         const tpItem = document.createElement('div');
         tpItem.className = 'tp-item';
         tpItem.dataset.tpId = tp.id;
@@ -116,6 +123,9 @@ function displayTPs(tps) {
 
         tpList.appendChild(tpItem);
     });
+
+    // Mettre à jour le menu burger avec les nouveaux TPs
+    updateBurgerTPList();
 }
 
 // Configuration du scroll infini
@@ -140,7 +150,7 @@ function setupInfiniteScroll() {
 function selectTP(tpId) {
     currentTPId = tpId;
 
-    // Mettre à jour l'état actif des éléments
+    // Mettre à jour l'état actif des éléments dans la sidebar
     document.querySelectorAll('.tp-item').forEach(function(item) {
         item.classList.remove('active');
     });
@@ -149,6 +159,14 @@ function selectTP(tpId) {
     if (selectedItem) {
         selectedItem.classList.add('active');
     }
+
+    // Mettre à jour le menu burger
+    document.querySelectorAll('#burgerTPList a').forEach(function(link) {
+        link.classList.remove('active');
+        if (link.dataset.tpId == tpId) {
+            link.classList.add('active');
+        }
+    });
 
     // Charger et afficher le contenu du TP
     loadTPContent(tpId);
@@ -198,3 +216,115 @@ async function loadTPContent(tpId) {
     }
 }
 
+// ========== FONCTIONS MENU BURGER ==========
+
+// Toggle du menu burger
+function toggleBurgerMenu() {
+    const burgerNav = document.getElementById('burgerNav');
+    const burgerBtn = document.getElementById('burgerBtn');
+    const body = document.body;
+
+    burgerNav.classList.toggle('active');
+    burgerBtn.classList.toggle('active');
+
+    // Créer/supprimer l'overlay
+    let overlay = document.querySelector('.burger-overlay');
+    if (burgerNav.classList.contains('active')) {
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'burger-overlay active';
+            overlay.onclick = closeBurgerMenu;
+            body.appendChild(overlay);
+        } else {
+            overlay.classList.add('active');
+        }
+        body.style.overflow = 'hidden';
+    } else {
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+        body.style.overflow = '';
+    }
+}
+
+// Fermer le menu burger
+function closeBurgerMenu() {
+    const burgerNav = document.getElementById('burgerNav');
+    const burgerBtn = document.getElementById('burgerBtn');
+    const overlay = document.querySelector('.burger-overlay');
+
+    burgerNav.classList.remove('active');
+    burgerBtn.classList.remove('active');
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+    document.body.style.overflow = '';
+}
+
+// Toggle du sous-menu des TPs
+function toggleTPSubmenu(event) {
+    event.preventDefault();
+    const submenu = document.getElementById('burgerTPList');
+    const arrow = event.currentTarget.querySelector('.submenu-arrow');
+
+    submenu.classList.toggle('active');
+    arrow.classList.toggle('rotated');
+}
+
+// Charger tous les TPs pour le menu burger
+async function loadBurgerTPs() {
+    try {
+        // Charger tous les TPs (on peut limiter à 50 pour l'exemple)
+        const response = await fetch('../controllers/tpController.php?action=list&page=1&perPage=50');
+
+        if (!response.ok) {
+            throw new Error('Erreur lors du chargement des TPs');
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+            allTPs = result.data.tps;
+            updateBurgerTPList();
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des TPs pour le menu burger:', error);
+    }
+}
+
+// Mettre à jour la liste des TPs dans le menu burger
+function updateBurgerTPList() {
+    const burgerTPList = document.getElementById('burgerTPList');
+
+    if (!burgerTPList) return;
+
+    burgerTPList.innerHTML = '';
+
+    if (allTPs.length === 0) {
+        const emptyItem = document.createElement('li');
+        emptyItem.innerHTML = '<a href="#" style="color: #95a5a6; cursor: default;">Aucun TP disponible</a>';
+        burgerTPList.appendChild(emptyItem);
+        return;
+    }
+
+    allTPs.forEach(function(tp) {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = tp.title;
+        link.dataset.tpId = tp.id;
+
+        if (tp.id === currentTPId) {
+            link.classList.add('active');
+        }
+
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            selectTP(tp.id);
+            closeBurgerMenu();
+        });
+
+        li.appendChild(link);
+        burgerTPList.appendChild(li);
+    });
+}
