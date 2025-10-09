@@ -3,6 +3,7 @@
     display: flex;
     height: calc(100vh - 80px);
     margin-top: 80px;
+    overflow: hidden;
 }
 
 /* Top Menu */
@@ -76,7 +77,10 @@
     background: #ecf0f1;
     padding: 2rem;
     overflow-y: auto;
+    overflow-x: hidden;
     border-right: 1px solid #bdc3c7;
+    height: 100%;
+    flex-shrink: 0;
 }
 
 .sidebar h2 {
@@ -94,15 +98,16 @@
 
 .tp-item {
     background: white;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     border-radius: 6px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid transparent;
 }
 
 .tp-item:hover {
-    transform: translateY(-2px);
+    transform: translateX(5px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
@@ -111,12 +116,20 @@
     background: #e8f4f8;
 }
 
+.tp-item h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
 /* Main Content */
 .main-content {
     flex: 1;
     padding: 2rem;
     overflow-y: auto;
     background: #f8f9fa;
+    height: 100%;
 }
 
 .data-zone {
@@ -127,11 +140,50 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.data-zone h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+}
+
+.data-zone p {
+    line-height: 1.6;
+}
+
 .placeholder-message {
     text-align: center;
     color: #7f8c8d;
     font-size: 1.2rem;
     margin-top: 3rem;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 2rem;
+    color: #3498db;
+}
+
+/* Scrollbar styling */
+.sidebar::-webkit-scrollbar,
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.main-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 
 /* Modal */
@@ -204,7 +256,7 @@
 
     .sidebar {
         width: 100%;
-        max-height: 300px;
+        max-height: 200px;
     }
 
     .top-menu {
@@ -214,13 +266,7 @@
     }
 
     .nav-menu {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .dashboard-container {
-        margin-top: 150px;
-        height: calc(100vh - 150px);
+        flex-direction: column;
+        gap: 0.5rem;
     }
 }
-
