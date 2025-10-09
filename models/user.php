@@ -1,19 +1,26 @@
 <?php
 /**
- * Model user - Gestion CRUD des utilisateurs avec PDO
+ * User Model - CRUD operations for users with PDO
  */
-class user {
+class User {
     private $pdo;
 
     public function __construct() {
-        $this->pdo = database::getConnection();
+        $this->pdo = Database::getConnection();
     }
 
     /**
-     * CREATE - Créer un nouvel utilisateur
+     * CREATE - Create a new user
+     * @param string $lastName User's last name
+     * @param string $firstName User's first name
+     * @param string $email User's email address
+     * @param string $password User's password (will be hashed)
+     * @param string|null $verificationCode Verification code for email
+     * @param int $isVerified Whether email is verified (0 or 1)
+     * @return bool Success status
      */
-    public function create($nom, $prenom, $mail, $mdp, $code_verif = null, $verifie = 0) {
-        $hashedPassword = password_hash($mdp, PASSWORD_DEFAULT);
+    public function create($lastName, $firstName, $email, $password, $verificationCode = null, $isVerified = 0) {
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt = $this->pdo->prepare(
             "INSERT INTO utilisateurs (nom, prenom, mdp, mail, code_verif, verifie) 
@@ -21,26 +28,30 @@ class user {
         );
 
         return $stmt->execute([
-            'nom' => $nom,
-            'prenom' => $prenom,
+            'nom' => $lastName,
+            'prenom' => $firstName,
             'mdp' => $hashedPassword,
-            'mail' => $mail,
-            'code_verif' => $code_verif,
-            'verifie' => $verifie
+            'mail' => $email,
+            'code_verif' => $verificationCode,
+            'verifie' => $isVerified
         ]);
     }
 
     /**
-     * READ - Trouver un utilisateur par email
+     * READ - Find a user by email
+     * @param string $email User's email address
+     * @return array|false User data or false if not found
      */
-    public function findByEmail($mail) {
+    public function findByEmail($email) {
         $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE mail = :mail");
-        $stmt->execute(['mail' => $mail]);
+        $stmt->execute(['mail' => $email]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
-     * READ - Trouver un utilisateur par ID
+     * READ - Find a user by ID
+     * @param int $id User's ID
+     * @return array|false User data or false if not found
      */
     public function findById($id) {
         $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE id = :id");
@@ -49,16 +60,20 @@ class user {
     }
 
     /**
-     * READ - Vérifier si un email existe
+     * READ - Check if an email exists
+     * @param string $email Email to check
+     * @return bool True if email exists, false otherwise
      */
-    public function emailExists($mail) {
+    public function emailExists($email) {
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM utilisateurs WHERE mail = :mail");
-        $stmt->execute(['mail' => $mail]);
+        $stmt->execute(['mail' => $email]);
         return $stmt->fetchColumn() > 0;
     }
 
     /**
-     * READ - Trouver un utilisateur par token de reset
+     * READ - Find a user by reset token
+     * @param string $token Reset token
+     * @return array|false User data or false if not found
      */
     public function findByResetToken($token) {
         $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE reset_token = :token");
@@ -67,10 +82,13 @@ class user {
     }
 
     /**
-     * UPDATE - Mettre à jour le mot de passe
+     * UPDATE - Update user's password
+     * @param int $id User's ID
+     * @param string $newPassword New password (will be hashed)
+     * @return bool Success status
      */
-    public function updatePassword($id, $nouveauMdp) {
-        $hashedPassword = password_hash($nouveauMdp, PASSWORD_DEFAULT);
+    public function updatePassword($id, $newPassword) {
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
         $stmt = $this->pdo->prepare("UPDATE utilisateurs SET mdp = :mdp WHERE id = :id");
         return $stmt->execute([
@@ -80,9 +98,13 @@ class user {
     }
 
     /**
-     * UPDATE - Définir le token de réinitialisation
+     * UPDATE - Set password reset token
+     * @param string $email User's email
+     * @param string $token Reset token
+     * @param string $expiration Token expiration date
+     * @return bool Success status
      */
-    public function setResetToken($mail, $token, $expiration) {
+    public function setResetToken($email, $token, $expiration) {
         $stmt = $this->pdo->prepare(
             "UPDATE utilisateurs 
              SET reset_token = :token, reset_expiration = :expiration 
@@ -92,12 +114,14 @@ class user {
         return $stmt->execute([
             'token' => $token,
             'expiration' => $expiration,
-            'mail' => $mail
+            'mail' => $email
         ]);
     }
 
     /**
-     * UPDATE - Réinitialiser le token de reset
+     * UPDATE - Clear password reset token
+     * @param int $id User's ID
+     * @return bool Success status
      */
     public function clearResetToken($id) {
         $stmt = $this->pdo->prepare(
@@ -110,9 +134,14 @@ class user {
     }
 
     /**
-     * UPDATE - Mettre à jour les informations de l'utilisateur
+     * UPDATE - Update user information
+     * @param int $id User's ID
+     * @param string $lastName User's last name
+     * @param string $firstName User's first name
+     * @param string $email User's email
+     * @return bool Success status
      */
-    public function update($id, $nom, $prenom, $mail) {
+    public function update($id, $lastName, $firstName, $email) {
         $stmt = $this->pdo->prepare(
             "UPDATE utilisateurs 
              SET nom = :nom, prenom = :prenom, mail = :mail 
@@ -120,15 +149,17 @@ class user {
         );
 
         return $stmt->execute([
-            'nom' => $nom,
-            'prenom' => $prenom,
-            'mail' => $mail,
+            'nom' => $lastName,
+            'prenom' => $firstName,
+            'mail' => $email,
             'id' => $id
         ]);
     }
 
     /**
-     * DELETE - Supprimer un utilisateur
+     * DELETE - Delete a user
+     * @param int $id User's ID
+     * @return bool Success status
      */
     public function delete($id) {
         $stmt = $this->pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
@@ -136,20 +167,23 @@ class user {
     }
 
     /**
-     * Vérifier les credentials pour la connexion
+     * Verify user credentials for login
+     * @param string $email User's email
+     * @param string $password User's password
+     * @return array|false User data if valid, false otherwise
      */
-    public function verifyCredentials($mail, $mdp) {
-        $user = $this->findByEmail($mail);
+    public function verifyCredentials($email, $password) {
+        $user = $this->findByEmail($email);
 
         if (!$user) {
             return false;
         }
 
-        if (password_verify($mdp, $user['mdp'])) {
+        // Verify password hash
+        if (password_verify($password, $user['mdp'])) {
             return $user;
         }
 
         return false;
     }
 }
-

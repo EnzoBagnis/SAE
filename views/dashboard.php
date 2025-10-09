@@ -24,6 +24,14 @@ if (!isset($_SESSION['id'])) {
         <div class="logo">
             <h1>StudTraj</h1>
         </div>
+
+        <!-- Bouton burger pour mobile -->
+        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
         <nav class="nav-menu">
             <a href="dashboard.php" class="active">Tableau de bord</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
@@ -34,6 +42,29 @@ if (!isset($_SESSION['id'])) {
             <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
         </div>
     </header>
+
+    <!-- Menu burger mobile -->
+    <nav class="burger-nav" id="burgerNav">
+        <div class="burger-nav-content">
+            <div class="burger-user-info">
+                <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
+            </div>
+            <ul class="burger-menu-list">
+                <li><a href="dashboard.php" class="burger-link active">Tableau de bord</a></li>
+                <li class="has-submenu">
+                    <a href="#" class="burger-link" onclick="toggleTPSubmenu(event)">
+                        Liste des TP's
+                        <span class="submenu-arrow">▼</span>
+                    </a>
+                    <ul class="burger-submenu" id="burgerTPList">
+                        <!-- Les TPs seront chargés ici dynamiquement -->
+                    </ul>
+                </li>
+                <li><a href="mentions-legales.php" class="burger-link">Mentions légales</a></li>
+                <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <div class="dashboard-container">
         <!-- Sidebar gauche pour les TPs -->
@@ -72,4 +103,3 @@ if (!isset($_SESSION['id'])) {
 
 </body>
 </html>
-

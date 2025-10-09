@@ -1,9 +1,17 @@
 <?php
+/**
+ * Cleanup Cron Job Script
+ * Automatically deletes expired pending registrations (older than 15 minutes)
+ * Should be run periodically via cron job
+ */
+
 require_once __DIR__ . '/../models/database.php';
 require_once __DIR__ . '/../models/inscriptionEnAttente.php';
 
-// Nettoyage automatique des inscriptions expirées (>15 minutes)
-$inscriptionModel = new inscriptionEnAttente();
-$inscriptionModel->deleteExpired();
+// Initialize pending registration model
+$pendingRegistrationModel = new PendingRegistration();
 
-echo "Nettoyage effectué : inscriptions expirées supprimées.";
+// Delete all expired registrations
+$pendingRegistrationModel->deleteExpired();
+
+echo "Cleanup completed: expired registrations deleted.";

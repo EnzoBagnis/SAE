@@ -7,21 +7,25 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 /**
- * Service emailService - Gestion de l'envoi d'emails
+ * EmailService class - Email sending service
+ * Handles email sending with PHPMailer
  */
-class emailService {
+class EmailService {
     private $env;
     
     public function __construct() {
+        // Load email configuration from .env file
         $this->env = parse_ini_file(__DIR__ . '/../../config/.env');
     }
     
     /**
-     * Configurer PHPMailer avec les paramètres SMTP
+     * Configure PHPMailer with SMTP settings
+     * @return PHPMailer Configured PHPMailer instance
      */
     private function configureMail() {
         $mail = new PHPMailer(true);
         
+        // SMTP configuration
         $mail->isSMTP();
         $mail->Host       = $this->env['MAIL_HOST'];
         $mail->SMTPAuth   = true;
@@ -31,22 +35,27 @@ class emailService {
         $mail->Port       = $this->env['MAIL_PORT'];
         $mail->CharSet    = 'UTF-8';
         
+        // Set sender information
         $mail->setFrom($this->env['MAIL_USERNAME'], $this->env['MAIL_FROM_NAME']);
         
         return $mail;
     }
     
     /**
-     * Envoyer un email de vérification avec code
+     * Send verification code email
+     * @param string $recipient Email recipient
+     * @param string $verificationCode Verification code to send
+     * @return bool Success status
      */
-    public function envoyerCodeVerification($destinataire, $code_verif) {
+    public function sendVerificationCode($recipient, $verificationCode) {
         try {
             $mail = $this->configureMail();
-            $mail->addAddress($destinataire);
-            
+            $mail->addAddress($recipient);
+
+            // Email content
             $mail->Subject = 'Code de vérification - StudTraj';
             $mail->Body    = "Bonjour,\n\n";
-            $mail->Body   .= "Votre code de vérification est : $code_verif\n\n";
+            $mail->Body   .= "Votre code de vérification est : $verificationCode\n\n";
             $mail->Body   .= "Cordialement,\n";
             $mail->Body   .= "L'équipe StudTraj";
             
@@ -54,29 +63,33 @@ class emailService {
             return true;
             
         } catch (Exception $e) {
-            error_log("Erreur envoi mail : " . $mail->ErrorInfo);
+            error_log("Email sending error: " . $mail->ErrorInfo);
             return false;
         }
     }
 
     /**
-     * Envoyer un email de réinitialisation de mot de passe
+     * Send password reset link email
+     * @param string $recipient Email recipient
+     * @param string $token Reset token
+     * @return bool Success status
      */
-    public function envoyerLienReset($destinataire, $token) {
+    public function sendResetLink($recipient, $token) {
         try {
             $mail = $this->configureMail();
-            $mail->addAddress($destinataire);
+            $mail->addAddress($recipient);
 
-            // Générer l'URL du lien de réinitialisation
+            // Generate reset link URL
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
             $host = $_SERVER['HTTP_HOST'];
-            $lien = $protocol . "://" . $host . "/views/resetPassword.php?token=" . $token;
+            $resetLink = $protocol . "://" . $host . "/views/resetPassword.php?token=" . $token;
 
+            // Email content
             $mail->Subject = 'Réinitialisation de mot de passe - StudTraj';
             $mail->Body    = "Bonjour,\n\n";
             $mail->Body   .= "Vous avez demandé à réinitialiser votre mot de passe sur StudTraj.\n\n";
             $mail->Body   .= "Cliquez sur le lien suivant pour créer un nouveau mot de passe :\n";
-            $mail->Body   .= $lien . "\n\n";
+            $mail->Body   .= $resetLink . "\n\n";
             $mail->Body   .= "Ce lien est valable pendant 1 heure.\n\n";
             $mail->Body   .= "Si vous n'avez pas demandé cette réinitialisation, ignorez ce message.\n\n";
             $mail->Body   .= "Cordialement,\n";
@@ -86,7 +99,7 @@ class emailService {
             return true;
 
         } catch (Exception $e) {
-            error_log("Erreur envoi mail reset : " . $mail->ErrorInfo);
+            error_log("Reset email sending error: " . $mail->ErrorInfo);
             return false;
         }
     }
