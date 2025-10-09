@@ -27,12 +27,12 @@
 
     <?php
     // Afficher les messages d'erreur ou de succès
-    if (isset($_GET['erreur'])) {
-        switch($_GET['erreur']) {
-            case 'email_existe_pas':
+    if (isset($_GET['error'])) {
+        switch($_GET['error']) {
+            case 'email_not_found':
                 echo '<div class="error">Cet email n\'existe pas !</div>';
                 break;
-            case 'mdp_incorrect':
+            case 'password_incorrect':
                 echo '<div class="error">Mot de passe incorrect</div>';
                 break;
             case 'insertion':
@@ -62,10 +62,10 @@
     <form class="card" method="POST" action="../controllers/traitement.php">
 
         <label for="mail">Email</label>
-        <input type="email" id="mail" name="mail" placeholder="Valeur" required><br>
+        <input type="email" id="mail" name="mail" placeholder="Entrez votre mail..." required><br>
 
         <label for="mdp">Mot de passe</label>
-        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required><br>
+        <input type="password" id="mdp" name="mdp" placeholder="Entrez votre mot de passe..." required><br>
 
         <button type="submit" class="btn-submit" name="connexion">Connexion</button>
 

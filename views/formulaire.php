@@ -28,18 +28,18 @@
 
 <?php
 // Afficher les messages d'erreur ou de succés
-if (isset($_GET['erreur'])) {
-    switch($_GET['erreur']) {
-        case 'email_existe':
+if (isset($_GET['error'])) {
+    switch($_GET['error']) {
+        case 'email_exists':
             echo '<div class="error">Cet email est déjà utilisé !</div>';
             break;
-        case 'attente_existe':
+        case 'pending_exists':
             echo '<div class="error">Un code de vérification a déjà été envoyé à cet email</div>';
             break;
-        case 'insertion':
+        case 'creation_failed':
             echo '<div class="error">Erreur lors de l\'inscription</div>';
             break;
-        case 'envoi_mail':
+        case 'email_send_failed':
             echo '<div class="error">Erreur lors de l\'envoi de l\'email</div>';
             break;
     }

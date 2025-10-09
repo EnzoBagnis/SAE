@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>Mot de passe oublié - StudTraj</title>
     <link rel="stylesheet" href="../public/css/style.css">
@@ -13,8 +13,8 @@
 <div class="page-wrap">
 
     <?php
-    if (isset($_GET['erreur'])) {
-        switch($_GET['erreur']) {
+    if (isset($_GET['error'])) {
+        switch($_GET['error']) {
             case 'email_inexistant':
                 echo '<div class="error">Aucun compte trouvé avec cet email.</div>';
                 break;

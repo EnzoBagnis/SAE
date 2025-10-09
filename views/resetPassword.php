@@ -8,9 +8,9 @@ if(empty($token)) {
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>Réinitialiser le mot de passe - StudTraj</title>
     <link rel="stylesheet" href="../public/css/style.css">
@@ -28,6 +28,7 @@ if(empty($token)) {
         <input type="password"
                name="nouveau_mdp"
                id="password"
+               placeholder="Minimum 6 caractères"
                required>
 
         <label for="confirm_password">Confirmer le mot de passe</label>
