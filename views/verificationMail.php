@@ -10,6 +10,10 @@ session_start();
     <meta name="description" content="Vérification de votre email">
     <title>StudTraj - Vérification Email</title>
     <link rel="stylesheet" href="../public/css/style.css">
+    <!-- SEO Meta Tags -->
+    <meta name="verificationMail" content="Hop hop hop, contrôle d'identité. Donnez-nous votre code reçu par mail pour que nous puissions vous valider.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/verificationMail.php">
 </head>
 <body>
 
