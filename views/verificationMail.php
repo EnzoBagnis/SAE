@@ -9,7 +9,7 @@ session_start();
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <meta name="description" content="Vérification de votre email">
     <title>StudTraj - Vérification Email</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
 

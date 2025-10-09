@@ -1,23 +1,9 @@
 <?php
-class accueil2Controller {
-    
+require_once __DIR__ . '/baseController.php';
+
+class accueil2Controller extends baseController {
+
     public function showView() {
-        $titre = "Accueil2";
-        
-        $this->loadView('page2', [
-            'titre' => $titre
-        ]);
-    }
-    
-    protected function loadView($viewName, $data = []) {
-        extract($data);
-        
-        $viewFile = __DIR__ . '/../views/' . $viewName . '.php';
-        
-        if (file_exists($viewFile)) {
-            require $viewFile;
-        } else {
-            die("Vue $viewName introuvable. Chemin testé: $viewFile");
-        }
+        $this->loadView('page2', ['titre' => 'Accueil2']);
     }
 }
