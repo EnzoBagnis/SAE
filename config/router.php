@@ -15,6 +15,12 @@ class Router {
         switch($action) {
             case 'index':
             case 'home':
+                // Redirect to public home page
+                header('Location: index.html');
+                exit;
+                break;
+
+            case 'dashboard':
                 $this->loadController('HomeController', 'index');
                 break;
                 
@@ -36,7 +42,8 @@ class Router {
                 
             default:
                 // Fallback to home page
-                $this->loadController('accueilController', 'index');
+                header('Location: index.html');
+                exit;
                 break;
         }
     }
