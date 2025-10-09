@@ -2,16 +2,25 @@
 
 body {
     background-color: #f5f5f5;
-    padding: 20px;
+    margin: 0;
+    padding: 0;
 }
 
+/* Ajustement pour le header fixe */
 .legal-container {
     max-width: 900px;
-    margin: 50px auto;
+    margin: 0 auto;
+    margin-top: 100px; /* Espace pour le header fixe */
+    margin-bottom: 50px;
     background-color: white;
     padding: 3rem;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustement pour les utilisateurs non connectés */
+body:not(.logged-in) .legal-container {
+    margin-top: 50px;
 }
 
 .legal-container h1 {
@@ -57,6 +66,7 @@ body {
 .back-link {
     text-align: center;
     margin-top: 2rem;
+    margin-bottom: 2rem;
 }
 
 .btn-back {
@@ -73,11 +83,42 @@ body {
     background-color: #1a252f;
 }
 
+/* Style pour la flèche retour (utilisateurs non connectés) */
+.back-arrow {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 2rem;
+    color: #2c3e50;
+    text-decoration: none;
+    background: white;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 999;
+}
+
+.back-arrow:hover {
+    background: #2c3e50;
+    color: white;
+    transform: scale(1.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .legal-container {
         padding: 1.5rem;
-        margin: 20px auto;
+        margin: 80px 15px 30px;
+        border-radius: 4px;
+    }
+
+    body:not(.logged-in) .legal-container {
+        margin-top: 30px;
     }
 
     .legal-container h1 {
@@ -91,5 +132,10 @@ body {
     .legal-section p {
         text-align: left;
     }
-}
 
+    .back-arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+}

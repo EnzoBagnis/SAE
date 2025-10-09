@@ -21,8 +21,6 @@ $isLoggedIn = isset($_SESSION['id']);
 <body>
     <a href="dashboard.php" class="back-arrow">←</a>
 
-    <?php if ($isLoggedIn): ?>
-    <!-- Menu du haut pour utilisateurs connectés -->
     <header class="top-menu">
         <div class="logo">
             <h1>StudTraj</h1>
@@ -66,6 +64,8 @@ $isLoggedIn = isset($_SESSION['id']);
     <?php endif; ?>
         <h1>Mentions légales</h1>
 
+
+    <div class="legal-container">
         <section class="legal-section">
             <h2>1. Éditeur du site</h2>
             <p><strong>Nom du site :</strong> StudTraj</p>
@@ -124,13 +124,11 @@ $isLoggedIn = isset($_SESSION['id']);
         <div class="back-link">
             <a href="dashboard.php" class="btn-back">← Retour au tableau de bord</a>
         <?php if ($isLoggedIn): ?>
+        <?php if ($isLoggedIn): ?>
         </div>
-    </div>
 </body>
-        <?php endif; ?>
-</html>
 
-    <!-- Modal Plan du site -->
+    </div>
     <?php if ($isLoggedIn): ?>
     <div id="sitemapModal" class="modal">
         <div class="modal-content">
@@ -194,3 +192,6 @@ $isLoggedIn = isset($_SESSION['id']);
         }
     </script>
 
+
+</body>
+</html>
