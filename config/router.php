@@ -1,39 +1,59 @@
 <?php
+/**
+ * Router class - Main application router
+ * Handles URL routing and controller dispatching
+ */
 class Router {
     
+    /**
+     * Route the request to the appropriate controller
+     */
     public function route() {
-        $action = $_GET['action'] ?? 'accueil';
-        
+        // Get action from URL parameter, default to 'home'
+        $action = $_GET['action'] ?? 'home';
+
         switch($action) {
             case 'index':
-            case 'accueil':
-                $this->loadController('accueilController', 'index');
+            case 'home':
+                // Check if user is logged in and redirect accordingly
+                $this->loadController('HomeController', 'index');
+                break;
+
+            case 'dashboard':
+                $this->loadController('HomeController', 'index');
                 break;
                 
-            case 'inscription':
-                $this->loadController('inscriptionController', 'showView');
+            case 'signup':
+                $this->loadController('RegistrationController', 'showView');
                 break;
 
-            case 'connexion':
-                $this->loadController('connexionController', 'showView');
+            case 'login':
+                $this->loadController('LoginController', 'showView');
                 break;
 
-            case 'accueil2':
+            case 'home2':
                 $this->loadController('accueil2Controller', 'showView');
                 break;
 
-            case 'mailverif':
-                $this->loadController('mailVerifController', 'showView');
+            case 'emailverification':
+                $this->loadController('EmailVerificationController', 'showView');
                 break;
                 
             default:
-                $this->loadController('accueilController', 'index');
+                // Fallback to home controller
+                $this->loadController('HomeController', 'index');
                 break;
         }
     }
     
+    /**
+     * Load and execute controller method
+     * @param string $controllerName Name of the controller to load
+     * @param string $method Method to execute in the controller
+     */
     private function loadController($controllerName, $method) {
         $controllerFile = $_SERVER['DOCUMENT_ROOT'] . 'controllers/' . $controllerName . '.php';
+
         if (file_exists($controllerFile)) {
             require_once $controllerFile;
             
@@ -42,10 +62,10 @@ class Router {
             if (method_exists($controllerInstance, $method)) {
                 $controllerInstance->$method();
             } else {
-                die("Méthode $method introuvable dans $controllerName");
+                die("Method $method not found in $controllerName");
             }
         } else {
-            die("Controller $controllerName introuvable. Chemin testé: $controllerFile");
+            die("Controller $controllerName not found. Path tested: $controllerFile");
         }
     }
 }

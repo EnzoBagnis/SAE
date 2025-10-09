@@ -1,19 +1,25 @@
 <?php
 /**
- * Model inscriptionEnAttente - Gestion CRUD des inscriptions en attente avec PDO
+ * PendingRegistration Model - CRUD operations for pending registrations with PDO
  */
-class inscriptionEnAttente {
+class PendingRegistration {
     private $pdo;
 
     public function __construct() {
-        $this->pdo = database::getConnection();
+        $this->pdo = Database::getConnection();
     }
 
     /**
-     * CREATE - Créer une nouvelle inscription en attente
+     * CREATE - Create a new pending registration
+     * @param string $lastName User's last name
+     * @param string $firstName User's first name
+     * @param string $email User's email
+     * @param string $password User's password (will be hashed)
+     * @param string $verificationCode Verification code
+     * @return bool Success status
      */
-    public function create($nom, $prenom, $mail, $mdp, $code_verif) {
-        $hashedPassword = password_hash($mdp, PASSWORD_DEFAULT);
+    public function create($lastName, $firstName, $email, $password, $verificationCode) {
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt = $this->pdo->prepare(
             "INSERT INTO inscriptions_en_attente (nom, prenom, mdp, mail, code_verif, date_creation) 
@@ -21,36 +27,43 @@ class inscriptionEnAttente {
         );
 
         return $stmt->execute([
-            'nom' => $nom,
-            'prenom' => $prenom,
+            'nom' => $lastName,
+            'prenom' => $firstName,
             'mdp' => $hashedPassword,
-            'mail' => $mail,
-            'code_verif' => $code_verif
+            'mail' => $email,
+            'code_verif' => $verificationCode
         ]);
     }
 
     /**
-     * READ - Trouver une inscription par email
+     * READ - Find a pending registration by email
+     * @param string $email Email to search for
+     * @return array|false Registration data or false if not found
      */
-    public function findByEmail($mail) {
+    public function findByEmail($email) {
         $stmt = $this->pdo->prepare("SELECT * FROM inscriptions_en_attente WHERE mail = :mail");
-        $stmt->execute(['mail' => $mail]);
+        $stmt->execute(['mail' => $email]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
-     * READ - Vérifier si un email existe en attente
+     * READ - Check if an email exists in pending registrations
+     * @param string $email Email to check
+     * @return bool True if email exists, false otherwise
      */
-    public function emailExists($mail) {
+    public function emailExists($email) {
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM inscriptions_en_attente WHERE mail = :mail");
-        $stmt->execute(['mail' => $mail]);
+        $stmt->execute(['mail' => $email]);
         return $stmt->fetchColumn() > 0;
     }
 
     /**
-     * UPDATE - Mettre à jour le code de vérification
+     * UPDATE - Update verification code
+     * @param string $email User's email
+     * @param string $newCode New verification code
+     * @return bool Success status
      */
-    public function updateCode($mail, $nouveauCode) {
+    public function updateCode($email, $newCode) {
         $stmt = $this->pdo->prepare(
             "UPDATE inscriptions_en_attente 
              SET code_verif = :code, date_creation = NOW() 
@@ -58,21 +71,24 @@ class inscriptionEnAttente {
         );
 
         return $stmt->execute([
-            'code' => $nouveauCode,
-            'mail' => $mail
+            'code' => $newCode,
+            'mail' => $email
         ]);
     }
 
     /**
-     * DELETE - Supprimer une inscription par email
+     * DELETE - Delete a pending registration by email
+     * @param string $email Email of registration to delete
+     * @return bool Success status
      */
-    public function delete($mail) {
+    public function delete($email) {
         $stmt = $this->pdo->prepare("DELETE FROM inscriptions_en_attente WHERE mail = :mail");
-        return $stmt->execute(['mail' => $mail]);
+        return $stmt->execute(['mail' => $email]);
     }
 
     /**
-     * DELETE - Supprimer les inscriptions expirées (plus de 15 minutes)
+     * DELETE - Delete expired pending registrations (older than 15 minutes)
+     * @return bool Success status
      */
     public function deleteExpired() {
         $stmt = $this->pdo->prepare(
@@ -84,16 +100,18 @@ class inscriptionEnAttente {
     }
 
     /**
-     * Vérifier le code de vérification
+     * Verify verification code
+     * @param string $email User's email
+     * @param string $code Verification code to check
+     * @return bool True if code is valid, false otherwise
      */
-    public function verifyCode($mail, $code) {
-        $inscription = $this->findByEmail($mail);
+    public function verifyCode($email, $code) {
+        $registration = $this->findByEmail($email);
 
-        if (!$inscription) {
+        if (!$registration) {
             return false;
         }
 
-        return $code == $inscription['code_verif'];
+        return $code == $registration['code_verif'];
     }
 }
-

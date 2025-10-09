@@ -5,8 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
-    <meta name="description" content="Ceci est une meta description">
-    <title>StudTraj - Inscription</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Créez votre compte StudTraj gratuitement et commencez à suivre votre trajectoire étudiante. Inscription simple et rapide.">
+    <meta name="keywords" content="inscription studtraj, créer compte étudiant, inscription gratuite">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/formulaire.php">
+
+    <title>Inscription gratuite - StudTraj | Créez votre compte étudiant</title>
     <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
@@ -43,16 +49,16 @@ if (isset($_GET['erreur'])) {
     <form class="card" method="POST" action="../controllers/traitement.php">
 
         <label for="nom">Nom</label>
-        <input type="text" id="nom" name="nom" placeholder="Valeur" required><br>
+        <input type="text" id="nom" name="nom" placeholder="Entrez votre nom..." required><br>
 
         <label for="prenom">Prénom</label>
-        <input type="text" id="prenom" name="prenom" placeholder="Valeur" required><br>
+        <input type="text" id="prenom" name="prenom" placeholder="Entrez votre prénom..." required><br>
 
         <label for="mail">Email</label>
-        <input type="email" id="mail" name="mail" placeholder="Valeur" required><br>
+        <input type="email" id="mail" name="mail" placeholder="Entrez votre mail..." required><br>
 
         <label for="mdp">Mot de passe</label>
-        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required><br>
+        <input type="password" id="mdp" name="mdp" placeholder="Entrez votre mot de passe..." required><br>
 
         <button type="submit" class="btn-submit" name="ok">Inscription</button>
 
