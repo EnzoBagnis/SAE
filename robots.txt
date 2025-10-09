@@ -6,4 +6,4 @@ Disallow: /models/
 Disallow: /cron/
 Disallow: /phpmailer/
 
-Sitemap: http://studtraj.alwaysdata.net/sitemap.xml
+Sitemap: https://studtraj.alwaysdata.net/sitemap.xml
