@@ -19,8 +19,8 @@ class HomeController extends BaseController {
             header('Location: views/dashboard.php');
             exit;
         } else {
-            // Redirect to login page
-            header('Location: views/connexion.php');
+            // Redirect to public home page
+            header('Location: index.html');
             exit;
         }
     }
