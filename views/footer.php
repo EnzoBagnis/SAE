@@ -46,7 +46,7 @@
                 <a href="../sitemap.php">Sitemap XML</a>
             </p>
             <p class="footer-compliance">
-                Conformité RGPD | Accessibilité : Partiellement conforme |
+                Conformité RGPD | Accessibilité : Conforme |
                 <a href="https://www.w3.org/WAI/WCAG2AA-Conformance" target="_blank" rel="noopener">WCAG 2.1 AA</a>
             </p>
         </div>
