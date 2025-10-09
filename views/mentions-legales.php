@@ -1,3 +1,8 @@
+<?php
+session_start();
+// Vérifier si l'utilisateur est connecté
+$isLoggedIn = isset($_SESSION['id']);
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -7,14 +12,58 @@
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>StudTraj - Mentions légales</title>
     <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="../public/css/dashboard.css">
     <link rel="stylesheet" href="../public/css/mentions-legales.css">
+    <link rel="stylesheet" href="../public/css/footer.css">
     <!-- SEO Meta Tags -->
-    <meta name="mentions-legales" content="Je vous assure qu’on est ici en toute légalité.">
+    <meta name="mentions-legales" content="Je vous assure qu'on est ici en toute légalité.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/mentions-legales.php">
 </head>
-<body>
-    <a href="dashboard.php" class="back-arrow">←</a>
+<body<?php echo $isLoggedIn ? ' class="logged-in"' : ''; ?>>
+    <?php if ($isLoggedIn): ?>
+    <!-- Menu du haut pour utilisateurs connectés -->
+    <header class="top-menu">
+        <div class="logo">
+            <h1>StudTraj</h1>
+        </div>
+
+        <!-- Bouton burger pour mobile -->
+        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav class="nav-menu">
+            <a href="dashboard.php">Tableau de bord</a>
+            <a href="#" onclick="openSiteMap()">Plan du site</a>
+            <a href="mentions-legales.php" class="active">Mentions légales</a>
+        </nav>
+        <div class="user-info">
+            <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
+            <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
+        </div>
+    </header>
+
+    <!-- Menu burger mobile -->
+    <nav class="burger-nav" id="burgerNav">
+        <div class="burger-nav-content">
+            <div class="burger-user-info">
+                <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
+            </div>
+            <ul class="burger-menu-list">
+                <li><a href="dashboard.php" class="burger-link">Tableau de bord</a></li>
+                <li><a href="#" onclick="openSiteMap()" class="burger-link">Plan du site</a></li>
+                <li><a href="mentions-legales.php" class="burger-link active">Mentions légales</a></li>
+                <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
+            </ul>
+        </div>
+    </nav>
+    <?php else: ?>
+    <!-- Bouton retour simple pour utilisateurs non connectés -->
+    <a href="../index.php" class="back-arrow">←</a>
+    <?php endif; ?>
 
     <div class="legal-container">
         <h1>Mentions légales</h1>
@@ -73,11 +122,70 @@
         <div class="last-updated">
             <p><em>Dernière mise à jour : <?php echo date('d/m/Y'); ?></em></p>
         </div>
+    </div>
 
-        <div class="back-link">
-            <a href="dashboard.php" class="btn-back">← Retour au tableau de bord</a>
+    <!-- Modal Plan du site -->
+    <?php if ($isLoggedIn): ?>
+    <div id="sitemapModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSiteMap()">&times;</span>
+            <h2>Plan du site</h2>
+            <div class="sitemap-list">
+                <ul>
+                    <li><a href="dashboard.php">Tableau de bord</a></li>
+                    <li><a href="connexion.php">Connexion</a></li>
+                    <li><a href="formulaire.php">Inscription</a></li>
+                    <li><a href="forgotPassword.php">Mot de passe oublié</a></li>
+                    <li><a href="mentions-legales.php">Mentions légales</a></li>
+                </ul>
+            </div>
         </div>
     </div>
+    <?php endif; ?>
+
+    <?php include 'footer.php'; ?>
+
+    <script>
+        // Fonctions pour le menu burger
+        function toggleBurgerMenu() {
+            const burgerNav = document.getElementById('burgerNav');
+            const burgerBtn = document.getElementById('burgerBtn');
+            if (burgerNav && burgerBtn) {
+                burgerNav.classList.toggle('active');
+                burgerBtn.classList.toggle('active');
+            }
+        }
+
+        // Fonction pour ouvrir le sitemap
+        function openSiteMap() {
+            const modal = document.getElementById('sitemapModal');
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        // Fonction pour fermer le sitemap
+        function closeSiteMap() {
+            const modal = document.getElementById('sitemapModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Fonction de déconnexion
+        function confirmLogout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                window.location.href = '../controllers/deconnexion.php';
+            }
+        }
+
+        // Fermer les modals en cliquant en dehors
+        window.onclick = function(event) {
+            const sitemapModal = document.getElementById('sitemapModal');
+            if (event.target === sitemapModal) {
+                closeSiteMap();
+            }
+        }
+    </script>
 </body>
 </html>
-

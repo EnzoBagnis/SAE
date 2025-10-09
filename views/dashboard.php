@@ -15,6 +15,7 @@ if (!isset($_SESSION['id'])) {
     <title>StudTraj - Tableau de bord</title>
     <link rel="stylesheet" href="../public/css/style.css">
     <link rel="stylesheet" href="../public/css/dashboard.css">
+    <link rel="stylesheet" href="../public/css/footer.css">
     <script src="../public/js/dashboard.js" defer></script>
     
     <!-- SEO Meta Tags -->
@@ -105,6 +106,4 @@ if (!isset($_SESSION['id'])) {
         </div>
     </div>
 
-
-</body>
-</html>
+    <?php include 'footer.php'; ?>
