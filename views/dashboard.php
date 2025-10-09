@@ -16,6 +16,11 @@ if (!isset($_SESSION['id'])) {
     <link rel="stylesheet" href="../public/css/style.css">
     <link rel="stylesheet" href="../public/css/dashboard.css">
     <script src="../public/js/dashboard.js" defer></script>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="dashboard" content="Hub principal du site, vous pourrez y visionner les différents TD.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/dashbourd.php">
 
 </head>
 <body>
