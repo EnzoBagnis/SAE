@@ -130,14 +130,14 @@ function displayTPs(tps) {
 
 // Configuration du scroll infini
 function setupInfiniteScroll() {
-    const sidebar = document.querySelector('.sidebar');
+    const tpList = document.getElementById('tp-list');
 
-    if (!sidebar) return;
+    if (!tpList) return;
 
-    sidebar.addEventListener('scroll', function() {
+    tpList.addEventListener('scroll', function() {
         // Vérifier si on est proche du bas
-        const scrollPosition = sidebar.scrollTop + sidebar.clientHeight;
-        const scrollHeight = sidebar.scrollHeight;
+        const scrollPosition = tpList.scrollTop + tpList.clientHeight;
+        const scrollHeight = tpList.scrollHeight;
 
         // Si on est à 80% du scroll et qu'on n'est pas en train de charger
         if (scrollPosition >= scrollHeight * 0.8 && !isLoading && hasMoreTPs) {
