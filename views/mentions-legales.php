@@ -12,15 +12,17 @@ $isLoggedIn = isset($_SESSION['id']);
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>StudTraj - Mentions légales</title>
     <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="../public/css/dashboard.css">
     <link rel="stylesheet" href="../public/css/mentions-legales.css">
+    <link rel="stylesheet" href="../public/css/footer.css">
     <!-- SEO Meta Tags -->
-    <meta name="mentions-legales" content="Je vous assure qu’on est ici en toute légalité.">
-    <meta name="robots" content="noindex, nofollow">
     <meta name="mentions-legales" content="Je vous assure qu'on est ici en toute légalité.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/mentions-legales.php">
 </head>
-<body>
-    <a href="dashboard.php" class="back-arrow">←</a>
-
+<body<?php echo $isLoggedIn ? ' class="logged-in"' : ''; ?>>
+    <?php if ($isLoggedIn): ?>
+    <!-- Menu du haut pour utilisateurs connectés -->
     <header class="top-menu">
         <div class="logo">
             <h1>StudTraj</h1>
@@ -62,10 +64,10 @@ $isLoggedIn = isset($_SESSION['id']);
     <!-- Bouton retour simple pour utilisateurs non connectés -->
     <a href="../index.php" class="back-arrow">←</a>
     <?php endif; ?>
-        <h1>Mentions légales</h1>
-
 
     <div class="legal-container">
+        <h1>Mentions légales</h1>
+
         <section class="legal-section">
             <h2>1. Éditeur du site</h2>
             <p><strong>Nom du site :</strong> StudTraj</p>
@@ -121,14 +123,14 @@ $isLoggedIn = isset($_SESSION['id']);
             <p><em>Dernière mise à jour : <?php echo date('d/m/Y'); ?></em></p>
         </div>
 
+        <?php if ($isLoggedIn): ?>
         <div class="back-link">
             <a href="dashboard.php" class="btn-back">← Retour au tableau de bord</a>
-        <?php if ($isLoggedIn): ?>
-        <?php if ($isLoggedIn): ?>
         </div>
-</body>
-
+        <?php endif; ?>
     </div>
+
+    <!-- Modal Plan du site -->
     <?php if ($isLoggedIn): ?>
     <div id="sitemapModal" class="modal">
         <div class="modal-content">
@@ -191,7 +193,5 @@ $isLoggedIn = isset($_SESSION['id']);
             }
         }
     </script>
-
-
 </body>
 </html>
