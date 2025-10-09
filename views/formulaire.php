@@ -49,16 +49,16 @@ if (isset($_GET['erreur'])) {
     <form class="card" method="POST" action="../controllers/traitement.php">
 
         <label for="nom">Nom</label>
-        <input type="text" id="nom" name="nom" placeholder="Valeur" required><br>
+        <input type="text" id="nom" name="nom" placeholder="Entrez votre nom..." required><br>
 
         <label for="prenom">Prénom</label>
-        <input type="text" id="prenom" name="prenom" placeholder="Valeur" required><br>
+        <input type="text" id="prenom" name="prenom" placeholder="Entrez votre prénom..." required><br>
 
         <label for="mail">Email</label>
-        <input type="email" id="mail" name="mail" placeholder="Valeur" required><br>
+        <input type="email" id="mail" name="mail" placeholder="Entrez votre mail..." required><br>
 
         <label for="mdp">Mot de passe</label>
-        <input type="password" id="mdp" name="mdp" placeholder="Valeur" required><br>
+        <input type="password" id="mdp" name="mdp" placeholder="Entrez votre mot de passe..." required><br>
 
         <button type="submit" class="btn-submit" name="ok">Inscription</button>
 
