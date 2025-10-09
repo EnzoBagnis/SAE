@@ -1,7 +1,6 @@
 <?php
-class Database {
+class database {
     public static function getConnection() {
-        // Lire le fichier .env
         $env = parse_ini_file(__DIR__ . '/../../config/.env');
 
         $servername = $env['DB_HOST'];
@@ -10,8 +9,6 @@ class Database {
         $dbname = $env['DB_NAME'];
 
         try {
-
-
 
             $bdd = new PDO(
                 "mysql:host=$servername;dbname=$dbname;charset=utf8mb4",

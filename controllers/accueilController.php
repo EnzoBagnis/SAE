@@ -1,25 +1,19 @@
 <?php
-class accueilController {
-    
+require_once __DIR__ . '/baseController.php';
+
+class accueilController extends baseController {
+
     public function index() {
-        $titre = "Accueil";
-        $message = "Bienvenue sur StudTraj";
-        
-        $this->loadView('accueil', [
-            'titre' => $titre,
-            'message' => $message
-        ]);
-    }
-    
-    protected function loadView($viewName, $data = []) {
-        extract($data);
-        
-        $viewFile = __DIR__ . '/../views/' . $viewName . '.php';
-        
-        if (file_exists($viewFile)) {
-            require $viewFile;
+        session_start();
+
+        // Si l'utilisateur est connecté, rediriger vers le dashboard
+        if (isset($_SESSION['id'])) {
+            header('Location: views/dashboard.php');
+            exit;
         } else {
-            die("Vue $viewName introuvable. Chemin testé: $viewFile");
+            // Sinon, rediriger vers la page de connexion
+            header('Location: views/connexion.php');
+            exit;
         }
     }
 }

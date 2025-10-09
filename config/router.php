@@ -14,15 +14,15 @@ class Router {
                 $this->loadController('inscriptionController', 'showView');
                 break;
 
-	    case 'connexion':
+            case 'connexion':
                 $this->loadController('connexionController', 'showView');
                 break;
 
-	    case 'accueil2':
+            case 'accueil2':
                 $this->loadController('accueil2Controller', 'showView');
                 break;
 
-	    case 'mailverif':
+            case 'mailverif':
                 $this->loadController('mailVerifController', 'showView');
                 break;
                 

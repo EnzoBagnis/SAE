@@ -13,7 +13,7 @@ if(empty($token)) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title>Réinitialiser le mot de passe - StudTraj</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
 

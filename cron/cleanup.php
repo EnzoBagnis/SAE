@@ -1,7 +1,9 @@
 <?php
-require_once '../models/Database.php';
+require_once __DIR__ . '/../models/database.php';
+require_once __DIR__ . '/../models/inscriptionEnAttente.php';
 
-// Suppression automatique des inscriptions expirées (plus de 15 minutes)
-$bdd = Database::getConnection();
-$deleteExpired = $bdd->prepare("DELETE FROM inscriptions_en_attente WHERE date_creation < DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
-$deleteExpired->execute();
+// Nettoyage automatique des inscriptions expirées (>15 minutes)
+$inscriptionModel = new inscriptionEnAttente();
+$inscriptionModel->deleteExpired();
+
+echo "Nettoyage effectué : inscriptions expirées supprimées.";
