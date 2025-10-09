@@ -122,12 +122,6 @@ $isLoggedIn = isset($_SESSION['id']);
         <div class="last-updated">
             <p><em>Dernière mise à jour : <?php echo date('d/m/Y'); ?></em></p>
         </div>
-
-        <?php if ($isLoggedIn): ?>
-        <div class="back-link">
-            <a href="dashboard.php" class="btn-back">← Retour au tableau de bord</a>
-        </div>
-        <?php endif; ?>
     </div>
 
     <!-- Modal Plan du site -->
