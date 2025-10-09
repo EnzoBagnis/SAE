@@ -108,4 +108,19 @@ if(isset($_POST['renvoyer_code'])) {
     }
     exit;
 }
+
+// RESET PASSWORD - UPDATE avec PDO
+if(isset($_POST['reset_password'])) {
+    extract($_POST);
+
+    // UPDATE - Réinitialiser le mot de passe
+    $result = $authController->resetPassword($token, $nouveau_mdp);
+
+    if($result['success']) {
+        header("Location: ../views/connexion.php?succes=mdp_reinitialise");
+    } else {
+        header("Location: ../views/connexion.php?erreur=" . $result['error']);
+    }
+    exit;
+}
 ?>
