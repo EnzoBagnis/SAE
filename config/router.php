@@ -1,7 +1,7 @@
 <?php
 /**
  * Router class - Main application router
- * Handles URL routing and controller dispatching
+ * Handles URL routing and controller dispatching with namespaces
  */
 class Router {
     
@@ -9,50 +9,101 @@ class Router {
      * Route the request to the appropriate controller
      */
     public function route() {
-        // Get action from URL parameter, default to 'home'
         $action = $_GET['action'] ?? 'home';
 
         switch($action) {
+            // ========== HOME ==========
             case 'index':
             case 'home':
-                // Check if user is logged in and redirect accordingly
                 $this->loadController('HomeController', 'index');
                 break;
 
-            case 'dashboard':
-                $this->loadController('HomeController', 'index');
-                break;
-                
-            case 'signup':
-                $this->loadController('RegistrationController', 'showView');
-                break;
-
+            // ========== AUTH - LOGIN ==========
             case 'login':
-                $this->loadController('LoginController', 'showView');
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Auth\LoginController', 'authenticate');
+                } else {
+                    $this->loadNamespacedController('Controllers\Auth\LoginController', 'index');
+                }
                 break;
 
-            case 'home2':
-                $this->loadController('accueil2Controller', 'showView');
+            // ========== AUTH - REGISTER ==========
+            case 'signup':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Auth\RegisterController', 'register');
+                } else {
+                    $this->loadNamespacedController('Controllers\Auth\RegisterController', 'index');
+                }
                 break;
 
+            // ========== AUTH - EMAIL VERIFICATION ==========
             case 'emailverification':
-                $this->loadController('EmailVerificationController', 'showView');
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Auth\EmailVerificationController', 'verify');
+                } else {
+                    $this->loadNamespacedController('Controllers\Auth\EmailVerificationController', 'index');
+                }
                 break;
-                
+
+            // ========== AUTH - RESEND CODE ==========
+            case 'resendcode':
+                $this->loadNamespacedController('Controllers\Auth\EmailVerificationController', 'resendCode');
+                break;
+
+            // ========== AUTH - FORGOT PASSWORD ==========
+            case 'forgotpassword':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Auth\PasswordResetController', 'requestReset');
+                } else {
+                    $this->loadNamespacedController('Controllers\Auth\PasswordResetController', 'forgotPassword');
+                }
+                break;
+
+            // ========== AUTH - RESET PASSWORD ==========
+            case 'resetpassword':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Auth\PasswordResetController', 'resetPassword');
+                } else {
+                    $this->loadNamespacedController('Controllers\Auth\PasswordResetController', 'showResetForm');
+                }
+                break;
+
+            // ========== AUTH - LOGOUT ==========
+            case 'logout':
+                $this->loadNamespacedController('Controllers\Auth\LogoutController', 'logout');
+                break;
+
+            // ========== USER - DASHBOARD ==========
+            case 'dashboard':
+                $this->loadNamespacedController('Controllers\User\DashboardController', 'index');
+                break;
+
+            // ========== WORKSHOP API ==========
+            case 'workshops':
+            case 'tplist':
+                $this->loadNamespacedController('Controllers\Workshop\WorkshopController', 'list');
+                break;
+
+            case 'workshop':
+                $this->loadNamespacedController('Controllers\Workshop\WorkshopController', 'show');
+                break;
+
+            // ========== PAGES ==========
+            case 'mentions':
+                $this->loadView('pages/mentions-legales');
+                break;
+
             default:
-                // Fallback to home controller
                 $this->loadController('HomeController', 'index');
                 break;
         }
     }
     
     /**
-     * Load and execute controller method
-     * @param string $controllerName Name of the controller to load
-     * @param string $method Method to execute in the controller
+     * Load and execute controller method (legacy - old controllers)
      */
     private function loadController($controllerName, $method) {
-        $controllerFile = $_SERVER['DOCUMENT_ROOT'] . 'controllers/' . $controllerName . '.php';
+        $controllerFile = __DIR__ . '/../controllers/' . $controllerName . '.php';
 
         if (file_exists($controllerFile)) {
             require_once $controllerFile;
@@ -66,6 +117,42 @@ class Router {
             }
         } else {
             die("Controller $controllerName not found. Path tested: $controllerFile");
+        }
+    }
+
+    /**
+     * Load and execute namespaced controller method (new MVC structure)
+     */
+    private function loadNamespacedController($fullyQualifiedClassName, $method) {
+        // Convert namespace to file path
+        $classPath = str_replace('\\', DIRECTORY_SEPARATOR, $fullyQualifiedClassName);
+        $controllerFile = __DIR__ . '/../' . $classPath . '.php';
+
+        if (file_exists($controllerFile)) {
+            require_once $controllerFile;
+
+            $controllerInstance = new $fullyQualifiedClassName();
+
+            if (method_exists($controllerInstance, $method)) {
+                $controllerInstance->$method();
+            } else {
+                die("Method $method not found in $fullyQualifiedClassName");
+            }
+        } else {
+            die("Controller $fullyQualifiedClassName not found. Path tested: $controllerFile");
+        }
+    }
+
+    /**
+     * Load a static view directly
+     */
+    private function loadView($viewPath) {
+        $viewFile = __DIR__ . '/../views/' . $viewPath . '.php';
+
+        if (file_exists($viewFile)) {
+            require $viewFile;
+        } else {
+            die("View $viewPath not found.");
         }
     }
 }

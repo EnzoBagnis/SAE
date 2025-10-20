@@ -1,10 +1,3 @@
-<?php
-$token = $_GET['token'] ?? '';
-if(empty($token)) {
-    header("Location: connexion.php?erreur=token_manquant");
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -12,21 +5,25 @@ if(empty($token)) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
-    <title>Réinitialiser le mot de passe - StudTraj</title>
+    <title><?= htmlspecialchars($title ?? 'Réinitialiser le mot de passe - StudTraj') ?></title>
     <link rel="stylesheet" href="../public/css/style.css">
     <!-- SEO Meta Tags -->
-    <meta name="resetPassword" content="Tout est dans le nom, mais pour les non anglophones c'est ici pour changer son mot de passe.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/resetPassword.php">
 </head>
 <body>
 
 <div class="page-wrap">
-    <form class="card" method="POST" action="../controllers/traitement.php" id="resetForm">
+
+    <?php if (isset($error_message)): ?>
+        <div class="error"><?= htmlspecialchars($error_message) ?></div>
+    <?php endif; ?>
+
+    <form class="card" method="POST" action="/index.php?action=resetpassword" id="resetForm">
         <h2>Créer un nouveau mot de passe</h2>
         <p>Entrez votre nouveau mot de passe</p>
 
-        <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
+        <input type="hidden" name="token" value="<?= htmlspecialchars($token ?? '') ?>">
 
         <label for="password">Nouveau mot de passe</label>
         <input type="password"
@@ -37,11 +34,12 @@ if(empty($token)) {
 
         <label for="confirm_password">Confirmer le mot de passe</label>
         <input type="password"
+               name="confirm_mdp"
                id="confirm_password"
                placeholder="Confirmez votre mot de passe"
                required>
 
-        <p id="error_message" style="display: none;"></p>
+        <p id="error_message" style="display: none; color: red;"></p>
 
         <button type="submit"
                 name="reset_password"
@@ -85,3 +83,4 @@ if(empty($token)) {
 </script>
 </body>
 </html>
+
