@@ -98,13 +98,7 @@
         </div>
     </div>
 
-    <?php
-    // Inclure le footer avec le bon chemin
-    $footerPath = __DIR__ . '/../partials/footer.php';
-    if (file_exists($footerPath)) {
-        include $footerPath;
-    }
-    ?>
+    <?php include __DIR__ . '/../partials/footer.php'; ?>
 
 </body>
 </html>
