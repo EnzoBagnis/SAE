@@ -31,9 +31,9 @@
         </button>
 
         <nav class="nav-menu">
-            <a href="/index.php?action=dashboard" class="active">Tableau de bord</a>
+            <a href="/public/index.php?action=dashboard" class="active">Tableau de bord</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="/index.php?action=mentions">Mentions légales</a>
+            <a href="/public/index.php?action=mentions">Mentions légales</a>
         </nav>
         <div class="user-info">
             <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
@@ -48,7 +48,7 @@
                 <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>
+                <li><a href="/public/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>
                 <li class="has-submenu">
                     <a href="#" class="burger-link" onclick="toggleTPSubmenu(event)">
                         Liste des TP's
@@ -58,7 +58,7 @@
                         <!-- Les TPs seront chargés ici dynamiquement -->
                     </ul>
                 </li>
-                <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
+                <li><a href="/public/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
@@ -88,11 +88,11 @@
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
-                    <li><a href="/index.php?action=login">Connexion</a></li>
-                    <li><a href="/index.php?action=signup">Inscription</a></li>
-                    <li><a href="/index.php?action=forgotpassword">Mot de passe oublié</a></li>
-                    <li><a href="/index.php?action=mentions">Mentions légales</a></li>
+                    <li><a href="/public/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="/public/index.php?action=login">Connexion</a></li>
+                    <li><a href="/public/index.php?action=signup">Inscription</a></li>
+                    <li><a href="/public/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="/public/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>

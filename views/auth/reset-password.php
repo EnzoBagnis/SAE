@@ -19,7 +19,7 @@
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="/index.php?action=resetpassword" id="resetForm">
+    <form class="card" method="POST" action="/public/index.php?action=resetpassword" id="resetForm">
         <h2>Créer un nouveau mot de passe</h2>
         <p>Entrez votre nouveau mot de passe</p>
 

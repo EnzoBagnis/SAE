@@ -30,7 +30,7 @@
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="/index.php?action=signup">
+    <form class="card" method="POST" action="/public/index.php?action=signup">
 
         <label for="nom">Nom</label>
         <input type="text" id="nom" name="nom" placeholder="Entrez votre nom..." required><br>
@@ -47,7 +47,7 @@
         <button type="submit" class="btn-submit" name="ok">Inscription</button>
 
         <div class="text-center mt-2">
-            <a href="/index.php?action=login">Déjà un compte ? Se connecter</a>
+            <a href="/public/index.php?action=login">Déjà un compte ? Se connecter</a>
         </div>
 
     </form>

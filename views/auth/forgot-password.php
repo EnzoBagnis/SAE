@@ -19,7 +19,7 @@
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="/index.php?action=forgotpassword" id="forgotForm">
+    <form class="card" method="POST" action="/public/index.php?action=forgotpassword" id="forgotForm">
         <h2>Mot de passe oublié</h2>
         <p>Entrez votre email pour recevoir un lien de réinitialisation</p>
 
@@ -39,11 +39,11 @@
         </button>
 
         <div class="text-center mt-2">
-            <a href="/index.php?action=login">Retour à la connexion</a>
+            <a href="/public/index.php?action=login">Retour à la connexion</a>
         </div>
     </form>
 
-    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+    <div class="back-arrow" onclick="window.location.href='../../public/index.html';">←</div>
 
 </div>
 
@@ -96,7 +96,7 @@
         <div class="success"><?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="/index.php?action=login">
+    <form class="card" method="POST" action="/public/index.php?action=login">
 
         <label for="mail">Email</label>
         <input type="email" id="mail" name="mail" placeholder="Entrez votre mail..." required><br>
@@ -107,8 +107,8 @@
         <button type="submit" class="btn-submit" name="connexion">Connexion</button>
 
         <div class="form-links">
-            <a href="/index.php?action=forgotpassword">Mot de passe oublié ?</a>
-            <a href="/index.php?action=signup">Inscription</a>
+            <a href="/public/index.php?action=forgotpassword">Mot de passe oublié ?</a>
+            <a href="/public/index.php?action=signup">Inscription</a>
         </div>
 
     </form>

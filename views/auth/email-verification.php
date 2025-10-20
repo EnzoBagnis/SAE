@@ -27,7 +27,7 @@
         <h2>Vérification de l'email</h2>
         <p>Entrez le code à 6 chiffres envoyé par email</p>
 
-        <form action="/index.php?action=emailverification" method="POST">
+        <form action="/public/index.php?action=emailverification" method="POST">
             <label for="code">Code de vérification</label>
             <input type="number"
                    id="code"
@@ -40,12 +40,12 @@
         </form>
 
         <p class="mt-3">Vous n'avez pas reçu le code ?</p>
-        <form action="/index.php?action=resendcode" method="POST">
+        <form action="/public/index.php?action=resendcode" method="POST">
             <button type="submit" class="btn-secondary" name="renvoyer_code">Renvoyer le code</button>
         </form>
     </div>
 
-    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+    <div class="back-arrow" onclick="window.location.href='../../public/index.html';">←</div>
 
 </div>
 
