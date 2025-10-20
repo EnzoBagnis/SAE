@@ -98,7 +98,7 @@
         </div>
     </div>
 
-    <?php include __DIR__ . '/../partials/footer.php'; ?>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/views/partials/footer.php'; ?>
 
 </body>
 </html>

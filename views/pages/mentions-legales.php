@@ -143,7 +143,7 @@ $isLoggedIn = isset($_SESSION['id']);
     </div>
     <?php endif; ?>
 
-    <?php include __DIR__ . '/../partials/footer.php'; ?>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/views/partials/footer.php'; ?>
 
     <script>
         // Fonctions pour le menu burger
