@@ -18,7 +18,9 @@ class EmailVerificationController extends \BaseController {
      * Show email verification page
      */
     public function index() {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $errorMessage = null;
         $successMessage = null;
@@ -49,7 +51,9 @@ class EmailVerificationController extends \BaseController {
             exit;
         }
 
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $code = $_POST['code'] ?? '';
         $email = $_SESSION['mail'] ?? '';
@@ -85,7 +89,9 @@ class EmailVerificationController extends \BaseController {
             exit;
         }
 
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         if (!isset($_SESSION['mail'])) {
             header('Location: /index.php?action=signup&error=session_expiree');
@@ -130,4 +136,3 @@ class EmailVerificationController extends \BaseController {
         return $messages[$successCode] ?? '';
     }
 }
-
