@@ -98,7 +98,13 @@
         </div>
     </div>
 
-    <?php include $_SERVER['DOCUMENT_ROOT'] . 'views/partials/footer.php'; ?>
+    <?php
+    // Inclure le footer avec le bon chemin
+    $footerPath = __DIR__ . '/../partials/footer.php';
+    if (file_exists($footerPath)) {
+        include $footerPath;
+    }
+    ?>
 
 </body>
 </html>
