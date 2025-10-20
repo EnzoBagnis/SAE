@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../public/css/style.css">
     <!-- SEO Meta Tags -->
     <meta name="robots" content="noindex, nofollow">
-    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/resetPassword.php">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/index.php?action=resetPassword">
 </head>
 <body>
 
@@ -83,4 +83,3 @@
 </script>
 </body>
 </html>
-
