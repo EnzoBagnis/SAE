@@ -9,7 +9,7 @@ let allTPs = []; // Stockage de tous les TPs pour le menu burger
 // Fonction de confirmation de déconnexion
 function confirmLogout() {
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-        window.location.href = '../controllers/deconnexion.php';
+        window.location.href = '/index.php?action=logout';
     }
 }
 
@@ -53,8 +53,8 @@ async function loadTPs() {
     tpList.appendChild(loadingDiv);
 
     try {
-        // Appel à l'API PHP pour récupérer les TPs
-        const response = await fetch('../controllers/tpController.php?action=list&page=' + currentPage + '&perPage=' + TPsPerPage);
+        // Appel à l'API PHP pour récupérer les TPs (nouvelle route)
+        const response = await fetch('/index.php?action=workshops&page=' + currentPage + '&perPage=' + TPsPerPage);
 
         if (!response.ok) {
             throw new Error('Erreur lors du chargement des TPs');

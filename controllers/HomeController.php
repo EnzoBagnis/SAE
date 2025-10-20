@@ -8,19 +8,16 @@ class HomeController extends BaseController {
 
     /**
      * Main index action
-     * Redirects authenticated users to dashboard, others to login
+     * Redirects authenticated users to dashboard, others to public home page
      */
     public function index() {
-        session_start();
-
         // Check if user is authenticated
-        if (isset($_SESSION['id'])) {
-            // Redirect to dashboard
-            header('Location: views/dashboard.php');
-            exit;
+        if ($this->isAuthenticated()) {
+            // Redirect to dashboard using new route
+            $this->redirect('dashboard');
         } else {
             // Redirect to public home page
-            header('Location: index.html');
+            header('Location: /index.html');
             exit;
         }
     }

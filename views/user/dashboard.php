@@ -1,28 +1,20 @@
-<?php
-session_start();
-if (!isset($_SESSION['id'])) {
-    header('Location: connexion.php');
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
-    <title>StudTraj - Tableau de bord</title>
-    <link rel="stylesheet" href="../public/css/style.css">
-    <link rel="stylesheet" href="../public/css/dashboard.css">
-    <link rel="stylesheet" href="../public/css/footer.css">
-    <script src="../public/js/dashboard.js" defer></script>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="dashboard" content="Hub principal du site, vous pourrez y visionner les différents TD.">
-    <meta name="robots" content="noindex, nofollow">
-    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/dashbourd.php">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/dashboard.css">
+    <link rel="stylesheet" href="/public/css/footer.css">
+    <script src="/public/js/dashboard.js" defer></script>
 
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/dashboard.php">
 </head>
 <body>
     <!-- Menu du haut -->
@@ -39,12 +31,12 @@ if (!isset($_SESSION['id'])) {
         </button>
 
         <nav class="nav-menu">
-            <a href="dashboard.php" class="active">Tableau de bord</a>
+            <a href="/index.php?action=dashboard" class="active">Tableau de bord</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="mentions-legales.php">Mentions légales</a>
+            <a href="/index.php?action=mentions">Mentions légales</a>
         </nav>
         <div class="user-info">
-            <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
+            <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
             <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
         </div>
     </header>
@@ -53,10 +45,10 @@ if (!isset($_SESSION['id'])) {
     <nav class="burger-nav" id="burgerNav">
         <div class="burger-nav-content">
             <div class="burger-user-info">
-                <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
+                <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="dashboard.php" class="burger-link active">Tableau de bord</a></li>
+                <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>
                 <li class="has-submenu">
                     <a href="#" class="burger-link" onclick="toggleTPSubmenu(event)">
                         Liste des TP's
@@ -66,7 +58,7 @@ if (!isset($_SESSION['id'])) {
                         <!-- Les TPs seront chargés ici dynamiquement -->
                     </ul>
                 </li>
-                <li><a href="mentions-legales.php" class="burger-link">Mentions légales</a></li>
+                <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
@@ -77,7 +69,7 @@ if (!isset($_SESSION['id'])) {
         <aside class="sidebar">
             <h2>Liste des TPs</h2>
             <div class="tp-list" id="tp-list">
-                <!-- La liste des TPs sera ajoutée ici -->
+                <!-- La liste des TPs sera ajoutée ici dynamiquement via JavaScript -->
             </div>
         </aside>
 
@@ -96,14 +88,17 @@ if (!isset($_SESSION['id'])) {
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="dashboard.php">Tableau de bord</a></li>
-                    <li><a href="connexion.php">Connexion</a></li>
-                    <li><a href="formulaire.php">Inscription</a></li>
-                    <li><a href="forgotPassword.php">Mot de passe oublié</a></li>
-                    <li><a href="mentions-legales.php">Mentions légales</a></li>
+                    <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="/index.php?action=login">Connexion</a></li>
+                    <li><a href="/index.php?action=signup">Inscription</a></li>
+                    <li><a href="/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>
     </div>
 
-    <?php include 'footer.php'; ?>
+    <?php include __DIR__ . '/../layouts/footer.php'; ?>
+
+</body>
+</html>

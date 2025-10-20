@@ -12,7 +12,7 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/formulaire.php">
 
-    <title>Inscription gratuite - StudTraj | Créez votre compte étudiant</title>
+    <title><?= htmlspecialchars($title ?? 'Inscription gratuite - StudTraj') ?></title>
     <link rel="stylesheet" href="../public/css/style.css">
 </head>
 <body>
@@ -26,27 +26,11 @@
         </svg>
     </a>
 
-<?php
-// Afficher les messages d'erreur ou de succés
-if (isset($_GET['error'])) {
-    switch($_GET['error']) {
-        case 'email_exists':
-            echo '<div class="error">Cet email est déjà utilisé !</div>';
-            break;
-        case 'pending_exists':
-            echo '<div class="error">Un code de vérification a déjà été envoyé à cet email</div>';
-            break;
-        case 'creation_failed':
-            echo '<div class="error">Erreur lors de l\'inscription</div>';
-            break;
-        case 'email_send_failed':
-            echo '<div class="error">Erreur lors de l\'envoi de l\'email</div>';
-            break;
-    }
-}
-?>
+    <?php if (isset($error_message)): ?>
+        <div class="error"><?= htmlspecialchars($error_message) ?></div>
+    <?php endif; ?>
 
-    <form class="card" method="POST" action="../controllers/traitement.php">
+    <form class="card" method="POST" action="/index.php?action=signup">
 
         <label for="nom">Nom</label>
         <input type="text" id="nom" name="nom" placeholder="Entrez votre nom..." required><br>
@@ -63,10 +47,11 @@ if (isset($_GET['error'])) {
         <button type="submit" class="btn-submit" name="ok">Inscription</button>
 
         <div class="text-center mt-2">
-            <a href="connexion.php">Déjà un compte ? Se connecter</a>
+            <a href="/index.php?action=login">Déjà un compte ? Se connecter</a>
         </div>
 
     </form>
 </div>
 </body>
 </html>
+
