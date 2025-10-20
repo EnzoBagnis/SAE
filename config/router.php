@@ -125,8 +125,10 @@ class Router {
      */
     private function loadNamespacedController($fullyQualifiedClassName, $method) {
         // Convert namespace to file path
-        $classPath = str_replace('\\', DIRECTORY_SEPARATOR, $fullyQualifiedClassName);
-        $controllerFile = __DIR__ . '/../' . $classPath . '.php';
+        // Replace Controllers\ with controllers\ and all remaining backslashes with directory separator
+        $classPath = str_replace('Controllers\\', 'controllers' . DIRECTORY_SEPARATOR, $fullyQualifiedClassName);
+        $classPath = str_replace('\\', DIRECTORY_SEPARATOR, $classPath);
+        $controllerFile = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $classPath . '.php';
 
         if (file_exists($controllerFile)) {
             require_once $controllerFile;
