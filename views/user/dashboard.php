@@ -65,18 +65,18 @@
     </nav>
 
     <div class="dashboard-container">
-        <!-- Sidebar gauche pour les TPs -->
+        <!-- Sidebar gauche pour les Étudiants -->
         <aside class="sidebar">
-            <h2>Liste des TPs</h2>
-            <div class="tp-list" id="tp-list">
-                <!-- La liste des TPs sera ajoutée ici dynamiquement via JavaScript -->
+            <h2>Liste des Étudiants</h2>
+            <div class="student-list" id="student-list">
+                <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
             </div>
         </aside>
 
         <!-- Zone principale de visualisation -->
         <main class="main-content">
             <div class="data-zone">
-                <p class="placeholder-message">Les jeux de données seront affichés ici</p>
+                <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
             </div>
         </main>
     </div>

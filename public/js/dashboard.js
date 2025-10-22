@@ -1,10 +1,10 @@
 // Variables globales
-let currentTPId = null;
+let currentStudentId = null;
 let currentPage = 1;
-const TPsPerPage = 15;
+const studentsPerPage = 15;
 let isLoading = false;
-let hasMoreTPs = true;
-let allTPs = []; // Stockage de tous les TPs pour le menu burger
+let hasMoreStudents = true;
+let allStudents = []; // Stockage de tous les étudiants pour le menu burger
 
 // Fonction de confirmation de déconnexion
 function confirmLogout() {
@@ -29,19 +29,19 @@ window.onclick = function(event) {
     }
 }
 
-// Charger les TPs au chargement de la page
+// Charger les étudiants au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    loadTPs();
+    loadStudents();
     setupInfiniteScroll();
-    loadBurgerTPs(); // Charger les TPs pour le menu burger
+    loadBurgerStudents(); // Charger les étudiants pour le menu burger
 });
 
-// Fonction pour charger la liste des TPs depuis le serveur
-async function loadTPs() {
-    if (isLoading || !hasMoreTPs) return;
+// Fonction pour charger la liste des étudiants depuis le serveur
+async function loadStudents() {
+    if (isLoading || !hasMoreStudents) return;
 
     isLoading = true;
-    const tpList = document.getElementById('tp-list');
+    const studentList = document.getElementById('student-list');
 
     // Ajouter un indicateur de chargement
     const loadingDiv = document.createElement('div');
@@ -50,41 +50,41 @@ async function loadTPs() {
     loadingDiv.style.padding = '1rem';
     loadingDiv.style.color = '#3498db';
     loadingDiv.innerHTML = '⏳ Chargement...';
-    tpList.appendChild(loadingDiv);
+    studentList.appendChild(loadingDiv);
 
     try {
-        // Appel à l'API PHP pour récupérer les TPs (nouvelle route)
-        const response = await fetch('/index.php?action=workshops&page=' + currentPage + '&perPage=' + TPsPerPage);
+        // Appel à l'API PHP pour récupérer les étudiants
+        const response = await fetch('/index.php?action=students&page=' + currentPage + '&perPage=' + studentsPerPage);
 
         if (!response.ok) {
-            throw new Error('Erreur lors du chargement des TPs');
+            throw new Error('Erreur lors du chargement des étudiants');
         }
 
         const result = await response.json();
 
         if (result.success) {
-            displayTPs(result.data.tps);
-            hasMoreTPs = result.data.hasMore;
+            displayStudents(result.data.students);
+            hasMoreStudents = result.data.hasMore;
             currentPage++;
 
-            // Afficher un message si tous les TPs sont chargés
-            if (!hasMoreTPs) {
+            // Afficher un message si tous les étudiants sont chargés
+            if (!hasMoreStudents) {
                 const endMessage = document.createElement('p');
                 endMessage.className = 'end-message';
                 endMessage.style.textAlign = 'center';
                 endMessage.style.color = '#7f8c8d';
                 endMessage.style.padding = '1rem';
                 endMessage.style.fontSize = '0.9rem';
-                endMessage.textContent = result.data.total + ' TPs affichés';
-                tpList.appendChild(endMessage);
+                endMessage.textContent = result.data.total + ' étudiants affichés';
+                studentList.appendChild(endMessage);
             }
         }
     } catch (error) {
         console.error('Erreur:', error);
-        tpList.innerHTML += '<p style="text-align: center; color: #e74c3c;">Erreur de chargement</p>';
+        studentList.innerHTML += '<p style="text-align: center; color: #e74c3c;">Erreur de chargement</p>';
     } finally {
         // Supprimer le message de chargement
-        const loadingMsg = tpList.querySelector('.loading-message');
+        const loadingMsg = studentList.querySelector('.loading-message');
         if (loadingMsg) {
             loadingMsg.remove();
         }
@@ -92,88 +92,88 @@ async function loadTPs() {
     }
 }
 
-// Afficher les TPs dans la sidebar
-function displayTPs(tps) {
-    const tpList = document.getElementById('tp-list');
+// Afficher les étudiants dans la sidebar
+function displayStudents(students) {
+    const studentList = document.getElementById('student-list');
 
-    if (!tpList) return;
+    if (!studentList) return;
 
-    if (tps.length === 0 && currentPage === 1) {
-        tpList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Aucun TP disponible</p>';
+    if (students.length === 0 && currentPage === 1) {
+        studentList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Aucun étudiant disponible</p>';
         return;
     }
 
-    tps.forEach(function(tp) {
+    students.forEach(function(student) {
         // Stocker dans la liste globale pour le menu burger
-        if (!allTPs.find(t => t.id === tp.id)) {
-            allTPs.push(tp);
+        if (!allStudents.find(s => s.id === student.id)) {
+            allStudents.push(student);
         }
 
-        const tpItem = document.createElement('div');
-        tpItem.className = 'tp-item';
-        tpItem.dataset.tpId = tp.id;
+        const studentItem = document.createElement('div');
+        studentItem.className = 'student-item';
+        studentItem.dataset.studentId = student.id;
 
         const title = document.createElement('h3');
-        title.textContent = tp.title;
-        tpItem.appendChild(title);
+        title.textContent = student.title;
+        studentItem.appendChild(title);
 
-        tpItem.addEventListener('click', function() {
-            selectTP(tp.id);
+        studentItem.addEventListener('click', function() {
+            selectStudent(student.id);
         });
 
-        tpList.appendChild(tpItem);
+        studentList.appendChild(studentItem);
     });
 
-    // Mettre à jour le menu burger avec les nouveaux TPs
-    updateBurgerTPList();
+    // Mettre à jour le menu burger avec les nouveaux étudiants
+    updateBurgerStudentList();
 }
 
 // Configuration du scroll infini
 function setupInfiniteScroll() {
-    const tpList = document.getElementById('tp-list');
+    const studentList = document.getElementById('student-list');
 
-    if (!tpList) return;
+    if (!studentList) return;
 
-    tpList.addEventListener('scroll', function() {
+    studentList.addEventListener('scroll', function() {
         // Vérifier si on est proche du bas
-        const scrollPosition = tpList.scrollTop + tpList.clientHeight;
-        const scrollHeight = tpList.scrollHeight;
+        const scrollPosition = studentList.scrollTop + studentList.clientHeight;
+        const scrollHeight = studentList.scrollHeight;
 
         // Si on est à 80% du scroll et qu'on n'est pas en train de charger
-        if (scrollPosition >= scrollHeight * 0.8 && !isLoading && hasMoreTPs) {
-            loadTPs();
+        if (scrollPosition >= scrollHeight * 0.8 && !isLoading && hasMoreStudents) {
+            loadStudents();
         }
     });
 }
 
-// Sélectionner un TP
-function selectTP(tpId) {
-    currentTPId = tpId;
+// Sélectionner un étudiant
+function selectStudent(studentId) {
+    currentStudentId = studentId;
 
     // Mettre à jour l'état actif des éléments dans la sidebar
-    document.querySelectorAll('.tp-item').forEach(function(item) {
+    document.querySelectorAll('.student-item').forEach(function(item) {
         item.classList.remove('active');
     });
 
-    const selectedItem = document.querySelector('[data-tp-id="' + tpId + '"]');
+    const selectedItem = document.querySelector('[data-student-id="' + studentId + '"]');
     if (selectedItem) {
         selectedItem.classList.add('active');
     }
 
     // Mettre à jour le menu burger
-    document.querySelectorAll('#burgerTPList a').forEach(function(link) {
+    document.querySelectorAll('#burgerStudentList a').forEach(function(link) {
         link.classList.remove('active');
-        if (link.dataset.tpId == tpId) {
+        if (link.dataset.studentId == studentId) {
             link.classList.add('active');
         }
     });
 
-    // Charger et afficher le contenu du TP
-    loadTPContent(tpId);
+    // Charger et afficher le contenu de l'étudiant
+    loadStudentContent(studentId);
 }
 
-// Charger le contenu d'un TP
-async function loadTPContent(tpId) {
+// Charger le contenu d'un étudiant
+async function loadStudentContent(studentId) {
     const dataZone = document.querySelector('.data-zone');
 
     if (!dataZone) return;
@@ -182,37 +182,62 @@ async function loadTPContent(tpId) {
     dataZone.innerHTML = '<div class="loading-spinner">⏳ Chargement...</div>';
 
     try {
-        // Appel à l'API PHP pour récupérer le contenu du TP
-        const response = await fetch('../controllers/tpController.php?action=get&id=' + tpId);
+        // Appel à l'API PHP pour récupérer le contenu de l'étudiant
+        const response = await fetch('/index.php?action=student&id=' + studentId);
 
         if (!response.ok) {
-            throw new Error('Erreur lors du chargement du TP');
+            throw new Error('Erreur lors du chargement de l\'étudiant');
         }
 
         const result = await response.json();
 
         if (result.success) {
-            const tp = result.data;
+            const student = result.data;
 
-            // Afficher simplement le titre du TP
+            // Créer l'affichage des données de l'étudiant
             const titleElement = document.createElement('h2');
-            titleElement.textContent = tp.title;
+            titleElement.textContent = 'Étudiant ' + student.id;
 
-            const descElement = document.createElement('p');
-            descElement.style.color = '#7f8c8d';
-            descElement.style.marginTop = '2rem';
-            descElement.textContent = 'Visualisation des données pour ' + tp.title;
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'student-data';
+            contentDiv.style.marginTop = '2rem';
+
+            // Afficher toutes les propriétés de l'étudiant
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+
+            for (const [key, value] of Object.entries(student)) {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #e0e0e0';
+
+                const keyCell = document.createElement('td');
+                keyCell.style.padding = '0.75rem';
+                keyCell.style.fontWeight = 'bold';
+                keyCell.style.width = '30%';
+                keyCell.textContent = key;
+
+                const valueCell = document.createElement('td');
+                valueCell.style.padding = '0.75rem';
+                valueCell.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
+
+                row.appendChild(keyCell);
+                row.appendChild(valueCell);
+                table.appendChild(row);
+            }
+
+            contentDiv.appendChild(table);
 
             dataZone.innerHTML = '';
             dataZone.appendChild(titleElement);
-            dataZone.appendChild(descElement);
+            dataZone.appendChild(contentDiv);
 
             // Scroll vers le haut du contenu principal
             document.querySelector('.main-content').scrollTop = 0;
         }
     } catch (error) {
         console.error('Erreur:', error);
-        dataZone.innerHTML = '<p class="placeholder-message">Erreur lors du chargement du TP</p>';
+        dataZone.innerHTML = '<p class="placeholder-message">Erreur lors du chargement de l\'étudiant</p>';
     }
 }
 
@@ -261,70 +286,64 @@ function closeBurgerMenu() {
     document.body.style.overflow = '';
 }
 
-// Toggle du sous-menu des TPs
-function toggleTPSubmenu(event) {
+// Toggle du sous-menu des étudiants
+function toggleStudentSubmenu(event) {
     event.preventDefault();
-    const submenu = document.getElementById('burgerTPList');
+    const submenu = document.getElementById('burgerStudentList');
     const arrow = event.currentTarget.querySelector('.submenu-arrow');
 
     submenu.classList.toggle('active');
     arrow.classList.toggle('rotated');
 }
 
-// Charger tous les TPs pour le menu burger
-async function loadBurgerTPs() {
+// Charger tous les étudiants pour le menu burger
+async function loadBurgerStudents() {
     try {
-        // Charger tous les TPs (on peut limiter à 50 pour l'exemple)
-        const response = await fetch('../controllers/tpController.php?action=list&page=1&perPage=50');
+        // Charger tous les étudiants (on peut limiter à 50 pour l'exemple)
+        const response = await fetch('/index.php?action=students&page=1&perPage=50');
 
         if (!response.ok) {
-            throw new Error('Erreur lors du chargement des TPs');
+            throw new Error('Erreur lors du chargement des étudiants');
         }
 
         const result = await response.json();
 
         if (result.success) {
-            allTPs = result.data.tps;
-            updateBurgerTPList();
+            allStudents = result.data.students;
+            updateBurgerStudentList();
         }
     } catch (error) {
-        console.error('Erreur lors du chargement des TPs pour le menu burger:', error);
+        console.error('Erreur lors du chargement des étudiants pour le menu burger:', error);
     }
 }
 
-// Mettre à jour la liste des TPs dans le menu burger
-function updateBurgerTPList() {
-    const burgerTPList = document.getElementById('burgerTPList');
+// Mettre à jour la liste des étudiants dans le menu burger
+function updateBurgerStudentList() {
+    const burgerStudentList = document.getElementById('burgerStudentList');
 
-    if (!burgerTPList) return;
+    if (!burgerStudentList) return;
 
-    burgerTPList.innerHTML = '';
+    burgerStudentList.innerHTML = '';
 
-    if (allTPs.length === 0) {
-        const emptyItem = document.createElement('li');
-        emptyItem.innerHTML = '<a href="#" style="color: #95a5a6; cursor: default;">Aucun TP disponible</a>';
-        burgerTPList.appendChild(emptyItem);
-        return;
-    }
-
-    allTPs.forEach(function(tp) {
+    allStudents.forEach(function(student) {
         const li = document.createElement('li');
         const link = document.createElement('a');
         link.href = '#';
-        link.textContent = tp.title;
-        link.dataset.tpId = tp.id;
+        link.textContent = student.title;
+        link.dataset.studentId = student.id;
+        link.className = 'burger-submenu-link';
 
-        if (tp.id === currentTPId) {
+        if (student.id === currentStudentId) {
             link.classList.add('active');
         }
 
-        link.addEventListener('click', function(e) {
+        link.onclick = function(e) {
             e.preventDefault();
-            selectTP(tp.id);
+            selectStudent(student.id);
             closeBurgerMenu();
-        });
+        };
 
         li.appendChild(link);
-        burgerTPList.appendChild(li);
+        burgerStudentList.appendChild(li);
     });
 }
