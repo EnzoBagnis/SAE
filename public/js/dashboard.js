@@ -217,7 +217,7 @@ async function loadStudentContent(studentId) {
 
             const rawDataTab = document.createElement('button');
             rawDataTab.className = 'tab-button active';
-            rawDataTab.textContent = '📊 Données brutes';
+            rawDataTab.textContent = 'Données brutes';
             rawDataTab.onclick = () => switchTab('raw');
             rawDataTab.style.padding = '0.75rem 1.5rem';
             rawDataTab.style.border = 'none';
@@ -231,7 +231,7 @@ async function loadStudentContent(studentId) {
 
             const visualizationTab = document.createElement('button');
             visualizationTab.className = 'tab-button';
-            visualizationTab.textContent = '📈 Visualisation';
+            visualizationTab.textContent = 'Visualisation';
             visualizationTab.onclick = () => switchTab('visualization');
             visualizationTab.style.padding = '0.75rem 1.5rem';
             visualizationTab.style.border = 'none';
