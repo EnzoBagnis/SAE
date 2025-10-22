@@ -44,18 +44,19 @@ class Student {
         }
 
         // Tri naturel pour les identifiants numériques
-        // Support pour userId_XX ou userid_XX (insensible à la casse)
+        // Support pour userId_XX, userid_XX, ou userIdI_XX (insensible à la casse)
         usort($students, function($a, $b) {
-            // Extraire les numéros de userId_XX ou userid_XX (case-insensitive)
+            // Extraire les numéros - pattern flexible pour capturer le numéro après le dernier underscore
             $numA = 0;
             $numB = 0;
 
-            // Utiliser le flag 'i' pour rendre le regex insensible à la casse
-            if (preg_match('/userid_(\d+)/i', $a, $matchA)) {
+            // Pattern: chercher n'importe quel texte suivi de underscore et des chiffres
+            // Ex: userId_1, userid_10, userIdI_5, etc.
+            if (preg_match('/_(\d+)$/', $a, $matchA)) {
                 $numA = (int)$matchA[1];
             }
 
-            if (preg_match('/userid_(\d+)/i', $b, $matchB)) {
+            if (preg_match('/_(\d+)$/', $b, $matchB)) {
                 $numB = (int)$matchB[1];
             }
 
