@@ -12,11 +12,9 @@ export class StudentContentManager {
         this.attemptsRenderer = new AttemptsRenderer();
     }
 
-    // Sélectionner un étudiant
     selectStudent(studentId) {
         this.currentStudentId = studentId;
 
-        // Mettre à jour l'état actif dans la sidebar
         document.querySelectorAll('.student-item').forEach((item) => {
             item.classList.remove('active');
         });
@@ -26,7 +24,6 @@ export class StudentContentManager {
             selectedItem.classList.add('active');
         }
 
-        // Mettre à jour le menu burger
         document.querySelectorAll('#burgerStudentList a').forEach((link) => {
             link.classList.remove('active');
             if (link.dataset.studentId === studentId.toString()) {
@@ -34,27 +31,20 @@ export class StudentContentManager {
             }
         });
 
-        // Charger le contenu
         this.loadStudentContent(studentId);
     }
 
-    // Charger le contenu d'un étudiant
     async loadStudentContent(studentId) {
         const dataZone = document.querySelector('.data-zone');
-
         if (!dataZone) return;
 
         dataZone.innerHTML = '<div class="loading-spinner">⏳ Chargement...</div>';
 
         try {
             const response = await fetch(`/index.php?action=student&id=${studentId}`);
-
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement de l\'étudiant');
-            }
+            if (!response.ok) throw new Error('Erreur lors du chargement de l\'étudiant');
 
             const result = await response.json();
-
             if (result.success) {
                 const { userId, attempts, stats } = result.data;
                 this.renderStudentData(dataZone, userId, attempts, stats);
@@ -65,48 +55,37 @@ export class StudentContentManager {
         }
     }
 
-    // Afficher les données de l'étudiant
     renderStudentData(dataZone, userId, attempts, stats) {
         dataZone.innerHTML = '';
 
-        // Titre
         const titleElement = document.createElement('h2');
         titleElement.textContent = userId;
         titleElement.style.marginBottom = '1.5rem';
         dataZone.appendChild(titleElement);
 
-        // Créer les onglets
         const tabsContainer = this.tabManager.createTabs();
         dataZone.appendChild(tabsContainer);
 
-        // Créer le contenu des données brutes
         const rawDataContent = document.createElement('div');
         rawDataContent.id = 'raw-data-content';
         rawDataContent.className = 'tab-content active';
 
-        // Ajouter les statistiques
         const statsDiv = this.statsRenderer.renderStats(stats);
         rawDataContent.appendChild(statsDiv);
 
-        // Ajouter les tentatives
         const { title: attemptsTitle, container: attemptsContainer } = this.attemptsRenderer.renderAttempts(attempts);
         rawDataContent.appendChild(attemptsTitle);
         rawDataContent.appendChild(attemptsContainer);
 
-        // Créer le contenu de visualisation
         const visualizationContent = this.createVisualizationContent();
 
         dataZone.appendChild(rawDataContent);
         dataZone.appendChild(visualizationContent);
 
-        // Scroll vers le haut
         const mainContent = document.querySelector('.main-content');
-        if (mainContent) {
-            mainContent.scrollTop = 0;
-        }
+        if (mainContent) mainContent.scrollTop = 0;
     }
 
-    // Créer le contenu de visualisation
     createVisualizationContent() {
         const visualizationContent = document.createElement('div');
         visualizationContent.id = 'visualization-content';
@@ -133,3 +112,4 @@ export class StudentContentManager {
         return this.currentStudentId;
     }
 }
+

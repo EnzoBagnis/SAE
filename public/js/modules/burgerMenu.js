@@ -7,14 +7,12 @@ export class BurgerMenuManager {
     }
 
     setupEventListeners() {
-        // Écouter les mises à jour de la liste des étudiants
         window.addEventListener('studentsUpdated', (e) => {
             this.allStudents = e.detail;
             this.updateStudentList();
         });
     }
 
-    // Toggle du menu burger
     toggleMenu() {
         const burgerNav = document.getElementById('burgerNav');
         const burgerBtn = document.getElementById('burgerBtn');
@@ -42,7 +40,6 @@ export class BurgerMenuManager {
         }
     }
 
-    // Fermer le menu burger
     closeMenu() {
         const burgerNav = document.getElementById('burgerNav');
         const burgerBtn = document.getElementById('burgerBtn');
@@ -56,7 +53,6 @@ export class BurgerMenuManager {
         document.body.style.overflow = '';
     }
 
-    // Toggle du sous-menu des étudiants
     toggleStudentSubmenu(event) {
         const submenu = document.getElementById('burgerStudentList');
         const arrow = event.currentTarget.querySelector('.submenu-arrow');
@@ -65,7 +61,6 @@ export class BurgerMenuManager {
         arrow.classList.toggle('rotated');
     }
 
-    // Mettre à jour la liste des étudiants
     updateStudentList() {
         const burgerStudentList = document.getElementById('burgerStudentList');
 
@@ -92,7 +87,6 @@ export class BurgerMenuManager {
         });
     }
 
-    // Mettre à jour l'étudiant actif
     updateActiveStudent(studentId) {
         document.querySelectorAll('#burgerStudentList a').forEach((link) => {
             link.classList.remove('active');

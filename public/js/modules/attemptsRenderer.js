@@ -1,7 +1,6 @@
 // Module de rendu des tentatives
 
 export class AttemptsRenderer {
-    // Rendre l'historique des tentatives
     renderAttempts(attempts) {
         const attemptsTitle = document.createElement('h3');
         attemptsTitle.textContent = `Historique des tentatives (${attempts.length})`;
@@ -20,7 +19,6 @@ export class AttemptsRenderer {
         return { title: attemptsTitle, container: attemptsContainer };
     }
 
-    // Créer une carte de tentative
     createAttemptCard(attempt, index) {
         const card = document.createElement('div');
         Object.assign(card.style, {
@@ -32,21 +30,17 @@ export class AttemptsRenderer {
             boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
         });
 
-        // Header
         const header = this.createAttemptHeader(attempt, index);
         card.appendChild(header);
 
-        // Détails
         const detailsTable = this.createDetailsTable(attempt);
         card.appendChild(detailsTable);
 
-        // Code soumis
         if (attempt.upload) {
             const codeSection = this.createCodeSection(attempt.upload);
             card.appendChild(codeSection);
         }
 
-        // Test cases
         if (attempt.test_cases && Array.isArray(attempt.test_cases) && attempt.test_cases.length > 0) {
             const testCasesSection = this.createTestCasesSection(attempt);
             card.appendChild(testCasesSection);
@@ -55,7 +49,6 @@ export class AttemptsRenderer {
         return card;
     }
 
-    // Créer le header de la tentative
     createAttemptHeader(attempt, index) {
         const header = document.createElement('div');
         Object.assign(header.style, {
@@ -83,7 +76,6 @@ export class AttemptsRenderer {
         return header;
     }
 
-    // Créer le badge de statut
     createStatusBadge(correct) {
         const badge = document.createElement('span');
         const isCorrect = correct === 1 || correct === '1';
@@ -101,7 +93,6 @@ export class AttemptsRenderer {
         return badge;
     }
 
-    // Créer le tableau des détails
     createDetailsTable(attempt) {
         const table = document.createElement('table');
         table.style.width = '100%';
@@ -141,7 +132,6 @@ export class AttemptsRenderer {
         return table;
     }
 
-    // Créer la section de code
     createCodeSection(upload) {
         const container = document.createElement('div');
 
@@ -178,7 +168,6 @@ export class AttemptsRenderer {
         return container;
     }
 
-    // Créer la section des test cases
     createTestCasesSection(attempt) {
         const container = document.createElement('div');
 
@@ -227,7 +216,6 @@ export class AttemptsRenderer {
         return container;
     }
 
-    // Créer une carte de test case
     createTestCaseCard(testCase, index, passed, funcname) {
         const card = document.createElement('div');
         Object.assign(card.style, {
@@ -295,7 +283,6 @@ export class AttemptsRenderer {
         inputValue.textContent = this.formatTestCaseInput(testCase, funcname);
         card.appendChild(inputValue);
 
-        // Effet hover
         card.addEventListener('mouseenter', () => {
             card.style.transform = 'translateY(-2px)';
             card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
@@ -308,7 +295,6 @@ export class AttemptsRenderer {
         return card;
     }
 
-    // Formater l'entrée du test case
     formatTestCaseInput(testCase, funcname) {
         if (typeof testCase === 'object' && testCase !== null) {
             if (testCase.__tuple__ && Array.isArray(testCase.items)) {
@@ -329,7 +315,6 @@ export class AttemptsRenderer {
         }
     }
 
-    // Créer le résumé des test cases
     createTestCaseSummary(passedCount, totalCount) {
         const summary = document.createElement('div');
         const allPassed = passedCount === totalCount;

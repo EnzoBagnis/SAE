@@ -1,7 +1,6 @@
 // Module de rendu des statistiques
 
 export class StatsRenderer {
-    // Créer les cartes de statistiques
     renderStats(stats) {
         const statsDiv = document.createElement('div');
         statsDiv.className = 'student-stats';
@@ -25,7 +24,6 @@ export class StatsRenderer {
         return statsDiv;
     }
 
-    // Créer une carte de statistique
     createStatCard({ label, value, color }) {
         const card = document.createElement('div');
         const styles = {

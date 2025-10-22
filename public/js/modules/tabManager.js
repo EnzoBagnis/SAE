@@ -5,7 +5,6 @@ export class TabManager {
         this.currentTab = 'raw';
     }
 
-    // Créer les onglets
     createTabs() {
         const tabsContainer = document.createElement('div');
         tabsContainer.className = 'tabs-container';
@@ -14,8 +13,8 @@ export class TabManager {
         tabsContainer.style.display = 'flex';
         tabsContainer.style.gap = '0.5rem';
 
-        const rawDataTab = this.createTabButton('Données brutes', 'raw', true);
-        const visualizationTab = this.createTabButton('Visualisation', 'visualization', false);
+        const rawDataTab = this.createTabButton('📊 Données brutes', 'raw', true);
+        const visualizationTab = this.createTabButton('📈 Visualisation', 'visualization', false);
 
         tabsContainer.appendChild(rawDataTab);
         tabsContainer.appendChild(visualizationTab);
@@ -23,7 +22,6 @@ export class TabManager {
         return tabsContainer;
     }
 
-    // Créer un bouton d'onglet
     createTabButton(text, tabName, isActive) {
         const button = document.createElement('button');
         button.className = isActive ? 'tab-button active' : 'tab-button';
@@ -43,15 +41,12 @@ export class TabManager {
         };
 
         Object.assign(button.style, styles);
-
         return button;
     }
 
-    // Changer d'onglet
     switchTab(tabName) {
         this.currentTab = tabName;
 
-        // Mettre à jour les boutons
         const tabButtons = document.querySelectorAll('.tab-button');
         tabButtons.forEach((button) => {
             button.classList.remove('active');
@@ -66,7 +61,6 @@ export class TabManager {
             activeButton.style.borderBottom = '3px solid #3498db';
         }
 
-        // Mettre à jour les contenus
         const rawContent = document.getElementById('raw-data-content');
         const vizContent = document.getElementById('visualization-content');
 
