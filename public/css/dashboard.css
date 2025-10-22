@@ -83,6 +83,7 @@
     flex-direction: column;
     height: calc(100vh - 80px);
     position: relative;
+    overflow: hidden;
 }
 
 .sidebar h2 {
@@ -111,10 +112,10 @@
     overflow-x: hidden;
     flex: 1;
     padding-right: 0.5rem;
-    max-height: calc(100vh - 80px - 4rem - 3rem);
-    min-height: 0;
+    height: 100%;
 }
 
+/* TP and Student Items */
 .tp-item {
     background: white;
     padding: 1rem 1.25rem;

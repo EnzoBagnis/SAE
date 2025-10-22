@@ -50,7 +50,7 @@ class StudentsController extends \BaseController {
             foreach ($result['students'] as $userId) {
                 $formattedStudents[] = [
                     'id' => $userId,
-                    'title' => $userId // Afficher "userId_36" directement
+                    'title' => $userId // Afficher "userId_XX" directement
                 ];
             }
 
@@ -64,7 +64,7 @@ class StudentsController extends \BaseController {
                     'hasMore' => $result['hasMore']
                 ]
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
@@ -127,7 +127,7 @@ class StudentsController extends \BaseController {
                     'stats' => $stats
                 ]
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode([
                 'success' => false,

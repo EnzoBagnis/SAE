@@ -43,7 +43,18 @@ class Student {
             }
         }
 
-        sort($students);
+        // Tri numérique basé sur le numéro après "userId_"
+        usort($students, function($a, $b) {
+            // Extraire le numéro de userId_XX
+            preg_match('/userId_(\d+)/', $a, $matchA);
+            preg_match('/userId_(\d+)/', $b, $matchB);
+
+            $numA = isset($matchA[1]) ? (int)$matchA[1] : 0;
+            $numB = isset($matchB[1]) ? (int)$matchB[1] : 0;
+
+            return $numA - $numB;
+        });
+
         return $students;
     }
 

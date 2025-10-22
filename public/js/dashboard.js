@@ -321,12 +321,16 @@ async function loadStudentContent(studentId) {
                     const valueCell = document.createElement('td');
                     valueCell.style.padding = '0.5rem';
                     valueCell.style.color = '#333';
-                    valueCell.textContent = detail.value;
+                    // S'assurer que la valeur est une chaîne simple
+                    valueCell.textContent = typeof detail.value === 'string' ? detail.value : String(detail.value);
 
                     row.appendChild(labelCell);
                     row.appendChild(valueCell);
                     detailsTable.appendChild(row);
                 });
+
+                attemptCard.appendChild(attemptHeader);
+                attemptCard.appendChild(detailsTable);
 
                 // Code soumis (si présent)
                 if (attempt.upload) {
@@ -343,16 +347,19 @@ async function loadStudentContent(studentId) {
                     codeBlock.style.borderRadius = '4px';
                     codeBlock.style.overflow = 'auto';
                     codeBlock.style.fontSize = '0.85rem';
-                    codeBlock.style.maxHeight = '200px';
-                    codeBlock.textContent = attempt.upload;
+                    codeBlock.style.maxHeight = '300px';
+                    codeBlock.style.whiteSpace = 'pre-wrap';
+                    codeBlock.style.wordBreak = 'break-word';
 
-                    attemptCard.appendChild(attemptHeader);
-                    attemptCard.appendChild(detailsTable);
+                    // Parser le contenu si c'est du JSON stringifié
+                    let uploadContent = attempt.upload;
+                    if (typeof uploadContent === 'object') {
+                        uploadContent = JSON.stringify(uploadContent, null, 2);
+                    }
+                    codeBlock.textContent = uploadContent;
+
                     attemptCard.appendChild(codeTitle);
                     attemptCard.appendChild(codeBlock);
-                } else {
-                    attemptCard.appendChild(attemptHeader);
-                    attemptCard.appendChild(detailsTable);
                 }
 
                 // AST (si présent)
