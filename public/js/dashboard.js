@@ -362,6 +362,113 @@ async function loadStudentContent(studentId) {
                     attemptCard.appendChild(codeBlock);
                 }
 
+                // Test Cases - Afficher les résultats des tests
+                if (attempt.res || attempt.aes1 || attempt.aes2 || attempt.aes3) {
+                    const testCasesTitle = document.createElement('div');
+                    testCasesTitle.style.fontWeight = 'bold';
+                    testCasesTitle.style.marginTop = '1.5rem';
+                    testCasesTitle.style.marginBottom = '0.75rem';
+                    testCasesTitle.style.color = '#2c3e50';
+                    testCasesTitle.style.fontSize = '1.1rem';
+                    testCasesTitle.textContent = '📋 Résultats des Test Cases';
+
+                    attemptCard.appendChild(testCasesTitle);
+
+                    // Conteneur pour les test cases
+                    const testCasesContainer = document.createElement('div');
+                    testCasesContainer.style.display = 'grid';
+                    testCasesContainer.style.gap = '0.5rem';
+                    testCasesContainer.style.marginTop = '0.5rem';
+
+                    // Collecter tous les test cases disponibles
+                    const testCases = [];
+
+                    // Si 'res' existe et contient les résultats
+                    if (attempt.res) {
+                        testCases.push({ name: 'Test principal', result: attempt.res, passed: attempt.correct == 1 });
+                    }
+
+                    // Ajouter les test cases AES s'ils existent
+                    if (attempt.aes1) {
+                        testCases.push({ name: 'Test Case 1', result: attempt.aes1, passed: attempt.aes1 === '1' || attempt.aes1 === 1 });
+                    }
+                    if (attempt.aes2) {
+                        testCases.push({ name: 'Test Case 2', result: attempt.aes2, passed: attempt.aes2 === '1' || attempt.aes2 === 1 });
+                    }
+                    if (attempt.aes3) {
+                        testCases.push({ name: 'Test Case 3', result: attempt.aes3, passed: attempt.aes3 === '1' || attempt.aes3 === 1 });
+                    }
+
+                    // Afficher chaque test case
+                    testCases.forEach((testCase, tcIndex) => {
+                        const testCaseRow = document.createElement('div');
+                        testCaseRow.style.display = 'flex';
+                        testCaseRow.style.alignItems = 'center';
+                        testCaseRow.style.justifyContent = 'space-between';
+                        testCaseRow.style.padding = '0.75rem 1rem';
+                        testCaseRow.style.background = testCase.passed ? '#f0f9ff' : '#fff5f5';
+                        testCaseRow.style.border = testCase.passed ? '1px solid #bfdbfe' : '1px solid #fecaca';
+                        testCaseRow.style.borderRadius = '6px';
+                        testCaseRow.style.transition = 'all 0.2s';
+
+                        // Nom du test
+                        const testName = document.createElement('span');
+                        testName.style.fontWeight = '500';
+                        testName.style.color = '#374151';
+                        testName.textContent = testCase.name;
+
+                        // Badge de statut
+                        const statusBadge = document.createElement('span');
+                        statusBadge.style.padding = '0.25rem 0.75rem';
+                        statusBadge.style.borderRadius = '12px';
+                        statusBadge.style.fontSize = '0.8rem';
+                        statusBadge.style.fontWeight = 'bold';
+
+                        if (testCase.passed) {
+                            statusBadge.style.background = '#10b981';
+                            statusBadge.style.color = 'white';
+                            statusBadge.textContent = '✓ Réussi';
+                        } else {
+                            statusBadge.style.background = '#ef4444';
+                            statusBadge.style.color = 'white';
+                            statusBadge.textContent = '✗ Échoué';
+                        }
+
+                        testCaseRow.appendChild(testName);
+                        testCaseRow.appendChild(statusBadge);
+                        testCasesContainer.appendChild(testCaseRow);
+
+                        // Effet hover
+                        testCaseRow.addEventListener('mouseenter', function() {
+                            testCaseRow.style.transform = 'translateX(3px)';
+                            testCaseRow.style.boxShadow = '0 2px 6px rgba(0,0,0,0.1)';
+                        });
+                        testCaseRow.addEventListener('mouseleave', function() {
+                            testCaseRow.style.transform = 'translateX(0)';
+                            testCaseRow.style.boxShadow = 'none';
+                        });
+                    });
+
+                    attemptCard.appendChild(testCasesContainer);
+
+                    // Ajouter un résumé
+                    const passedCount = testCases.filter(tc => tc.passed).length;
+                    const totalCount = testCases.length;
+
+                    const summary = document.createElement('div');
+                    summary.style.marginTop = '0.75rem';
+                    summary.style.padding = '0.5rem 1rem';
+                    summary.style.background = passedCount === totalCount ? '#ecfdf5' : '#fef3c7';
+                    summary.style.border = passedCount === totalCount ? '1px solid #a7f3d0' : '1px solid #fde68a';
+                    summary.style.borderRadius = '6px';
+                    summary.style.fontSize = '0.9rem';
+                    summary.style.fontWeight = '500';
+                    summary.style.color = passedCount === totalCount ? '#065f46' : '#92400e';
+                    summary.textContent = `${passedCount}/${totalCount} test(s) réussi(s)`;
+
+                    attemptCard.appendChild(summary);
+                }
+
                 attemptsContainer.appendChild(attemptCard);
             });
 
