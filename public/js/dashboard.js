@@ -362,6 +362,27 @@ async function loadStudentContent(studentId) {
                     attemptCard.appendChild(codeBlock);
                 }
 
+                // AST (si présent)
+                if (attempt.aes1 || attempt.aes2 || attempt.aes3) {
+                    const astTitle = document.createElement('div');
+                    astTitle.style.fontWeight = 'bold';
+                    astTitle.style.marginTop = '1rem';
+                    astTitle.style.marginBottom = '0.5rem';
+                    astTitle.style.color = '#2c3e50';
+                    astTitle.textContent = 'AST Info :';
+
+                    const astInfo = document.createElement('div');
+                    astInfo.style.fontSize = '0.85rem';
+                    astInfo.style.color = '#555';
+                    const astData = [];
+                    if (attempt.aes1) astData.push('AES1: ' + attempt.aes1);
+                    if (attempt.aes2) astData.push('AES2: ' + attempt.aes2);
+                    if (attempt.aes3) astData.push('AES3: ' + attempt.aes3);
+                    astInfo.textContent = astData.join(' | ');
+
+                    attemptCard.appendChild(astTitle);
+                    attemptCard.appendChild(astInfo);
+                }
 
                 attemptsContainer.appendChild(attemptCard);
             });
