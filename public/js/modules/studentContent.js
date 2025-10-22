@@ -1,8 +1,8 @@
 // Module de gestion du contenu des étudiants
 
-import { TabManager } from './tabManager.js';
-import { StatsRenderer } from './statsRenderer.js';
-import { AttemptsRenderer } from './attemptsRenderer.js';
+import { TabManager } from '/public/js/modules/tabManager.js';
+import { StatsRenderer } from '/public/js/modules/statsRenderer.js';
+import { AttemptsRenderer } from '/public/js/modules/attemptsRenderer.js';
 
 export class StudentContentManager {
     constructor() {
@@ -133,4 +133,3 @@ export class StudentContentManager {
         return this.currentStudentId;
     }
 }
-
