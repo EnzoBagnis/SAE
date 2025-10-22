@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/public/css/style.css">
     <link rel="stylesheet" href="/public/css/dashboard.css">
     <link rel="stylesheet" href="/public/css/footer.css">
-    <script src="/public/js/dashboard.js" defer></script>
+    <script type="module" src="/public/js/dashboard-main.js"></script>
 
     <!-- SEO Meta Tags -->
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
