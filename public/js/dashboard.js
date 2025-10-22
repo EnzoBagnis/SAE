@@ -196,7 +196,7 @@ async function loadStudentContent(studentId) {
 
             // Créer l'affichage des données de l'étudiant
             const titleElement = document.createElement('h2');
-            titleElement.textContent = 'Étudiant ' + student.id;
+            titleElement.textContent = 'Étudiant ' + studentId;
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'student-data';

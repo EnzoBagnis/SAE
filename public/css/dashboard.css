@@ -111,6 +111,8 @@
     overflow-x: hidden;
     flex: 1;
     padding-right: 0.5rem;
+    max-height: calc(100vh - 80px - 4rem - 3rem);
+    min-height: 0;
 }
 
 .tp-item {
