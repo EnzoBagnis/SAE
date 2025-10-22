@@ -1,10 +1,10 @@
 <?php
 namespace Controllers\Auth;
 
-require_once __DIR__ . '/../../models/database.php';
-require_once __DIR__ . '/../../models/user.php';
-require_once __DIR__ . '/../../models/inscriptionEnAttente.php';
-require_once __DIR__ . '/../../models/emailService.php';
+require_once __DIR__ . '/../../models/Database.php';
+require_once __DIR__ . '/../../models/User.php';
+require_once __DIR__ . '/../../models/PendingRegistration.php';
+require_once __DIR__ . '/../../models/EmailService.php';
 
 /**
  * AuthController - Authentication service with CRUD operations
@@ -171,4 +171,3 @@ class AuthController {
         $_SESSION['mail'] = $user['mail'];
     }
 }
-
