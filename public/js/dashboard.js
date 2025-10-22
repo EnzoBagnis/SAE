@@ -362,69 +362,74 @@ async function loadStudentContent(studentId) {
                     attemptCard.appendChild(codeBlock);
                 }
 
-                // Test Cases - Afficher les résultats des tests
-                if (attempt.res || attempt.aes1 || attempt.aes2 || attempt.aes3) {
+                // Test Cases - Afficher les test cases détaillés depuis les jeux de données
+                if (attempt.test_cases && Array.isArray(attempt.test_cases) && attempt.test_cases.length > 0) {
                     const testCasesTitle = document.createElement('div');
                     testCasesTitle.style.fontWeight = 'bold';
                     testCasesTitle.style.marginTop = '1.5rem';
                     testCasesTitle.style.marginBottom = '0.75rem';
                     testCasesTitle.style.color = '#2c3e50';
                     testCasesTitle.style.fontSize = '1.1rem';
-                    testCasesTitle.textContent = '📋 Résultats des Test Cases';
+                    testCasesTitle.textContent = '📋 Test Cases de l\'exercice';
 
                     attemptCard.appendChild(testCasesTitle);
 
                     // Conteneur pour les test cases
                     const testCasesContainer = document.createElement('div');
                     testCasesContainer.style.display = 'grid';
-                    testCasesContainer.style.gap = '0.5rem';
+                    testCasesContainer.style.gap = '0.75rem';
                     testCasesContainer.style.marginTop = '0.5rem';
 
-                    // Collecter tous les test cases disponibles
-                    const testCases = [];
+                    // Déterminer le statut de chaque test case
+                    // Si attempt.correct == 1, tous les tests sont réussis
+                    // Sinon, on essaie de récupérer les résultats individuels (aes1, aes2, aes3, etc.)
+                    const allPassed = attempt.correct == 1;
+                    let individualResults = [];
 
-                    // Si 'res' existe et contient les résultats
-                    if (attempt.res) {
-                        testCases.push({ name: 'Test principal', result: attempt.res, passed: attempt.correct == 1 });
-                    }
+                    // Récupérer les résultats individuels s'ils existent
+                    if (attempt.aes1 !== undefined) individualResults.push(attempt.aes1 === '1' || attempt.aes1 === 1);
+                    if (attempt.aes2 !== undefined) individualResults.push(attempt.aes2 === '1' || attempt.aes2 === 1);
+                    if (attempt.aes3 !== undefined) individualResults.push(attempt.aes3 === '1' || attempt.aes3 === 1);
 
-                    // Ajouter les test cases AES s'ils existent
-                    if (attempt.aes1) {
-                        testCases.push({ name: 'Test Case 1', result: attempt.aes1, passed: attempt.aes1 === '1' || attempt.aes1 === 1 });
-                    }
-                    if (attempt.aes2) {
-                        testCases.push({ name: 'Test Case 2', result: attempt.aes2, passed: attempt.aes2 === '1' || attempt.aes2 === 1 });
-                    }
-                    if (attempt.aes3) {
-                        testCases.push({ name: 'Test Case 3', result: attempt.aes3, passed: attempt.aes3 === '1' || attempt.aes3 === 1 });
-                    }
+                    let passedCount = 0;
 
                     // Afficher chaque test case
-                    testCases.forEach((testCase, tcIndex) => {
-                        const testCaseRow = document.createElement('div');
-                        testCaseRow.style.display = 'flex';
-                        testCaseRow.style.alignItems = 'center';
-                        testCaseRow.style.justifyContent = 'space-between';
-                        testCaseRow.style.padding = '0.75rem 1rem';
-                        testCaseRow.style.background = testCase.passed ? '#f0f9ff' : '#fff5f5';
-                        testCaseRow.style.border = testCase.passed ? '1px solid #bfdbfe' : '1px solid #fecaca';
-                        testCaseRow.style.borderRadius = '6px';
-                        testCaseRow.style.transition = 'all 0.2s';
+                    attempt.test_cases.forEach((testCase, tcIndex) => {
+                        // Déterminer si ce test case spécifique a réussi
+                        let testPassed = allPassed;
+                        if (!allPassed && individualResults.length > tcIndex) {
+                            testPassed = individualResults[tcIndex];
+                        }
 
-                        // Nom du test
-                        const testName = document.createElement('span');
-                        testName.style.fontWeight = '500';
-                        testName.style.color = '#374151';
-                        testName.textContent = testCase.name;
+                        if (testPassed) passedCount++;
 
-                        // Badge de statut
+                        const testCaseCard = document.createElement('div');
+                        testCaseCard.style.background = testPassed ? '#f0f9ff' : '#fff5f5';
+                        testCaseCard.style.border = testPassed ? '2px solid #bfdbfe' : '2px solid #fecaca';
+                        testCaseCard.style.borderRadius = '8px';
+                        testCaseCard.style.padding = '1rem';
+                        testCaseCard.style.transition = 'all 0.2s';
+
+                        // Header avec numéro et statut
+                        const testHeader = document.createElement('div');
+                        testHeader.style.display = 'flex';
+                        testHeader.style.justifyContent = 'space-between';
+                        testHeader.style.alignItems = 'center';
+                        testHeader.style.marginBottom = '0.75rem';
+
+                        const testNumber = document.createElement('span');
+                        testNumber.style.fontWeight = 'bold';
+                        testNumber.style.color = '#1f2937';
+                        testNumber.style.fontSize = '0.95rem';
+                        testNumber.textContent = `Test Case #${tcIndex + 1}`;
+
                         const statusBadge = document.createElement('span');
-                        statusBadge.style.padding = '0.25rem 0.75rem';
+                        statusBadge.style.padding = '0.3rem 0.75rem';
                         statusBadge.style.borderRadius = '12px';
                         statusBadge.style.fontSize = '0.8rem';
                         statusBadge.style.fontWeight = 'bold';
 
-                        if (testCase.passed) {
+                        if (testPassed) {
                             statusBadge.style.background = '#10b981';
                             statusBadge.style.color = 'white';
                             statusBadge.textContent = '✓ Réussi';
@@ -434,37 +439,85 @@ async function loadStudentContent(studentId) {
                             statusBadge.textContent = '✗ Échoué';
                         }
 
-                        testCaseRow.appendChild(testName);
-                        testCaseRow.appendChild(statusBadge);
-                        testCasesContainer.appendChild(testCaseRow);
+                        testHeader.appendChild(testNumber);
+                        testHeader.appendChild(statusBadge);
+                        testCaseCard.appendChild(testHeader);
+
+                        // Afficher les entrées du test case
+                        const inputLabel = document.createElement('div');
+                        inputLabel.style.fontWeight = '600';
+                        inputLabel.style.color = '#4b5563';
+                        inputLabel.style.fontSize = '0.85rem';
+                        inputLabel.style.marginBottom = '0.4rem';
+                        inputLabel.textContent = 'Entrée(s) :';
+                        testCaseCard.appendChild(inputLabel);
+
+                        const inputValue = document.createElement('div');
+                        inputValue.style.background = '#f9fafb';
+                        inputValue.style.padding = '0.6rem';
+                        inputValue.style.borderRadius = '4px';
+                        inputValue.style.fontFamily = 'monospace';
+                        inputValue.style.fontSize = '0.85rem';
+                        inputValue.style.color = '#1f2937';
+                        inputValue.style.overflowX = 'auto';
+                        inputValue.style.whiteSpace = 'pre-wrap';
+                        inputValue.style.wordBreak = 'break-word';
+
+                        // Formatter l'entrée selon son type
+                        let formattedInput = '';
+                        if (typeof testCase === 'object' && testCase !== null) {
+                            // Si c'est un objet avec __tuple__, c'est un tuple d'arguments
+                            if (testCase.__tuple__ && Array.isArray(testCase.items)) {
+                                if (attempt.funcname) {
+                                    formattedInput = attempt.funcname + '(' + testCase.items.map(item => JSON.stringify(item)).join(', ') + ')';
+                                } else {
+                                    formattedInput = 'Arguments: ' + testCase.items.map(item => JSON.stringify(item)).join(', ');
+                                }
+                            } else {
+                                formattedInput = JSON.stringify(testCase, null, 2);
+                            }
+                        } else {
+                            // Argument simple
+                            if (attempt.funcname) {
+                                formattedInput = attempt.funcname + '(' + JSON.stringify(testCase) + ')';
+                            } else {
+                                formattedInput = JSON.stringify(testCase);
+                            }
+                        }
+
+                        inputValue.textContent = formattedInput;
+                        testCaseCard.appendChild(inputValue);
+
+                        testCasesContainer.appendChild(testCaseCard);
 
                         // Effet hover
-                        testCaseRow.addEventListener('mouseenter', function() {
-                            testCaseRow.style.transform = 'translateX(3px)';
-                            testCaseRow.style.boxShadow = '0 2px 6px rgba(0,0,0,0.1)';
+                        testCaseCard.addEventListener('mouseenter', function() {
+                            testCaseCard.style.transform = 'translateY(-2px)';
+                            testCaseCard.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
                         });
-                        testCaseRow.addEventListener('mouseleave', function() {
-                            testCaseRow.style.transform = 'translateX(0)';
-                            testCaseRow.style.boxShadow = 'none';
+                        testCaseCard.addEventListener('mouseleave', function() {
+                            testCaseCard.style.transform = 'translateY(0)';
+                            testCaseCard.style.boxShadow = 'none';
                         });
                     });
 
                     attemptCard.appendChild(testCasesContainer);
 
                     // Ajouter un résumé
-                    const passedCount = testCases.filter(tc => tc.passed).length;
-                    const totalCount = testCases.length;
-
+                    const totalCount = attempt.test_cases.length;
                     const summary = document.createElement('div');
-                    summary.style.marginTop = '0.75rem';
-                    summary.style.padding = '0.5rem 1rem';
+                    summary.style.marginTop = '1rem';
+                    summary.style.padding = '0.75rem 1rem';
                     summary.style.background = passedCount === totalCount ? '#ecfdf5' : '#fef3c7';
-                    summary.style.border = passedCount === totalCount ? '1px solid #a7f3d0' : '1px solid #fde68a';
-                    summary.style.borderRadius = '6px';
-                    summary.style.fontSize = '0.9rem';
-                    summary.style.fontWeight = '500';
+                    summary.style.border = passedCount === totalCount ? '2px solid #a7f3d0' : '2px solid #fde68a';
+                    summary.style.borderRadius = '8px';
+                    summary.style.fontSize = '0.95rem';
+                    summary.style.fontWeight = '600';
                     summary.style.color = passedCount === totalCount ? '#065f46' : '#92400e';
-                    summary.textContent = `${passedCount}/${totalCount} test(s) réussi(s)`;
+                    summary.style.textAlign = 'center';
+
+                    const icon = passedCount === totalCount ? '✅' : '⚠️';
+                    summary.textContent = `${icon} Résultat : ${passedCount}/${totalCount} test case(s) réussi(s)`;
 
                     attemptCard.appendChild(summary);
                 }

@@ -5,9 +5,12 @@
  */
 class Student {
     private $dataFile;
+    private $exercisesFile;
+    private $exercisesData = null;
 
     public function __construct() {
         $this->dataFile = __DIR__ . '/../data/NewCaledonia_1014.json';
+        $this->exercisesFile = __DIR__ . '/../data/NewCaledonia_exercises.json';
     }
 
     /**
@@ -27,6 +30,47 @@ class Student {
         }
 
         return $data;
+    }
+
+    /**
+     * Load exercises data from JSON file
+     * @return array Array of exercises
+     */
+    private function loadExercises() {
+        if ($this->exercisesData !== null) {
+            return $this->exercisesData;
+        }
+
+        if (!file_exists($this->exercisesFile)) {
+            $this->exercisesData = [];
+            return $this->exercisesData;
+        }
+
+        $jsonContent = file_get_contents($this->exercisesFile);
+        $this->exercisesData = json_decode($jsonContent, true);
+
+        if (!is_array($this->exercisesData)) {
+            $this->exercisesData = [];
+        }
+
+        return $this->exercisesData;
+    }
+
+    /**
+     * Get exercise details by exercise name
+     * @param string $exerciseName Exercise name (exo_name)
+     * @return array|null Exercise details or null if not found
+     */
+    private function getExerciseByName($exerciseName) {
+        $exercises = $this->loadExercises();
+
+        foreach ($exercises as $exercise) {
+            if (isset($exercise['exo_name']) && $exercise['exo_name'] === $exerciseName) {
+                return $exercise;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -95,7 +139,7 @@ class Student {
     /**
      * Get all attempts for a specific student (user)
      * @param string $userId User ID (e.g., "userId_36")
-     * @return array Array of attempts for this user
+     * @return array Array of attempts for this user with test cases
      */
     public function getStudentAttempts($userId) {
         $allAttempts = $this->getAllAttempts();
@@ -103,6 +147,14 @@ class Student {
 
         foreach ($allAttempts as $attempt) {
             if (isset($attempt['user']) && $attempt['user'] === $userId) {
+                // Ajouter les test cases de l'exercice
+                if (isset($attempt['exercise_name'])) {
+                    $exercise = $this->getExerciseByName($attempt['exercise_name']);
+                    if ($exercise && isset($exercise['entries'])) {
+                        $attempt['test_cases'] = $exercise['entries'];
+                        $attempt['funcname'] = $exercise['funcname'] ?? null;
+                    }
+                }
                 $userAttempts[] = $attempt;
             }
         }
