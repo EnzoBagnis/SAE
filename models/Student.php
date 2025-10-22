@@ -43,16 +43,26 @@ class Student {
             }
         }
 
-        // Tri numérique basé sur le numéro après "userId_"
+        // Tri naturel pour les identifiants numériques (natsort)
+        // Cela trie correctement userId_1, userId_2, ..., userId_10, userId_11
         usort($students, function($a, $b) {
-            // Extraire le numéro de userId_XX
-            preg_match('/userId_(\d+)/', $a, $matchA);
-            preg_match('/userId_(\d+)/', $b, $matchB);
+            // Extraire les numéros de userId_XX
+            $numA = 0;
+            $numB = 0;
 
-            $numA = isset($matchA[1]) ? (int)$matchA[1] : 0;
-            $numB = isset($matchB[1]) ? (int)$matchB[1] : 0;
+            if (preg_match('/userId_(\d+)/', $a, $matchA)) {
+                $numA = (int)$matchA[1];
+            }
 
-            return $numA - $numB;
+            if (preg_match('/userId_(\d+)/', $b, $matchB)) {
+                $numB = (int)$matchB[1];
+            }
+
+            // Comparer les numéros extraits
+            if ($numA === $numB) {
+                return 0;
+            }
+            return ($numA < $numB) ? -1 : 1;
         });
 
         return $students;
