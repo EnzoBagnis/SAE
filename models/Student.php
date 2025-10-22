@@ -43,18 +43,19 @@ class Student {
             }
         }
 
-        // Tri naturel pour les identifiants numériques (natsort)
-        // Cela trie correctement userId_1, userId_2, ..., userId_10, userId_11
+        // Tri naturel pour les identifiants numériques
+        // Support pour userId_XX ou userid_XX (insensible à la casse)
         usort($students, function($a, $b) {
-            // Extraire les numéros de userId_XX
+            // Extraire les numéros de userId_XX ou userid_XX (case-insensitive)
             $numA = 0;
             $numB = 0;
 
-            if (preg_match('/userId_(\d+)/', $a, $matchA)) {
+            // Utiliser le flag 'i' pour rendre le regex insensible à la casse
+            if (preg_match('/userid_(\d+)/i', $a, $matchA)) {
                 $numA = (int)$matchA[1];
             }
 
-            if (preg_match('/userId_(\d+)/', $b, $matchB)) {
+            if (preg_match('/userid_(\d+)/i', $b, $matchB)) {
                 $numB = (int)$matchB[1];
             }
 
