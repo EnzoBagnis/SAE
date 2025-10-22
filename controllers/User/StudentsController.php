@@ -74,7 +74,7 @@ class StudentsController extends \BaseController {
             ]);
         }
     }
-
+     * Get student details and all attempts by ID
     /**
      * Get student details by ID
      */
@@ -92,9 +92,9 @@ class StudentsController extends \BaseController {
                 'message' => 'Non authentifié'
             ]);
             exit;
-        }
+        $userId = $_GET['id'] ?? null;
 
-        $studentId = $_GET['id'] ?? null;
+        if (!$userId) {
 
         if (!$studentId) {
             http_response_code(400);
@@ -104,20 +104,28 @@ class StudentsController extends \BaseController {
             ]);
             exit;
         }
+            // Get all attempts for this student
+            $attempts = $this->studentModel->getStudentAttempts($userId);
 
-        try {
-            $student = $this->studentModel->getStudentById($studentId);
+            if (empty($attempts)) {
 
             if (!$student) {
                 http_response_code(404);
-                echo json_encode([
+                    'message' => 'Aucune tentative trouvée pour cet étudiant'
                     'success' => false,
                     'message' => 'Étudiant non trouvé'
                 ]);
                 exit;
+            // Get statistics
+            $stats = $this->studentModel->getStudentStats($userId);
+
             }
 
-            echo json_encode([
+                'data' => [
+                    'userId' => $userId,
+                    'attempts' => $attempts,
+                    'stats' => $stats
+                ]
                 'success' => true,
                 'data' => $student
             ]);

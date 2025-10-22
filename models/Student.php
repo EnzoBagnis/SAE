@@ -11,10 +11,10 @@ class Student {
     }
 
     /**
-     * Get all students from JSON file
-     * @return array Array of students
+     * Get all attempts from JSON file
+     * @return array Array of attempts
      */
-    public function getAllStudents() {
+    public function getAllAttempts() {
         if (!file_exists($this->dataFile)) {
             return [];
         }
@@ -30,7 +30,25 @@ class Student {
     }
 
     /**
-     * Get paginated students
+     * Get all unique students (users)
+     * @return array Array of unique user IDs
+     */
+    public function getAllStudents() {
+        $allAttempts = $this->getAllAttempts();
+        $students = [];
+
+        foreach ($allAttempts as $attempt) {
+            if (isset($attempt['user']) && !in_array($attempt['user'], $students)) {
+                $students[] = $attempt['user'];
+            }
+        }
+
+        sort($students);
+        return $students;
+    }
+
+    /**
+     * Get paginated students (unique users)
      * @param int $page Current page number
      * @param int $perPage Number of items per page
      * @return array Paginated data with students and metadata
@@ -52,49 +70,55 @@ class Student {
     }
 
     /**
-     * Get student by ID
-     * @param string $studentId Student ID
-     * @return array|null Student data or null if not found
+     * Get all attempts for a specific student (user)
+     * @param string $userId User ID (e.g., "userId_36")
+     * @return array Array of attempts for this user
      */
-    public function getStudentById($studentId) {
-        $allStudents = $this->getAllStudents();
+    public function getStudentAttempts($userId) {
+        $allAttempts = $this->getAllAttempts();
+        $userAttempts = [];
 
-        // First, try to find by id field
-        foreach ($allStudents as $index => $student) {
-            if (isset($student['id']) && $student['id'] == $studentId) {
-                return $student;
-            }
-            if (isset($student['user_id']) && $student['user_id'] == $studentId) {
-                return $student;
-            }
-            if (isset($student['student_id']) && $student['student_id'] == $studentId) {
-                return $student;
+        foreach ($allAttempts as $attempt) {
+            if (isset($attempt['user']) && $attempt['user'] === $userId) {
+                $userAttempts[] = $attempt;
             }
         }
 
-        // If not found, try to get by index (1-based)
-        $index = (int)$studentId - 1;
-        if (isset($allStudents[$index])) {
-            return $allStudents[$index];
-        }
+        // Sort by date (most recent first)
+        usort($userAttempts, function($a, $b) {
+            $dateA = isset($a['date']) ? strtotime($a['date']) : 0;
+            $dateB = isset($b['date']) ? strtotime($b['date']) : 0;
+            return $dateB - $dateA;
+        });
 
-        return null;
+        return $userAttempts;
     }
 
     /**
-     * Get unique student IDs
-     * @return array Array of unique student IDs
+     * Get statistics for a student
+     * @param string $userId User ID
+     * @return array Statistics
      */
-    public function getStudentIds() {
-        $allStudents = $this->getAllStudents();
-        $ids = [];
+    public function getStudentStats($userId) {
+        $attempts = $this->getStudentAttempts($userId);
+        $total = count($attempts);
+        $correct = 0;
+        $exercises = [];
 
-        foreach ($allStudents as $student) {
-            if (isset($student['id'])) {
-                $ids[] = $student['id'];
+        foreach ($attempts as $attempt) {
+            if (isset($attempt['correct']) && $attempt['correct'] == 1) {
+                $correct++;
+            }
+            if (isset($attempt['exercise_name'])) {
+                $exercises[$attempt['exercise_name']] = true;
             }
         }
 
-        return array_unique($ids);
+        return [
+            'total_attempts' => $total,
+            'correct_attempts' => $correct,
+            'success_rate' => $total > 0 ? round(($correct / $total) * 100, 2) : 0,
+            'unique_exercises' => count($exercises)
+        ];
     }
 }
