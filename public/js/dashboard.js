@@ -5,6 +5,7 @@ const studentsPerPage = 15;
 let isLoading = false;
 let hasMoreStudents = true;
 let allStudents = []; // Stockage de tous les étudiants pour le menu burger
+let currentTab = 'raw'; // 'raw' ou 'visualization'
 
 // Fonction de confirmation de déconnexion
 function confirmLogout() {
@@ -163,7 +164,7 @@ function selectStudent(studentId) {
     // Mettre à jour le menu burger
     document.querySelectorAll('#burgerStudentList a').forEach(function(link) {
         link.classList.remove('active');
-        if (link.dataset.studentId == studentId) {
+        if (link.dataset.studentId === studentId.toString()) {
             link.classList.add('active');
         }
     });
@@ -197,10 +198,54 @@ async function loadStudentContent(studentId) {
             const attempts = data.attempts;
             const stats = data.stats;
 
+            // Vider la zone de données
+            dataZone.innerHTML = '';
+
             // Créer l'affichage des données de l'étudiant
             const titleElement = document.createElement('h2');
             titleElement.textContent = userId;
             titleElement.style.marginBottom = '1.5rem';
+            dataZone.appendChild(titleElement);
+
+            // Créer les onglets
+            const tabsContainer = document.createElement('div');
+            tabsContainer.className = 'tabs-container';
+            tabsContainer.style.marginBottom = '2rem';
+            tabsContainer.style.borderBottom = '2px solid #e0e0e0';
+            tabsContainer.style.display = 'flex';
+            tabsContainer.style.gap = '0.5rem';
+
+            const rawDataTab = document.createElement('button');
+            rawDataTab.className = 'tab-button active';
+            rawDataTab.textContent = '📊 Données brutes';
+            rawDataTab.onclick = () => switchTab('raw');
+            rawDataTab.style.padding = '0.75rem 1.5rem';
+            rawDataTab.style.border = 'none';
+            rawDataTab.style.background = 'transparent';
+            rawDataTab.style.cursor = 'pointer';
+            rawDataTab.style.fontSize = '1rem';
+            rawDataTab.style.fontWeight = '600';
+            rawDataTab.style.color = '#3498db';
+            rawDataTab.style.borderBottom = '3px solid #3498db';
+            rawDataTab.style.transition = 'all 0.3s ease';
+
+            const visualizationTab = document.createElement('button');
+            visualizationTab.className = 'tab-button';
+            visualizationTab.textContent = '📈 Visualisation';
+            visualizationTab.onclick = () => switchTab('visualization');
+            visualizationTab.style.padding = '0.75rem 1.5rem';
+            visualizationTab.style.border = 'none';
+            visualizationTab.style.background = 'transparent';
+            visualizationTab.style.cursor = 'pointer';
+            visualizationTab.style.fontSize = '1rem';
+            visualizationTab.style.fontWeight = '600';
+            visualizationTab.style.color = '#7f8c8d';
+            visualizationTab.style.borderBottom = '3px solid transparent';
+            visualizationTab.style.transition = 'all 0.3s ease';
+
+            tabsContainer.appendChild(rawDataTab);
+            tabsContainer.appendChild(visualizationTab);
+            dataZone.appendChild(tabsContainer);
 
             // Section des statistiques
             const statsDiv = document.createElement('div');
@@ -283,7 +328,7 @@ async function loadStudentContent(studentId) {
                 correctBadge.style.borderRadius = '20px';
                 correctBadge.style.fontSize = '0.85rem';
                 correctBadge.style.fontWeight = 'bold';
-                if (attempt.correct == 1) {
+                if (attempt.correct === 1 || attempt.correct === '1') {
                     correctBadge.style.background = '#d4edda';
                     correctBadge.style.color = '#155724';
                     correctBadge.textContent = '✓ Réussi';
@@ -321,7 +366,6 @@ async function loadStudentContent(studentId) {
                     const valueCell = document.createElement('td');
                     valueCell.style.padding = '0.5rem';
                     valueCell.style.color = '#333';
-                    // S'assurer que la valeur est une chaîne simple
                     valueCell.textContent = typeof detail.value === 'string' ? detail.value : String(detail.value);
 
                     row.appendChild(labelCell);
@@ -351,7 +395,6 @@ async function loadStudentContent(studentId) {
                     codeBlock.style.whiteSpace = 'pre-wrap';
                     codeBlock.style.wordBreak = 'break-word';
 
-                    // Parser le contenu si c'est du JSON stringifié
                     let uploadContent = attempt.upload;
                     if (typeof uploadContent === 'object') {
                         uploadContent = JSON.stringify(uploadContent, null, 2);
@@ -362,7 +405,7 @@ async function loadStudentContent(studentId) {
                     attemptCard.appendChild(codeBlock);
                 }
 
-                // Test Cases - Afficher les test cases détaillés depuis les jeux de données
+                // Test Cases
                 if (attempt.test_cases && Array.isArray(attempt.test_cases) && attempt.test_cases.length > 0) {
                     const testCasesTitle = document.createElement('div');
                     testCasesTitle.style.fontWeight = 'bold';
@@ -374,28 +417,21 @@ async function loadStudentContent(studentId) {
 
                     attemptCard.appendChild(testCasesTitle);
 
-                    // Conteneur pour les test cases
                     const testCasesContainer = document.createElement('div');
                     testCasesContainer.style.display = 'grid';
                     testCasesContainer.style.gap = '0.75rem';
                     testCasesContainer.style.marginTop = '0.5rem';
 
-                    // Déterminer le statut de chaque test case
-                    // Si attempt.correct == 1, tous les tests sont réussis
-                    // Sinon, on essaie de récupérer les résultats individuels (aes1, aes2, aes3, etc.)
-                    const allPassed = attempt.correct == 1;
+                    const allPassed = attempt.correct === 1 || attempt.correct === '1';
                     let individualResults = [];
 
-                    // Récupérer les résultats individuels s'ils existent
                     if (attempt.aes1 !== undefined) individualResults.push(attempt.aes1 === '1' || attempt.aes1 === 1);
                     if (attempt.aes2 !== undefined) individualResults.push(attempt.aes2 === '1' || attempt.aes2 === 1);
                     if (attempt.aes3 !== undefined) individualResults.push(attempt.aes3 === '1' || attempt.aes3 === 1);
 
                     let passedCount = 0;
 
-                    // Afficher chaque test case
                     attempt.test_cases.forEach((testCase, tcIndex) => {
-                        // Déterminer si ce test case spécifique a réussi
                         let testPassed = allPassed;
                         if (!allPassed && individualResults.length > tcIndex) {
                             testPassed = individualResults[tcIndex];
@@ -410,7 +446,6 @@ async function loadStudentContent(studentId) {
                         testCaseCard.style.padding = '1rem';
                         testCaseCard.style.transition = 'all 0.2s';
 
-                        // Header avec numéro et statut
                         const testHeader = document.createElement('div');
                         testHeader.style.display = 'flex';
                         testHeader.style.justifyContent = 'space-between';
@@ -443,7 +478,6 @@ async function loadStudentContent(studentId) {
                         testHeader.appendChild(statusBadge);
                         testCaseCard.appendChild(testHeader);
 
-                        // Afficher les entrées du test case
                         const inputLabel = document.createElement('div');
                         inputLabel.style.fontWeight = '600';
                         inputLabel.style.color = '#4b5563';
@@ -463,10 +497,8 @@ async function loadStudentContent(studentId) {
                         inputValue.style.whiteSpace = 'pre-wrap';
                         inputValue.style.wordBreak = 'break-word';
 
-                        // Formatter l'entrée selon son type
-                        let formattedInput = '';
+                        let formattedInput;
                         if (typeof testCase === 'object' && testCase !== null) {
-                            // Si c'est un objet avec __tuple__, c'est un tuple d'arguments
                             if (testCase.__tuple__ && Array.isArray(testCase.items)) {
                                 if (attempt.funcname) {
                                     formattedInput = attempt.funcname + '(' + testCase.items.map(item => JSON.stringify(item)).join(', ') + ')';
@@ -477,7 +509,6 @@ async function loadStudentContent(studentId) {
                                 formattedInput = JSON.stringify(testCase, null, 2);
                             }
                         } else {
-                            // Argument simple
                             if (attempt.funcname) {
                                 formattedInput = attempt.funcname + '(' + JSON.stringify(testCase) + ')';
                             } else {
@@ -490,7 +521,6 @@ async function loadStudentContent(studentId) {
 
                         testCasesContainer.appendChild(testCaseCard);
 
-                        // Effet hover
                         testCaseCard.addEventListener('mouseenter', function() {
                             testCaseCard.style.transform = 'translateY(-2px)';
                             testCaseCard.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
@@ -503,7 +533,6 @@ async function loadStudentContent(studentId) {
 
                     attemptCard.appendChild(testCasesContainer);
 
-                    // Ajouter un résumé
                     const totalCount = attempt.test_cases.length;
                     const summary = document.createElement('div');
                     summary.style.marginTop = '1rem';
@@ -525,11 +554,35 @@ async function loadStudentContent(studentId) {
                 attemptsContainer.appendChild(attemptCard);
             });
 
-            dataZone.innerHTML = '';
-            dataZone.appendChild(titleElement);
-            dataZone.appendChild(statsDiv);
-            dataZone.appendChild(attemptsTitle);
-            dataZone.appendChild(attemptsContainer);
+            // Créer les conteneurs pour les deux vues
+            const rawDataContent = document.createElement('div');
+            rawDataContent.id = 'raw-data-content';
+            rawDataContent.className = 'tab-content active';
+            rawDataContent.appendChild(statsDiv);
+            rawDataContent.appendChild(attemptsTitle);
+            rawDataContent.appendChild(attemptsContainer);
+
+            const visualizationContent = document.createElement('div');
+            visualizationContent.id = 'visualization-content';
+            visualizationContent.className = 'tab-content';
+            visualizationContent.style.display = 'none';
+
+            // Placeholder pour la visualisation
+            const visualizationPlaceholder = document.createElement('div');
+            visualizationPlaceholder.style.textAlign = 'center';
+            visualizationPlaceholder.style.padding = '3rem 1rem';
+            visualizationPlaceholder.style.color = '#7f8c8d';
+            visualizationPlaceholder.style.fontSize = '1.1rem';
+            visualizationPlaceholder.innerHTML = `
+                <div style="margin-bottom: 1rem; font-size: 3rem;">📈</div>
+                <div style="font-weight: 600; margin-bottom: 0.5rem; color: #2c3e50;">Visualisation des données</div>
+                <div>Cet espace est prêt pour votre visualisation personnalisée.</div>
+                <div style="margin-top: 1rem; font-size: 0.9rem;">Les données sont disponibles et peuvent être affichées sous forme de graphiques.</div>
+            `;
+            visualizationContent.appendChild(visualizationPlaceholder);
+
+            dataZone.appendChild(rawDataContent);
+            dataZone.appendChild(visualizationContent);
 
             // Scroll vers le haut du contenu principal
             document.querySelector('.main-content').scrollTop = 0;
@@ -537,6 +590,51 @@ async function loadStudentContent(studentId) {
     } catch (error) {
         console.error('Erreur:', error);
         dataZone.innerHTML = '<p class="placeholder-message">Erreur lors du chargement de l\'étudiant</p>';
+    }
+}
+
+// Fonction pour changer d'onglet
+function switchTab(tabName) {
+    currentTab = tabName;
+
+    // Mettre à jour les boutons d'onglets
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+        button.style.color = '#7f8c8d';
+        button.style.borderBottom = '3px solid transparent';
+    });
+
+    // Activer le bon bouton
+    const activeButton = tabButtons[tabName === 'raw' ? 0 : 1];
+    if (activeButton) {
+        activeButton.classList.add('active');
+        activeButton.style.color = '#3498db';
+        activeButton.style.borderBottom = '3px solid #3498db';
+    }
+
+    // Mettre à jour les contenus
+    const rawContent = document.getElementById('raw-data-content');
+    const vizContent = document.getElementById('visualization-content');
+
+    if (tabName === 'raw') {
+        if (rawContent) {
+            rawContent.style.display = 'block';
+            rawContent.classList.add('active');
+        }
+        if (vizContent) {
+            vizContent.style.display = 'none';
+            vizContent.classList.remove('active');
+        }
+    } else {
+        if (rawContent) {
+            rawContent.style.display = 'none';
+            rawContent.classList.remove('active');
+        }
+        if (vizContent) {
+            vizContent.style.display = 'block';
+            vizContent.classList.add('active');
+        }
     }
 }
 
@@ -587,7 +685,6 @@ function closeBurgerMenu() {
 
 // Toggle du sous-menu des étudiants
 function toggleStudentSubmenu(event) {
-    event.preventDefault();
     const submenu = document.getElementById('burgerStudentList');
     const arrow = event.currentTarget.querySelector('.submenu-arrow');
 
@@ -646,3 +743,4 @@ function updateBurgerStudentList() {
         burgerStudentList.appendChild(li);
     });
 }
+
