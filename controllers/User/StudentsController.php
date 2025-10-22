@@ -47,12 +47,10 @@ class StudentsController extends \BaseController {
 
             // Format students for display
             $formattedStudents = [];
-            $startIndex = ($page - 1) * $perPage;
-            foreach ($result['students'] as $index => $student) {
-                $studentId = $student['id'] ?? $student['user_id'] ?? $student['student_id'] ?? ($startIndex + $index + 1);
+            foreach ($result['students'] as $userId) {
                 $formattedStudents[] = [
-                    'id' => $studentId,
-                    'title' => 'Étudiant ' . $studentId
+                    'id' => $userId,
+                    'title' => $userId // Afficher "userId_36" directement
                 ];
             }
 
@@ -74,9 +72,9 @@ class StudentsController extends \BaseController {
             ]);
         }
     }
-     * Get student details and all attempts by ID
+
     /**
-     * Get student details by ID
+     * Get student details and all attempts by ID
      */
     public function getStudent() {
         // Start session if not already started
@@ -92,11 +90,11 @@ class StudentsController extends \BaseController {
                 'message' => 'Non authentifié'
             ]);
             exit;
+        }
+
         $userId = $_GET['id'] ?? null;
 
         if (!$userId) {
-
-        if (!$studentId) {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
@@ -104,30 +102,30 @@ class StudentsController extends \BaseController {
             ]);
             exit;
         }
+
+        try {
             // Get all attempts for this student
             $attempts = $this->studentModel->getStudentAttempts($userId);
 
             if (empty($attempts)) {
-
-            if (!$student) {
                 http_response_code(404);
-                    'message' => 'Aucune tentative trouvée pour cet étudiant'
+                echo json_encode([
                     'success' => false,
-                    'message' => 'Étudiant non trouvé'
+                    'message' => 'Aucune tentative trouvée pour cet étudiant'
                 ]);
                 exit;
+            }
+
             // Get statistics
             $stats = $this->studentModel->getStudentStats($userId);
 
-            }
-
+            echo json_encode([
+                'success' => true,
                 'data' => [
                     'userId' => $userId,
                     'attempts' => $attempts,
                     'stats' => $stats
                 ]
-                'success' => true,
-                'data' => $student
             ]);
         } catch (Exception $e) {
             http_response_code(500);
