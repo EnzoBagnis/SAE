@@ -210,18 +210,21 @@
 
 /* Scrollbar styling */
 .tp-list::-webkit-scrollbar,
+.student-list::-webkit-scrollbar,
 .sidebar::-webkit-scrollbar,
 .main-content::-webkit-scrollbar {
     width: 8px;
 }
 
 .tp-list::-webkit-scrollbar-track,
+.student-list::-webkit-scrollbar-track,
 .sidebar::-webkit-scrollbar-track,
 .main-content::-webkit-scrollbar-track {
     background: #f1f1f1;
 }
 
 .tp-list::-webkit-scrollbar-thumb,
+.student-list::-webkit-scrollbar-thumb,
 .sidebar::-webkit-scrollbar-thumb,
 .main-content::-webkit-scrollbar-thumb {
     background: #888;
@@ -229,6 +232,7 @@
 }
 
 .tp-list::-webkit-scrollbar-thumb:hover,
+.student-list::-webkit-scrollbar-thumb:hover,
 .sidebar::-webkit-scrollbar-thumb:hover,
 .main-content::-webkit-scrollbar-thumb:hover {
     background: #555;

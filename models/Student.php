@@ -59,10 +59,23 @@ class Student {
     public function getStudentById($studentId) {
         $allStudents = $this->getAllStudents();
 
-        foreach ($allStudents as $student) {
+        // First, try to find by id field
+        foreach ($allStudents as $index => $student) {
             if (isset($student['id']) && $student['id'] == $studentId) {
                 return $student;
             }
+            if (isset($student['user_id']) && $student['user_id'] == $studentId) {
+                return $student;
+            }
+            if (isset($student['student_id']) && $student['student_id'] == $studentId) {
+                return $student;
+            }
+        }
+
+        // If not found, try to get by index (1-based)
+        $index = (int)$studentId - 1;
+        if (isset($allStudents[$index])) {
+            return $allStudents[$index];
         }
 
         return null;
@@ -85,4 +98,3 @@ class Student {
         return array_unique($ids);
     }
 }
-

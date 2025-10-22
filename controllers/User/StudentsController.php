@@ -47,10 +47,12 @@ class StudentsController extends \BaseController {
 
             // Format students for display
             $formattedStudents = [];
-            foreach ($result['students'] as $student) {
+            $startIndex = ($page - 1) * $perPage;
+            foreach ($result['students'] as $index => $student) {
+                $studentId = $student['id'] ?? $student['user_id'] ?? $student['student_id'] ?? ($startIndex + $index + 1);
                 $formattedStudents[] = [
-                    'id' => $student['id'] ?? 'N/A',
-                    'title' => 'Étudiant ' . ($student['id'] ?? 'N/A')
+                    'id' => $studentId,
+                    'title' => 'Étudiant ' . $studentId
                 ];
             }
 
@@ -128,4 +130,3 @@ class StudentsController extends \BaseController {
         }
     }
 }
-
