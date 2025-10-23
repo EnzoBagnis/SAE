@@ -29,6 +29,6 @@ class Resources_listController extends \BaseController{
             'user_email' => $_SESSION['mail'] ?? ''
         ];
 
-        $this->loadView('user/resource_list', $data);
+        $this->loadView('user/resources_list', $data);
     }
 }
