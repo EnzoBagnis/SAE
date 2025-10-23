@@ -13,7 +13,7 @@
     <link rel="canonical" href="http://studtraj.alwaysdata.net/index.php?action=login">
 
     <title><?= htmlspecialchars($title ?? 'Connexion - StudTraj') ?></title>
-    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/SAE/public/css/style.css">
 </head>
 <body>
 

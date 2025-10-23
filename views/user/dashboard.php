@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
-    <link rel="stylesheet" href="/public/css/style.css">
-    <link rel="stylesheet" href="/public/css/dashboard.css">
-    <link rel="stylesheet" href="/public/css/footer.css">
-    <script type="module" src="/public/js/dashboard-main.js"></script>
+    <link rel="stylesheet" href="/SAE/public/css/style.css">
+    <link rel="stylesheet" href="/SAE/public/css/dashboard.css">
+     <link rel="stylesheet" href="/SAE/public/css/footer.css">
+    <script src="/public/js/dashboard.js" defer></script>
 
     <!-- SEO Meta Tags -->
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">

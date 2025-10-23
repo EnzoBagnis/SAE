@@ -13,7 +13,7 @@
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/formulaire.php">
 
     <title><?= htmlspecialchars($title ?? 'Inscription gratuite - StudTraj') ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="/SAE/public/css/style.css">
 </head>
 <body>
 
