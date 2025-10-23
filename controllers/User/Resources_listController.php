@@ -4,7 +4,7 @@ namespace Controllers\User;
 require_once __DIR__ . '/../BaseController.php';
 
 
-class Resource_listController extends \BaseController {
+class Resources_listController extends \BaseController{
 
     /**
      * Show dashboard page
