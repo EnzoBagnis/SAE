@@ -11,10 +11,10 @@ $isLoggedIn = isset($_SESSION['id']);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title>StudTraj - Mentions légales</title>
-    <link rel="stylesheet" href="/SAE/public/css/style.css">
-    <link rel="stylesheet" href="/SAE/public/css/dashboard.css">
-    <link rel="stylesheet" href="/SAE/public/css/mentions-legales.css">
-    <link rel="stylesheet" href="/SAE/public/css/footer.css">
+    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="../public/css/dashboard.css">
+    <link rel="stylesheet" href="../public/css/mentions-legales.css">
+    <link rel="stylesheet" href="../public/css/footer.css">
     <!-- SEO Meta Tags -->
     <meta name="mentions-legales" content="Je vous assure qu'on est ici en toute légalité.">
     <meta name="robots" content="noindex, nofollow">

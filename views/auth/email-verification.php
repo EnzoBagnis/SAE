@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <meta name="description" content="Vérification de votre email">
     <title><?= htmlspecialchars($title ?? 'Vérification Email - StudTraj') ?></title>
-    <link rel="stylesheet" href="/SAE/public/css/style.css">
+    <link rel="stylesheet" href="../public/css/style.css">
     <!-- SEO Meta Tags -->
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/verificationMail.php">
