@@ -11,7 +11,7 @@ class Database {
      */
     public static function getConnection() {
         // Load environment variables from .env file
-        $env = parse_ini_file(__DIR__ . '/../config/.env');
+        $env = parse_ini_file(__DIR__ . '/../../config/.env');
 
         $serverName = $env['DB_HOST'];
         $username = $env['DB_USER'];
