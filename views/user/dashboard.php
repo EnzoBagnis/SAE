@@ -50,12 +50,12 @@
             <ul class="burger-menu-list">
                 <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>
                 <li class="has-submenu">
-                    <a href="#" class="burger-link" onclick="toggleTPSubmenu(event)">
-                        Liste des TP's
+                    <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
+                        Liste des Étudiants
                         <span class="submenu-arrow">▼</span>
                     </a>
-                    <ul class="burger-submenu" id="burgerTPList">
-                        <!-- Les TPs seront chargés ici dynamiquement -->
+                    <ul class="burger-submenu" id="burgerStudentList">
+                        <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
                 <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
