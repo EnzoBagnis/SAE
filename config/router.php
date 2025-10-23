@@ -96,7 +96,7 @@ class Router {
 
 	    // ========== RESOURCES LIST ==========
             case 'resources_list':
-                $this->loadView(/views/user/resources_list.php');
+                $this->loadView('/views/user/resources_list.php');
                 break;
 
 
