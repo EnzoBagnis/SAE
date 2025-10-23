@@ -120,7 +120,10 @@ export class AttemptsRenderer {
             const valueCell = document.createElement('td');
             Object.assign(valueCell.style, {
                 padding: '0.5rem',
-                color: '#333'
+                color: '#333',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                maxWidth: '300px'
             });
             valueCell.textContent = typeof detail.value === 'string' ? detail.value : String(detail.value);
 
