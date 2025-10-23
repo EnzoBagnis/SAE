@@ -50,12 +50,12 @@
             <ul class="burger-menu-list">
                 <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>
                 <li class="has-submenu">
-                    <a href="#" class="burger-link" onclick="toggleTPSubmenu(event)">
-                        Liste des TP's
+                    <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
+                        Liste des Étudiants
                         <span class="submenu-arrow">▼</span>
                     </a>
-                    <ul class="burger-submenu" id="burgerTPList">
-                        <!-- Les TPs seront chargés ici dynamiquement -->
+                    <ul class="burger-submenu" id="burgerStudentList">
+                        <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
                 <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
@@ -65,18 +65,18 @@
     </nav>
 
     <div class="dashboard-container">
-        <!-- Sidebar gauche pour les TPs -->
+        <!-- Sidebar gauche pour les Étudiants -->
         <aside class="sidebar">
-            <h2>Liste des TPs</h2>
-            <div class="tp-list" id="tp-list">
-                <!-- La liste des TPs sera ajoutée ici dynamiquement via JavaScript -->
+            <h2>Liste des Étudiants</h2>
+            <div class="student-list" id="student-list">
+                <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
             </div>
         </aside>
 
         <!-- Zone principale de visualisation -->
         <main class="main-content">
             <div class="data-zone">
-                <p class="placeholder-message">Les jeux de données seront affichés ici</p>
+                <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
             </div>
         </main>
     </div>
