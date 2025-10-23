@@ -151,7 +151,7 @@ export class AttemptsRenderer {
             borderRadius: '4px',
             overflow: 'auto',
             fontSize: '0.85rem',
-            maxHeight: '300px',
+            maxHeight: '200px',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word'
         });
@@ -337,4 +337,3 @@ export class AttemptsRenderer {
         return summary;
     }
 }
-
