@@ -96,7 +96,7 @@ class Router {
 
 	    // ========== RESOURCES LIST ==========
             case 'resources_list':
-                $this->loadNamespacedController('Controllers\User\Resource_listController', 'index');
+                $this->loadNamespacedController('Controllers\User\Resources_listController', 'index');
                 break;
 
 
