@@ -2,11 +2,11 @@
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: /SAE/index.php?action=login');
+    header('Location: /index.php?action=login');
     exit;
 }
 
-require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../models/database.php';
 require_once __DIR__ . '/../../models/Resource.php';
 
 $db = connectDB();
@@ -14,7 +14,6 @@ $db = connectDB();
 $user_id = $_SESSION['user_id'];
 $user_firstname = $_SESSION['user_firstname'] ?? 'Utilisateur';
 $user_lastname = $_SESSION['user_lastname'] ?? '';
-// $user_role n'est plus nécessaire ici
 
 $title = 'StudTraj - Mes Ressources';
 
@@ -27,12 +26,12 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/SAE/public/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/public/images/favicon.ico">
     <title><?= htmlspecialchars($title) ?></title>
-    <link rel="stylesheet" href="/SAE/public/css/style.css">
-    <link rel="stylesheet" href="/SAE/public/css/dashboard.css">
-    <link rel="stylesheet" href="/SAE/public/css/footer.css">
-    <script src="/SAE/public/js/resources_list.js" defer></script>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/dashboard.css">
+    <link rel="stylesheet" href="/public/css/footer.css">
+    <script src="/public/js/resources_list.js" defer></script>
 
     <meta name="description" content="Gérez et visualisez vos ressources pédagogiques et celles qui vous sont partagées.">
     <meta name="robots" content="noindex, nofollow">
@@ -73,7 +72,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             display: block;
         }
         .resource-card-image.placeholder {
-            background-image: url('/SAE/public/images/placeholder_resource.png');
+            /*background-image: url('public/images/placeholder_resource.png');*/
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -135,10 +134,10 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             <span></span><span></span><span></span>
         </button>
         <nav class="nav-menu">
-            <a href="/SAE/index.php?action=dashboard">Tableau de bord</a>
-            <a href="/SAE/index.php?action=resources_list" class="active">Mes Ressources</a>
+            <a href="/index.php?action=dashboard">Tableau de bord</a>
+            <a href="/index.php?action=resources_list" class="active">Mes Ressources</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="/SAE/index.php?action=mentions">Mentions légales</a>
+            <a href="/index.php?action=mentions">Mentions légales</a>
         </nav>
         <div class="user-info">
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
@@ -153,9 +152,9 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                 <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="/SAE/index.php?action=dashboard" class="burger-link">Tableau de bord</a></li>
-                <li><a href="/SAE/index.php?action=resources_list" class="burger-link active">Mes Ressources</a></li>
-                <li><a href="/SAE/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
+                <li><a href="/index.php?action=dashboard" class="burger-link">Tableau de bord</a></li>
+                <li><a href="/index.php?action=resources_list" class="burger-link active">Mes Ressources</a></li>
+                <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
@@ -188,7 +187,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             <div class="resources-grid" id="resourcesGrid">
                 <?php if (!empty($resources)): ?>
                     <?php foreach ($resources as $resource): ?>
-                        <a href="/SAE/index.php?action=resource_details&id=<?= $resource->resource_id ?>"
+                        <a href="/index.php?action=resource_details&id=<?= $resource->resource_id ?>"
                            class="resource-card"
                            data-name="<?= htmlspecialchars($resource->resource_name) ?>"
                            data-owner="<?= htmlspecialchars($resource->owner_firstname . ' ' . $resource->owner_lastname) ?>"
@@ -220,11 +219,11 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="/SAE/index.php?action=dashboard">Tableau de bord</a></li>
-                    <li><a href="/SAE/index.php?action=login">Connexion</a></li>
-                    <li><a href="/SAE/index.php?action=signup">Inscription</a></li>
-                    <li><a href="/SAE/index.php?action=forgotpassword">Mot de passe oublié</a></li>
-                    <li><a href="/SAE/index.php?action=mentions">Mentions légales</a></li>
+                    <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="/index.php?action=login">Connexion</a></li>
+                    <li><a href="/index.php?action=signup">Inscription</a></li>
+                    <li><a href="/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>
