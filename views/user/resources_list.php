@@ -196,7 +196,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                            data-access-type="<?= htmlspecialchars($resource->access_type) ?>"
                            >
                             <?php if (!empty($resource->image_path)): ?>
-                                <img src="/SAE/public/images/<?= htmlspecialchars($resource->image_path) ?>" alt="Image de <?= htmlspecialchars($resource->resource_name) ?>" class="resource-card-image">
+                                <img src="/public/images/<?= htmlspecialchars($resource->image_path) ?>" alt="Image de <?= htmlspecialchars($resource->resource_name) ?>" class="resource-card-image">
                             <?php else: ?>
                                 <div class="resource-card-image placeholder"></div>
                             <?php endif; ?>
@@ -305,7 +305,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
 
         function confirmLogout() {
             if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
-                window.location.href = "/SAE/index.php?action=logout";
+                window.location.href = "/index.php?action=logout";
             }
         }
     </script>
