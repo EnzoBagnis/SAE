@@ -12,6 +12,8 @@ require_once __DIR__ . '/models/Exercise.php';
 
 echo "🚀 Importation des données Nouvelle-Calédonie...\n\n";
 
+$pdo = null;
+
 try {
     $pdo = Database::getConnection();
 
@@ -44,13 +46,12 @@ try {
         exit;
     }
 
-    echo "✓ {count($exercises)} exercices trouvés dans le fichier JSON\n\n";
+    $nbExercices = count($exercises);
+    echo "✓ {$nbExercices} exercices trouvés dans le fichier JSON\n\n";
 
     $pdo->beginTransaction();
 
     // 3. Créer le dataset "Nouvelle-Calédonie"
-    $datasetModel = new Dataset();
-
     // Vérifier si le dataset existe déjà
     $stmt = $pdo->prepare("SELECT dataset_id FROM datasets WHERE nom_dataset = ?");
     $stmt->execute(['Nouvelle-Calédonie']);
@@ -71,16 +72,15 @@ try {
 
         // Mettre à jour le dataset
         $stmt = $pdo->prepare("UPDATE datasets SET nb_exercices = ?, nb_etudiants = 0, nb_tentatives = 0 WHERE dataset_id = ?");
-        $stmt->execute([count($exercises), $datasetId]);
+        $stmt->execute([$nbExercices, $datasetId]);
     } else {
-        // Créer le nouveau dataset
-        $datasetId = $datasetModel->create(
-            'Nouvelle-Calédonie',
-            $enseignantId,
-            count($exercises),
-            0,  // nb_etudiants
-            0   // nb_tentatives
-        );
+        // Créer le nouveau dataset directement en SQL
+        $stmt = $pdo->prepare("
+            INSERT INTO datasets (nom_dataset, enseignant_id, nb_exercices, nb_etudiants, nb_tentatives, date_import)
+            VALUES (?, ?, ?, 0, 0, NOW())
+        ");
+        $stmt->execute(['Nouvelle-Calédonie', $enseignantId, $nbExercices]);
+        $datasetId = $pdo->lastInsertId();
         echo "✓ Dataset 'Nouvelle-Calédonie' créé (ID: {$datasetId})\n";
     }
 
@@ -143,11 +143,10 @@ try {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
 
 } catch (Exception $e) {
-    if ($pdo && $pdo->inTransaction()) {
+    if ($pdo !== null && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
     echo "\n❌ ERREUR: " . $e->getMessage() . "\n";
     echo "Trace: " . $e->getTraceAsString() . "\n";
 }
 ?>
-
