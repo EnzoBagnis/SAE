@@ -107,13 +107,13 @@ class Router
 
 	    // ========== RESOURCES LIST ==========
             case 'resources_list':
-                $this->loadView('User\Resources_listController');
+                $this->loadView('user\Resources_listController');
                 break;
 
 
 	    // ========== RESOURCE DETAILS ==========
             case 'resource_details':
-                $this->loadView('User\Resource_detailsController');
+                $this->loadView('user\Resource_detailsController');
                 break;
 
             default:
