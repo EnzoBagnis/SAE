@@ -36,7 +36,7 @@ $isLoggedIn = isset($_SESSION['id']);
         </button>
 
         <nav class="nav-menu">
-            <a href="/index.php?action=dashboard">Tableau de bord</a>
+            <a href="/index.php?action=resources_list">Tableau de bord</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
             <a href="/index.php?action=mentions" class="active">Mentions légales</a>
         </nav>
