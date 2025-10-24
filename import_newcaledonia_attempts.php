@@ -115,6 +115,7 @@ try {
         echo "  🎭 Génération des noms fictifs...\n";
         $stmt = $pdo->prepare("CALL generate_fake_names(?)");
         $stmt->execute([$datasetId]);
+        $stmt->closeCursor(); // IMPORTANT: Fermer le curseur après la procédure stockée
         echo "  ✓ Noms fictifs générés\n";
     }
     echo "\n";
@@ -259,6 +260,7 @@ try {
     echo "📈 Mise à jour des statistiques du dataset...\n";
     $stmt = $pdo->prepare("CALL update_dataset_stats(?)");
     $stmt->execute([$datasetId]);
+    $stmt->closeCursor(); // IMPORTANT: Fermer le curseur après la procédure stockée
     echo "✓ Statistiques mises à jour\n\n";
 
 } catch (Exception $e) {
