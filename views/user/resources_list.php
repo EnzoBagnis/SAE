@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['id'])) {
     header('Location: /index.php?action=login');
     exit;
 }
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../../models/Resource.php';
 
 $db = connectDB();
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id'];
 $user_firstname = $_SESSION['user_firstname'] ?? 'Utilisateur';
 $user_lastname = $_SESSION['user_lastname'] ?? '';
 
