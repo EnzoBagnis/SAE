@@ -17,7 +17,7 @@ class Resources_listController extends \BaseController{
 
         // Check if user is authenticated
         if (!isset($_SESSION['id'])) {
-            header('Location: /index.php?action=dashboard');
+            header('Location: /index.php?action=login');
             exit;
         }
 
@@ -29,6 +29,6 @@ class Resources_listController extends \BaseController{
             'user_email' => $_SESSION['mail'] ?? ''
         ];
 
-        $this->loadView('user/resources_list', $data);
+        $this->loadView('User/resources_list', $data);
     }
 }
