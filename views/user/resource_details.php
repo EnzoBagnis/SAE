@@ -1,18 +1,20 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['id'])) {
     header('Location: /SAE/index.php?action=login');
     exit;
 }
 
-require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../models/Database.php';
 require_once __DIR__ . '/../../models/Resource.php';
 require_once __DIR__ . '/../../models/Exercise.php';
 
-$db = connectDB();
+$db = Database::getConnection();
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id'];
 $user_firstname = $_SESSION['user_firstname'] ?? 'Utilisateur';
 $user_lastname = $_SESSION['user_lastname'] ?? '';
 // $user_role n'est plus nécessaire ici
@@ -20,14 +22,14 @@ $user_lastname = $_SESSION['user_lastname'] ?? '';
 $resourceId = $_GET['id'] ?? null;
 
 if (!$resourceId || !is_numeric($resourceId)) {
-    header('Location: /SAE/index.php?action=resources_list');
+    header('Location: /index.php?action=resources_list');
     exit;
 }
 
 $resource = Resource::getResourceById($db, (int)$resourceId);
 
 if (!$resource) {
-    header('Location: /SAE/index.php?action=resources_list');
+    header('Location: /index.php?action=resources_list');
     exit;
 }
 
@@ -45,7 +47,7 @@ if ($resource->owner_user_id === $user_id) {
 }
 
 if (!$hasAccess) {
-    header('Location: /SAE/index.php?action=resources_list&error=access_denied');
+    header('Location: /index.php?action=resources_list&error=access_denied');
     exit;
 }
 
@@ -61,12 +63,12 @@ $title = htmlspecialchars($resource->resource_name) . ' - TPs';
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/SAE/public/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/public/images/favicon.ico">
     <title><?= $title ?></title>
-    <link rel="stylesheet" href="/SAE/public/css/style.css">
-    <link rel="stylesheet" href="/SAE/public/css/dashboard.css">
-    <link rel="stylesheet" href="/SAE/public/css/footer.css">
-    <script src="/SAE/public/js/resources_list.js" defer></script>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/dashboard.css">
+    <link rel="stylesheet" href="/public/css/footer.css">
+    <script src="/public/js/resources_list.js" defer></script>
 
     <meta name="description" content="Liste des Travaux Pratiques pour la ressource <?= htmlspecialchars($resource->resource_name) ?>.">
     <meta name="robots" content="noindex, nofollow">
@@ -155,10 +157,10 @@ $title = htmlspecialchars($resource->resource_name) . ' - TPs';
             <span></span><span></span><span></span>
         </button>
         <nav class="nav-menu">
-            <a href="/SAE/index.php?action=dashboard">Tableau de bord</a>
-            <a href="/SAE/index.php?action=resources_list" class="active">Mes Ressources</a>
+            <a href="/index.php?action=dashboard">Tableau de bord</a>
+            <a href="/index.php?action=resources_list" class="active">Mes Ressources</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="/SAE/index.php?action=mentions">Mentions légales</a>
+            <a href="/index.php?action=mentions">Mentions légales</a>
         </nav>
         <div class="user-info">
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
@@ -173,9 +175,9 @@ $title = htmlspecialchars($resource->resource_name) . ' - TPs';
                 <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="/SAE/index.php?action=dashboard" class="burger-link">Tableau de bord</a></li>
-                <li><a href="/SAE/index.php?action=resources_list" class="burger-link active">Mes Ressources</a></li>
-                <li><a href="/SAE/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
+                <li><a href="/index.php?action=dashboard" class="burger-link">Tableau de bord</a></li>
+                <li><a href="/index.php?action=resources_list" class="burger-link active">Mes Ressources</a></li>
+                <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
@@ -199,7 +201,7 @@ $title = htmlspecialchars($resource->resource_name) . ' - TPs';
                             <!-- Plus de détails si nécessaire -->
                         </div>
                         <div class="tp-item-actions">
-                            <a href="/SAE/index.php?action=exercise_details&id=<?= $exercise->exercise_id ?>" class="btn">Voir le TP</a>
+                            <a href="/index.php?action=exercise_details&id=<?= $exercise->exercise_id ?>" class="btn">Voir le TP</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -216,11 +218,11 @@ $title = htmlspecialchars($resource->resource_name) . ' - TPs';
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="/SAE/index.php?action=dashboard">Tableau de bord</a></li>
-                    <li><a href="/SAE/index.php?action=login">Connexion</a></li>
-                    <li><a href="/SAE/index.php?action=signup">Inscription</a></li>
-                    <li><a href="/SAE/index.php?action=forgotpassword">Mot de passe oublié</a></li>
-                    <li><a href="/SAE/index.php?action=mentions">Mentions légales</a></li>
+                    <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="/index.php?action=login">Connexion</a></li>
+                    <li><a href="/index.php?action=signup">Inscription</a></li>
+                    <li><a href="/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>
@@ -245,7 +247,7 @@ $title = htmlspecialchars($resource->resource_name) . ' - TPs';
 
         function confirmLogout() {
             if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
-                window.location.href = "/SAE/index.php?action=logout";
+                window.location.href = "/index.php?action=logout";
             }
         }
     </script>
