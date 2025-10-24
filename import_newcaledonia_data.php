@@ -86,7 +86,6 @@ try {
 
     echo "\n📝 Importation des exercices...\n";
 
-    $exerciseModel = new Exercise();
     $imported = 0;
     $errors = 0;
 
@@ -97,13 +96,13 @@ try {
             $solution = $exoData['solution'] ?? '';
             $entries = $exoData['entries'] ?? [];
 
-            // Créer l'exercice
-            $exerciseId = $exerciseModel->create(
-                $datasetId,
-                null, // resource_id (pas de ressource associée)
-                $exoName,
-                $funcname
-            );
+            // Créer l'exercice directement en SQL
+            $stmt = $pdo->prepare("
+                INSERT INTO exercises (dataset_id, resource_id, exo_name, funcname)
+                VALUES (?, NULL, ?, ?)
+            ");
+            $stmt->execute([$datasetId, $exoName, $funcname]);
+            $exerciseId = $pdo->lastInsertId();
 
             // Ajouter les test cases
             if (!empty($entries)) {
