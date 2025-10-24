@@ -1,49 +1,63 @@
 <?php
 /**
- * SCRIPT D'IMPORTATION - Tentatives des étudiants Nouvelle-Calédonie
+ * SCRIPT D'IMPORTATION COMPLET - Nouvelle-Calédonie
+ * Importe étudiants et tentatives (les exercices doivent déjà être importés)
  */
 
 require_once __DIR__ . '/models/Database.php';
 
 $pdo = null;
 
-function get_student_id($pdo, $datasetId, $studentIdentifier) {
-    $stmt = $pdo->prepare("SELECT student_id FROM students WHERE dataset_id = ? AND student_identifier = ?");
-    $stmt->execute([$datasetId, $studentIdentifier]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $row ? $row['student_id'] : null;
-}
-
-function get_exercise_id($pdo, $resourceId, $exoName) {
-    $stmt = $pdo->prepare("SELECT exercise_id FROM exercises WHERE resource_id = ? AND exo_name = ?");
-    $stmt->execute([$resourceId, $exoName]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $row ? $row['exercise_id'] : null;
-}
-
 try {
     $pdo = Database::getConnection();
 
-    // 1. Trouver le dataset et la resource "Nouvelle-Calédonie"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+    echo "🚀 IMPORTATION TENTATIVES NOUVELLE-CALÉDONIE\n";
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+
+    // ========================================
+    // 1. VÉRIFIER DATASET ET RESOURCE
+    // ========================================
+    echo "📂 Étape 1/4 : Vérification du dataset et de la resource...\n";
+
     $stmt = $pdo->prepare("SELECT dataset_id FROM datasets WHERE nom_dataset = ?");
     $stmt->execute(['Nouvelle-Calédonie']);
     $dataset = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$dataset) {
         echo "❌ Dataset 'Nouvelle-Calédonie' introuvable.\n";
+        echo "💡 Veuillez d'abord exécuter: php import_newcaledonia_data.php\n";
         exit;
     }
     $datasetId = $dataset['dataset_id'];
+    echo "  ✓ Dataset trouvé (ID: {$datasetId})\n";
 
     $stmt = $pdo->prepare("SELECT resource_id FROM resources WHERE resource_name = ?");
     $stmt->execute(['Nouvelle-Calédonie']);
     $resource = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$resource) {
         echo "❌ Resource 'Nouvelle-Calédonie' introuvable.\n";
+        echo "💡 Veuillez d'abord exécuter: php import_newcaledonia_data.php\n";
         exit;
     }
     $resourceId = $resource['resource_id'];
+    echo "  ✓ Resource trouvée (ID: {$resourceId})\n";
 
-    // 2. Charger les données JSON
+    // Vérifier qu'il y a des exercices
+    $stmt = $pdo->prepare("SELECT COUNT(*) as nb FROM exercises WHERE resource_id = ?");
+    $stmt->execute([$resourceId]);
+    $nbExercises = $stmt->fetch(PDO::FETCH_ASSOC)['nb'];
+    if ($nbExercises == 0) {
+        echo "❌ Aucun exercice trouvé pour cette resource.\n";
+        echo "💡 Veuillez d'abord exécuter: php import_newcaledonia_data.php\n";
+        exit;
+    }
+    echo "  ✓ {$nbExercises} exercices trouvés\n\n";
+
+    // ========================================
+    // 2. CHARGER LE FICHIER JSON DES TENTATIVES
+    // ========================================
+    echo "📄 Étape 2/4 : Chargement du fichier JSON des tentatives...\n";
+
     $jsonPath = __DIR__ . '/data/NewCaledonia_1014.json';
     if (!file_exists($jsonPath)) {
         echo "❌ Erreur: Fichier {$jsonPath} introuvable\n";
@@ -55,55 +69,127 @@ try {
         echo "❌ Erreur lors de la lecture du fichier JSON\n";
         exit;
     }
-    $nbAttempts = count($attempts);
-    echo "✓ {$nbAttempts} tentatives trouvées dans le fichier JSON\n\n";
+    echo "  ✓ " . count($attempts) . " tentatives chargées\n\n";
+
+    // ========================================
+    // 3. EXTRAIRE ET CRÉER LES ÉTUDIANTS
+    // ========================================
+    echo "👥 Étape 3/4 : Importation des étudiants...\n";
+
+    $studentIdentifiers = [];
+    foreach ($attempts as $att) {
+        if (isset($att['user'])) {
+            $studentIdentifiers[$att['user']] = true;
+        }
+    }
+    $studentIdentifiers = array_keys($studentIdentifiers);
+    sort($studentIdentifiers);
+
+    echo "  📊 " . count($studentIdentifiers) . " étudiants uniques trouvés\n";
 
     $pdo->beginTransaction();
-    $imported = 0;
-    $errors = 0;
-    $notFound = ['students' => [], 'exercises' => []];
+
+    $studentsImported = 0;
+    $studentsSkipped = 0;
+
+    $stmtCheckStudent = $pdo->prepare("SELECT student_id FROM students WHERE dataset_id = ? AND student_identifier = ?");
+    $stmtInsertStudent = $pdo->prepare("INSERT INTO students (dataset_id, student_identifier) VALUES (?, ?)");
+
+    foreach ($studentIdentifiers as $identifier) {
+        $stmtCheckStudent->execute([$datasetId, $identifier]);
+        if ($stmtCheckStudent->fetch()) {
+            $studentsSkipped++;
+        } else {
+            $stmtInsertStudent->execute([$datasetId, $identifier]);
+            $studentsImported++;
+        }
+    }
+
+    echo "  ✓ Étudiants créés: {$studentsImported}\n";
+    if ($studentsSkipped > 0) {
+        echo "  ⏭️  Étudiants existants: {$studentsSkipped}\n";
+    }
+
+    // Générer les noms fictifs
+    if ($studentsImported > 0) {
+        echo "  🎭 Génération des noms fictifs...\n";
+        $stmt = $pdo->prepare("CALL generate_fake_names(?)");
+        $stmt->execute([$datasetId]);
+        echo "  ✓ Noms fictifs générés\n";
+    }
+    echo "\n";
+
+    $pdo->commit();
+
+    // ========================================
+    // 4. IMPORTER LES TENTATIVES
+    // ========================================
+    echo "💾 Étape 4/4 : Importation des tentatives...\n";
+
+    // Créer un cache des exercices pour optimiser les requêtes
+    echo "  🔄 Chargement du cache des exercices...\n";
+    $stmt = $pdo->prepare("SELECT exercise_id, exo_name FROM exercises WHERE resource_id = ?");
+    $stmt->execute([$resourceId]);
+    $exerciseCache = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $exerciseCache[$row['exo_name']] = $row['exercise_id'];
+    }
+    echo "  ✓ " . count($exerciseCache) . " exercices en cache\n";
+
+    // Créer un cache des étudiants
+    echo "  🔄 Chargement du cache des étudiants...\n";
+    $stmt = $pdo->prepare("SELECT student_id, student_identifier FROM students WHERE dataset_id = ?");
+    $stmt->execute([$datasetId]);
+    $studentCache = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $studentCache[$row['student_identifier']] = $row['student_id'];
+    }
+    echo "  ✓ " . count($studentCache) . " étudiants en cache\n\n";
+
+    $pdo->beginTransaction();
+
+    $attemptsImported = 0;
+    $attemptsErrors = 0;
+    $missingExercises = [];
+    $missingStudents = [];
+
+    $stmtInsertAttempt = $pdo->prepare("
+        INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set, aes0, aes1, aes2)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
 
     foreach ($attempts as $index => $att) {
-        // ⚠️ CORRECTION ICI : utiliser 'user' et 'exercise_name' au lieu de 'student_identifier' et 'exo_name'
         $studentIdentifier = $att['user'] ?? null;
         $exoName = $att['exercise_name'] ?? null;
 
         if (!$studentIdentifier || !$exoName) {
-            $errors++;
-            echo "  ⚠️  Ligne $index: user ou exercise_name manquant\n";
+            $attemptsErrors++;
             continue;
         }
 
-        $studentId = get_student_id($pdo, $datasetId, $studentIdentifier);
-        $exerciseId = get_exercise_id($pdo, $resourceId, $exoName);
+        // Récupérer depuis le cache
+        $studentId = $studentCache[$studentIdentifier] ?? null;
+        $exerciseId = $exerciseCache[$exoName] ?? null;
 
         if (!$studentId) {
-            if (!in_array($studentIdentifier, $notFound['students'])) {
-                $notFound['students'][] = $studentIdentifier;
+            if (!in_array($studentIdentifier, $missingStudents)) {
+                $missingStudents[] = $studentIdentifier;
             }
-        }
-        if (!$exerciseId) {
-            if (!in_array($exoName, $notFound['exercises'])) {
-                $notFound['exercises'][] = $exoName;
-            }
-        }
-
-        if (!$studentId || !$exerciseId) {
-            $errors++;
-            if ($index < 10 || $errors % 100 == 0) { // Afficher seulement les 10 premières erreurs + tous les 100
-                echo "  ⚠️  Ligne $index: " .
-                    (!$studentId ? "étudiant '$studentIdentifier' introuvable " : "") .
-                    (!$exerciseId ? "exercice '$exoName' introuvable" : "") . "\n";
-            }
+            $attemptsErrors++;
             continue;
         }
 
+        if (!$exerciseId) {
+            if (!in_array($exoName, $missingExercises)) {
+                $missingExercises[] = $exoName;
+            }
+            $attemptsErrors++;
+            continue;
+        }
+
+        // Insérer la tentative
         try {
-            $stmt = $pdo->prepare("
-                INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set, aes0, aes1, aes2)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([
+            $stmtInsertAttempt->execute([
                 $studentId,
                 $exerciseId,
                 $att['date'] ?? date('Y-m-d H:i:s'),
@@ -115,46 +201,65 @@ try {
                 isset($att['aes1']) ? json_encode($att['aes1']) : null,
                 isset($att['aes2']) ? json_encode($att['aes2']) : null
             ]);
-            $imported++;
+            $attemptsImported++;
 
-            if ($imported % 100 == 0) {
-                echo "  ✓ {$imported} tentatives importées...\n";
+            if ($attemptsImported % 200 == 0) {
+                echo "  ⏳ {$attemptsImported} tentatives importées...\n";
             }
         } catch (Exception $e) {
-            $errors++;
-            echo "  ⚠️  Ligne $index: erreur SQL: {$e->getMessage()}\n";
+            $attemptsErrors++;
+            if ($attemptsErrors <= 5) {
+                echo "  ⚠️  Erreur SQL: {$e->getMessage()}\n";
+            }
         }
     }
 
     $pdo->commit();
 
-    echo "\n✅ IMPORTATION TERMINÉE!\n";
+    // ========================================
+    // RÉSUMÉ FINAL
+    // ========================================
+    echo "\n";
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-    echo "📊 Résumé:\n";
-    echo "  • Tentatives importées: {$imported}\n";
-    echo "  • Erreurs: {$errors}\n";
+    echo "✅ IMPORTATION TERMINÉE AVEC SUCCÈS!\n";
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+    echo "📊 Résumé global:\n\n";
+    echo "  👥 Étudiants:\n";
+    echo "     • Créés: {$studentsImported}\n";
+    echo "     • Existants: {$studentsSkipped}\n";
+    echo "     • Total: " . count($studentIdentifiers) . "\n\n";
+    echo "  💾 Tentatives:\n";
+    echo "     • Importées: {$attemptsImported}\n";
+    echo "     • Erreurs: {$attemptsErrors}\n";
+    echo "     • Total: " . count($attempts) . "\n";
 
-    if (!empty($notFound['students'])) {
-        echo "\n⚠️  Étudiants introuvables (" . count($notFound['students']) . "):\n";
-        foreach (array_slice($notFound['students'], 0, 10) as $student) {
-            echo "  - $student\n";
+    if (!empty($missingExercises)) {
+        echo "\n  ⚠️  Exercices introuvables (" . count($missingExercises) . "):\n";
+        foreach (array_slice($missingExercises, 0, 10) as $exo) {
+            echo "     - {$exo}\n";
         }
-        if (count($notFound['students']) > 10) {
-            echo "  ... et " . (count($notFound['students']) - 10) . " autres\n";
+        if (count($missingExercises) > 10) {
+            echo "     ... et " . (count($missingExercises) - 10) . " autres\n";
         }
     }
 
-    if (!empty($notFound['exercises'])) {
-        echo "\n⚠️  Exercices introuvables (" . count($notFound['exercises']) . "):\n";
-        foreach (array_slice($notFound['exercises'], 0, 10) as $exercise) {
-            echo "  - $exercise\n";
+    if (!empty($missingStudents)) {
+        echo "\n  ⚠️  Étudiants introuvables (" . count($missingStudents) . "):\n";
+        foreach (array_slice($missingStudents, 0, 5) as $student) {
+            echo "     - {$student}\n";
         }
-        if (count($notFound['exercises']) > 10) {
-            echo "  ... et " . (count($notFound['exercises']) - 10) . " autres\n";
+        if (count($missingStudents) > 5) {
+            echo "     ... et " . (count($missingStudents) - 5) . " autres\n";
         }
     }
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+
+    // Mettre à jour les statistiques du dataset
+    echo "📈 Mise à jour des statistiques du dataset...\n";
+    $stmt = $pdo->prepare("CALL update_dataset_stats(?)");
+    $stmt->execute([$datasetId]);
+    echo "✓ Statistiques mises à jour\n\n";
 
 } catch (Exception $e) {
     if ($pdo !== null && $pdo->inTransaction()) {
