@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isset($_SESSION['id'])) {
     header('Location: /index.php?action=login');
@@ -9,7 +11,7 @@ if (!isset($_SESSION['id'])) {
 require_once __DIR__ . '/../../models/Database.php';
 require_once __DIR__ . '/../../models/Resource.php';
 
-$db = connectDB();
+$db = Database::getConnection();
 
 $user_id = $_SESSION['id'];
 $user_firstname = $_SESSION['user_firstname'] ?? 'Utilisateur';
