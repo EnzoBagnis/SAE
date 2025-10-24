@@ -1,9 +1,6 @@
 <?php
 /**
  * SCRIPT D'IMPORTATION - Tentatives des étudiants Nouvelle-Calédonie
- *
- * Ce script importe les tentatives d'étudiants à partir d'un fichier JSON
- * Format attendu : voir README ou exemple dans le script
  */
 
 require_once __DIR__ . '/models/Database.php';
@@ -64,48 +61,99 @@ try {
     $pdo->beginTransaction();
     $imported = 0;
     $errors = 0;
+    $notFound = ['students' => [], 'exercises' => []];
 
     foreach ($attempts as $index => $att) {
-        $studentIdentifier = $att['student_identifier'] ?? null;
-        $exoName = $att['exo_name'] ?? null;
+        // ⚠️ CORRECTION ICI : utiliser 'user' et 'exercise_name' au lieu de 'student_identifier' et 'exo_name'
+        $studentIdentifier = $att['user'] ?? null;
+        $exoName = $att['exercise_name'] ?? null;
+
         if (!$studentIdentifier || !$exoName) {
             $errors++;
-            echo "  ⚠️  Ligne $index: student_identifier ou exo_name manquant\n";
+            echo "  ⚠️  Ligne $index: user ou exercise_name manquant\n";
             continue;
         }
+
         $studentId = get_student_id($pdo, $datasetId, $studentIdentifier);
         $exerciseId = get_exercise_id($pdo, $resourceId, $exoName);
+
+        if (!$studentId) {
+            if (!in_array($studentIdentifier, $notFound['students'])) {
+                $notFound['students'][] = $studentIdentifier;
+            }
+        }
+        if (!$exerciseId) {
+            if (!in_array($exoName, $notFound['exercises'])) {
+                $notFound['exercises'][] = $exoName;
+            }
+        }
+
         if (!$studentId || !$exerciseId) {
             $errors++;
-            echo "  ⚠️  Ligne $index: student_id ou exercise_id introuvable (identifiant: $studentIdentifier, exo: $exoName)\n";
+            if ($index < 10 || $errors % 100 == 0) { // Afficher seulement les 10 premières erreurs + tous les 100
+                echo "  ⚠️  Ligne $index: " .
+                    (!$studentId ? "étudiant '$studentIdentifier' introuvable " : "") .
+                    (!$exerciseId ? "exercice '$exoName' introuvable" : "") . "\n";
+            }
             continue;
         }
+
         try {
             $stmt = $pdo->prepare("
-                INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set, aes0, aes1, aes2)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $studentId,
                 $exerciseId,
-                $att['submission_date'] ?? date('Y-m-d H:i:s'),
+                $att['date'] ?? date('Y-m-d H:i:s'),
                 $att['extension'] ?? 'py',
                 $att['correct'] ?? 0,
                 $att['upload'] ?? '',
-                $att['eval_set'] ?? null
+                $att['eval_set'] ?? null,
+                isset($att['aes0']) ? json_encode($att['aes0']) : null,
+                isset($att['aes1']) ? json_encode($att['aes1']) : null,
+                isset($att['aes2']) ? json_encode($att['aes2']) : null
             ]);
             $imported++;
+
+            if ($imported % 100 == 0) {
+                echo "  ✓ {$imported} tentatives importées...\n";
+            }
         } catch (Exception $e) {
             $errors++;
             echo "  ⚠️  Ligne $index: erreur SQL: {$e->getMessage()}\n";
         }
     }
+
     $pdo->commit();
+
     echo "\n✅ IMPORTATION TERMINÉE!\n";
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
     echo "📊 Résumé:\n";
     echo "  • Tentatives importées: {$imported}\n";
     echo "  • Erreurs: {$errors}\n";
+
+    if (!empty($notFound['students'])) {
+        echo "\n⚠️  Étudiants introuvables (" . count($notFound['students']) . "):\n";
+        foreach (array_slice($notFound['students'], 0, 10) as $student) {
+            echo "  - $student\n";
+        }
+        if (count($notFound['students']) > 10) {
+            echo "  ... et " . (count($notFound['students']) - 10) . " autres\n";
+        }
+    }
+
+    if (!empty($notFound['exercises'])) {
+        echo "\n⚠️  Exercices introuvables (" . count($notFound['exercises']) . "):\n";
+        foreach (array_slice($notFound['exercises'], 0, 10) as $exercise) {
+            echo "  - $exercise\n";
+        }
+        if (count($notFound['exercises']) > 10) {
+            echo "  ... et " . (count($notFound['exercises']) - 10) . " autres\n";
+        }
+    }
+
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
 
 } catch (Exception $e) {
@@ -116,4 +164,3 @@ try {
     echo "Trace: " . $e->getTraceAsString() . "\n";
 }
 ?>
-
