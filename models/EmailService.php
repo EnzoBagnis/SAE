@@ -82,7 +82,7 @@ class EmailService {
             // Generate reset link URL
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
             $host = $_SERVER['HTTP_HOST'];
-            $resetLink = $protocol . "://" . $host . "/index.php?action=resetPassword&token=" . $token;
+            $resetLink = $protocol . "://" . $host . "/index.php?action=resetpassword&token=" . $token;
 
             // Email content
             $mail->Subject = 'Réinitialisation de mot de passe - StudTraj';
