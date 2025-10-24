@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-require_once __DIR__ . '/../../models/database.php';
+require_once __DIR__ . '/../../models/Database.php';
 require_once __DIR__ . '/../../models/Resource.php';
 
 $db = connectDB();

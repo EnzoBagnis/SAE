@@ -96,13 +96,13 @@ class Router {
 
 	    // ========== RESOURCES LIST ==========
             case 'resources_list':
-                $this->loadNamespacedController('Controllers\User\Resources_listController', 'index');
+                $this->loadView('User\Resources_listController');
                 break;
 
 
 	    // ========== RESOURCE DETAILS ==========
             case 'resource_details':
-                $this->loadNamespacedController('Controllers\User\Resource_detailsController', 'index');
+                $this->loadView('User\Resource_detailsController');
                 break;
 
             default:
