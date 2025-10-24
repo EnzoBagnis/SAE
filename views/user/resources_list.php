@@ -74,7 +74,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             display: block;
         }
         .resource-card-image.placeholder {
-            /*background-image: url('public/images/placeholder_resource.png');*/
+            background-image: url('/images/placeholder_resource.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -196,7 +196,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                            data-access-type="<?= htmlspecialchars($resource->access_type) ?>"
                            >
                             <?php if (!empty($resource->image_path)): ?>
-                                <img src="/public/images/<?= htmlspecialchars($resource->image_path) ?>" alt="Image de <?= htmlspecialchars($resource->resource_name) ?>" class="resource-card-image">
+                                <img src="/images/<?= htmlspecialchars($resource->image_path) ?>" alt="Image de <?= htmlspecialchars($resource->resource_name) ?>" class="resource-card-image">
                             <?php else: ?>
                                 <div class="resource-card-image placeholder"></div>
                             <?php endif; ?>
