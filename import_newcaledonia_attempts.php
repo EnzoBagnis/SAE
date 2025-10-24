@@ -47,7 +47,7 @@ try {
     $resourceId = $resource['resource_id'];
 
     // 2. Charger les données JSON
-    $jsonPath = __DIR__ . '/data/NewCaledonia_attempts.json';
+    $jsonPath = __DIR__ . '/data/NewCaledonia_1014.json';
     if (!file_exists($jsonPath)) {
         echo "❌ Erreur: Fichier {$jsonPath} introuvable\n";
         exit;
