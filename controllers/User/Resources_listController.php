@@ -17,7 +17,7 @@ class Resources_listController extends \BaseController{
 
         // Check if user is authenticated
         if (!isset($_SESSION['id'])) {
-            header('Location: /index.php?action=login');
+            header('Location: /index.php?action=dashboard');
             exit;
         }
 
