@@ -6,9 +6,6 @@
  */
 
 require_once __DIR__ . '/models/Database.php';
-require_once __DIR__ . '/models/User.php';
-require_once __DIR__ . '/models/Dataset.php';
-require_once __DIR__ . '/models/Exercise.php';
 
 echo "🚀 Importation des données Nouvelle-Calédonie...\n\n";
 
@@ -23,7 +20,7 @@ try {
 
     if (!$enseignant) {
         echo "❌ Erreur: Aucun enseignant vérifié trouvé dans la base.\n";
-        echo "Veuillez d'abord créer un enseignant ou exécuter temp_generate_fake_data.php\n";
+        echo "Veuillez d'abord créer un enseignant.\n";
         exit;
     }
 
@@ -51,8 +48,39 @@ try {
 
     $pdo->beginTransaction();
 
-    // 3. Créer le dataset "Nouvelle-Calédonie"
-    // Vérifier si le dataset existe déjà
+    // 3. Vérifier/Créer la RESOURCE "Nouvelle-Calédonie"
+    $stmt = $pdo->prepare("SELECT resource_id FROM resources WHERE resource_name = ? AND owner_user_id = ?");
+    $stmt->execute(['Nouvelle-Calédonie', $enseignantId]);
+    $existingResource = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($existingResource) {
+        $resourceId = $existingResource['resource_id'];
+        echo "✓ Resource 'Nouvelle-Calédonie' existe déjà (ID: {$resourceId})\n";
+        echo "  Suppression des exercices existants...\n";
+
+        // Supprimer les anciens exercices de cette resource
+        $pdo->prepare("DELETE FROM test_cases WHERE exercise_id IN (SELECT exercise_id FROM exercises WHERE resource_id = ?)")
+            ->execute([$resourceId]);
+        $pdo->prepare("DELETE FROM attempts WHERE exercise_id IN (SELECT exercise_id FROM exercises WHERE resource_id = ?)")
+            ->execute([$resourceId]);
+        $pdo->prepare("DELETE FROM exercises WHERE resource_id = ?")
+            ->execute([$resourceId]);
+    } else {
+        // Créer la nouvelle resource
+        $stmt = $pdo->prepare("
+            INSERT INTO resources (owner_user_id, resource_name, description)
+            VALUES (?, ?, ?)
+        ");
+        $stmt->execute([
+            $enseignantId,
+            'Nouvelle-Calédonie',
+            'Exercices de programmation Python provenant de Nouvelle-Calédonie'
+        ]);
+        $resourceId = $pdo->lastInsertId();
+        echo "✓ Resource 'Nouvelle-Calédonie' créée (ID: {$resourceId})\n";
+    }
+
+    // 4. Vérifier/Créer le DATASET "Nouvelle-Calédonie"
     $stmt = $pdo->prepare("SELECT dataset_id FROM datasets WHERE nom_dataset = ?");
     $stmt->execute(['Nouvelle-Calédonie']);
     $existingDataset = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -60,26 +88,17 @@ try {
     if ($existingDataset) {
         $datasetId = $existingDataset['dataset_id'];
         echo "✓ Dataset 'Nouvelle-Calédonie' existe déjà (ID: {$datasetId})\n";
-        echo "  Suppression des exercices existants...\n";
-
-        // Supprimer les anciens exercices de ce dataset
-        $pdo->prepare("DELETE FROM test_cases WHERE exercise_id IN (SELECT exercise_id FROM exercises WHERE dataset_id = ?)")
-            ->execute([$datasetId]);
-        $pdo->prepare("DELETE FROM attempts WHERE exercise_id IN (SELECT exercise_id FROM exercises WHERE dataset_id = ?)")
-            ->execute([$datasetId]);
-        $pdo->prepare("DELETE FROM exercises WHERE dataset_id = ?")
-            ->execute([$datasetId]);
 
         // Mettre à jour le dataset
-        $stmt = $pdo->prepare("UPDATE datasets SET nb_exercices = ?, nb_etudiants = 0, nb_tentatives = 0 WHERE dataset_id = ?");
+        $stmt = $pdo->prepare("UPDATE datasets SET nb_exercices = ? WHERE dataset_id = ?");
         $stmt->execute([$nbExercices, $datasetId]);
     } else {
-        // Créer le nouveau dataset directement en SQL
+        // Créer le nouveau dataset
         $stmt = $pdo->prepare("
-            INSERT INTO datasets (nom_dataset, enseignant_id, nb_exercices, nb_etudiants, nb_tentatives, date_import)
-            VALUES (?, ?, ?, 0, 0, NOW())
+            INSERT INTO datasets (nom_dataset, enseignant_id, nb_exercices, nb_etudiants, nb_tentatives, pays, annee)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
         ");
-        $stmt->execute(['Nouvelle-Calédonie', $enseignantId, $nbExercices]);
+        $stmt->execute(['Nouvelle-Calédonie', $enseignantId, $nbExercices, 'Nouvelle-Calédonie', 2024]);
         $datasetId = $pdo->lastInsertId();
         echo "✓ Dataset 'Nouvelle-Calédonie' créé (ID: {$datasetId})\n";
     }
@@ -96,12 +115,12 @@ try {
             $solution = $exoData['solution'] ?? '';
             $entries = $exoData['entries'] ?? [];
 
-            // Créer l'exercice directement en SQL
+            // Créer l'exercice lié à la RESOURCE
             $stmt = $pdo->prepare("
-                INSERT INTO exercises (dataset_id, resource_id, exo_name, funcname)
-                VALUES (?, NULL, ?, ?)
+                INSERT INTO exercises (resource_id, exo_name, funcname, solution)
+                VALUES (?, ?, ?, ?)
             ");
-            $stmt->execute([$datasetId, $exoName, $funcname]);
+            $stmt->execute([$resourceId, $exoName, $funcname, $solution]);
             $exerciseId = $pdo->lastInsertId();
 
             // Ajouter les test cases
@@ -135,6 +154,7 @@ try {
     echo "\n✅ IMPORTATION TERMINÉE!\n";
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
     echo "📊 Résumé:\n";
+    echo "  • Resource: Nouvelle-Calédonie (ID: {$resourceId})\n";
     echo "  • Dataset: Nouvelle-Calédonie (ID: {$datasetId})\n";
     echo "  • Exercices importés: {$imported}\n";
     echo "  • Erreurs: {$errors}\n";
