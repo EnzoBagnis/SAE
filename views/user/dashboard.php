@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
-    <link rel="stylesheet" href="/SAE/public/css/style.css">
-    <link rel="stylesheet" href="/SAE/public/css/dashboard.css">
-     <link rel="stylesheet" href="/SAE/public/css/footer.css">
+    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="../public/css/dashboard.css">
+     <link rel="stylesheet" href="../public/css/footer.css">
     <script src="/public/js/import.js" defer></script>
     <script src="/public/js/dashboard-main.js" type="module" defer></script>
 
