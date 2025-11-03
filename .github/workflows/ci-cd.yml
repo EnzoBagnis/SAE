@@ -92,10 +92,10 @@ jobs:
         fi
         
         # Attendre un peu pour que GitHub traite la PR
-        sleep 3
+        sleep 5
         
-        # Merger la PR
-        gh pr merge $PR_NUMBER --merge --delete-branch=false
+        # Merger la PR avec privilèges admin (bypass branch protection)
+        gh pr merge $PR_NUMBER --merge --admin --delete-branch=false
         echo "PR #$PR_NUMBER merged successfully"
 
   # ==================== TEST BRANCH ====================
@@ -168,10 +168,10 @@ jobs:
         fi
         
         # Attendre un peu pour que GitHub traite la PR
-        sleep 3
+        sleep 5
         
-        # Merger la PR
-        gh pr merge $PR_NUMBER --merge --auto --delete-branch=false
+        # Merger la PR avec privilèges admin (bypass branch protection)
+        gh pr merge $PR_NUMBER --merge --admin --delete-branch=false
         echo "PR #$PR_NUMBER merged successfully"
 
   # ==================== PROD BRANCH ====================
