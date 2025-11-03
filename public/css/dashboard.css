@@ -72,6 +72,32 @@
     background: #c0392b;
 }
 
+/* Bouton d'import */
+.btn-import-trigger {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.3s;
+    font-size: 0.85rem;
+    font-weight: 500;
+    height: fit-content;
+}
+
+.btn-import-trigger:hover {
+    background: #229954;
+}
+
+.btn-import-trigger svg {
+    width: 16px;
+    height: 16px;
+}
+
 /* Sidebar */
 .sidebar {
     width: 300px;
@@ -94,16 +120,6 @@
     flex-shrink: 0;
 }
 
-.tp-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1;
-    padding-right: 0.5rem;
-}
-
 .student-list {
     display: flex;
     flex-direction: column;
@@ -115,17 +131,7 @@
     height: 100%;
 }
 
-/* TP and Student Items */
-.tp-item {
-    background: white;
-    padding: 1rem 1.25rem;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border-left: 4px solid transparent;
-}
-
+/* Student Items */
 .student-item {
     background: white;
     padding: 1rem 1.25rem;
@@ -136,31 +142,14 @@
     border-left: 4px solid transparent;
 }
 
-.tp-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
 .student-item:hover {
     transform: translateX(5px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-.tp-item.active {
-    border-left: 4px solid #3498db;
-    background: #e8f4f8;
-}
-
 .student-item.active {
     border-left: 4px solid #3498db;
     background: #e8f4f8;
-}
-
-.tp-item h3 {
-    margin: 0;
-    color: #2c3e50;
-    font-size: 1.1rem;
-    font-weight: 500;
 }
 
 .student-item h3 {
@@ -205,28 +194,19 @@
     margin-top: 3rem;
 }
 
-.loading-spinner {
-    text-align: center;
-    padding: 2rem;
-    color: #3498db;
-}
-
 /* Scrollbar styling */
-.tp-list::-webkit-scrollbar,
 .student-list::-webkit-scrollbar,
 .sidebar::-webkit-scrollbar,
 .main-content::-webkit-scrollbar {
     width: 8px;
 }
 
-.tp-list::-webkit-scrollbar-track,
 .student-list::-webkit-scrollbar-track,
 .sidebar::-webkit-scrollbar-track,
 .main-content::-webkit-scrollbar-track {
     background: #f1f1f1;
 }
 
-.tp-list::-webkit-scrollbar-thumb,
 .student-list::-webkit-scrollbar-thumb,
 .sidebar::-webkit-scrollbar-thumb,
 .main-content::-webkit-scrollbar-thumb {
@@ -234,14 +214,13 @@
     border-radius: 4px;
 }
 
-.tp-list::-webkit-scrollbar-thumb:hover,
 .student-list::-webkit-scrollbar-thumb:hover,
 .sidebar::-webkit-scrollbar-thumb:hover,
 .main-content::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
 
-/* Modal */
+/* Modal de base */
 .modal {
     display: none;
     position: fixed;
@@ -251,6 +230,10 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.5);
+}
+
+#importModal {
+    display: none;
 }
 
 .modal-content {
@@ -282,6 +265,214 @@
     color: #000;
 }
 
+/* Modal d'import - Styles spécifiques */
+.import-modal {
+    max-width: 700px;
+    width: 90%;
+}
+
+.import-modal h2 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.75rem;
+}
+
+/* Onglets */
+.import-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.import-tab {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    color: #7f8c8d;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+    font-weight: 500;
+    text-decoration: none;
+    text-align: center;
+    display: block;
+}
+
+.import-tab:hover {
+    color: #3498db;
+    background: #f8f9fa;
+}
+
+.import-tab.active {
+    color: #3498db;
+    border-bottom-color: #3498db;
+    background: transparent;
+}
+
+/* Contenu des onglets avec bordure en pointillés */
+.import-tab-content {
+    display: none;
+    border: 2px dashed #cbd5e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: #f7fafc;
+}
+
+.import-tab-content.active {
+    display: block;
+}
+
+/* Zone de drop */
+.import-zone {
+    border: 3px dashed #bdc3c7;
+    border-radius: 8px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.import-zone:hover,
+.import-zone.dragover {
+    border-color: #3498db;
+    background: #e8f4f8;
+}
+
+.drop-zone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.drop-zone-content svg {
+    color: #3498db;
+}
+
+.drop-zone-content p {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.drop-zone-content .file-info {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+/* Aperçu du fichier */
+.file-preview {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #ecf0f1;
+}
+
+.file-preview h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.preview-content {
+    background: white;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #2c3e50;
+}
+
+.preview-item {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+
+.preview-item strong {
+    color: #3498db;
+}
+
+/* Bouton d'import dans le modal */
+.btn-import {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-import:hover {
+    background: #229954;
+}
+
+.btn-import:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+/* Statut d'import */
+.import-status {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.import-status.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.import-status.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.import-status.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Animation de chargement */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Modal Plan du site */
 .sitemap-list ul {
     list-style: none;
     padding: 0;
@@ -303,30 +494,7 @@
     text-decoration: underline;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .dashboard-container {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        max-height: 200px;
-    }
-
-    .top-menu {
-        flex-direction: column;
-        height: auto;
-        gap: 1rem;
-    }
-
-    .nav-menu {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-}
-
-/* Menu Burger - Caché par défaut sur desktop */
+/* Menu Burger */
 .burger-menu {
     display: none;
     flex-direction: column;
@@ -360,7 +528,6 @@
     transform: rotate(-45deg) translate(7px, -7px);
 }
 
-/* Navigation burger - cachée par défaut */
 .burger-nav {
     position: fixed;
     top: 0;
@@ -431,7 +598,6 @@
     color: white;
 }
 
-/* Sous-menu des TPs */
 .burger-submenu {
     list-style: none;
     padding: 0;
@@ -484,30 +650,12 @@
     transform: rotate(180deg);
 }
 
-/* Overlay pour fermer le menu burger */
-.burger-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-}
-
-.burger-overlay.active {
-    display: block;
-}
-
-/* Responsive Mobile - Media Queries */
+/* Responsive Mobile */
 @media (max-width: 768px) {
-    /* Afficher le bouton burger */
     .burger-menu {
         display: flex;
     }
 
-    /* Cacher le menu desktop */
     .nav-menu {
         display: none !important;
     }
@@ -516,7 +664,6 @@
         display: none !important;
     }
 
-    /* Ajuster le header */
     .top-menu {
         flex-direction: row;
         justify-content: space-between;
@@ -528,18 +675,15 @@
         font-size: 1.5rem;
     }
 
-    /* Ajuster le container */
     .dashboard-container {
         margin-top: 60px;
         height: calc(100vh - 60px);
     }
 
-    /* Cacher la sidebar sur mobile */
     .sidebar {
         display: none;
     }
 
-    /* Main content prend toute la largeur */
     .main-content {
         width: 100%;
         padding: 1rem;
@@ -549,11 +693,39 @@
         padding: 1rem;
     }
 
-    /* Modal responsive */
     .modal-content {
         width: 90%;
         margin: 20% auto;
         padding: 1.5rem;
+    }
+
+    .import-modal {
+        width: 95%;
+        margin: 5% auto;
+    }
+
+    .import-zone {
+        padding: 2rem 1rem;
+    }
+
+    .drop-zone-content svg {
+        width: 48px;
+        height: 48px;
+    }
+
+    .import-tabs {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .import-tab {
+        border-bottom: 1px solid #ecf0f1;
+        text-align: left;
+    }
+
+    .import-tab.active {
+        background: #e8f4f8;
+        border-left: 4px solid #3498db;
     }
 }
 
@@ -566,286 +738,7 @@
         font-size: 1.3rem;
     }
 
-    .burger-nav-content {
-        padding: 1.5rem 0;
-    }
-
-    .burger-link {
-        font-size: 0.95rem;
-        padding: 0.875rem 1.25rem;
-    }
-
     .data-zone h2 {
         font-size: 1.3rem;
-    }
-
-    /* Bouton d'import dans le menu */
-    .btn-import-trigger {
-        background: #27ae60;
-        color: white;
-        border: none;
-        padding: 0.3rem 0.6rem;
-        border-radius: 4px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.35rem;
-        transition: background 0.3s;
-        font-size: 0.8rem;
-        font-weight: 400;
-        height: 32px;
-        line-height: 1;
-    }
-
-    .btn-import-trigger:hover {
-        background: #229954;
-    }
-
-    .btn-import-trigger svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    /* Modal d'import */
-    .import-modal {
-        max-width: 700px;
-        width: 90%;
-    }
-
-    .import-modal h2 {
-        color: #2c3e50;
-        margin-bottom: 1.5rem;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 0.75rem;
-    }
-
-    /* Onglets */
-    .import-tabs {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-        border-bottom: 2px solid #ecf0f1;
-    }
-
-    .import-tab {
-        flex: 1;
-        padding: 0.75rem 1rem;
-        background: transparent;
-        border: none;
-        color: #7f8c8d;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s;
-        border-bottom: 3px solid transparent;
-        font-weight: 500;
-    }
-
-    .import-tab:hover {
-        color: #3498db;
-    }
-
-    .import-tab.active {
-        color: #3498db;
-        border-bottom-color: #3498db;
-    }
-
-    /* Contenu des onglets */
-    .import-tab-content {
-        display: none;
-    }
-
-    .import-tab-content.active {
-        display: block;
-    }
-
-    /* Zone de drop */
-    .import-zone {
-        border: 3px dashed #bdc3c7;
-        border-radius: 8px;
-        padding: 3rem 2rem;
-        text-align: center;
-        background: #f8f9fa;
-        transition: all 0.3s;
-        cursor: pointer;
-    }
-
-    .import-zone:hover,
-    .import-zone.dragover {
-        border-color: #3498db;
-        background: #e8f4f8;
-    }
-
-    .drop-zone-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .drop-zone-content svg {
-        color: #3498db;
-    }
-
-    .drop-zone-content p {
-        margin: 0;
-        color: #2c3e50;
-    }
-
-    .drop-zone-content .file-info {
-        font-size: 0.9rem;
-        color: #7f8c8d;
-    }
-
-    /* Aperçu du fichier */
-    .file-preview {
-        margin-top: 1.5rem;
-        padding: 1.5rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #ecf0f1;
-    }
-
-    .file-preview h3 {
-        margin-top: 0;
-        color: #2c3e50;
-        font-size: 1.1rem;
-        margin-bottom: 1rem;
-    }
-
-    .preview-content {
-        background: white;
-        padding: 1rem;
-        border-radius: 4px;
-        border: 1px solid #dee2e6;
-        max-height: 200px;
-        overflow-y: auto;
-        margin-bottom: 1rem;
-        font-family: 'Courier New', monospace;
-        font-size: 0.9rem;
-        color: #2c3e50;
-    }
-
-    .preview-item {
-        padding: 0.5rem;
-        border-bottom: 1px solid #ecf0f1;
-    }
-
-    .preview-item:last-child {
-        border-bottom: none;
-    }
-
-    .preview-item strong {
-        color: #3498db;
-    }
-
-    /* Bouton d'import */
-    .btn-import {
-        width: 100%;
-        padding: 0.75rem 1.5rem;
-        background: #27ae60;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-
-    .btn-import:hover {
-        background: #229954;
-    }
-
-    .btn-import:disabled {
-        background: #95a5a6;
-        cursor: not-allowed;
-    }
-
-    /* Statut d'import */
-    .import-status {
-        margin-top: 1rem;
-        padding: 1rem;
-        border-radius: 4px;
-        font-weight: 500;
-    }
-
-    .import-status.success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-
-    .import-status.error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    .import-status.warning {
-        background: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeaa7;
-    }
-
-    /* Animation de chargement */
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    .loading-spinner {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #3498db;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .btn-import-trigger:hover {
-            background: #229954;
-        }
-
-        .btn-import-trigger svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        .btn-import-trigger span {
-            display: none;
-        }
-
-        .import-modal {
-            width: 95%;
-            margin: 5% auto;
-        }
-
-        .import-zone {
-            padding: 2rem 1rem;
-        }
-
-        .drop-zone-content svg {
-            width: 48px;
-            height: 48px;
-        }
-
-        .import-tabs {
-            flex-direction: column;
-            gap: 0;
-        }
-
-        .import-tab {
-            border-bottom: 1px solid #ecf0f1;
-            text-align: left;
-        }
-
-        .import-tab.active {
-            background: #e8f4f8;
-            border-left: 4px solid #3498db;
-        }
     }
 }

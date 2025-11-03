@@ -11,11 +11,18 @@ let currentAttemptsData = null;
  * Ouvre le modal d'import
  */
 function openImportModal() {
+    console.log('openImportModal appelée');
     const modal = document.getElementById('importModal');
+    console.log('Modal trouvé:', modal);
+
     if (modal) {
+        console.log('Style avant:', modal.style.display);
         modal.style.display = 'block';
+        console.log('Style après:', modal.style.display);
         // Réinitialiser à l'onglet exercices
         switchImportTab('exercises');
+    } else {
+        console.error('Modal #importModal non trouvé dans le DOM !');
     }
 }
 
