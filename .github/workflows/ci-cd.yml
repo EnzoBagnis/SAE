@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ dev, test, prod ]
 
+# Ajouter les permissions nécessaires pour créer des tags et pousser vers le repo
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   # Job 1: Linting PHP
   php-lint:
