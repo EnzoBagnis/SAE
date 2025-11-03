@@ -1,0 +1,153 @@
+name: PHP CI/CD Pipeline
+
+on:
+  push:
+    branches: [ dev, test, prod ]
+  pull_request:
+    branches: [ dev, test, prod ]
+
+jobs:
+  # Job 1: Linting PHP
+  php-lint:
+    runs-on: ubuntu-latest
+    name: PHP Linting
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        tools: php-cs-fixer, phpcs
+        coverage: none
+        
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
+    - name: Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+        
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+      
+    - name: Run PHP Syntax Check
+      run: find . -name "*.php" -not -path "./vendor/*" -exec php -l {} \;
+      
+    - name: Run PHP_CodeSniffer
+      run: |
+        if [ -f "phpcs.xml" ] || [ -f "phpcs.xml.dist" ]; then
+          vendor/bin/phpcs
+        else
+          vendor/bin/phpcs --standard=PSR12 --extensions=php --ignore=vendor/ .
+        fi
+      continue-on-error: false
+      
+    - name: Run PHP-CS-Fixer (dry-run)
+      run: |
+        if [ -f ".php-cs-fixer.php" ]; then
+          vendor/bin/php-cs-fixer fix --dry-run --diff
+        fi
+      continue-on-error: true
+
+  # Job 2: Tests unitaires (si applicable)
+  tests:
+    runs-on: ubuntu-latest
+    needs: php-lint
+    name: Run Tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, json
+        coverage: xdebug
+        
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+      
+    - name: Run PHPUnit tests
+      run: |
+        if [ -f "phpunit.xml" ] || [ -f "phpunit.xml.dist" ]; then
+          vendor/bin/phpunit --coverage-text
+        else
+          echo "No PHPUnit configuration found, skipping tests"
+        fi
+      continue-on-error: false
+
+  # Job 3: Déploiement DEV
+  deploy-dev:
+    runs-on: ubuntu-latest
+    needs: [php-lint, tests]
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+    name: Deploy to DEV
+    environment:
+      name: development
+      url: https://dev.yourapp.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to DEV server
+      run: |
+        echo "🚀 Deploying to DEV environment"
+        # Ajoutez ici vos commandes de déploiement
+        # Exemple avec SSH:
+        # ssh user@dev-server "cd /var/www && git pull origin dev"
+        
+  # Job 4: Déploiement TEST
+  deploy-test:
+    runs-on: ubuntu-latest
+    needs: [php-lint, tests]
+    if: github.ref == 'refs/heads/test' && github.event_name == 'push'
+    name: Deploy to TEST
+    environment:
+      name: staging
+      url: https://test.yourapp.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to TEST server
+      run: |
+        echo "🚀 Deploying to TEST environment"
+        # Ajoutez ici vos commandes de déploiement
+        
+  # Job 5: Déploiement PROD (avec approbation manuelle)
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: [php-lint, tests]
+    if: github.ref == 'refs/heads/prod' && github.event_name == 'push'
+    name: Deploy to PRODUCTION
+    environment:
+      name: production
+      url: https://www.yourapp.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to PRODUCTION server
+      run: |
+        echo "🚀 Deploying to PRODUCTION environment"
+        # Ajoutez ici vos commandes de déploiement
+        
+    - name: Create Release Tag
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        VERSION=$(date +%Y.%m.%d-%H%M%S)
+        git tag -a "v$VERSION" -m "Production release $VERSION"
+        git push origin "v$VERSION"

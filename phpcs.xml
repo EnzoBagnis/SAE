@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<ruleset name="Custom PHP Standards">
+    <description>Standards PHP personnalisés pour le projet SAE</description>
+
+    <!-- Fichiers à analyser -->
+    <file>./controllers</file>
+    <file>./models</file>
+    <file>./config</file>
+    <file>./views</file>
+    <file>./cron</file>
+    <file>./index.php</file>
+    <file>./sitemap.php</file>
+
+    <!-- Fichiers/dossiers à exclure -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/phpmailer/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/cache/*</exclude-pattern>
+    <exclude-pattern>*/scripts/*</exclude-pattern>
+    <exclude-pattern>*/public/js/*</exclude-pattern>
+    <exclude-pattern>*/public/css/*</exclude-pattern>
+
+    <!-- Arguments -->
+    <arg name="colors"/>
+    <arg value="sp"/> <!-- Show sniff and progress -->
+    <arg name="parallel" value="75"/> <!-- Parallélisation -->
+    <arg name="extensions" value="php"/>
+
+    <!-- Standards à utiliser -->
+    <rule ref="PSR12">
+        <!-- Exclusions pour le projet -->
+        <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
+        <exclude name="Generic.Files.LineEndings.InvalidEOLChar"/>
+        <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+    </rule>
+
+    <!-- Règles personnalisées -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+    <rule ref="Generic.Commenting.Todo"/>
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="150"/>
+        </properties>
+    </rule>
+    
+    <!-- Sécurité -->
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <element key="eval" value="null"/>
+                <element key="create_function" value="null"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>
