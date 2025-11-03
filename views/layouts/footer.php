@@ -20,15 +20,18 @@
         <div class="footer-section">
             <h3>Qualité & Accessibilité</h3>
             <div class="footer-badges">
-                <a href="https://validator.w3.org/check?uri=referer" target="_blank" rel="noopener" title="HTML5 Valide">
+                <a href="https://validator.w3.org/check?uri=referer"
+                   target="_blank" rel="noopener" title="HTML5 Valide">
                     <img src="https://www.w3.org/html/logo/badge/html5-badge-h-css3-semantics.png"
                          alt="HTML5 Valide" width="100" height="auto">
                 </a>
-                <a href="https://jigsaw.w3.org/css-validator/check/referer" target="_blank" rel="noopener" title="CSS3 Valide">
+                <a href="https://jigsaw.w3.org/css-validator/check/referer"
+                   target="_blank" rel="noopener" title="CSS3 Valide">
                     <img src="https://jigsaw.w3.org/css-validator/images/vcss"
                          alt="CSS Valide" width="88" height="31">
                 </a>
-                <a href="https://www.ecoindex.fr" target="_blank" rel="noopener" title="Performance environnementale">
+                <a href="https://www.ecoindex.fr"
+                   target="_blank" rel="noopener" title="Performance environnementale">
                     <span class="eco-badge">EcoIndex</span>
                 </a>
             </div>
@@ -47,7 +50,8 @@
             </p>
             <p class="footer-compliance">
                 Conformité RGPD | Accessibilité : Conforme |
-                <a href="https://www.w3.org/WAI/WCAG2AA-Conformance" target="_blank" rel="noopener">WCAG 2.1 AA</a>
+                <a href="https://www.w3.org/WAI/WCAG2AA-Conformance"
+                   target="_blank" rel="noopener">WCAG 2.1 AA</a>
             </p>
         </div>
     </div>
@@ -60,16 +64,28 @@
         <h2>Conditions Générales d'Utilisation</h2>
         <div class="modal-text">
             <h3>1. Acceptation des conditions</h3>
-            <p>En accédant et en utilisant StudTraj, vous acceptez d'être lié par ces conditions générales d'utilisation.</p>
+            <p>
+                En accédant et en utilisant StudTraj, vous acceptez d'être lié
+                par ces conditions générales d'utilisation.
+            </p>
 
             <h3>2. Utilisation du service</h3>
-            <p>Ce service est destiné à un usage éducatif. Toute utilisation abusive ou frauduleuse est strictement interdite.</p>
+            <p>
+                Ce service est destiné à un usage éducatif.
+                Toute utilisation abusive ou frauduleuse est strictement interdite.
+            </p>
 
             <h3>3. Compte utilisateur</h3>
-            <p>Vous êtes responsable de la confidentialité de vos identifiants de connexion.</p>
+            <p>
+                Vous êtes responsable de la confidentialité
+                de vos identifiants de connexion.
+            </p>
 
             <h3>4. Propriété intellectuelle</h3>
-            <p>Tous les contenus présents sur StudTraj sont protégés par les droits d'auteur.</p>
+            <p>
+                Tous les contenus présents sur StudTraj
+                sont protégés par les droits d'auteur.
+            </p>
         </div>
     </div>
 </div>
@@ -81,16 +97,30 @@
         <h2>Politique de confidentialité</h2>
         <div class="modal-text">
             <h3>1. Collecte des données</h3>
-            <p>Nous collectons uniquement les données nécessaires à la création et gestion de votre compte (nom, prénom, email).</p>
+            <p>
+                Nous collectons uniquement les données nécessaires
+                à la création et gestion de votre compte
+                (nom, prénom, email).
+            </p>
 
             <h3>2. Utilisation des données</h3>
-            <p>Vos données sont utilisées exclusivement pour le fonctionnement du service et ne sont jamais partagées avec des tiers.</p>
+            <p>
+                Vos données sont utilisées exclusivement
+                pour le fonctionnement du service
+                et ne sont jamais partagées avec des tiers.
+            </p>
 
             <h3>3. Sécurité</h3>
-            <p>Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos données personnelles.</p>
+            <p>
+                Nous mettons en œuvre des mesures de sécurité appropriées
+                pour protéger vos données personnelles.
+            </p>
 
             <h3>4. Vos droits</h3>
-            <p>Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition.</p>
+            <p>
+                Conformément au RGPD, vous disposez d'un droit d'accès,
+                de rectification, de suppression et d'opposition.
+            </p>
 
             <h3>5. Contact</h3>
             <p>Pour toute question : StudTraj.amu@gmail.com</p>
@@ -128,3 +158,4 @@ window.onclick = function(event) {
     }
 }
 </script>
+

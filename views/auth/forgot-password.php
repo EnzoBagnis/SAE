@@ -71,7 +71,8 @@
 
     <!-- SEO Meta Tags -->
     <meta name="description"
-          content="Connectez-vous à votre compte StudTraj pour accéder à votre suivi de trajectoire étudiante et gérer votre parcours académique.">
+          content="Connectez-vous à votre compte StudTraj pour accéder à votre suivi
+                   de trajectoire étudiante et gérer votre parcours académique.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/connexion.php">
 

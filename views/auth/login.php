@@ -8,7 +8,8 @@
 
     <!-- SEO Meta Tags -->
     <meta name="description"
-          content="Connectez-vous à votre compte StudTraj pour accéder à votre tableau de bord et suivre votre trajectoire étudiante.">
+          content="Connectez-vous à votre compte StudTraj pour accéder à votre tableau de bord
+                   et suivre votre trajectoire étudiante.">
     <meta name="keywords" content="connexion studtraj, login étudiant, se connecter">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/index.php?action=login">

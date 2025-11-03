@@ -45,7 +45,10 @@
     <nav class="burger-nav" id="burgerNav">
         <div class="burger-nav-content">
             <div class="burger-user-info">
-                <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
+                <span>
+                    <?= htmlspecialchars($user_firstname ?? '') ?>
+                    <?= htmlspecialchars($user_lastname ?? '') ?>
+                </span>
             </div>
             <ul class="burger-menu-list">
                 <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>

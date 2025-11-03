@@ -138,7 +138,9 @@ class Router
     private function loadNamespacedController($fullyQualifiedClassName, $method)
     {
         // Load BaseController if not already loaded
-        $baseControllerFile = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'BaseController.php';
+        $baseControllerFile = __DIR__ . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . 'controllers'
+            . DIRECTORY_SEPARATOR . 'BaseController.php';
         if (file_exists($baseControllerFile)) {
             require_once $baseControllerFile;
         }
