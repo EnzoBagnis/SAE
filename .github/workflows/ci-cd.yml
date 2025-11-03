@@ -149,7 +149,7 @@ jobs:
 
     - name: Create and Auto-merge PR from test to prod
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
       run: |
         # Vérifier si une PR existe déjà
         EXISTING_PR=$(gh pr list --base prod --head test --json number --jq '.[0].number')
