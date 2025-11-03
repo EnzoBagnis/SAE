@@ -95,7 +95,7 @@ jobs:
         sleep 3
         
         # Merger la PR
-        gh pr merge $PR_NUMBER --merge --auto --delete-branch=false
+        gh pr merge $PR_NUMBER --merge --delete-branch=false
         echo "PR #$PR_NUMBER merged successfully"
 
   # ==================== TEST BRANCH ====================
