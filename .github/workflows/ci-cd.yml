@@ -57,12 +57,12 @@ jobs:
           vendor/bin/phpcs --standard=PSR12 --extensions=php --ignore=vendor/,phpmailer/ .
         fi
 
-  # Job 2: Auto-merge DEV → TEST via PR
-  auto-merge-to-test:
+  # Job 2: Créer PR DEV → TEST (sans auto-merge)
+  create-pr-to-test:
     runs-on: ubuntu-latest
     needs: lint-dev
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-    name: 🔄 Auto-merge DEV → TEST
+    name: 🔄 Create PR DEV → TEST
 
     steps:
     - name: Checkout code
@@ -71,7 +71,7 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create and Auto-merge PR from dev to test
+    - name: Create PR from dev to test
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
       run: |
@@ -80,23 +80,38 @@ jobs:
         
         if [ -z "$EXISTING_PR" ]; then
           # Créer une nouvelle PR
-          PR_URL=$(gh pr create --base test --head dev --title "Auto-sync: dev to test" --body "Automatic synchronization - Linting passed on dev - Auto-merging changes from dev to test - This PR was automatically created by the CI/CD pipeline.")
+          PR_URL=$(gh pr create --base test --head dev --title "🔄 Auto-sync: dev → test" --body "## Synchronisation automatique dev → test
+
+          ✅ **Linting passed on dev**
           
-          echo "PR created: $PR_URL"
+          Cette PR a été automatiquement créée par le pipeline CI/CD après validation du linting sur la branche \`dev\`.
           
-          # Extraire le numéro de la PR
-          PR_NUMBER=$(echo $PR_URL | grep -o '[0-9]*$')
+          ### Actions à faire :
+          - [ ] Reviewer les changements
+          - [ ] Approuver la PR
+          - [ ] Merger manuellement vers \`test\`
+          
+          ---
+          _Créée automatiquement par GitHub Actions_")
+          
+          echo "✅ PR created: $PR_URL"
         else
-          PR_NUMBER=$EXISTING_PR
-          echo "Using existing PR #$PR_NUMBER"
+          echo "ℹ️ PR already exists: #$EXISTING_PR"
+          echo "Updating PR description..."
+          gh pr edit $EXISTING_PR --body "## Synchronisation automatique dev → test (Updated)
+
+          ✅ **Linting passed on dev**
+          
+          Cette PR a été mise à jour automatiquement après un nouveau push sur \`dev\`.
+          
+          ### Actions à faire :
+          - [ ] Reviewer les changements
+          - [ ] Approuver la PR
+          - [ ] Merger manuellement vers \`test\`
+          
+          ---
+          _Mise à jour automatique par GitHub Actions le $(date +'%Y-%m-%d %H:%M:%S')_"
         fi
-        
-        # Attendre un peu pour que GitHub traite la PR
-        sleep 5
-        
-        # Merger la PR avec privilèges admin (bypass branch protection)
-        gh pr merge $PR_NUMBER --merge --admin --delete-branch=false
-        echo "PR #$PR_NUMBER merged successfully"
 
   # ==================== TEST BRANCH ====================
   # Job 3: Tests sur TEST
@@ -133,12 +148,12 @@ jobs:
         echo "🔥 Running smoke tests..."
         php -r "require 'index.php'; echo 'Index loads successfully\n';" || echo "⚠️ Index check skipped"
 
-  # Job 4: Auto-merge TEST → PROD via PR
-  auto-merge-to-prod:
+  # Job 4: Créer PR TEST → PROD (sans auto-merge)
+  create-pr-to-prod:
     runs-on: ubuntu-latest
     needs: run-tests
     if: github.ref == 'refs/heads/test' && github.event_name == 'push'
-    name: 🚀 Auto-merge TEST → PROD
+    name: 🚀 Create PR TEST → PROD
 
     steps:
     - name: Checkout code
@@ -147,7 +162,7 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create and Auto-merge PR from test to prod
+    - name: Create PR from test to prod
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
       run: |
@@ -156,23 +171,52 @@ jobs:
         
         if [ -z "$EXISTING_PR" ]; then
           # Créer une nouvelle PR
-          PR_URL=$(gh pr create --base prod --head test --title "Auto-sync: test to prod" --body "Production Deployment - Tests passed on test - Auto-deploying to prod - This PR was automatically created by the CI/CD pipeline.")
+          PR_URL=$(gh pr create --base prod --head test --title "🚀 Production Release: test → prod" --body "## 🚀 Déploiement en Production
+
+          ✅ **Tests passed on test**
           
-          echo "PR created: $PR_URL"
+          Cette PR a été automatiquement créée par le pipeline CI/CD après validation des tests sur la branche \`test\`.
           
-          # Extraire le numéro de la PR
-          PR_NUMBER=$(echo $PR_URL | grep -o '[0-9]*$')
+          ### ⚠️ Actions requises avant merge :
+          - [ ] **Review approfondie du code**
+          - [ ] **Vérification des changements critiques**
+          - [ ] **Validation par au moins 1 reviewer**
+          - [ ] **Approbation finale pour production**
+          
+          ### 📋 Checklist de déploiement :
+          - [ ] Les tests unitaires passent
+          - [ ] Aucune régression détectée
+          - [ ] Documentation à jour
+          - [ ] Prêt pour la production
+          
+          ---
+          _Créée automatiquement par GitHub Actions_")
+          
+          echo "✅ PR created: $PR_URL"
         else
-          PR_NUMBER=$EXISTING_PR
-          echo "Using existing PR #$PR_NUMBER"
+          echo "ℹ️ PR already exists: #$EXISTING_PR"
+          echo "Updating PR description..."
+          gh pr edit $EXISTING_PR --body "## 🚀 Déploiement en Production (Updated)
+
+          ✅ **Tests passed on test**
+          
+          Cette PR a été mise à jour automatiquement après un nouveau push sur \`test\`.
+          
+          ### ⚠️ Actions requises avant merge :
+          - [ ] **Review approfondie du code**
+          - [ ] **Vérification des changements critiques**
+          - [ ] **Validation par au moins 1 reviewer**
+          - [ ] **Approbation finale pour production**
+          
+          ### 📋 Checklist de déploiement :
+          - [ ] Les tests unitaires passent
+          - [ ] Aucune régression détectée
+          - [ ] Documentation à jour
+          - [ ] Prêt pour la production
+          
+          ---
+          _Mise à jour automatique par GitHub Actions le $(date +'%Y-%m-%d %H:%M:%S')_"
         fi
-        
-        # Attendre un peu pour que GitHub traite la PR
-        sleep 5
-        
-        # Merger la PR avec privilèges admin (bypass branch protection)
-        gh pr merge $PR_NUMBER --merge --admin --delete-branch=false
-        echo "PR #$PR_NUMBER merged successfully"
 
   # ==================== PROD BRANCH ====================
   # Job 5: Créer un tag de version sur PROD
