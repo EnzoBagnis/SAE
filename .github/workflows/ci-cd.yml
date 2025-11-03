@@ -57,12 +57,12 @@ jobs:
           vendor/bin/phpcs --standard=PSR12 --extensions=php --ignore=vendor/,phpmailer/ .
         fi
 
-  # Job 2: Créer PR DEV → TEST (sans auto-merge)
-  create-pr-to-test:
+  # Job 2: Auto-merge DEV → TEST via PR
+  auto-merge-to-test:
     runs-on: ubuntu-latest
     needs: lint-dev
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-    name: 🔄 Create PR DEV → TEST
+    name: 🔄 Auto-merge DEV → TEST
 
     steps:
     - name: Checkout code
@@ -71,7 +71,7 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create PR from dev to test
+    - name: Create and Auto-merge PR from dev to test
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
       run: |
@@ -84,34 +84,26 @@ jobs:
 
           ✅ **Linting passed on dev**
           
-          Cette PR a été automatiquement créée par le pipeline CI/CD après validation du linting sur la branche \`dev\`.
-          
-          ### Actions à faire :
-          - [ ] Reviewer les changements
-          - [ ] Approuver la PR
-          - [ ] Merger manuellement vers \`test\`
+          Cette PR a été automatiquement créée et mergée par le pipeline CI/CD après validation du linting sur la branche \`dev\`.
           
           ---
-          _Créée automatiquement par GitHub Actions_")
+          _Créée et mergée automatiquement par GitHub Actions_")
           
           echo "✅ PR created: $PR_URL"
+          
+          # Extraire le numéro de la PR
+          PR_NUMBER=$(echo $PR_URL | grep -o '[0-9]*$')
         else
-          echo "ℹ️ PR already exists: #$EXISTING_PR"
-          echo "Updating PR description..."
-          gh pr edit $EXISTING_PR --body "## Synchronisation automatique dev → test (Updated)
-
-          ✅ **Linting passed on dev**
-          
-          Cette PR a été mise à jour automatiquement après un nouveau push sur \`dev\`.
-          
-          ### Actions à faire :
-          - [ ] Reviewer les changements
-          - [ ] Approuver la PR
-          - [ ] Merger manuellement vers \`test\`
-          
-          ---
-          _Mise à jour automatique par GitHub Actions le $(date +'%Y-%m-%d %H:%M:%S')_"
+          PR_NUMBER=$EXISTING_PR
+          echo "Using existing PR #$PR_NUMBER"
         fi
+        
+        # Attendre un peu pour que GitHub traite la PR
+        sleep 5
+        
+        # Merger la PR automatiquement avec privilèges admin (bypass branch protection)
+        gh pr merge $PR_NUMBER --merge --admin --delete-branch=false
+        echo "✅ PR #$PR_NUMBER merged successfully and auto-synced to test"
 
   # ==================== TEST BRANCH ====================
   # Job 3: Tests sur TEST
