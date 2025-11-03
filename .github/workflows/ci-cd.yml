@@ -71,39 +71,32 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create Pull Request from dev to test
-      uses: peter-evans/create-pull-request@v6
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        branch: dev
-        base: test
-        title: '🔄 Auto-sync: dev → test'
-        body: |
-          ## Automatic Synchronization
-
-          ✅ Linting passed on `dev`
-          🔄 Auto-merging changes from `dev` to `test`
-
-          This PR was automatically created by the CI/CD pipeline.
-        labels: |
-          automated
-          gitflow
-
-    - name: Auto-merge the PR
+    - name: Create and Auto-merge PR from dev to test
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Attendre que la PR soit créée
-        sleep 5
+        # Vérifier si une PR existe déjà
+        EXISTING_PR=$(gh pr list --base test --head dev --json number --jq '.[0].number')
         
-        # Trouver et merger la PR automatiquement
-        PR_NUMBER=$(gh pr list --base test --head dev --json number --jq '.[0].number')
-        if [ ! -z "$PR_NUMBER" ]; then
-          gh pr merge $PR_NUMBER --auto --merge --delete-branch=false
-          echo "✅ PR #$PR_NUMBER auto-merged"
+        if [ -z "$EXISTING_PR" ]; then
+          # Créer une nouvelle PR
+          PR_URL=$(gh pr create --base test --head dev --title "Auto-sync: dev to test" --body "Automatic synchronization - Linting passed on dev - Auto-merging changes from dev to test - This PR was automatically created by the CI/CD pipeline." --label "automated,gitflow")
+          
+          echo "PR created: $PR_URL"
+          
+          # Extraire le numéro de la PR
+          PR_NUMBER=$(echo $PR_URL | grep -o '[0-9]*$')
         else
-          echo "⚠️ No PR found to merge"
+          PR_NUMBER=$EXISTING_PR
+          echo "Using existing PR #$PR_NUMBER"
         fi
+        
+        # Attendre un peu pour que GitHub traite la PR
+        sleep 3
+        
+        # Merger la PR
+        gh pr merge $PR_NUMBER --merge --auto --delete-branch=false
+        echo "PR #$PR_NUMBER merged successfully"
 
   # ==================== TEST BRANCH ====================
   # Job 3: Tests sur TEST
