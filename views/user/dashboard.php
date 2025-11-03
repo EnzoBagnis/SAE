@@ -82,72 +82,72 @@
             </div>
         </aside>
 
-        <div id="importModal" class="modal">
-            <div class="modal-content import-modal">
-                <span class="close" onclick="closeImportModal()">&times;</span>
-                <h2>Importer des données JSON</h2>
-
-                <div class="import-tabs">
-                    <button class="import-tab active" onclick="switchImportTab('exercises')" data-tab="exercises">
-                        Exercices de TP
-                    </button>
-                    <button class="import-tab" onclick="switchImportTab('attempts')" data-tab="attempts">
-                        Tentatives d'élèves
-                    </button>
-                </div>
-
-                <!-- Onglet Exercices -->
-                <div id="exercisesTab" class="import-tab-content active">
-                    <div class="import-zone" id="exercisesDropZone">
-                        <input type="file" id="exercisesFileInput" accept=".json" style="display: none;" onchange="handleFileSelect(event, 'exercises')">
-                        <div class="drop-zone-content" onclick="document.getElementById('exercisesFileInput').click()">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
-                            <p class="file-info">Format: exercices_tp.json</p>
-                        </div>
-                    </div>
-                    <div id="exercisesPreview" class="file-preview" style="display: none;">
-                        <h3>Aperçu du fichier</h3>
-                        <div class="preview-content"></div>
-                        <button class="btn-import" onclick="importExercises()">Importer les exercices</button>
-                    </div>
-                </div>
-
-                <!-- Onglet Tentatives -->
-                <div id="attemptsTab" class="import-tab-content">
-                    <div class="import-zone" id="attemptsDropZone">
-                        <input type="file" id="attemptsFileInput" accept=".json" style="display: none;" onchange="handleFileSelect(event, 'attempts')">
-                        <div class="drop-zone-content" onclick="document.getElementById('attemptsFileInput').click()">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
-                            <p class="file-info">Format: tentatives_eleves.json</p>
-                        </div>
-                    </div>
-                    <div id="attemptsPreview" class="file-preview" style="display: none;">
-                        <h3>Aperçu du fichier</h3>
-                        <div class="preview-content"></div>
-                        <button class="btn-import" onclick="importAttempts()">Importer les tentatives</button>
-                    </div>
-                </div>
-
-                <div id="importStatus" class="import-status" style="display: none;"></div>
-            </div>
-        </div>
-
         <!-- Zone principale de visualisation -->
         <main class="main-content">
             <div class="data-zone">
                 <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
             </div>
         </main>
+    </div>
+
+    <div id="importModal" class="modal">
+        <div class="modal-content import-modal">
+            <span class="close" onclick="closeImportModal()">&times;</span>
+            <h2>Importer des données JSON</h2>
+
+            <div class="import-tabs">
+                <button class="import-tab active" onclick="switchImportTab('exercises')" data-tab="exercises">
+                    Exercices de TP
+                </button>
+                <button class="import-tab" onclick="switchImportTab('attempts')" data-tab="attempts">
+                    Tentatives d'élèves
+                </button>
+            </div>
+
+            <!-- Onglet Exercices -->
+            <div id="exercisesTab" class="import-tab-content active">
+                <div class="import-zone" id="exercisesDropZone">
+                    <input type="file" id="exercisesFileInput" accept=".json" style="display: none;" onchange="handleFileSelect(event, 'exercises')">
+                    <div class="drop-zone-content" onclick="document.getElementById('exercisesFileInput').click()">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
+                        <p class="file-info">Format: exercices_tp.json</p>
+                    </div>
+                </div>
+                <div id="exercisesPreview" class="file-preview" style="display: none;">
+                    <h3>Aperçu du fichier</h3>
+                    <div class="preview-content"></div>
+                    <button class="btn-import" onclick="importExercises()">Importer les exercices</button>
+                </div>
+            </div>
+
+            <!-- Onglet Tentatives -->
+            <div id="attemptsTab" class="import-tab-content">
+                <div class="import-zone" id="attemptsDropZone">
+                    <input type="file" id="attemptsFileInput" accept=".json" style="display: none;" onchange="handleFileSelect(event, 'attempts')">
+                    <div class="drop-zone-content" onclick="document.getElementById('attemptsFileInput').click()">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
+                        <p class="file-info">Format: tentatives_eleves.json</p>
+                    </div>
+                </div>
+                <div id="attemptsPreview" class="file-preview" style="display: none;">
+                    <h3>Aperçu du fichier</h3>
+                    <div class="preview-content"></div>
+                    <button class="btn-import" onclick="importAttempts()">Importer les tentatives</button>
+                </div>
+            </div>
+
+            <div id="importStatus" class="import-status" style="display: none;"></div>
+        </div>
     </div>
 
     <!-- Modal Plan du site -->
