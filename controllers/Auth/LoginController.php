@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Auth;
 
 require_once __DIR__ . '/../BaseController.php';
@@ -7,17 +8,20 @@ require_once __DIR__ . '/AuthController.php';
 /**
  * LoginController - Handles login display and authentication
  */
-class LoginController extends \BaseController {
+class LoginController extends \BaseController
+{
     private $authController;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->authController = new AuthController();
     }
 
     /**
      * Show login page
      */
-    public function index() {
+    public function index()
+    {
         // Prepare messages from URL parameters
         $errorMessage = null;
         $successMessage = null;
@@ -42,7 +46,8 @@ class LoginController extends \BaseController {
     /**
      * Process login form
      */
-    public function authenticate() {
+    public function authenticate()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /index.php?action=login');
             exit;
@@ -71,7 +76,8 @@ class LoginController extends \BaseController {
     /**
      * Get error message from error code
      */
-    private function getErrorMessage($errorCode) {
+    private function getErrorMessage($errorCode)
+    {
         $messages = [
             'email_not_found' => 'Cet email n\'existe pas !',
             'password_incorrect' => 'Mot de passe incorrect',
@@ -86,7 +92,8 @@ class LoginController extends \BaseController {
     /**
      * Get success message from success code
      */
-    private function getSuccessMessage($successCode) {
+    private function getSuccessMessage($successCode)
+    {
         $messages = [
             'reset_envoye' => 'Un email de réinitialisation a été envoyé !',
             'mdp_reinitialise' => 'Votre mot de passe a été réinitialisé avec succès !'
@@ -95,4 +102,3 @@ class LoginController extends \BaseController {
         return $messages[$successCode] ?? '';
     }
 }
-

@@ -15,11 +15,11 @@
 
 <div class="page-wrap">
 
-    <?php if (isset($error_message)): ?>
+    <?php if (isset($error_message)) : ?>
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <?php if (isset($success_message)): ?>
+    <?php if (isset($success_message)) : ?>
         <div class="success"><?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
 

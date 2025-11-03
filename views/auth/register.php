@@ -7,7 +7,8 @@
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Créez votre compte StudTraj gratuitement et commencez à suivre votre trajectoire étudiante. Inscription simple et rapide.">
+    <meta name="description"
+          content="Créez votre compte StudTraj gratuitement et commencez à suivre votre trajectoire étudiante. Inscription simple et rapide.">
     <meta name="keywords" content="inscription studtraj, créer compte étudiant, inscription gratuite">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/formulaire.php">
@@ -26,7 +27,7 @@
         </svg>
     </a>
 
-    <?php if (isset($error_message)): ?>
+    <?php if (isset($error_message)) : ?>
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
@@ -54,4 +55,3 @@
 </div>
 </body>
 </html>
-

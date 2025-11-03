@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Auth;
 
 require_once __DIR__ . '/../BaseController.php';
@@ -7,17 +8,20 @@ require_once __DIR__ . '/AuthController.php';
 /**
  * PasswordResetController - Handles password reset functionality
  */
-class PasswordResetController extends \BaseController {
+class PasswordResetController extends \BaseController
+{
     private $authController;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->authController = new AuthController();
     }
 
     /**
      * Show forgot password page
      */
-    public function forgotPassword() {
+    public function forgotPassword()
+    {
         $errorMessage = null;
 
         if (isset($_GET['error'])) {
@@ -35,7 +39,8 @@ class PasswordResetController extends \BaseController {
     /**
      * Request password reset
      */
-    public function requestReset() {
+    public function requestReset()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /index.php?action=forgotpassword');
             exit;
@@ -61,7 +66,8 @@ class PasswordResetController extends \BaseController {
     /**
      * Show reset password page with token
      */
-    public function showResetForm() {
+    public function showResetForm()
+    {
         $token = $_GET['token'] ?? '';
 
         if (empty($token)) {
@@ -87,7 +93,8 @@ class PasswordResetController extends \BaseController {
     /**
      * Reset password with token
      */
-    public function resetPassword() {
+    public function resetPassword()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /index.php?action=login');
             exit;
@@ -120,7 +127,8 @@ class PasswordResetController extends \BaseController {
     /**
      * Get error message from error code
      */
-    private function getErrorMessage($errorCode) {
+    private function getErrorMessage($errorCode)
+    {
         $messages = [
             'email_not_found' => 'Aucun compte trouvé avec cet email.',
             'email_send_failed' => 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.',

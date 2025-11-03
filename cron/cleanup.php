@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Cleanup Cron Job Script
  * Automatically deletes expired pending registrations (older than 15 minutes)

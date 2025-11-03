@@ -15,7 +15,7 @@
 
 <div class="page-wrap">
 
-    <?php if (isset($error_message)): ?>
+    <?php if (isset($error_message)) : ?>
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
@@ -70,7 +70,8 @@
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Connectez-vous à votre compte StudTraj pour accéder à votre suivi de trajectoire étudiante et gérer votre parcours académique.">
+    <meta name="description"
+          content="Connectez-vous à votre compte StudTraj pour accéder à votre suivi de trajectoire étudiante et gérer votre parcours académique.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/connexion.php">
 
@@ -88,11 +89,11 @@
         </svg>
     </a>
 
-    <?php if (isset($error_message)): ?>
+    <?php if (isset($error_message)) : ?>
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <?php if (isset($success_message)): ?>
+    <?php if (isset($success_message)) : ?>
         <div class="success"><?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
 
@@ -117,4 +118,3 @@
 
 </body>
 </html>
-
