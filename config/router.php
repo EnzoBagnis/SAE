@@ -1,17 +1,19 @@
 <?php
+
 /**
  * Router class - Main application router
  * Handles URL routing and controller dispatching with namespaces
  */
-class Router {
-    
+class Router
+{
     /**
      * Route the request to the appropriate controller
      */
-    public function route() {
+    public function route()
+    {
         $action = $_GET['action'] ?? 'home';
 
-        switch($action) {
+        switch ($action) {
             // ========== HOME ==========
             case 'index':
             case 'home':
@@ -107,18 +109,19 @@ class Router {
                 break;
         }
     }
-    
+
     /**
      * Load and execute controller method (legacy - old controllers)
      */
-    private function loadController($controllerName, $method) {
+    private function loadController($controllerName, $method)
+    {
         $controllerFile = __DIR__ . '/../controllers/' . $controllerName . '.php';
 
         if (file_exists($controllerFile)) {
             require_once $controllerFile;
-            
+
             $controllerInstance = new $controllerName();
-            
+
             if (method_exists($controllerInstance, $method)) {
                 $controllerInstance->$method();
             } else {
@@ -132,9 +135,12 @@ class Router {
     /**
      * Load and execute namespaced controller method (new MVC structure)
      */
-    private function loadNamespacedController($fullyQualifiedClassName, $method) {
+    private function loadNamespacedController($fullyQualifiedClassName, $method)
+    {
         // Load BaseController if not already loaded
-        $baseControllerFile = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'BaseController.php';
+        $baseControllerFile = __DIR__ . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . 'controllers'
+            . DIRECTORY_SEPARATOR . 'BaseController.php';
         if (file_exists($baseControllerFile)) {
             require_once $baseControllerFile;
         }
@@ -163,7 +169,8 @@ class Router {
     /**
      * Load a static view directly
      */
-    private function loadView($viewPath) {
+    private function loadView($viewPath)
+    {
         $viewFile = __DIR__ . '/../views/' . $viewPath . '.php';
 
         if (file_exists($viewFile)) {

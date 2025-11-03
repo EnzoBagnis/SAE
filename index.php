@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Application Entry Point
  * Routes all requests through the main router

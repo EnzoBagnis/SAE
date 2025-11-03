@@ -1,15 +1,17 @@
 <?php
+
 namespace Controllers\Auth;
 
 /**
  * LogoutController - Handles user logout
  */
-class LogoutController {
-
+class LogoutController
+{
     /**
      * Logout user and destroy session
      */
-    public function logout() {
+    public function logout()
+    {
         session_start();
         session_destroy();
 
@@ -17,4 +19,3 @@ class LogoutController {
         exit;
     }
 }
-

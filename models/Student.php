@@ -3,12 +3,14 @@
 /**
  * Student Model - Handles student data from JSON file
  */
-class Student {
+class Student
+{
     private $dataFile;
     private $exercisesFile;
     private $exercisesData = null;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->dataFile = __DIR__ . '/../data/NewCaledonia_1014.json';
         $this->exercisesFile = __DIR__ . '/../data/NewCaledonia_exercises.json';
     }
@@ -17,7 +19,8 @@ class Student {
      * Get all attempts from JSON file
      * @return array Array of attempts
      */
-    public function getAllAttempts() {
+    public function getAllAttempts()
+    {
         if (!file_exists($this->dataFile)) {
             return [];
         }
@@ -36,7 +39,8 @@ class Student {
      * Load exercises data from JSON file
      * @return array Array of exercises
      */
-    private function loadExercises() {
+    private function loadExercises()
+    {
         if ($this->exercisesData !== null) {
             return $this->exercisesData;
         }
@@ -61,7 +65,8 @@ class Student {
      * @param string $exerciseName Exercise name (exo_name)
      * @return array|null Exercise details or null if not found
      */
-    private function getExerciseByName($exerciseName) {
+    private function getExerciseByName($exerciseName)
+    {
         $exercises = $this->loadExercises();
 
         foreach ($exercises as $exercise) {
@@ -77,7 +82,8 @@ class Student {
      * Get all unique students (users)
      * @return array Array of unique user IDs
      */
-    public function getAllStudents() {
+    public function getAllStudents()
+    {
         $allAttempts = $this->getAllAttempts();
         $students = [];
 
@@ -89,7 +95,7 @@ class Student {
 
         // Tri naturel pour les identifiants numériques
         // Support pour userId_XX, userid_XX, ou userIdI_XX (insensible à la casse)
-        usort($students, function($a, $b) {
+        usort($students, function ($a, $b) {
             // Extraire les numéros - pattern flexible pour capturer le numéro après le dernier underscore
             $numA = 0;
             $numB = 0;
@@ -120,7 +126,8 @@ class Student {
      * @param int $perPage Number of items per page
      * @return array Paginated data with students and metadata
      */
-    public function getPaginatedStudents($page = 1, $perPage = 15) {
+    public function getPaginatedStudents($page = 1, $perPage = 15)
+    {
         $allStudents = $this->getAllStudents();
         $total = count($allStudents);
 
@@ -141,7 +148,8 @@ class Student {
      * @param string $userId User ID (e.g., "userId_36")
      * @return array Array of attempts for this user with test cases
      */
-    public function getStudentAttempts($userId) {
+    public function getStudentAttempts($userId)
+    {
         $allAttempts = $this->getAllAttempts();
         $userAttempts = [];
 
@@ -160,7 +168,7 @@ class Student {
         }
 
         // Sort by date (most recent first)
-        usort($userAttempts, function($a, $b) {
+        usort($userAttempts, function ($a, $b) {
             $dateA = isset($a['date']) ? strtotime($a['date']) : 0;
             $dateB = isset($b['date']) ? strtotime($b['date']) : 0;
             return $dateB - $dateA;
@@ -174,7 +182,8 @@ class Student {
      * @param string $userId User ID
      * @return array Statistics
      */
-    public function getStudentStats($userId) {
+    public function getStudentStats($userId)
+    {
         $attempts = $this->getStudentAttempts($userId);
         $total = count($attempts);
         $correct = 0;
