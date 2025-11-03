@@ -156,7 +156,7 @@ jobs:
         
         if [ -z "$EXISTING_PR" ]; then
           # Créer une nouvelle PR
-          PR_URL=$(gh pr create --base prod --head test --title "🚀 Auto-sync: test → prod" --body "## Production Deployment - ✅ Tests passed on test - 🚀 Auto-deploying to prod - This PR was automatically created by the CI/CD pipeline." --label "automated,production,gitflow")
+          PR_URL=$(gh pr create --base prod --head test --title "Auto-sync: test to prod" --body "Production Deployment - Tests passed on test - Auto-deploying to prod - This PR was automatically created by the CI/CD pipeline.")
           
           echo "PR created: $PR_URL"
           
