@@ -80,7 +80,7 @@ jobs:
         
         if [ -z "$EXISTING_PR" ]; then
           # Créer une nouvelle PR
-          PR_URL=$(gh pr create --base test --head dev --title "Auto-sync: dev to test" --body "Automatic synchronization - Linting passed on dev - Auto-merging changes from dev to test - This PR was automatically created by the CI/CD pipeline." --label "automated,gitflow")
+          PR_URL=$(gh pr create --base test --head dev --title "Auto-sync: dev to test" --body "Automatic synchronization - Linting passed on dev - Auto-merging changes from dev to test - This PR was automatically created by the CI/CD pipeline.")
           
           echo "PR created: $PR_URL"
           
