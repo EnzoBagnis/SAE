@@ -1,4 +1,10 @@
 {
+    "name": "sae/project",
+    "description": "SAE Project",
+    "license": "proprietary",
+    "require": {
+        "ext-json": "*"
+    },
     "require-dev": {
         "squizlabs/php_codesniffer": "^4.0",
         "friendsofphp/php-cs-fixer": "^3.89",
