@@ -36,7 +36,7 @@ $isLoggedIn = isset($_SESSION['id']);
         </button>
 
         <nav class="nav-menu">
-            <a href="/index.php?action=dashboard">Tableau de bord</a>
+            <a href="/index.php?action=resources_list">Tableau de bord</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
             <a href="/index.php?action=mentions" class="active">Mentions légales</a>
         </nav>
@@ -59,7 +59,7 @@ $isLoggedIn = isset($_SESSION['id']);
                 </span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="/index.php?action=dashboard" class="burger-link">Tableau de bord</a></li>
+                <li><a href="/index.php?action=resources_list" class="burger-link">Tableau de bord</a></li>
                 <li><a href="#" onclick="openSiteMap()" class="burger-link">Plan du site</a></li>
                 <li><a href="/index.php?action=mentions" class="burger-link active">Mentions légales</a></li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
