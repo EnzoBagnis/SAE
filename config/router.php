@@ -80,25 +80,6 @@ class Router
                 $this->loadNamespacedController('Controllers\User\DashboardController', 'index');
                 break;
 
-            // ========== STUDENTS API ==========
-            case 'students':
-                $this->loadNamespacedController('Controllers\User\StudentsController', 'getStudents');
-                break;
-
-            case 'student':
-                $this->loadNamespacedController('Controllers\User\StudentsController', 'getStudent');
-                break;
-
-            // ========== WORKSHOP API ==========
-            case 'workshops':
-            case 'tplist':
-                $this->loadNamespacedController('Controllers\Workshop\WorkshopController', 'list');
-                break;
-
-            case 'workshop':
-                $this->loadNamespacedController('Controllers\Workshop\WorkshopController', 'show');
-                break;
-
             // ========== PAGES ==========
             case 'mentions':
                 $this->loadView('pages/mentions-legales');
