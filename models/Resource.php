@@ -1,6 +1,7 @@
 <?php
 
-class Resource {
+class Resource
+{
     private ?PDO $db;
     public int $resource_id;
     public int $owner_user_id;
@@ -12,11 +13,13 @@ class Resource {
     public string $owner_lastname;
     public string $access_type; // 'owner' ou 'shared' - Nouvelle propriété
 
-    public function __construct(PDO $db = null) {
+    public function __construct(PDO $db = null)
+    {
         $this->db = $db;
     }
 
-    public function hydrate(array $data): self {
+    public function hydrate(array $data): self
+    {
         foreach ($data as $key => $value) {
             if (property_exists($this, $key)) {
                 $this->$key = $value;
@@ -27,7 +30,8 @@ class Resource {
 
     // Récupère toutes les ressources accessibles par un utilisateur donné (propriétaire ou avec accès)
     // Ajout d'une colonne 'access_type' pour savoir si l'utilisateur est propriétaire ou a un accès partagé
-    public static function getAllAccessibleResources(PDO $db, int $userId): array {
+    public static function getAllAccessibleResources(PDO $db, int $userId): array
+    {
         $stmt = $db->prepare("
             SELECT
                 r.*,
@@ -42,7 +46,8 @@ class Resource {
             JOIN utilisateurs u ON r.owner_user_id = u.id
             LEFT JOIN resource_professors_access rpa ON r.resource_id = rpa.resource_id
             WHERE r.owner_user_id = :userId OR rpa.user_id = :userId
-            GROUP BY r.resource_id, r.owner_user_id, r.resource_name, r.description, r.image_path, r.date_creation, u.prenom, u.nom, rpa.user_id
+            GROUP BY r.resource_id, r.owner_user_id, r.resource_name, r.description, 
+                r.image_path, r.date_creation, u.prenom, u.nom, rpa.user_id
             ORDER BY r.resource_name ASC
         ");
         $stmt->execute(['userId' => $userId]);
@@ -57,7 +62,8 @@ class Resource {
     }
 
     // Récupère une ressource par son ID
-    public static function getResourceById(PDO $db, int $resourceId): ?Resource {
+    public static function getResourceById(PDO $db, int $resourceId): ?Resource
+    {
         $stmt = $db->prepare("
             SELECT
                 r.*,

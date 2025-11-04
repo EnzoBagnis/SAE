@@ -1,6 +1,7 @@
 <?php
 
-class Exercise {
+class Exercise
+{
     private ?PDO $db;
     public int $exercise_id;
     public int $resource_id;
@@ -11,11 +12,13 @@ class Exercise {
     public ?string $difficulte; // enum('facile','moyen','difficile')
     public string $date_creation;
 
-    public function __construct(PDO $db = null) {
+    public function __construct(PDO $db = null)
+    {
         $this->db = $db;
     }
 
-    public function hydrate(array $data): self {
+    public function hydrate(array $data): self
+    {
         foreach ($data as $key => $value) {
             if (property_exists($this, $key)) {
                 $this->$key = $value;
@@ -25,7 +28,8 @@ class Exercise {
     }
 
     // Récupère tous les exercices pour une ressource donnée
-    public static function getExercisesByResourceId(PDO $db, int $resourceId): array {
+    public static function getExercisesByResourceId(PDO $db, int $resourceId): array
+    {
         $stmt = $db->prepare("SELECT * FROM exercises WHERE resource_id = :resourceId ORDER BY exo_name ASC");
         $stmt->execute(['resourceId' => $resourceId]);
         $exercisesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -39,7 +43,8 @@ class Exercise {
     }
 
     // Récupère un exercice par son ID
-    public static function getExerciseById(PDO $db, int $exerciseId): ?Exercise {
+    public static function getExerciseById(PDO $db, int $exerciseId): ?Exercise
+    {
         $stmt = $db->prepare("SELECT * FROM exercises WHERE exercise_id = :exerciseId");
         $stmt->execute(['exerciseId' => $exerciseId]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
