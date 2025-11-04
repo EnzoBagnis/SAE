@@ -4,10 +4,8 @@ namespace Controllers\User;
 
 require_once __DIR__ . '/../BaseController.php';
 
-/**
- * DashboardController - Handles user dashboard
- */
-class DashboardController extends \BaseController
+
+class ResourceListController extends \BaseController
 {
     /**
      * Show dashboard page
@@ -20,10 +18,10 @@ class DashboardController extends \BaseController
         }
 
         // Check if user is authenticated
-//        if (!isset($_SESSION['id'])) {
-//            header('Location: /index.php?action=login');
-//            exit;
-//        }
+        if (!isset($_SESSION['id'])) {
+            header('Location: /index.php?action=login');
+            exit;
+        }
 
         // Prepare data for the view
         $data = [
@@ -33,6 +31,6 @@ class DashboardController extends \BaseController
             'user_email' => $_SESSION['mail'] ?? ''
         ];
 
-        $this->loadView('user/dashboard', $data);
+        $this->loadView('user/resources_list', $data);
     }
 }
