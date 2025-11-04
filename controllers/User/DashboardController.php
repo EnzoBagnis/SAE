@@ -20,10 +20,10 @@ class DashboardController extends \BaseController
         }
 
         // Check if user is authenticated
-        if (!isset($_SESSION['id'])) {
-            header('Location: /index.php?action=login');
-            exit;
-        }
+//        if (!isset($_SESSION['id'])) {
+//            header('Location: /index.php?action=login');
+//            exit;
+//        }
 
         // Prepare data for the view
         $data = [

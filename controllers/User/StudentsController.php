@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\User;
 
 require_once __DIR__ . '/../BaseController.php';

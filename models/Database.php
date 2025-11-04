@@ -1,15 +1,17 @@
 <?php
+
 /**
  * Database class - Database connection manager
  * Handles PDO connection with configuration from .env file
  */
-class Database {
-
+class Database
+{
     /**
      * Get PDO database connection
      * @return PDO Database connection instance
      */
-    public static function getConnection() {
+    public static function getConnection()
+    {
         // Load environment variables from .env file
         $env = parse_ini_file(__DIR__ . '/../../config/.env');
 
@@ -35,4 +37,3 @@ class Database {
         }
     }
 }
-?>
