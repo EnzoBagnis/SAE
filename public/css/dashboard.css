@@ -83,6 +83,7 @@
     flex-direction: column;
     height: calc(100vh - 80px);
     position: relative;
+    overflow: hidden;
 }
 
 .sidebar h2 {
@@ -103,7 +104,29 @@
     padding-right: 0.5rem;
 }
 
+.student-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    padding-right: 0.5rem;
+    height: 100%;
+}
+
+/* TP and Student Items */
 .tp-item {
+    background: white;
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid transparent;
+}
+
+.student-item {
     background: white;
     padding: 1rem 1.25rem;
     border-radius: 6px;
@@ -118,12 +141,29 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+.student-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
 .tp-item.active {
     border-left: 4px solid #3498db;
     background: #e8f4f8;
 }
 
+.student-item.active {
+    border-left: 4px solid #3498db;
+    background: #e8f4f8;
+}
+
 .tp-item h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.student-item h3 {
     margin: 0;
     color: #2c3e50;
     font-size: 1.1rem;
@@ -173,18 +213,21 @@
 
 /* Scrollbar styling */
 .tp-list::-webkit-scrollbar,
+.student-list::-webkit-scrollbar,
 .sidebar::-webkit-scrollbar,
 .main-content::-webkit-scrollbar {
     width: 8px;
 }
 
 .tp-list::-webkit-scrollbar-track,
+.student-list::-webkit-scrollbar-track,
 .sidebar::-webkit-scrollbar-track,
 .main-content::-webkit-scrollbar-track {
     background: #f1f1f1;
 }
 
 .tp-list::-webkit-scrollbar-thumb,
+.student-list::-webkit-scrollbar-thumb,
 .sidebar::-webkit-scrollbar-thumb,
 .main-content::-webkit-scrollbar-thumb {
     background: #888;
@@ -192,6 +235,7 @@
 }
 
 .tp-list::-webkit-scrollbar-thumb:hover,
+.student-list::-webkit-scrollbar-thumb:hover,
 .sidebar::-webkit-scrollbar-thumb:hover,
 .main-content::-webkit-scrollbar-thumb:hover {
     background: #555;

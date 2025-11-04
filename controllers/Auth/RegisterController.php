@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Auth;
 
 require_once __DIR__ . '/../BaseController.php';
@@ -7,17 +8,20 @@ require_once __DIR__ . '/AuthController.php';
 /**
  * RegisterController - Handles user registration
  */
-class RegisterController extends \BaseController {
+class RegisterController extends \BaseController
+{
     private $authController;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->authController = new AuthController();
     }
 
     /**
      * Show registration page
      */
-    public function index() {
+    public function index()
+    {
         $errorMessage = null;
 
         if (isset($_GET['error'])) {
@@ -35,7 +39,8 @@ class RegisterController extends \BaseController {
     /**
      * Process registration form
      */
-    public function register() {
+    public function register()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /index.php?action=signup');
             exit;
@@ -67,7 +72,8 @@ class RegisterController extends \BaseController {
     /**
      * Get error message from error code
      */
-    private function getErrorMessage($errorCode) {
+    private function getErrorMessage($errorCode)
+    {
         $messages = [
             'email_exists' => 'Cet email est déjà utilisé !',
             'pending_exists' => 'Un code de vérification a déjà été envoyé à cet email',
@@ -79,4 +85,3 @@ class RegisterController extends \BaseController {
         return $messages[$errorCode] ?? 'Une erreur est survenue';
     }
 }
-

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <meta name="description" content="Vérification de votre email">
     <title><?= htmlspecialchars($title ?? 'Vérification Email - StudTraj') ?></title>
     <link rel="stylesheet" href="../public/css/style.css">
@@ -15,11 +15,11 @@
 
 <div class="page-wrap">
 
-    <?php if (isset($error_message)): ?>
+    <?php if (isset($error_message)) : ?>
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <?php if (isset($success_message)): ?>
+    <?php if (isset($success_message)) : ?>
         <div class="success"><?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
 
