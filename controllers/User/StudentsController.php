@@ -7,18 +7,20 @@ require_once __DIR__ . '/../../models/Student.php';
 /**
  * StudentsController - Handles student data API
  */
-class StudentsController extends \BaseController {
-
+class StudentsController extends \BaseController
+{
     private $studentModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->studentModel = new \Student();
     }
 
     /**
      * Get paginated list of students
      */
-    public function getStudents() {
+    public function getStudents()
+    {
         // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -39,8 +41,12 @@ class StudentsController extends \BaseController {
         $perPage = isset($_GET['perPage']) ? (int)$_GET['perPage'] : 15;
 
         // Validate parameters
-        if ($page < 1) $page = 1;
-        if ($perPage < 1 || $perPage > 100) $perPage = 15;
+        if ($page < 1) {
+            $page = 1;
+        }
+        if ($perPage < 1 || $perPage > 100) {
+            $perPage = 15;
+        }
 
         try {
             $result = $this->studentModel->getPaginatedStudents($page, $perPage);
@@ -76,7 +82,8 @@ class StudentsController extends \BaseController {
     /**
      * Get student details and all attempts by ID
      */
-    public function getStudent() {
+    public function getStudent()
+    {
         // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
