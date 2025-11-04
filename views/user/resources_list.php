@@ -35,9 +35,11 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
     <link rel="stylesheet" href="/public/css/footer.css">
     <script src="/public/js/resources_list.js" defer></script>
 
-    <meta name="description" content="Gérez et visualisez vos ressources pédagogiques et celles qui vous sont partagées.">
+    <meta name="description"
+          content="Gérez et visualisez vos ressources pédagogiques et celles partagées.">
     <meta name="robots" content="noindex, nofollow">
-    <link rel="canonical" href="http://studtraj.alwaysdata.net/views/user/resources_list.php">
+    <link rel="canonical"
+          href="http://studtraj.alwaysdata.net/views/user/resources_list.php">
     <style>
         /* Styles pour les cartes de ressources (inchangés) */
         .resources-grid {
@@ -132,7 +134,8 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
         <div class="logo">
             <h1>StudTraj</h1>
         </div>
-        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+        <button class="burger-menu" id="burgerBtn"
+                onclick="toggleBurgerMenu()" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
         <nav class="nav-menu">
@@ -142,7 +145,10 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             <a href="/index.php?action=mentions">Mentions légales</a>
         </nav>
         <div class="user-info">
-            <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
+            <span>
+                <?= htmlspecialchars($user_firstname) ?>
+                <?= htmlspecialchars($user_lastname) ?>
+            </span>
             <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
         </div>
     </header>
@@ -151,13 +157,34 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
     <nav class="burger-nav" id="burgerNav">
         <div class="burger-nav-content">
             <div class="burger-user-info">
-                <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
+                <span>
+                    <?= htmlspecialchars($user_firstname) ?>
+                    <?= htmlspecialchars($user_lastname) ?>
+                </span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="/index.php?action=dashboard" class="burger-link">Tableau de bord</a></li>
-                <li><a href="/index.php?action=resources_list" class="burger-link active">Mes Ressources</a></li>
-                <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
-                <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
+                <li>
+                    <a href="/index.php?action=dashboard" class="burger-link">
+                        Tableau de bord
+                    </a>
+                </li>
+                <li>
+                    <a href="/index.php?action=resources_list"
+                       class="burger-link active">
+                        Mes Ressources
+                    </a>
+                </li>
+                <li>
+                    <a href="/index.php?action=mentions" class="burger-link">
+                        Mentions légales
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="confirmLogout()"
+                       class="burger-link burger-logout">
+                        Déconnexion
+                    </a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -173,42 +200,51 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                     <option value="owner">Mes ressources</option>
                     <option value="shared">Ressources partagées</option>
                 </select>
-                <input type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
+                <input type="text" id="searchBar"
+                       placeholder="Rechercher..." onkeyup="filterResources()">
                 <select id="sortOrder" onchange="filterResources()">
                     <option value="name_asc">Trier par nom (A-Z)</option>
                     <option value="name_desc">Trier par nom (Z-A)</option>
                     <option value="owner_name_asc">Trier par propriétaire (A-Z)</option>
                 </select>
-                <!-- <select id="filterCategory" onchange="filterResources()">
-                    <option value="all">Catégorie</option>
-                    <option value="Info">Informatique</option>
-                    <option value="Math">Mathématiques</option>
-                </select> -->
             </div>
 
             <div class="resources-grid" id="resourcesGrid">
-                <?php if (!empty($resources)): ?>
-                    <?php foreach ($resources as $resource): ?>
-                        <a href="/index.php?action=resource_details&id=<?= $resource->resource_id ?>"
-                           class="resource-card"
-                           data-name="<?= htmlspecialchars($resource->resource_name) ?>"
-                           data-owner="<?= htmlspecialchars($resource->owner_firstname . ' ' . $resource->owner_lastname) ?>"
-                           data-access-type="<?= htmlspecialchars($resource->access_type) ?>"
-                           >
-                            <?php if (!empty($resource->image_path)): ?>
-                                <img src="/images/<?= htmlspecialchars($resource->image_path) ?>" alt="Image de <?= htmlspecialchars($resource->resource_name) ?>" class="resource-card-image">
-                            <?php else: ?>
+                <?php if (!empty($resources)) : ?>
+                    <?php foreach ($resources as $resource) : ?>
+                        <?php
+                        $ownerFullName = $resource->owner_firstname . ' ' .
+                                         $resource->owner_lastname;
+                        ?>
+                        <a href="/index.php?action=resource_details&id=<?=
+                                   $resource->resource_id ?>"
+                            class="resource-card"
+                            data-name="<?= htmlspecialchars($resource->resource_name) ?>"
+                            data-owner="<?= htmlspecialchars($ownerFullName) ?>"
+                            data-access-type="<?=
+                               htmlspecialchars($resource->access_type) ?>">
+                            <?php if (!empty($resource->image_path)) : ?>
+                                <img src="/images/<?=
+                                         htmlspecialchars($resource->image_path) ?>"
+                                     alt="Image de <?=
+                                         htmlspecialchars($resource->resource_name) ?>"
+                                     class="resource-card-image">
+                            <?php else : ?>
                                 <div class="resource-card-image placeholder"></div>
                             <?php endif; ?>
                             <div class="resource-card-content">
                                 <h3><?= htmlspecialchars($resource->resource_name) ?></h3>
                                 <p><?= htmlspecialchars($resource->description ?? 'Pas de description.') ?></p>
-                                <span class="resource-card-owner">Par: <?= htmlspecialchars($resource->owner_firstname . ' ' . $resource->owner_lastname) ?></span>
+                                <span class="resource-card-owner">
+                                    Par: <?= htmlspecialchars($ownerFullName) ?>
+                                </span>
                             </div>
                         </a>
                     <?php endforeach; ?>
-                <?php else: ?>
-                    <p class="placeholder-message">Aucune ressource disponible pour le moment.</p>
+                <?php else : ?>
+                    <p class="placeholder-message">
+                        Aucune ressource disponible pour le moment.
+                    </p>
                 <?php endif; ?>
             </div>
         </main>
@@ -224,7 +260,11 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                     <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
                     <li><a href="/index.php?action=login">Connexion</a></li>
                     <li><a href="/index.php?action=signup">Inscription</a></li>
-                    <li><a href="/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li>
+                        <a href="/index.php?action=forgotpassword">
+                            Mot de passe oublié
+                        </a>
+                    </li>
                     <li><a href="/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
@@ -234,10 +274,9 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
     <script>
-        // Mettre cette fonction dans public/js/resources_list.js
         function filterResources() {
             const searchText = document.getElementById('searchBar').value.toLowerCase();
-            const filterType = document.getElementById('filterType').value; // 'all', 'owner', 'shared'
+            const filterType = document.getElementById('filterType').value;
             const sortOrder = document.getElementById('sortOrder').value;
             const grid = document.getElementById('resourcesGrid');
             let cards = Array.from(grid.getElementsByClassName('resource-card'));
@@ -245,10 +284,12 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             cards.forEach(card => {
                 const name = card.dataset.name.toLowerCase();
                 const owner = card.dataset.owner.toLowerCase();
-                const accessType = card.dataset.accessType; // 'owner' ou 'shared'
+                const accessType = card.dataset.accessType;
 
-                const matchesSearch = name.includes(searchText) || owner.includes(searchText);
-                const matchesType = (filterType === 'all' || accessType === filterType);
+                const matchesSearch = name.includes(searchText) ||
+                                     owner.includes(searchText);
+                const matchesType = (filterType === 'all' ||
+                                    accessType === filterType);
 
                 if (matchesSearch && matchesType) {
                     card.style.display = 'flex';
@@ -278,13 +319,19 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
 
         document.addEventListener('DOMContentLoaded', () => {
             const filterTypeElement = document.getElementById('filterType');
-            if (filterTypeElement) filterTypeElement.addEventListener('change', filterResources);
+            if (filterTypeElement) {
+                filterTypeElement.addEventListener('change', filterResources);
+            }
 
             const searchBarElement = document.getElementById('searchBar');
-            if (searchBarElement) searchBarElement.addEventListener('keyup', filterResources);
+            if (searchBarElement) {
+                searchBarElement.addEventListener('keyup', filterResources);
+            }
 
             const sortOrderElement = document.getElementById('sortOrder');
-            if (sortOrderElement) sortOrderElement.addEventListener('change', filterResources);
+            if (sortOrderElement) {
+                sortOrderElement.addEventListener('change', filterResources);
+            }
 
             filterResources();
         });

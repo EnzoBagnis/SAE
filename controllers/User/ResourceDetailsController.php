@@ -1,15 +1,17 @@
 <?php
+
 namespace Controllers\User;
 
 require_once __DIR__ . '/../BaseController.php';
 
 
-class Resources_listController extends \BaseController{
-
+class ResourceDetailsController extends \BaseController
+{
     /**
      * Show dashboard page
      */
-    public function index() {
+    public function index()
+    {
         // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -29,6 +31,6 @@ class Resources_listController extends \BaseController{
             'user_email' => $_SESSION['mail'] ?? ''
         ];
 
-        $this->loadView('user/resources_list', $data);
+        $this->loadView('user/resource_details', $data);
     }
 }

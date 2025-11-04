@@ -105,13 +105,13 @@ class Router
                 break;
 
 
-	    // ========== RESOURCES LIST ==========
+        // ========== RESOURCES LIST ==========
             case 'resources_list':
                 require_once __DIR__ . '/../views/user/resources_list.php';
                 break;
 
 
-	    // ========== RESOURCE DETAILS ==========
+        // ========== RESOURCE DETAILS ==========
             case 'resource_details':
                 require_once __DIR__ . '/../views/user/resource_details.php';
                 break;
@@ -119,7 +119,6 @@ class Router
             default:
                 $this->loadController('HomeController', 'index');
                 break;
-		
         }
     }
 
