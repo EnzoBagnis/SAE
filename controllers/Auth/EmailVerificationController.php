@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Auth;
 
 require_once __DIR__ . '/../BaseController.php';
@@ -7,17 +8,20 @@ require_once __DIR__ . '/AuthController.php';
 /**
  * EmailVerificationController - Handles email verification
  */
-class EmailVerificationController extends \BaseController {
+class EmailVerificationController extends \BaseController
+{
     private $authController;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->authController = new AuthController();
     }
 
     /**
      * Show email verification page
      */
-    public function index() {
+    public function index()
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -45,7 +49,8 @@ class EmailVerificationController extends \BaseController {
     /**
      * Verify email code
      */
-    public function verify() {
+    public function verify()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /index.php?action=emailverification');
             exit;
@@ -83,7 +88,8 @@ class EmailVerificationController extends \BaseController {
     /**
      * Resend verification code
      */
-    public function resendCode() {
+    public function resendCode()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /index.php?action=emailverification');
             exit;
@@ -112,7 +118,8 @@ class EmailVerificationController extends \BaseController {
     /**
      * Get error message from error code
      */
-    private function getErrorMessage($errorCode) {
+    private function getErrorMessage($errorCode)
+    {
         $messages = [
             'code_incorrect' => 'Code incorrect, veuillez réessayer.',
             'registration_expired' => 'Votre inscription a expiré. Veuillez vous réinscrire.',
@@ -127,7 +134,8 @@ class EmailVerificationController extends \BaseController {
     /**
      * Get success message from success code
      */
-    private function getSuccessMessage($successCode) {
+    private function getSuccessMessage($successCode)
+    {
         $messages = [
             'inscription' => 'Un code de vérification a été envoyé à votre email !',
             'code_renvoye' => 'Un nouveau code de vérification a été envoyé !'

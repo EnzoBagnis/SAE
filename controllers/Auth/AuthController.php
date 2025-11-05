@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Auth;
 
 require_once __DIR__ . '/../../models/Database.php';
@@ -10,12 +11,14 @@ require_once __DIR__ . '/../../models/EmailService.php';
  * AuthController - Authentication service with CRUD operations
  * Handles user registration, login, and password management
  */
-class AuthController {
+class AuthController
+{
     private $userModel;
     private $pendingRegistrationModel;
     private $emailService;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->userModel = new \User();
         $this->pendingRegistrationModel = new \PendingRegistration();
         $this->emailService = new \EmailService();
@@ -24,7 +27,8 @@ class AuthController {
     /**
      * CREATE - Register a new user
      */
-    public function register($lastName, $firstName, $email, $password) {
+    public function register($lastName, $firstName, $email, $password)
+    {
         $this->pendingRegistrationModel->deleteExpired();
 
         if ($this->userModel->emailExists($email)) {
@@ -50,7 +54,8 @@ class AuthController {
     /**
      * CREATE - Validate verification code and create user account
      */
-    public function validateCode($email, $code) {
+    public function validateCode($email, $code)
+    {
         $registration = $this->pendingRegistrationModel->findByEmail($email);
 
         if (!$registration) {
@@ -79,7 +84,8 @@ class AuthController {
     /**
      * READ - Login user
      */
-    public function login($email, $password) {
+    public function login($email, $password)
+    {
         $user = $this->userModel->verifyCredentials($email, $password);
 
         if (!$user) {
@@ -95,7 +101,8 @@ class AuthController {
     /**
      * UPDATE - Resend verification code
      */
-    public function resendCode($email) {
+    public function resendCode($email)
+    {
         $registration = $this->pendingRegistrationModel->findByEmail($email);
 
         if (!$registration) {
@@ -117,7 +124,8 @@ class AuthController {
     /**
      * UPDATE - Request password reset
      */
-    public function requestPasswordReset($email) {
+    public function requestPasswordReset($email)
+    {
         if (!$this->userModel->emailExists($email)) {
             return ['success' => false, 'error' => 'email_not_found'];
         }
@@ -138,7 +146,8 @@ class AuthController {
     /**
      * UPDATE - Reset password with token
      */
-    public function resetPassword($token, $newPassword) {
+    public function resetPassword($token, $newPassword)
+    {
         $user = $this->userModel->findByResetToken($token);
 
         if (!$user) {
@@ -160,7 +169,8 @@ class AuthController {
     /**
      * Create user session
      */
-    public function createSession($user) {
+    public function createSession($user)
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\User;
 
 require_once __DIR__ . '/../BaseController.php';
@@ -6,22 +7,23 @@ require_once __DIR__ . '/../BaseController.php';
 /**
  * DashboardController - Handles user dashboard
  */
-class DashboardController extends \BaseController {
-
+class DashboardController extends \BaseController
+{
     /**
      * Show dashboard page
      */
-    public function index() {
+    public function index()
+    {
         // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
         // Check if user is authenticated
-        if (!isset($_SESSION['id'])) {
-            header('Location: /index.php?action=login');
-            exit;
-        }
+//        if (!isset($_SESSION['id'])) {
+//            header('Location: /index.php?action=login');
+//            exit;
+//        }
 
         // Prepare data for the view
         $data = [

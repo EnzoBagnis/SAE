@@ -7,7 +7,9 @@
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Connectez-vous à votre compte StudTraj pour accéder à votre tableau de bord et suivre votre trajectoire étudiante.">
+    <meta name="description"
+          content="Connectez-vous à votre compte StudTraj pour accéder à votre tableau de bord
+                   et suivre votre trajectoire étudiante.">
     <meta name="keywords" content="connexion studtraj, login étudiant, se connecter">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/index.php?action=login">
@@ -26,11 +28,11 @@
         </svg>
     </a>
 
-    <?php if (isset($error_message)): ?>
+    <?php if (isset($error_message)) : ?>
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <?php if (isset($success_message)): ?>
+    <?php if (isset($success_message)) : ?>
         <div class="success"><?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
 
