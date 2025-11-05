@@ -141,15 +141,15 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
         </button>
         <nav class="nav-menu">
             <a href="/index.php?action=dashboard">Tableau de bord</a>
-            <a href="/index.php?action=resources_list" class="active">Mes Ressources</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
             <a href="/index.php?action=mentions">Mentions légales</a>
         </nav>
-        <div class="user-info">
-            <span>
-                <?= htmlspecialchars($user_firstname) ?>
-                <?= htmlspecialchars($user_lastname) ?>
-            </span>
+        <div class="burger-user-info">
+                <span>
+                    <?= htmlspecialchars($user_firstname ?? '') ?>
+                    <?= htmlspecialchars($user_lastname ?? '') ?>
+                </span>
+
             <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
         </div>
     </header>
@@ -217,7 +217,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                         $ownerFullName = $resource->owner_firstname . ' ' .
                                          $resource->owner_lastname;
                         ?>
-                        <a href="/index.php?action=resource_details&id=<?=
+                        <a href="/index.php?action=dashboard&id=<?=
                                    $resource->resource_id ?>"
                             class="resource-card"
                             data-name="<?= htmlspecialchars($resource->resource_name) ?>"
@@ -258,7 +258,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="/index.php?action=resources_list">Tableau de bord</a></li>
                     <li><a href="/index.php?action=login">Connexion</a></li>
                     <li><a href="/index.php?action=signup">Inscription</a></li>
                     <li>
