@@ -291,14 +291,36 @@ jobs:
       - name: Generate Documentation
         run: |
           mkdir -p documentation
-          php phpDocumentor.phar run \
-            --directory=. \
-            --target=documentation \
-            --ignore=vendor/,phpmailer/,tests/,docs/,documentation/ \
-            --template=default \
-            --title="SAE Project Documentation" \
-            --visibility=public,protected,private \
-            --force || echo "Documentation generated with warnings"
+          
+          # Créer un fichier de configuration phpDocumentor
+          cat > phpdoc.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8" ?>
+          <phpdoc>
+            <title>SAE Project Documentation</title>
+            <parser>
+              <target>documentation</target>
+            </parser>
+            <transformer>
+              <target>documentation</target>
+            </transformer>
+            <files>
+              <directory>.</directory>
+              <ignore>vendor/*</ignore>
+              <ignore>phpmailer/*</ignore>
+              <ignore>tests/*</ignore>
+              <ignore>docs/*</ignore>
+              <ignore>documentation/*</ignore>
+              <ignore>.git/*</ignore>
+              <ignore>.github/*</ignore>
+              <ignore>node_modules/*</ignore>
+            </files>
+            <transformations>
+              <template name="default"/>
+            </transformations>
+          </phpdoc>
+          EOF
+          
+          php phpDocumentor.phar run --config=phpdoc.xml --force || echo "Documentation generated with warnings"
 
       - name: Generate Documentation Summary
         run: |
@@ -319,7 +341,7 @@ jobs:
           echo "## 📖 Structure du projet" >> documentation/README.md
           echo "" >> documentation/README.md
           
-          # Lister les fichiers PHP principaux
+          # Lister les fichiers PHP principaux (en excluant phpmailer)
           echo "### Fichiers PHP principaux" >> documentation/README.md
           echo "" >> documentation/README.md
           find . -maxdepth 2 -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./tests/*" -not -path "./docs/*" -not -path "./documentation/*" | while read file; do
@@ -329,7 +351,7 @@ jobs:
           echo "" >> documentation/README.md
           echo "## 📊 Statistiques" >> documentation/README.md
           echo "" >> documentation/README.md
-          echo "- **Nombre de fichiers PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" -not -path "./documentation/*" | wc -l)" >> documentation/README.md
+          echo "- **Nombre de fichiers PHP (hors vendor/phpmailer):** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" -not -path "./documentation/*" | wc -l)" >> documentation/README.md
           echo "- **Lignes de code PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" -not -path "./documentation/*" -exec cat {} \; | wc -l)" >> documentation/README.md
           echo "- **Fichiers de documentation générés:** $(find documentation -name '*.html' | wc -l)" >> documentation/README.md
           echo "- **Version PHP du projet:** 7.4" >> documentation/README.md
@@ -370,8 +392,7 @@ jobs:
           echo "- Téléchargez l'artifact de ce workflow" >> $GITHUB_STEP_SUMMARY
           echo "- Consultez la branche : https://github.com/EnzoBagnis/SAE/tree/gh-pages" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ℹ️ Note importante :" >> $GITHUB_STEP_SUMMARY
-          echo "Si c'est la première fois, n'oubliez pas d'activer GitHub Pages dans Settings → Pages" >> $GITHUB_STEP_SUMMARY
+          echo "### ℹ️ Documentation générée uniquement pour votre code (phpmailer exclu)" >> $GITHUB_STEP_SUMMARY
 
   # Job 6: Créer un tag de version sur PROD
   create-release:
@@ -403,7 +424,7 @@ jobs:
       - name: Production Deployment
         run: |
           echo "🎉 PRODUCTION DEPLOYMENT SUCCESSFUL!"
-          echo "📦 Version: v$(date +%Y.%m.%d-%H%M%S)"
+          echo "📦 Version: v$(date +%Y.%m.%d-%H:%M:%S)"
           echo "🌐 Environment: PRODUCTION"
           echo "📚 Documentation: https://enzobagnis.github.io/SAE/"
           echo "🔗 Branche docs: https://github.com/EnzoBagnis/SAE/tree/gh-pages"
