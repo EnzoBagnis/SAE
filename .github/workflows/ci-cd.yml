@@ -306,7 +306,13 @@ jobs:
           echo "" >> documentation/README.md
           echo "**Documentation générée automatiquement le $(date +'%Y-%m-%d %H:%M:%S UTC')**" >> documentation/README.md
           echo "" >> documentation/README.md
-          echo "## 📖 Accès à la documentation" >> documentation/README.md
+          echo "## 🌐 Documentation en ligne" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "La documentation est accessible en ligne à l'adresse :" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "🔗 **[https://enzobagnis.github.io/SAE/](https://enzobagnis.github.io/SAE/)**" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "## 📖 Accès local" >> documentation/README.md
           echo "" >> documentation/README.md
           echo "Ouvrez le fichier [\`index.html\`](index.html) dans votre navigateur pour consulter la documentation interactive complète." >> documentation/README.md
           echo "" >> documentation/README.md
@@ -342,70 +348,30 @@ jobs:
           path: documentation/
           retention-days: 90
 
-      - name: Push Documentation to docs branch
-        run: |
-          # Sauvegarder la documentation
-          cp -r documentation /tmp/docs-backup
-          
-          # Configurer Git globalement
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
-          
-          # Aller dans /tmp
-          cd /tmp
-          
-          # Cloner uniquement la branche docs (ou créer si n'existe pas)
-          if git ls-remote --heads https://github.com/EnzoBagnis/SAE.git docs | grep docs; then
-            echo "Branch 'docs' exists, cloning..."
-            git clone --single-branch --branch docs https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/EnzoBagnis/SAE.git docs-repo
-            cd docs-repo
-            # Supprimer tout le contenu
-            rm -rf *
-            rm -rf .[!.]* 2>/dev/null || true
-          else
-            echo "Branch 'docs' does not exist, creating..."
-            mkdir docs-repo
-            cd docs-repo
-            git init
-            git remote add origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/EnzoBagnis/SAE.git
-            git checkout -b docs
-          fi
-          
-          # Copier la documentation
-          cp -r /tmp/docs-backup/* .
-          
-          # Ajouter tous les fichiers
-          git add -A
-          
-          # Commit et push
-          if ! git diff --staged --quiet 2>/dev/null; then
-            git commit -m "📚 Auto-update: Documentation générée depuis prod ($(date +'%Y-%m-%d %H:%M:%S UTC'))"
-            git push origin docs --force
-            echo "✅ Documentation pushed to docs branch"
-          else
-            echo "ℹ️ No changes in documentation"
-          fi
-          
-          # Nettoyer
-          rm -rf /tmp/docs-repo /tmp/docs-backup
-        env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.PAT_TOKEN }}
+          publish_dir: ./documentation
+          publish_branch: gh-pages
+          force_orphan: true
 
       - name: Documentation Summary
         run: |
           echo "## 📚 Documentation Generation Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Documentation generated successfully and pushed to \`docs\` branch" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Documentation generated successfully and deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📂 Documentation disponible :" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branche:** \`docs\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL:** https://github.com/EnzoBagnis/SAE/tree/docs" >> $GITHUB_STEP_SUMMARY
-          echo "- **index.html:** https://github.com/EnzoBagnis/SAE/blob/docs/index.html" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌐 Documentation en ligne :" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://enzobagnis.github.io/SAE/" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branche:** \`gh-pages\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Accès :" >> $GITHUB_STEP_SUMMARY
-          echo "- Consultez la branche \`docs\` pour voir la documentation" >> $GITHUB_STEP_SUMMARY
+          echo "### 📂 Documentation aussi disponible :" >> $GITHUB_STEP_SUMMARY
           echo "- Téléchargez l'artifact de ce workflow" >> $GITHUB_STEP_SUMMARY
-          echo "- Clonez la branche : \`git clone -b docs https://github.com/EnzoBagnis/SAE.git\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Consultez la branche : https://github.com/EnzoBagnis/SAE/tree/gh-pages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ℹ️ Note importante :" >> $GITHUB_STEP_SUMMARY
+          echo "Si c'est la première fois, n'oubliez pas d'activer GitHub Pages dans Settings → Pages" >> $GITHUB_STEP_SUMMARY
 
   # Job 6: Créer un tag de version sur PROD
   create-release:
@@ -437,10 +403,10 @@ jobs:
       - name: Production Deployment
         run: |
           echo "🎉 PRODUCTION DEPLOYMENT SUCCESSFUL!"
-          echo "📦 Version: v$(date +%Y.%m.%d-%H:%M:%S)"
+          echo "📦 Version: v$(date +%Y.%m.%d-%H%M%S)"
           echo "🌐 Environment: PRODUCTION"
-          echo "📚 Documentation: Available in docs branch"
-          echo "🔗 Docs URL: https://github.com/EnzoBagnis/SAE/tree/docs"
+          echo "📚 Documentation: https://enzobagnis.github.io/SAE/"
+          echo "🔗 Branche docs: https://github.com/EnzoBagnis/SAE/tree/gh-pages"
 
   # ==================== PULL REQUESTS ====================
   # Job 7: Validation des PRs
