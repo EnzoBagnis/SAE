@@ -290,11 +290,11 @@ jobs:
 
       - name: Generate Documentation
         run: |
-          mkdir -p docs
+          mkdir -p documentation
           php phpDocumentor.phar run \
             --directory=. \
-            --target=docs \
-            --ignore=vendor/,phpmailer/,tests/,docs/ \
+            --target=documentation \
+            --ignore=vendor/,phpmailer/,tests/,docs/,documentation/ \
             --template=default \
             --title="SAE Project Documentation" \
             --visibility=public,protected,private \
@@ -302,44 +302,44 @@ jobs:
 
       - name: Generate Documentation Summary
         run: |
-          echo "# 📚 Documentation du projet SAE" > docs/README.md
-          echo "" >> docs/README.md
-          echo "**Documentation générée automatiquement le $(date +'%Y-%m-%d %H:%M:%S UTC')**" >> docs/README.md
-          echo "" >> docs/README.md
-          echo "## 📖 Accès à la documentation" >> docs/README.md
-          echo "" >> docs/README.md
-          echo "Ouvrez le fichier [\`index.html\`](index.html) dans votre navigateur pour consulter la documentation interactive complète." >> docs/README.md
-          echo "" >> docs/README.md
-          echo "## 📖 Structure du projet" >> docs/README.md
-          echo "" >> docs/README.md
+          echo "# 📚 Documentation du projet SAE" > documentation/README.md
+          echo "" >> documentation/README.md
+          echo "**Documentation générée automatiquement le $(date +'%Y-%m-%d %H:%M:%S UTC')**" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "## 📖 Accès à la documentation" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "Ouvrez le fichier [\`index.html\`](index.html) dans votre navigateur pour consulter la documentation interactive complète." >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "## 📖 Structure du projet" >> documentation/README.md
+          echo "" >> documentation/README.md
           
           # Lister les fichiers PHP principaux
-          echo "### Fichiers PHP principaux" >> docs/README.md
-          echo "" >> docs/README.md
-          find . -maxdepth 2 -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./tests/*" -not -path "./docs/*" | while read file; do
-            echo "- \`$file\`" >> docs/README.md
+          echo "### Fichiers PHP principaux" >> documentation/README.md
+          echo "" >> documentation/README.md
+          find . -maxdepth 2 -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./tests/*" -not -path "./docs/*" -not -path "./documentation/*" | while read file; do
+            echo "- \`$file\`" >> documentation/README.md
           done
           
-          echo "" >> docs/README.md
-          echo "## 📊 Statistiques" >> docs/README.md
-          echo "" >> docs/README.md
-          echo "- **Nombre de fichiers PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" | wc -l)" >> docs/README.md
-          echo "- **Lignes de code PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" -exec cat {} \; | wc -l)" >> docs/README.md
-          echo "- **Fichiers de documentation générés:** $(find docs -name '*.html' | wc -l)" >> docs/README.md
-          echo "- **Version PHP du projet:** 7.4" >> docs/README.md
-          echo "- **Version PHP pour la documentation:** 8.2" >> docs/README.md
-          echo "" >> docs/README.md
-          echo "---" >> docs/README.md
-          echo "" >> docs/README.md
-          echo "_Documentation générée automatiquement par GitHub Actions - Pipeline CI/CD_" >> docs/README.md
-          echo "" >> docs/README.md
-          echo "🔗 **Lien vers le projet:** [https://github.com/EnzoBagnis/SAE](https://github.com/EnzoBagnis/SAE)" >> docs/README.md
+          echo "" >> documentation/README.md
+          echo "## 📊 Statistiques" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "- **Nombre de fichiers PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" -not -path "./documentation/*" | wc -l)" >> documentation/README.md
+          echo "- **Lignes de code PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" -not -path "./documentation/*" -exec cat {} \; | wc -l)" >> documentation/README.md
+          echo "- **Fichiers de documentation générés:** $(find documentation -name '*.html' | wc -l)" >> documentation/README.md
+          echo "- **Version PHP du projet:** 7.4" >> documentation/README.md
+          echo "- **Version PHP pour la documentation:** 8.2" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "---" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "_Documentation générée automatiquement par GitHub Actions - Pipeline CI/CD_" >> documentation/README.md
+          echo "" >> documentation/README.md
+          echo "🔗 **Lien vers le projet:** [https://github.com/EnzoBagnis/SAE](https://github.com/EnzoBagnis/SAE)" >> documentation/README.md
 
       - name: Upload Documentation as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: phpdoc-documentation
-          path: docs/
+          path: documentation/
           retention-days: 90
 
       - name: Push Documentation to docs branch
@@ -347,25 +347,26 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           
-          # Sauvegarder le dossier docs temporairement
-          cp -r docs /tmp/docs-temp
+          # Sauvegarder la documentation temporairement
+          cp -r documentation /tmp/docs-temp
           
-          # Vérifier si la branche docs existe
+          # Vérifier si la branche docs existe sur le remote
           if git ls-remote --heads origin docs | grep docs; then
-            echo "Branch 'docs' exists, checking out..."
-            git fetch origin docs
-            git checkout docs
-            # Nettoyer le contenu existant (sauf .git)
-            git rm -rf . 2>/dev/null || true
+            echo "Branch 'docs' exists on remote, fetching..."
+            git fetch origin docs:refs/remotes/origin/docs
+            git checkout -B docs origin/docs
           else
             echo "Branch 'docs' does not exist, creating orphan branch..."
             git checkout --orphan docs
-            git rm -rf . 2>/dev/null || true
           fi
           
-          # Copier TOUT le contenu du dossier docs à la racine
+          # Nettoyer tout le contenu existant
+          git rm -rf . 2>/dev/null || true
+          rm -rf * 2>/dev/null || true
+          rm -rf .??* 2>/dev/null || true
+          
+          # Copier TOUT le contenu de la documentation à la racine
           cp -r /tmp/docs-temp/* .
-          cp -r /tmp/docs-temp/.* . 2>/dev/null || true
           
           # Supprimer le cache temporaire
           rm -rf /tmp/docs-temp
@@ -373,13 +374,13 @@ jobs:
           # Ajouter tous les fichiers
           git add -A
           
-          # Commit seulement s'il y a des changements
-          if ! git diff --staged --quiet 2>/dev/null; then
+          # Vérifier s'il y a des changements
+          if git diff --staged --quiet 2>/dev/null; then
+            echo "ℹ️ No changes in documentation"
+          else
             git commit -m "📚 Auto-update: Documentation générée depuis prod ($(date +'%Y-%m-%d %H:%M:%S UTC'))"
             git push origin docs --force
             echo "✅ Documentation pushed to docs branch"
-          else
-            echo "ℹ️ No changes in documentation"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -430,7 +431,7 @@ jobs:
       - name: Production Deployment
         run: |
           echo "🎉 PRODUCTION DEPLOYMENT SUCCESSFUL!"
-          echo "📦 Version: v$(date +%Y.%m.%d-%H%M%S)"
+          echo "📦 Version: v$(date +%Y.%m.%d-%H:%M:%S)"
           echo "🌐 Environment: PRODUCTION"
           echo "📚 Documentation: Available in docs branch"
           echo "🔗 Docs URL: https://github.com/EnzoBagnis/SAE/tree/docs"
