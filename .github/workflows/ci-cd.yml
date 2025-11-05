@@ -300,62 +300,40 @@ jobs:
             --visibility=public,protected,private \
             --force || echo "Documentation generated with warnings"
 
-      - name: Generate Documentation Summary for README
+      - name: Generate Documentation Summary
         run: |
-          echo "# 📚 Documentation du projet SAE" > docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          echo "**Documentation générée automatiquement le $(date +'%Y-%m-%d %H:%M:%S UTC')**" >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          echo "## 📖 Structure du projet" >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
+          echo "# 📚 Documentation du projet SAE" > docs/README.md
+          echo "" >> docs/README.md
+          echo "**Documentation générée automatiquement le $(date +'%Y-%m-%d %H:%M:%S UTC')**" >> docs/README.md
+          echo "" >> docs/README.md
+          echo "## 📖 Accès à la documentation" >> docs/README.md
+          echo "" >> docs/README.md
+          echo "Ouvrez le fichier [\`index.html\`](index.html) dans votre navigateur pour consulter la documentation interactive complète." >> docs/README.md
+          echo "" >> docs/README.md
+          echo "## 📖 Structure du projet" >> docs/README.md
+          echo "" >> docs/README.md
           
           # Lister les fichiers PHP principaux
-          echo "### Fichiers PHP principaux" >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          find . -maxdepth 2 -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./tests/*" | while read file; do
-            echo "- \`$file\`" >> docs/README_DOC.md
+          echo "### Fichiers PHP principaux" >> docs/README.md
+          echo "" >> docs/README.md
+          find . -maxdepth 2 -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./tests/*" -not -path "./docs/*" | while read file; do
+            echo "- \`$file\`" >> docs/README.md
           done
           
-          echo "" >> docs/README_DOC.md
-          echo "## 📊 Statistiques" >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          echo "- **Nombre de fichiers PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" | wc -l)" >> docs/README_DOC.md
-          echo "- **Lignes de code PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -exec cat {} \; | wc -l)" >> docs/README_DOC.md
-          echo "- **Version PHP du projet:** 7.4" >> docs/README_DOC.md
-          echo "- **Version PHP pour la documentation:** 8.2" >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          echo "## 🔗 Accès à la documentation complète" >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          echo "La documentation complète générée par phpDocumentor est disponible dans le dossier \`docs/\`." >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          echo "Ouvrez \`docs/index.html\` dans votre navigateur pour consulter la documentation interactive." >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          echo "---" >> docs/README_DOC.md
-          echo "" >> docs/README_DOC.md
-          echo "_Documentation générée automatiquement par GitHub Actions - Pipeline CI/CD_" >> docs/README_DOC.md
-
-      - name: Update README with documentation link
-        run: |
-          # Créer ou mettre à jour une section dans le README principal
-          if [ -f "README.md" ]; then
-            # Supprimer l'ancienne section de documentation si elle existe
-            sed -i '/<!-- PHPDOC-START -->/,/<!-- PHPDOC-END -->/d' README.md
-          
-            # Ajouter la nouvelle section
-            echo "" >> README.md
-            echo "<!-- PHPDOC-START -->" >> README.md
-            echo "## 📚 Documentation" >> README.md
-            echo "" >> README.md
-            echo "La documentation complète du projet est disponible dans [\`docs/README_DOC.md\`](docs/README_DOC.md)." >> README.md
-            echo "" >> README.md
-            echo "**Dernière mise à jour:** $(date +'%Y-%m-%d %H:%M:%S UTC')" >> README.md
-            echo "" >> README.md
-            echo "Pour consulter la documentation interactive générée par phpDocumentor, ouvrez \`docs/index.html\` dans votre navigateur." >> README.md
-            echo "<!-- PHPDOC-END -->" >> README.md
-          else
-            # Créer un nouveau README
-            cp docs/README_DOC.md README.md
-          fi
+          echo "" >> docs/README.md
+          echo "## 📊 Statistiques" >> docs/README.md
+          echo "" >> docs/README.md
+          echo "- **Nombre de fichiers PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" | wc -l)" >> docs/README.md
+          echo "- **Lignes de code PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -not -path "./docs/*" -exec cat {} \; | wc -l)" >> docs/README.md
+          echo "- **Fichiers de documentation générés:** $(find docs -name '*.html' | wc -l)" >> docs/README.md
+          echo "- **Version PHP du projet:** 7.4" >> docs/README.md
+          echo "- **Version PHP pour la documentation:** 8.2" >> docs/README.md
+          echo "" >> docs/README.md
+          echo "---" >> docs/README.md
+          echo "" >> docs/README.md
+          echo "_Documentation générée automatiquement par GitHub Actions - Pipeline CI/CD_" >> docs/README.md
+          echo "" >> docs/README.md
+          echo "🔗 **Lien vers le projet:** [https://github.com/EnzoBagnis/SAE](https://github.com/EnzoBagnis/SAE)" >> docs/README.md
 
       - name: Upload Documentation as Artifact
         uses: actions/upload-artifact@v4
@@ -364,75 +342,54 @@ jobs:
           path: docs/
           retention-days: 90
 
-      - name: Create branch and Push Documentation
+      - name: Push Documentation to docs branch
         run: |
-          BRANCH_NAME="docs/auto-update-$(date +%Y%m%d-%H%M%S)"
-          
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           
-          # Créer une nouvelle branche
-          git checkout -b "$BRANCH_NAME"
+          # Vérifier si la branche docs existe
+          if git ls-remote --heads origin docs | grep docs; then
+            echo "Branch 'docs' exists, checking out..."
+            git fetch origin docs
+            git checkout docs
+          else
+            echo "Branch 'docs' does not exist, creating orphan branch..."
+            git checkout --orphan docs
+            git rm -rf .
+          fi
           
-          # Ajouter les changements
-          git add docs/ README.md
+          # Copier la documentation générée
+          cp -r docs/* .
+          
+          # Ajouter tous les fichiers
+          git add .
           
           # Commit seulement s'il y a des changements
           if ! git diff --staged --quiet; then
-            git commit -m "📚 Auto-update: PHPDoc documentation generated"
-            git push origin "$BRANCH_NAME"
-          
-            echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+            git commit -m "📚 Auto-update: Documentation générée depuis prod ($(date +'%Y-%m-%d %H:%M:%S UTC'))"
+            git push origin docs --force
+            echo "✅ Documentation pushed to docs branch"
           else
-            echo "No changes to commit"
-            echo "BRANCH_NAME=" >> $GITHUB_ENV
+            echo "ℹ️ No changes in documentation"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-
-      - name: Create Pull Request for Documentation
-        if: env.BRANCH_NAME != ''
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          gh pr create \
-            --base prod \
-            --head "$BRANCH_NAME" \
-            --title "📚 Auto-update: PHPDoc Documentation" \
-            --body "## 📚 Documentation automatiquement générée
-          
-          Cette PR contient la documentation mise à jour générée par phpDocumentor.
-          
-          ### 📂 Fichiers mis à jour :
-          - Dossier \`docs/\` avec la documentation complète
-          - Fichier \`docs/README_DOC.md\` avec le résumé
-          - Fichier \`README.md\` avec le lien vers la documentation
-          
-          ### 📊 Statistiques :
-          - **$(find docs -name '*.html' 2>/dev/null | wc -l)** fichiers HTML générés
-          - **Documentation générée le:** $(date +'%Y-%m-%d %H:%M:%S UTC')
-          
-          ---
-          _Créée automatiquement par GitHub Actions_"
-          
-          echo "✅ Pull request created for documentation update"
 
       - name: Documentation Summary
         run: |
           echo "## 📚 Documentation Generation Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Documentation generated successfully" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Documentation generated successfully and pushed to \`docs\` branch" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📂 Files Generated:" >> $GITHUB_STEP_SUMMARY
-          echo "- Full documentation in \`docs/\` folder" >> $GITHUB_STEP_SUMMARY
-          echo "- Summary in \`docs/README_DOC.md\`" >> $GITHUB_STEP_SUMMARY
-          echo "- README.md updated with documentation link" >> $GITHUB_STEP_SUMMARY
+          echo "### 📂 Documentation disponible :" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branche:** \`docs\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://github.com/EnzoBagnis/SAE/tree/docs" >> $GITHUB_STEP_SUMMARY
+          echo "- **Fichiers HTML générés:** $(find docs -name '*.html' 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Access Documentation:" >> $GITHUB_STEP_SUMMARY
-          echo "- Download the artifact from this workflow run" >> $GITHUB_STEP_SUMMARY
-          if [ -n "$BRANCH_NAME" ]; then
-            echo "- A Pull Request has been created for review" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "### 🔗 Accès :" >> $GITHUB_STEP_SUMMARY
+          echo "- Consultez la branche \`docs\` pour voir la documentation" >> $GITHUB_STEP_SUMMARY
+          echo "- Téléchargez l'artifact de ce workflow" >> $GITHUB_STEP_SUMMARY
+          echo "- Clonez la branche : \`git clone -b docs https://github.com/EnzoBagnis/SAE.git\`" >> $GITHUB_STEP_SUMMARY
 
   # Job 6: Créer un tag de version sur PROD
   create-release:
@@ -466,7 +423,8 @@ jobs:
           echo "🎉 PRODUCTION DEPLOYMENT SUCCESSFUL!"
           echo "📦 Version: v$(date +%Y.%m.%d-%H%M%S)"
           echo "🌐 Environment: PRODUCTION"
-          echo "📚 Documentation: Available in docs/ folder"
+          echo "📚 Documentation: Available in docs branch"
+          echo "🔗 Docs URL: https://github.com/EnzoBagnis/SAE/tree/docs"
 
   # ==================== PULL REQUESTS ====================
   # Job 7: Validation des PRs
