@@ -63,12 +63,13 @@ $title = htmlspecialchars($resource->resource_name) . ' - TPs';
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/public/images/favicon.ico">
-    <title><?= $title ?></title>
-    <link rel="stylesheet" href="/public/css/style.css">
-    <link rel="stylesheet" href="/public/css/dashboard.css">
-    <link rel="stylesheet" href="/public/css/footer.css">
-    <script src="/public/js/resources_list.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
+    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="../public/css/dashboard.css">
+    <link rel="stylesheet" href="../public/css/footer.css">
+    <script src="../public/js/modules/import.js"></script>
+    <script src="../public/js/dashboard-main.js"></script>
 
     <meta name="description"
           content="Liste des Travaux Pratiques pour la ressource <?=
