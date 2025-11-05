@@ -103,8 +103,14 @@ class Router
             case 'admin':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'index');
                 break;
-            case 'adminSU':
-                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'dashboard');
+            case 'adminSVU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showVerifiedUsers');
+                break;
+            case 'adminDeleteUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'deleteUser');
+                break;
+            case 'adminEditUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'editUser');
                 break;
 
             // ========== PAGES ==========

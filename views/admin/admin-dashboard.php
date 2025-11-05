@@ -57,7 +57,7 @@
         <!-- Onglets de filtrage -->
         <div class="tabs">
             <button class="tab-btn <?= ($currentTab ?? 'verified') === 'verified' ? 'active' : '' ?>"
-                    onclick="window.location.href='index.php?action=adminSU';">
+                    onclick="window.location.href='index.php?action=adminSVU';">
                 Utilisateurs vérifiés (<?= count($verifiedUsers ?? []) ?>)
             </button>
             <button class="tab-btn <?= ($currentTab ?? '') === 'pending' ? 'active' : '' ?>"
@@ -98,11 +98,11 @@
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <a href="/index.php?action=admin_edit&id=<?= urlencode($user['id']) ?>"
-                                   class="btn-edit">Modifier</a>
-                                <a href="/index.php?action=admin_delete&id=<?= urlencode($user['id']) ?>"
+                                <button class="btn-edit" onclick="openEditPopup('<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>')">Modifier</button>
+
+                                <a href="index.php?action=adminDeleteUser&id=<?= urlencode($user['id']) ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                   <!-- onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"> -->
                                     Supprimer
                                 </a>
                             </td>
@@ -176,6 +176,38 @@
     </section>
 </main>
 
+<!-- Overlay + Popup -->
+<div id="editPopupOverlay" class="popup-overlay" onclick="closeEditPopup()"></div>
+
+<div id="editPopup" class="popup-container">
+    <h2>Modifier l'utilisateur</h2>
+    <form id="editUserForm" class="card" method="POST" action="index.php?action=adminEditUser">
+        <div class="form-group">
+            <label for="id">id</label>
+            <input type="text" id="id" name="id" readonly>
+        </div>
+        <div class="form-group">
+            <label for="editNom">Nom</label>
+            <input type="text" id="editNom" name="nom" required>
+        </div>
+
+        <div class="form-group">
+            <label for="editPrenom">Prénom</label>
+            <input type="text" id="editPrenom" name="prenom" required>
+        </div>
+
+        <div class="form-group">
+            <label for="editEmail">Email</label>
+            <input type="email" id="editEmail" name="email" required>
+        </div>
+        <button type="submit" class="btn-submit" name="ok">Valider</button>
+
+        <div class="form-actions">
+            <button type="button" class="btn-cancel" onclick="closeEditPopup()">Annuler</button>
+        </div>
+    </form>
+</div>
+
 <script>
     function showTab(tabName) {
         // Cacher tous les contenus
@@ -198,6 +230,24 @@
     function test() {
         console.log("test");
     }
+
+    function openEditPopup(id, nom, prenom, email) {
+        document.getElementById('id').value = id;
+        document.getElementById('editNom').value = nom;
+        document.getElementById('editPrenom').value = prenom;
+        document.getElementById('editEmail').value = email;
+
+        document.getElementById('editPopupOverlay').style.display = 'block';
+        document.getElementById('editPopup').style.display = 'block';
+        console.log("test");
+        console.log(nom, prenom, email);
+    }
+
+    function closeEditPopup() {
+        document.getElementById('editPopupOverlay').style.display = 'none';
+        document.getElementById('editPopup').style.display = 'none';
+    }
+
 </script>
 
 </body>

@@ -30,7 +30,7 @@ class AdminDashboardController extends \BaseController
     /**
      * Process login form
      */
-    public function dashboard()
+    public function showVerifiedUsers()
     {
 
 
@@ -38,6 +38,38 @@ class AdminDashboardController extends \BaseController
         $test = "test";
 
         $this->loadView('admin/admin-dashboard', ['verifiedUsers' => $verifiedUsers]);
+    }
+
+    public function deleteUser()
+    {
+        // Implementation for deleting a user
+        $id = $_GET['id'];
+        $success = $this->userModel->delete($id);
+        if ($success) {
+            $this->showVerifiedUsers();
+        }
+        else {
+            $this->loadView('admin/admin-dashboard');
+        }
+    }
+
+    public function editUser()
+    {
+        $id = $_POST['id'] ?? '';
+        $nom = $_POST['nom'] ?? '';
+        $prenom = $_POST['prenom'] ?? '';
+        $email = $_POST['email'] ?? '';
+
+        $success = $this->userModel->update($id, $nom, $prenom, $email);
+        if ($success) {
+            header('Location: index.php?action=adminSVU');
+            exit;
+        }
+        else {
+            header('Location: /index.php?action=login');
+            exit;
+        }
+
     }
 
     /**

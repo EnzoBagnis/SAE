@@ -55,8 +55,8 @@ class User
 
     /**
      * READ - Find a user by email
-     * @param string $email User's email address
-     * @return array|false User data or false if not found
+     * FOR ADMIN PANEL
+     * @return array User data
      */
     public function showUser()
     {
