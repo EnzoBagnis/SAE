@@ -274,10 +274,11 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
-      - name: Setup PHP
+      - name: Setup PHP 8.2 for phpDocumentor
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '8.2'
+          extensions: mbstring, xml, intl
           tools: phpdoc
           coverage: none
 
@@ -320,7 +321,8 @@ jobs:
           echo "" >> docs/README_DOC.md
           echo "- **Nombre de fichiers PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" | wc -l)" >> docs/README_DOC.md
           echo "- **Lignes de code PHP:** $(find . -name "*.php" -not -path "./vendor/*" -not -path "./phpmailer/*" -exec cat {} \; | wc -l)" >> docs/README_DOC.md
-          echo "- **Version PHP:** 7.4" >> docs/README_DOC.md
+          echo "- **Version PHP du projet:** 7.4" >> docs/README_DOC.md
+          echo "- **Version PHP pour la documentation:** 8.2" >> docs/README_DOC.md
           echo "" >> docs/README_DOC.md
           echo "## 🔗 Accès à la documentation complète" >> docs/README_DOC.md
           echo "" >> docs/README_DOC.md
