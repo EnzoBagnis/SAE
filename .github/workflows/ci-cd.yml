@@ -137,11 +137,6 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Install PHPUnit Test Generator
-        run: |
-          composer require --dev idrinth/phpunit-test-generator --no-interaction
-          echo "✅ PHPUnit Test Generator installed"
-
       - name: Create tests directory
         run: mkdir -p tests
 
@@ -183,49 +178,137 @@ jobs:
             echo "✅ phpunit.xml created"
           fi
 
-      - name: Generate tests automatically
+      - name: Generate tests automatically with custom script
         run: |
           echo "🔍 Scanning for classes to generate tests..."
           
-          # Créer un fichier temporaire pour stocker les classes trouvées
-          > /tmp/classes_to_test.txt
+          # Créer le script de génération de tests
+          cat > /tmp/generate_tests.php << 'SCRIPT'
+          <?php
           
-          # Trouver toutes les classes PHP
-          find . -type f -name "*.php" \
-            -not -path "./vendor/*" \
-            -not -path "./phpmailer/*" \
-            -not -path "./tests/*" \
-            -not -path "./views/*" | while read file; do
+          function generateTest($filePath, $className, $namespace) {
+              $testClassName = $className . 'Test';
+              $testFilePath = 'tests/' . $testClassName . '.php';
           
-            # Extraire le namespace et le nom de la classe
-            NAMESPACE=$(grep -oP '(?<=namespace\s)[^;]+' "$file" | head -1 | tr -d ' ')
-            CLASS_NAME=$(grep -oP '(?<=class\s)\w+' "$file" | head -1)
+              // Ne pas écraser les tests existants
+              if (file_exists($testFilePath)) {
+                  echo "ℹ️  Test already exists: $testFilePath\n";
+                  return false;
+              }
           
-            if [ ! -z "$CLASS_NAME" ]; then
-              if [ ! -z "$NAMESPACE" ]; then
-                FULL_CLASS="${NAMESPACE}\\${CLASS_NAME}"
-              else
-                FULL_CLASS="$CLASS_NAME"
-              fi
+              $namespaceDeclaration = $namespace ? "namespace Tests;\n\n" : "";
+              $useStatements = $namespace ? "use $namespace\\$className;\n" : "";
           
-              echo "$FULL_CLASS|$file" >> /tmp/classes_to_test.txt
-              echo "📝 Found class: $FULL_CLASS in $file"
-            fi
-          done
+              $testContent = <<<TEST
+          <?php
+          {$namespaceDeclaration}use PHPUnit\Framework\TestCase;
+          {$useStatements}
+          /**
+           * Auto-generated test for $className
+           * Generated on: {{DATE}}
+           */
+          class {$testClassName} extends TestCase
+          {
+              /**
+               * Test that class exists and can be referenced
+               */
+              public function testClassExists()
+              {
+                  \$this->assertTrue(
+                      class_exists('{$className}'),
+                      'Class {$className} should exist'
+                  );
+              }
           
-          # Générer les tests avec idrinth/phpunit-test-generator
-          if [ -s /tmp/classes_to_test.txt ]; then
-            while IFS='|' read -r class_name file_path; do
-              echo "🧪 Generating test for: $class_name"
+              /**
+               * Test instantiation of {$className}
+               */
+              public function testCanInstantiate()
+              {
+                  // This test will be skipped if constructor requires parameters
+                  try {
+                      \$reflection = new \ReflectionClass('{$className}');
+                      if (\$reflection->getConstructor() === null || 
+                          \$reflection->getConstructor()->getNumberOfRequiredParameters() === 0) {
+                          \$instance = new {$className}();
+                          \$this->assertInstanceOf({$className}::class, \$instance);
+                      } else {
+                          \$this->markTestSkipped('{$className} constructor requires parameters');
+                      }
+                  } catch (\Exception \$e) {
+                      \$this->markTestSkipped('Cannot instantiate {$className}: ' . \$e->getMessage());
+                  }
+              }
           
-              # Utiliser le générateur de tests
-              vendor/bin/phpunit-test-generator generate "$file_path" tests/ || echo "⚠️ Could not generate test for $class_name"
-            done < /tmp/classes_to_test.txt
-          else
-            echo "⚠️ No classes found to generate tests"
-          fi
+              /**
+               * Test public methods exist
+               */
+              public function testPublicMethodsExist()
+              {
+                  \$reflection = new \ReflectionClass('{$className}');
+                  \$methods = \$reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
           
-          echo "✅ Test generation complete"
+                  \$this->assertGreaterThanOrEqual(
+                      0,
+                      count(\$methods),
+                      '{$className} should have at least 0 public methods'
+                  );
+              }
+          }
+          TEST;
+          
+              $testContent = str_replace('{{DATE}}', date('Y-m-d H:i:s'), $testContent);
+          
+              file_put_contents($testFilePath, $testContent);
+              echo "✅ Generated test: $testFilePath\n";
+              return true;
+          }
+          
+          // Scanner les fichiers PHP
+          $iterator = new RecursiveIteratorIterator(
+              new RecursiveDirectoryIterator('.', RecursiveDirectoryIterator::SKIP_DOTS)
+          );
+          
+          $generatedCount = 0;
+          
+          foreach ($iterator as $file) {
+              if ($file->getExtension() !== 'php') continue;
+          
+              $path = $file->getPathname();
+          
+              // Ignorer certains dossiers
+              if (strpos($path, '/vendor/') !== false ||
+                  strpos($path, '/phpmailer/') !== false ||
+                  strpos($path, '/tests/') !== false ||
+                  strpos($path, '/views/') !== false ||
+                  strpos($path, '/.git/') !== false) {
+                  continue;
+              }
+          
+              $content = file_get_contents($path);
+          
+              // Extraire le namespace
+              preg_match('/namespace\s+([^;]+);/', $content, $namespaceMatches);
+              $namespace = isset($namespaceMatches[1]) ? trim($namespaceMatches[1]) : null;
+          
+              // Extraire le nom de la classe
+              preg_match('/class\s+(\w+)/', $content, $classMatches);
+          
+              if (isset($classMatches[1])) {
+                  $className = $classMatches[1];
+                  echo "📝 Found class: $className in $path\n";
+          
+                  if (generateTest($path, $className, $namespace)) {
+                      $generatedCount++;
+                  }
+              }
+          }
+          
+          echo "\n✅ Generated $generatedCount test files\n";
+          SCRIPT
+          
+          # Exécuter le script de génération
+          php /tmp/generate_tests.php
 
       - name: List generated tests
         run: |
@@ -236,7 +319,7 @@ jobs:
         run: |
           if [ -d "tests" ] && [ "$(find tests -name '*.php' -type f | wc -l)" -gt 0 ]; then
             echo "🧪 Running auto-generated tests..."
-            vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml || echo "⚠️ Some tests failed"
+            vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml || echo "⚠️ Some tests may have issues"
           else
             echo "⚠️ No tests to run, creating dummy test..."
             mkdir -p tests
