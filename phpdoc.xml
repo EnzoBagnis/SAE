@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdocumentor
+        configVersion="3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://www.phpdoc.org"
+        xsi:schemaLocation="https://www.phpdoc.org https://raw.githubusercontent.com/phpDocumentor/phpDocumentor/master/data/xsd/phpdoc.xsd"
+>
+    <title>StudTraj Documentation</title>
+    <paths>
+        <output>docs/api</output>
+        <cache>.phpdoc/cache</cache>
+    </paths>
+    <version number="latest">
+        <api>
+            <source dsn=".">
+                <path>controllers</path>
+                <path>models</path>
+            </source>
+            <ignore hidden="true" symlinks="true">
+                <path>vendor/**/*</path>
+                <path>phpmailer/**/*</path>
+            </ignore>
+            <default-package-name>StudTraj</default-package-name>
+        </api>
+    </version>
+    <setting name="graphs.enabled" value="true"/>
+    <setting name="guides.enabled" value="true"/>
+</phpdocumentor>
+

@@ -1,1 +1,33 @@
-config/.env
+# Dépendances Composer
+/vendor/
+composer.phar
+/phpmailer/vendor/
+
+# PHPUnit
+.phpunit.cache/
+build/
+coverage.xml
+.phpunit.result.cache
+
+# phpDocumentor
+docs/api/
+.phpdoc/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local

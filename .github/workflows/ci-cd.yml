@@ -57,6 +57,15 @@ jobs:
           vendor/bin/phpcs --standard=PSR12 --extensions=php --ignore=vendor/,phpmailer/ .
         fi
 
+    - name: Run PHP-CS-Fixer (dry-run)
+      run: |
+        if [ -f "vendor/bin/php-cs-fixer" ]; then
+          vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
+        else
+          echo "⚠️ PHP-CS-Fixer not installed, skipping..."
+        fi
+      continue-on-error: true
+
   # Job 2: Auto-merge DEV → TEST via PR
   auto-merge-to-test:
     runs-on: ubuntu-latest
@@ -106,11 +115,15 @@ jobs:
         echo "✅ PR #$PR_NUMBER merged successfully and auto-synced to test"
 
   # ==================== TEST BRANCH ====================
-  # Job 3: Tests sur TEST
+  # Job 3: Tests unitaires sur TEST
   run-tests:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/test' && github.event_name == 'push'
     name: 🧪 Run Tests on TEST
+
+    strategy:
+      matrix:
+        php-versions: ['8.1', '8.2', '8.3']
 
     steps:
     - name: Checkout code
@@ -119,21 +132,40 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: ${{ matrix.php-versions }}
         extensions: mbstring, xml, ctype, json, pdo, pdo_mysql
         coverage: xdebug
-        
+        tools: composer:v2
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-versions }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-php-${{ matrix.php-versions }}-
+
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
       
     - name: Run PHPUnit tests
       run: |
         if [ -f "phpunit.xml" ] || [ -f "phpunit.xml.dist" ]; then
-          vendor/bin/phpunit --coverage-text
+          vendor/bin/phpunit --testdox --coverage-text --coverage-clover=coverage.xml
         else
-          echo "✅ No PHPUnit configuration found, skipping tests (assuming manual testing)"
+          echo "✅ No PHPUnit configuration found, skipping tests"
         fi
       continue-on-error: false
+
+    - name: Upload coverage to Codecov
+      if: matrix.php-versions == '8.2'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: php-${{ matrix.php-versions }}
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      continue-on-error: true
 
     - name: Basic smoke tests
       run: |
@@ -169,6 +201,11 @@ jobs:
           
           Cette PR a été automatiquement créée par le pipeline CI/CD après validation des tests sur la branche \`test\`.
           
+          ### ✅ Vérifications effectuées :
+          - Tests unitaires passés sur PHP 8.1, 8.2, 8.3
+          - Couverture de code générée
+          - Smoke tests validés
+          
           ### ⚠️ Actions requises avant merge :
           - [ ] **Review approfondie du code**
           - [ ] **Vérification des changements critiques**
@@ -194,6 +231,11 @@ jobs:
           
           Cette PR a été mise à jour automatiquement après un nouveau push sur \`test\`.
           
+          ### ✅ Vérifications effectuées :
+          - Tests unitaires passés sur PHP 8.1, 8.2, 8.3
+          - Couverture de code générée
+          - Smoke tests validés
+          
           ### ⚠️ Actions requises avant merge :
           - [ ] **Review approfondie du code**
           - [ ] **Vérification des changements critiques**
@@ -211,17 +253,46 @@ jobs:
         fi
 
   # ==================== PROD BRANCH ====================
-  # Job 5: Créer un tag de version sur PROD
+  # Job 5: Génération de documentation et release sur PROD
   create-release:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/prod' && github.event_name == 'push'
-    name: 📦 Create Release Tag
+    name: 📦 Create Release & Documentation
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        tools: composer:v2
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Generate phpDocumentor documentation
+      run: |
+        if [ -f "phpdoc.xml" ] && [ -f "vendor/bin/phpdoc" ]; then
+          echo "📚 Generating phpDocumentor documentation..."
+          vendor/bin/phpdoc --config=phpdoc.xml
+          echo "✅ Documentation generated successfully"
+        else
+          echo "⚠️ phpDocumentor not configured, skipping..."
+        fi
+      continue-on-error: true
+
+    - name: Deploy documentation to GitHub Pages
+      if: success()
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/api
+        destination_dir: api-docs
+      continue-on-error: true
 
     - name: Configure Git
       run: |
@@ -242,6 +313,7 @@ jobs:
         echo "🎉 PRODUCTION DEPLOYMENT SUCCESSFUL!"
         echo "📦 Version: v$(date +%Y.%m.%d-%H%M%S)"
         echo "🌐 Environment: PRODUCTION"
+        echo "📚 Documentation: Available on GitHub Pages"
         # Ajoutez ici vos commandes de déploiement réelles si nécessaire
         # Exemple: ssh deploy@prod-server "cd /var/www && git pull origin prod && php artisan migrate"
 
@@ -260,7 +332,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2'
-        tools: phpcs
+        tools: phpcs, composer:v2
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
@@ -276,3 +348,13 @@ jobs:
           vendor/bin/phpcs --standard=PSR12 --extensions=php --ignore=vendor/,phpmailer/ .
         fi
       continue-on-error: true
+
+    - name: Run PHPUnit tests
+      run: |
+        if [ -f "phpunit.xml" ] || [ -f "phpunit.xml.dist" ]; then
+          vendor/bin/phpunit --testdox
+        else
+          echo "⚠️ No PHPUnit configuration found, skipping tests"
+        fi
+      continue-on-error: true
+
