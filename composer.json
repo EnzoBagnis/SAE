@@ -9,5 +9,10 @@
         "squizlabs/php_codesniffer": "^4.0",
         "friendsofphp/php-cs-fixer": "^3.89",
         "phpunit/phpunit": "^11.5"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
     }
 }
