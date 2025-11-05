@@ -347,26 +347,33 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           
-          # Sauvegarder la documentation temporairement
+          # Sauvegarder la documentation temporairement AVANT de changer de branche
           cp -r documentation /tmp/docs-temp
+          
+          # Nettoyer les fichiers qui pourraient causer des conflits
+          rm -rf .phpdoc/
+          rm -rf documentation/
           
           # Vérifier si la branche docs existe sur le remote
           if git ls-remote --heads origin docs | grep docs; then
             echo "Branch 'docs' exists on remote, fetching..."
-            git fetch origin docs:refs/remotes/origin/docs
-            git checkout -B docs origin/docs
+            git fetch origin docs
+            git checkout -f docs
+            # Nettoyer tout le contenu existant
+            git rm -rf . 2>/dev/null || true
           else
             echo "Branch 'docs' does not exist, creating orphan branch..."
             git checkout --orphan docs
+            git rm -rf . 2>/dev/null || true
           fi
           
-          # Nettoyer tout le contenu existant
-          git rm -rf . 2>/dev/null || true
+          # Supprimer tous les fichiers locaux
           rm -rf * 2>/dev/null || true
-          rm -rf .??* 2>/dev/null || true
+          rm -rf .* 2>/dev/null || true
           
           # Copier TOUT le contenu de la documentation à la racine
-          cp -r /tmp/docs-temp/* .
+          cp -r /tmp/docs-temp/* . 2>/dev/null || true
+          cp -r /tmp/docs-temp/.* . 2>/dev/null || true
           
           # Supprimer le cache temporaire
           rm -rf /tmp/docs-temp
