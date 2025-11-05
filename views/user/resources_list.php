@@ -135,21 +135,29 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
         <div class="logo">
             <h1>StudTraj</h1>
         </div>
-        <button class="burger-menu" id="burgerBtn"
-                onclick="toggleBurgerMenu()" aria-label="Menu">
-            <span></span><span></span><span></span>
+
+        <!-- Bouton burger pour mobile -->
+        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
+
         <nav class="nav-menu">
-            <a href="/index.php?action=dashboard">Tableau de bord</a>
+            <a href="/index.php?action=resources_list" class="active">Tableau de bord</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
             <a href="/index.php?action=mentions">Mentions légales</a>
         </nav>
-        <div class="burger-user-info">
-                <span>
-                    <?= htmlspecialchars($user_firstname ?? '') ?>
-                    <?= htmlspecialchars($user_lastname ?? '') ?>
-                </span>
-
+        <div class="user-info">
+            <button onclick="openImportModal()" class="btn-import-trigger">
+                <svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Importer
+            </button>
+            <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
             <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
         </div>
     </header>
