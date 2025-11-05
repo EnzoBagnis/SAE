@@ -347,48 +347,51 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           
-          # Sauvegarder la documentation temporairement AVANT de changer de branche
-          cp -r documentation /tmp/docs-temp
+          # Sauvegarder la documentation dans /tmp AVANT tout
+          cp -r documentation /tmp/docs-backup
           
-          # Nettoyer les fichiers qui pourraient causer des conflits
-          rm -rf .phpdoc/
-          rm -rf documentation/
+          # Aller dans un répertoire temporaire propre
+          cd /tmp
           
-          # Vérifier si la branche docs existe sur le remote
-          if git ls-remote --heads origin docs | grep docs; then
-            echo "Branch 'docs' exists on remote, fetching..."
-            git fetch origin docs
-            git checkout -f docs
-            # Nettoyer tout le contenu existant
-            git rm -rf . 2>/dev/null || true
+          # Cloner uniquement la branche docs (ou créer si n'existe pas)
+          if git ls-remote --heads https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/EnzoBagnis/SAE.git docs | grep docs; then
+            echo "Branch 'docs' exists, cloning..."
+            git clone --single-branch --branch docs https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/EnzoBagnis/SAE.git docs-repo
+            cd docs-repo
+            # Supprimer tout le contenu
+            rm -rf *
+            rm -rf .* 2>/dev/null || true
           else
-            echo "Branch 'docs' does not exist, creating orphan branch..."
-            git checkout --orphan docs
-            git rm -rf . 2>/dev/null || true
+            echo "Branch 'docs' does not exist, creating..."
+            mkdir docs-repo
+            cd docs-repo
+            git init
+            git remote add origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/EnzoBagnis/SAE.git
+            git checkout -b docs
           fi
           
-          # Supprimer tous les fichiers locaux
-          rm -rf * 2>/dev/null || true
-          rm -rf .* 2>/dev/null || true
+          # Configurer Git
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
           
-          # Copier TOUT le contenu de la documentation à la racine
-          cp -r /tmp/docs-temp/* . 2>/dev/null || true
-          cp -r /tmp/docs-temp/.* . 2>/dev/null || true
-          
-          # Supprimer le cache temporaire
-          rm -rf /tmp/docs-temp
+          # Copier la documentation
+          cp -r /tmp/docs-backup/* .
           
           # Ajouter tous les fichiers
           git add -A
           
-          # Vérifier s'il y a des changements
-          if git diff --staged --quiet 2>/dev/null; then
-            echo "ℹ️ No changes in documentation"
-          else
+          # Commit et push
+          if ! git diff --staged --quiet 2>/dev/null; then
             git commit -m "📚 Auto-update: Documentation générée depuis prod ($(date +'%Y-%m-%d %H:%M:%S UTC'))"
             git push origin docs --force
             echo "✅ Documentation pushed to docs branch"
+          else
+            echo "ℹ️ No changes in documentation"
           fi
+          
+          # Nettoyer
+          cd /tmp
+          rm -rf docs-repo docs-backup
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
