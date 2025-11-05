@@ -347,25 +347,34 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           
+          # Sauvegarder le dossier docs temporairement
+          cp -r docs /tmp/docs-temp
+          
           # Vérifier si la branche docs existe
           if git ls-remote --heads origin docs | grep docs; then
             echo "Branch 'docs' exists, checking out..."
             git fetch origin docs
             git checkout docs
+            # Nettoyer le contenu existant (sauf .git)
+            git rm -rf . 2>/dev/null || true
           else
             echo "Branch 'docs' does not exist, creating orphan branch..."
             git checkout --orphan docs
-            git rm -rf .
+            git rm -rf . 2>/dev/null || true
           fi
           
-          # Copier la documentation générée
-          cp -r docs/* .
+          # Copier TOUT le contenu du dossier docs à la racine
+          cp -r /tmp/docs-temp/* .
+          cp -r /tmp/docs-temp/.* . 2>/dev/null || true
+          
+          # Supprimer le cache temporaire
+          rm -rf /tmp/docs-temp
           
           # Ajouter tous les fichiers
-          git add .
+          git add -A
           
           # Commit seulement s'il y a des changements
-          if ! git diff --staged --quiet; then
+          if ! git diff --staged --quiet 2>/dev/null; then
             git commit -m "📚 Auto-update: Documentation générée depuis prod ($(date +'%Y-%m-%d %H:%M:%S UTC'))"
             git push origin docs --force
             echo "✅ Documentation pushed to docs branch"
@@ -384,7 +393,7 @@ jobs:
           echo "### 📂 Documentation disponible :" >> $GITHUB_STEP_SUMMARY
           echo "- **Branche:** \`docs\`" >> $GITHUB_STEP_SUMMARY
           echo "- **URL:** https://github.com/EnzoBagnis/SAE/tree/docs" >> $GITHUB_STEP_SUMMARY
-          echo "- **Fichiers HTML générés:** $(find docs -name '*.html' 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- **index.html:** https://github.com/EnzoBagnis/SAE/blob/docs/index.html" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔗 Accès :" >> $GITHUB_STEP_SUMMARY
           echo "- Consultez la branche \`docs\` pour voir la documentation" >> $GITHUB_STEP_SUMMARY
