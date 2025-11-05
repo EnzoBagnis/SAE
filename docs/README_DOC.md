@@ -1,6 +1,6 @@
 # 📚 Documentation du projet SAE
 
-**Documentation générée automatiquement le 2025-11-05 11:07:30 UTC**
+**Documentation générée automatiquement le 2025-11-05 11:08:37 UTC**
 
 ## 📖 Structure du projet
 
