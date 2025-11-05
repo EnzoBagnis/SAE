@@ -10,6 +10,12 @@
         "friendsofphp/php-cs-fixer": "^3.89",
         "phpunit/phpunit": "^11.5"
     },
+    "autoload": {
+        "classmap": [
+            "models/",
+            "controllers/"
+        ]
+    },
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"

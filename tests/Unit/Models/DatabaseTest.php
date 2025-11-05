@@ -3,7 +3,6 @@
 namespace Tests\Unit\Models;
 
 use PHPUnit\Framework\TestCase;
-use PDO;
 
 /**
  * Test class for Database model
@@ -11,7 +10,7 @@ use PDO;
 class DatabaseTest extends TestCase
 {
     /**
-     * Test that PDO class exists
+     * Test PDO class availability
      */
     public function testPDOClassExists(): void
     {
@@ -19,50 +18,47 @@ class DatabaseTest extends TestCase
     }
 
     /**
-     * Test PDO connection options
-     */
-    public function testPDOConnectionOptions(): void
-    {
-        $expectedOptions = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_PERSISTENT => false
-        ];
-
-        $this->assertIsArray($expectedOptions);
-        $this->assertArrayHasKey(PDO::ATTR_ERRMODE, $expectedOptions);
-        $this->assertEquals(PDO::ERRMODE_EXCEPTION, $expectedOptions[PDO::ATTR_ERRMODE]);
-    }
-
-    /**
      * Test DSN string format
      */
-    public function testDSNFormat(): void
+    public function testDSNStringFormat(): void
     {
-        $serverName = 'localhost';
-        $databaseName = 'testdb';
-        $expectedDSN = "mysql:host=$serverName;dbname=$databaseName;charset=utf8mb4";
+        $host = 'localhost';
+        $dbname = 'testdb';
+        $charset = 'utf8mb4';
+        $dsn = "mysql:host=$host;dbname=$dbname;charset=$charset";
 
-        $this->assertStringContainsString('mysql:host=', $expectedDSN);
-        $this->assertStringContainsString('dbname=', $expectedDSN);
-        $this->assertStringContainsString('charset=utf8mb4', $expectedDSN);
+        $this->assertIsString($dsn);
+        $this->assertStringContainsString('mysql:', $dsn);
+        $this->assertStringContainsString('host=', $dsn);
+        $this->assertStringContainsString('dbname=', $dsn);
+        $this->assertStringContainsString('charset=', $dsn);
     }
 
     /**
-     * Test charset configuration
+     * Test PDO constants
      */
-    public function testCharsetIsUTF8MB4(): void
+    public function testPDOConstants(): void
     {
-        $dsn = "mysql:host=localhost;dbname=test;charset=utf8mb4";
-
-        $this->assertStringContainsString('charset=utf8mb4', $dsn);
-    }
-
-    /**
-     * Test error mode is exception
-     */
-    public function testErrorModeIsException(): void
-    {
+        $this->assertTrue(defined('PDO::ATTR_ERRMODE'));
+        $this->assertTrue(defined('PDO::ERRMODE_EXCEPTION'));
         $this->assertEquals(2, PDO::ERRMODE_EXCEPTION);
     }
-}
 
+    /**
+     * Test connection options structure
+     */
+    public function testConnectionOptionsStructure(): void
+    {
+        $options = [
+            'host' => 'localhost',
+            'port' => 3306,
+            'charset' => 'utf8mb4',
+            'persistent' => false
+        ];
+
+        $this->assertIsArray($options);
+        $this->assertArrayHasKey('host', $options);
+        $this->assertArrayHasKey('charset', $options);
+        $this->assertEquals('utf8mb4', $options['charset']);
+    }
+}

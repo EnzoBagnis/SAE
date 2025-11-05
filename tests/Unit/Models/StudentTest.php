@@ -21,15 +21,16 @@ class StudentTest extends TestCase
             'timestamp' => '2024-01-01 10:00:00'
         ];
 
+        $this->assertIsArray($studentData);
         $this->assertArrayHasKey('user', $studentData);
         $this->assertArrayHasKey('exercise', $studentData);
         $this->assertArrayHasKey('score', $studentData);
     }
 
     /**
-     * Test getting all unique students
+     * Test student list operations
      */
-    public function testGetAllStudents(): void
+    public function testStudentListOperations(): void
     {
         $students = ['userId_01', 'userId_02', 'userId_03'];
 
@@ -39,21 +40,23 @@ class StudentTest extends TestCase
     }
 
     /**
-     * Test JSON parsing with valid data
+     * Test JSON encoding/decoding
      */
-    public function testValidJsonParsing(): void
+    public function testJsonOperations(): void
     {
-        $jsonData = json_encode(['user' => 'userId_01', 'score' => 90]);
-        $decoded = json_decode($jsonData, true);
+        $data = ['user' => 'userId_01', 'score' => 90];
+        $json = json_encode($data);
+        $decoded = json_decode($json, true);
 
+        $this->assertIsString($json);
         $this->assertIsArray($decoded);
-        $this->assertEquals('userId_01', $decoded['user']);
+        $this->assertEquals($data, $decoded);
     }
 
     /**
-     * Test JSON parsing with invalid data
+     * Test invalid JSON handling
      */
-    public function testInvalidJsonReturnsNull(): void
+    public function testInvalidJsonHandling(): void
     {
         $invalidJson = 'invalid json content';
         $decoded = json_decode($invalidJson, true);
@@ -61,4 +64,3 @@ class StudentTest extends TestCase
         $this->assertNull($decoded);
     }
 }
-

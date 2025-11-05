@@ -3,40 +3,23 @@
 namespace Tests\Unit\Models;
 
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\MockObject\MockObject;
-use PDO;
-use PDOStatement;
 
 /**
  * Test class for User model
  */
 class UserTest extends TestCase
 {
-    private $pdoMock;
-    private $stmtMock;
-
     /**
-     * Setup method - runs before each test
+     * Test password hashing
      */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Mock PDO and PDOStatement
-        $this->pdoMock = $this->createMock(PDO::class);
-        $this->stmtMock = $this->createMock(PDOStatement::class);
-    }
-
-    /**
-     * Test password hashing on user creation
-     */
-    public function testPasswordIsHashedOnCreation(): void
+    public function testPasswordHashing(): void
     {
         $plainPassword = 'SecurePassword123!';
+        $hashedPassword = password_hash($plainPassword, PASSWORD_DEFAULT);
 
-        // Verify that password_hash is called properly
-        $this->assertTrue(strlen(password_hash($plainPassword, PASSWORD_DEFAULT)) > 0);
-        $this->assertNotEquals($plainPassword, password_hash($plainPassword, PASSWORD_DEFAULT));
+        $this->assertIsString($hashedPassword);
+        $this->assertNotEquals($plainPassword, $hashedPassword);
+        $this->assertTrue(password_verify($plainPassword, $hashedPassword));
     }
 
     /**
@@ -64,10 +47,10 @@ class UserTest extends TestCase
             'verifie' => 1
         ];
 
+        $this->assertIsArray($userData);
         $this->assertArrayHasKey('id', $userData);
         $this->assertArrayHasKey('nom', $userData);
         $this->assertArrayHasKey('prenom', $userData);
         $this->assertArrayHasKey('mail', $userData);
     }
 }
-

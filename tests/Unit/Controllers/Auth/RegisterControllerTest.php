@@ -10,64 +10,50 @@ use PHPUnit\Framework\TestCase;
 class RegisterControllerTest extends TestCase
 {
     /**
-     * Test registration page concept
+     * Test registration data structure
      */
-    public function testShowRegistrationPage(): void
+    public function testRegistrationDataStructure(): void
     {
-        $this->assertTrue(true);
-    }
-
-    /**
-     * Test successful registration with valid data
-     */
-    public function testRegistrationWithValidData(): void
-    {
-        $validData = [
+        $data = [
             'nom' => 'Doe',
             'prenom' => 'John',
             'mail' => 'john.doe@example.com',
-            'mdp' => 'SecurePassword123!',
-            'confirm_password' => 'SecurePassword123!'
+            'mdp' => 'SecurePassword123!'
         ];
 
-        $this->assertArrayHasKey('nom', $validData);
-        $this->assertArrayHasKey('prenom', $validData);
-        $this->assertArrayHasKey('mail', $validData);
+        $this->assertArrayHasKey('nom', $data);
+        $this->assertArrayHasKey('prenom', $data);
+        $this->assertArrayHasKey('mail', $data);
+        $this->assertArrayHasKey('mdp', $data);
     }
 
     /**
-     * Test registration with invalid email format
+     * Test email format validation
      */
-    public function testRegistrationWithInvalidEmail(): void
+    public function testEmailFormatValidation(): void
     {
-        $invalidEmail = 'not-an-email';
+        $validEmail = 'test@example.com';
+        $invalidEmail = 'invalid-email';
 
-        $this->assertFalse(filter_var($invalidEmail, FILTER_VALIDATE_EMAIL));
+        $this->assertTrue(filter_var($validEmail, FILTER_VALIDATE_EMAIL) !== false);
+        $this->assertFalse(filter_var($invalidEmail, FILTER_VALIDATE_EMAIL) !== false);
     }
 
     /**
-     * Test registration with mismatched passwords
+     * Test password matching
      */
-    public function testRegistrationWithMismatchedPasswords(): void
+    public function testPasswordMatching(): void
     {
-        $password = 'Password123!';
-        $confirmPassword = 'DifferentPassword123!';
+        $password1 = 'Password123!';
+        $password2 = 'Password123!';
+        $password3 = 'DifferentPassword';
 
-        $this->assertNotEquals($password, $confirmPassword);
+        $this->assertEquals($password1, $password2);
+        $this->assertNotEquals($password1, $password3);
     }
 
     /**
-     * Test registration with weak password
-     */
-    public function testRegistrationWithWeakPassword(): void
-    {
-        $weakPassword = '123';
-
-        $this->assertLessThan(8, strlen($weakPassword));
-    }
-
-    /**
-     * Test email verification code generation
+     * Test verification code generation
      */
     public function testVerificationCodeGeneration(): void
     {
@@ -75,5 +61,6 @@ class RegisterControllerTest extends TestCase
 
         $this->assertIsString($code);
         $this->assertEquals(32, strlen($code));
+        $this->assertMatchesRegularExpression('/^[a-f0-9]{32}$/', $code);
     }
 }
