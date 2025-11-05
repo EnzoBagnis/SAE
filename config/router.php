@@ -97,6 +97,32 @@ class Router
                 require_once __DIR__ . '/../views/user/resource_details.php';
                 break;
 
+            // ========== ANALYSIS - VECTOR GENERATION ==========
+            case 'generate-vectors':
+                $this->loadNamespacedController('Controllers\Analysis\VectorController', 'generate');
+                break;
+
+            case 'processing':
+                $this->loadNamespacedController('Controllers\Analysis\VectorController', 'processing');
+                break;
+
+            case 'status':
+                $this->loadNamespacedController('Controllers\Analysis\VectorController', 'status');
+                break;
+
+            case 'vectors':
+                $this->loadNamespacedController('Controllers\Analysis\VectorController', 'getVectors');
+                break;
+
+            // ========== ANALYSIS - VISUALIZATION ==========
+            case 'visualization':
+                $this->loadNamespacedController('Controllers\Analysis\VisualizationController', 'index');
+                break;
+
+            case 'visualization-data':
+                $this->loadNamespacedController('Controllers\Analysis\VisualizationController', 'getData');
+                break;
+
             default:
                 $this->loadController('HomeController', 'index');
                 break;
