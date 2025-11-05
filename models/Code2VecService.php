@@ -4,14 +4,15 @@
  * Service pour interagir avec code2aes2vec (Python)
  * Génère les vecteurs de grande dimension à partir des programmes étudiants
  */
-class Code2VecService {
-
+class Code2VecService
+{
     private $pythonPath;
     private $scriptsPath;
     private $dataPath;
     private $modelsPath;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->pythonPath = '/usr/bin/python3';
         $this->scriptsPath = __DIR__ . '/../python_scripts/';
         $this->dataPath = __DIR__ . '/../data/';
@@ -23,7 +24,8 @@ class Code2VecService {
      * @param int $datasetId ID du dataset dans la BD
      * @return array Résultat avec chemin du fichier exporté
      */
-    public function exportDatasetToJSON($datasetId) {
+    public function exportDatasetToJSON($datasetId)
+    {
         $pdo = Database::getConnection();
 
         // Récupérer toutes les tentatives du dataset avec les infos des exercices
@@ -94,7 +96,8 @@ class Code2VecService {
     /**
      * Exporte les exercices d'un dataset au format compatible code2aes2vec
      */
-    public function exportExercisesToJSON($datasetId) {
+    public function exportExercisesToJSON($datasetId)
+    {
         $pdo = Database::getConnection();
 
         $stmt = $pdo->prepare("
@@ -151,7 +154,8 @@ class Code2VecService {
      * Génère les AES pour toutes les tentatives d'un dataset
      * Met à jour la colonne aes2 dans la table attempts
      */
-    public function generateAES($datasetId) {
+    public function generateAES($datasetId)
+    {
         // Exporter les données
         $attemptsExport = $this->exportDatasetToJSON($datasetId);
         $exercisesExport = $this->exportExercisesToJSON($datasetId);
@@ -200,7 +204,8 @@ class Code2VecService {
     /**
      * Importe les AES depuis le fichier JSON vers la base de données
      */
-    private function importAESToDB($datasetId, $jsonFile) {
+    private function importAESToDB($datasetId, $jsonFile)
+    {
         $data = json_decode(file_get_contents($jsonFile), true);
         $pdo = Database::getConnection();
 
@@ -231,7 +236,8 @@ class Code2VecService {
     /**
      * Génère les vecteurs de grande dimension à partir des AES
      */
-    public function inferVectors($datasetId) {
+    public function inferVectors($datasetId)
+    {
         $modelFile = $this->modelsPath . 'pretrained_code2vec.model';
         $aesFile = $this->dataPath . "uploads/dataset_{$datasetId}_with_aes.json";
         $outputFile = $this->dataPath . "vectors/dataset_{$datasetId}_vectors.json";
@@ -290,7 +296,8 @@ class Code2VecService {
     /**
      * Vérifie l'état du traitement
      */
-    public function getProcessingStatus($datasetId) {
+    public function getProcessingStatus($datasetId)
+    {
         $statusFile = $this->dataPath . "uploads/dataset_{$datasetId}_status.json";
 
         if (file_exists($statusFile)) {
@@ -306,7 +313,8 @@ class Code2VecService {
     /**
      * Lance le traitement complet en arrière-plan
      */
-    public function processInBackground($datasetId) {
+    public function processInBackground($datasetId)
+    {
         $statusFile = $this->dataPath . "uploads/dataset_{$datasetId}_status.json";
         file_put_contents($statusFile, json_encode([
             'status' => 'processing',

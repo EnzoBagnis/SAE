@@ -1,6 +1,5 @@
 <?php
 
-
 class Exercise
 {
     private ?PDO $db;
@@ -59,7 +58,8 @@ class Exercise
    /**
      * Récupère tous les exercices d'un dataset
      */
-    public function getByDataset($datasetId, PDO $db) {
+    public function getByDataset($datasetId, PDO $db)
+    {
         $stmt = $db->prepare(
             "SELECT e.*, GROUP_CONCAT(tc.test_case_id) as has_test_cases
              FROM exercises e
@@ -76,7 +76,8 @@ class Exercise
     /**
      * Récupère un exercice par son ID
      */
-    public function getById($exerciseId, PDO $db) {
+    public function getById($exerciseId, PDO $db)
+    {
         $stmt = $db->prepare("SELECT * FROM exercises WHERE exercise_id = ?");
         $stmt->execute([$exerciseId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -85,7 +86,8 @@ class Exercise
     /**
      * Récupère les test cases d'un exercice
      */
-    public function getTestCases($exerciseId, PDO $db) {
+    public function getTestCases($exerciseId, PDO $db)
+    {
         $stmt = $db->prepare(
             "SELECT * FROM test_cases 
              WHERE exercise_id = ? 
@@ -95,7 +97,4 @@ class Exercise
         $stmt->execute([$exerciseId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-  
-  
 }
-

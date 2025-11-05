@@ -4,18 +4,20 @@
  * Modèle pour gérer les datasets
  * Utilise la structure BD existante
  */
-class Dataset {
-
+class Dataset
+{
     private $pdo;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->pdo = Database::getConnection();
     }
 
     /**
      * Récupère tous les datasets d'un enseignant
      */
-    public function getByTeacher($teacherId) {
+    public function getByTeacher($teacherId)
+    {
         $stmt = $this->pdo->prepare(
             "SELECT * FROM datasets 
              WHERE enseignant_id = ? 
@@ -29,7 +31,8 @@ class Dataset {
     /**
      * Récupère un dataset par son ID
      */
-    public function getById($datasetId) {
+    public function getById($datasetId)
+    {
         $stmt = $this->pdo->prepare("SELECT * FROM datasets WHERE dataset_id = ?");
         $stmt->execute([$datasetId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -38,7 +41,8 @@ class Dataset {
     /**
      * Récupère toutes les tentatives d'un dataset avec vecteurs
      */
-    public function getAttemptsWithVectors($datasetId) {
+    public function getAttemptsWithVectors($datasetId)
+    {
         $stmt = $this->pdo->prepare("
             SELECT 
                 a.attempt_id,
@@ -64,7 +68,8 @@ class Dataset {
     /**
      * Vérifie si l'enseignant a accès au dataset
      */
-    public function hasAccess($datasetId, $teacherId) {
+    public function hasAccess($datasetId, $teacherId)
+    {
         $stmt = $this->pdo->prepare(
             "SELECT COUNT(*) FROM datasets 
              WHERE dataset_id = ? AND enseignant_id = ?"

@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Analysis;
 
 require_once __DIR__ . '/../../controllers/BaseController.php';
@@ -8,12 +9,13 @@ require_once __DIR__ . '/../../models/Dataset.php';
 /**
  * Contrôleur pour la génération et la gestion des vecteurs
  */
-class VectorController extends \BaseController {
-
+class VectorController extends \BaseController
+{
     private $code2vecService;
     private $datasetModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->code2vecService = new \Code2VecService();
         $this->datasetModel = new \Dataset();
     }
@@ -21,7 +23,8 @@ class VectorController extends \BaseController {
     /**
      * Lance la génération de vecteurs pour un dataset
      */
-    public function generate() {
+    public function generate()
+    {
         $this->requireAuth();
 
         $datasetId = $_GET['dataset_id'] ?? null;
@@ -55,7 +58,8 @@ class VectorController extends \BaseController {
     /**
      * Page de traitement avec barre de progression
      */
-    public function processing() {
+    public function processing()
+    {
         $this->requireAuth();
 
         $datasetId = $_GET['dataset_id'] ?? null;
@@ -75,7 +79,8 @@ class VectorController extends \BaseController {
     /**
      * API pour vérifier le statut du traitement (AJAX)
      */
-    public function status() {
+    public function status()
+    {
         $this->requireAuth();
 
         $datasetId = $_GET['dataset_id'] ?? null;
@@ -89,7 +94,8 @@ class VectorController extends \BaseController {
     /**
      * Récupère les vecteurs générés
      */
-    public function getVectors() {
+    public function getVectors()
+    {
         $this->requireAuth();
 
         $datasetId = $_GET['dataset_id'] ?? null;
