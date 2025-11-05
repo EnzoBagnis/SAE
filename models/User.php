@@ -54,6 +54,18 @@ class User
     }
 
     /**
+     * READ - Find a user by email
+     * @param string $email User's email address
+     * @return array|false User data or false if not found
+     */
+    public function showUser()
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * READ - Find a user by ID
      * @param int $id User's ID
      * @return array|false User data or false if not found

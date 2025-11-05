@@ -99,6 +99,14 @@ class Router
                 $this->loadNamespacedController('Controllers\Workshop\WorkshopController', 'show');
                 break;
 
+            // ========== ADMIN - DASHBOARD ==========
+            case 'admin':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'index');
+                break;
+            case 'adminSU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'dashboard');
+                break;
+
             // ========== PAGES ==========
             case 'mentions':
                 $this->loadView('pages/mentions-legales');
