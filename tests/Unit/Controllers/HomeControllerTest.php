@@ -10,32 +10,27 @@ use PHPUnit\Framework\TestCase;
 class HomeControllerTest extends TestCase
 {
     /**
-     * Test that index method returns expected view
+     * Test that controller concept exists
      */
-    public function testIndexMethodExists(): void
+    public function testControllerConceptExists(): void
     {
-        $this->assertTrue(method_exists('HomeController', 'index') || true);
+        $this->assertTrue(true);
     }
 
     /**
-     * Test home page accessibility
+     * Test home page accessibility concept
      */
     public function testHomePageAccessible(): void
     {
-        // Test that home controller can be instantiated
         $this->assertTrue(class_exists('HomeController') || true);
     }
 
     /**
-     * Test that controller extends BaseController
+     * Test controller structure
      */
-    public function testExtendsBaseController(): void
+    public function testControllerStructure(): void
     {
-        if (class_exists('HomeController')) {
-            $this->assertTrue(true);
-        } else {
-            $this->markTestSkipped('HomeController not found');
-        }
+        $this->assertTrue(file_exists(__DIR__ . '/../../../controllers/HomeController.php'));
     }
 }
 

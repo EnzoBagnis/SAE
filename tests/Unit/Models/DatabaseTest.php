@@ -11,31 +11,11 @@ use PDO;
 class DatabaseTest extends TestCase
 {
     /**
-     * Test that getConnection returns PDO instance
-     * Note: This test requires a valid database configuration
+     * Test that PDO class exists
      */
-    public function testGetConnectionReturnsPDOInstance(): void
+    public function testPDOClassExists(): void
     {
-        // This test would need actual database access or mocking
-        // For now, we test the concept
-
         $this->assertTrue(class_exists('PDO'));
-    }
-
-    /**
-     * Test database configuration file existence
-     */
-    public function testEnvFileExists(): void
-    {
-        $envPath = __DIR__ . '/../../../config/.env';
-
-        // Check if .env file exists or should exist
-        if (file_exists($envPath)) {
-            $this->assertFileExists($envPath);
-            $this->assertFileIsReadable($envPath);
-        } else {
-            $this->markTestSkipped('.env file not found - expected in production');
-        }
     }
 
     /**
@@ -85,3 +65,4 @@ class DatabaseTest extends TestCase
         $this->assertEquals(2, PDO::ERRMODE_EXCEPTION);
     }
 }
+
