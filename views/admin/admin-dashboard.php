@@ -57,7 +57,7 @@
         <!-- Onglets de filtrage -->
         <div class="tabs">
             <button class="tab-btn <?= ($currentTab ?? 'verified') === 'verified' ? 'active' : '' ?>"
-                    onclick="window.location.href='index.php?action=adminSVU';">
+                    onclick="showTab('verified')">
                 Utilisateurs vérifiés (<?= count($verifiedUsers ?? []) ?>)
             </button>
             <button class="tab-btn <?= ($currentTab ?? '') === 'pending' ? 'active' : '' ?>"
@@ -98,9 +98,9 @@
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>')">Modifier</button>
+                                <button class="btn-edit" onclick="openEditPopup('2', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>')">Modifier</button>
 
-                                <a href="index.php?action=adminDeleteUser&id=<?= urlencode($user['id']) ?>"
+                                <a href="index.php?action=adminDeleteUser&table=V&id=<?= urlencode($user['id']) ?>"
                                    class="btn-delete"
                                    <!-- onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"> -->
                                     Supprimer
@@ -118,6 +118,7 @@
             <table class="user-table">
                 <thead>
                 <tr>
+                    <th>Vérifé</th>
                     <th>ID</th>
                     <th>Nom</th>
                     <th>Prénom</th>
@@ -133,18 +134,26 @@
                 <?php else: ?>
                     <?php foreach ($pendingUsers as $user): ?>
                         <tr>
+                            <td><?= htmlspecialchars($user['verifie']) ?></td>
                             <td><?= htmlspecialchars($user['id']) ?></td>
                             <td><?= htmlspecialchars($user['nom']) ?></td>
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <a href="/index.php?action=admin_edit&id=<?= urlencode($user['id']) ?>"
-                                   class="btn-edit">Modifier</a>
-                                <a href="/index.php?action=admin_delete&id=<?= urlencode($user['id']) ?>"
+                                <button class="btn-edit" onclick="openEditPopup('<?= htmlspecialchars($user['verifie']) ?>', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>')">Modifier</button>
+
+                                <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
                                    class="btn-delete"
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
+                                <?php if ($user['verifie'] == 1): ?>
+                                <a href="index.php?action=adminValidUser&id=<?= urlencode($user['id']) ?>"
+                                   class="btn-validate"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir valider cet utilisateur ?')">
+                                    Valider
+                                </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -190,15 +199,17 @@
             <label for="editNom">Nom</label>
             <input type="text" id="editNom" name="nom" required>
         </div>
-
         <div class="form-group">
             <label for="editPrenom">Prénom</label>
             <input type="text" id="editPrenom" name="prenom" required>
         </div>
-
         <div class="form-group">
             <label for="editEmail">Email</label>
             <input type="email" id="editEmail" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="verifie">Verifie</label>
+            <input type="int" id="verifie" name="nom" readonly>
         </div>
         <button type="submit" class="btn-submit" name="ok">Valider</button>
 
@@ -231,7 +242,8 @@
         console.log("test");
     }
 
-    function openEditPopup(id, nom, prenom, email) {
+    function openEditPopup(verifie, id, nom, prenom, email) {
+        document.getElementById('verifie').value = verifie;
         document.getElementById('id').value = id;
         document.getElementById('editNom').value = nom;
         document.getElementById('editPrenom').value = prenom;

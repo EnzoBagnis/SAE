@@ -106,11 +106,17 @@ class Router
             case 'adminSVU':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showVerifiedUsers');
                 break;
+            case 'adminSPU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showPendingUsers');
+                break;
             case 'adminDeleteUser':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'deleteUser');
                 break;
             case 'adminEditUser':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'editUser');
+                break;
+            case 'adminValidUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'validateUser');
                 break;
 
             // ========== PAGES ==========

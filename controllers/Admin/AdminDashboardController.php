@@ -22,9 +22,16 @@ class AdminDashboardController extends \BaseController
      */
     public function index()
     {
+        $verifiedUsers = $this->userModel->showVerifiedUser();
+        $pendingUsers = $this->userModel->showPendingUser();
+
+        $data = [
+            'verifiedUsers' => $verifiedUsers,
+            'pendingUsers' => $pendingUsers
+        ];
 
 
-        $this->loadView('admin/admin-dashboard');
+        $this->loadView('admin/admin-dashboard', $data);
     }
 
     /**
@@ -34,19 +41,30 @@ class AdminDashboardController extends \BaseController
     {
 
 
-        $verifiedUsers = $this->userModel->showUser();
+        $verifiedUsers = $this->userModel->showVerifiedUser();
         $test = "test";
 
         $this->loadView('admin/admin-dashboard', ['verifiedUsers' => $verifiedUsers]);
     }
 
+    public function showPendingUsers()
+    {
+
+
+        $pendingUsers = $this->userModel->showPendingUser();
+        $test = "test";
+
+        $this->loadView('admin/admin-dashboard', ['pendingUsers' => $pendingUsers]);
+    }
+
     public function deleteUser()
     {
         // Implementation for deleting a user
+        $table = $_GET['table'];
         $id = $_GET['id'];
-        $success = $this->userModel->delete($id);
+        $success = $this->userModel->delete($table, $id);
         if ($success) {
-            $this->showVerifiedUsers();
+            header('Location: index.php?action=admin');
         }
         else {
             $this->loadView('admin/admin-dashboard');
@@ -62,12 +80,25 @@ class AdminDashboardController extends \BaseController
 
         $success = $this->userModel->update($id, $nom, $prenom, $email);
         if ($success) {
-            header('Location: index.php?action=adminSVU');
+            header('Location: index.php?action=admin');
             exit;
         }
         else {
             header('Location: /index.php?action=login');
             exit;
+        }
+
+    }
+
+    public function validateUser()
+    {
+        $id = $_GET['id'];
+        $success = $this->userModel->updateVerifie($id);
+        if ($success) {
+            header('Location: index.php?action=admin');
+        }
+        else {
+            $this->loadView('admin/admin-dashboard');
         }
 
     }

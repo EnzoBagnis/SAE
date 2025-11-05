@@ -54,13 +54,25 @@ class User
     }
 
     /**
-     * READ - Find a user by email
+     * READ - Find all user
      * FOR ADMIN PANEL
      * @return array User data
      */
-    public function showUser()
+    public function showVerifiedUser()
     {
         $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * READ - Find all pending user
+     * FOR ADMIN PANEL
+     * @return array User data
+     */
+    public function showPendingUser()
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM inscriptions_en_attente");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -181,14 +193,43 @@ class User
     }
 
     /**
+     * UPDATE - Update user information
+     * @param int $id User's ID
+     * @return bool Success status
+     */
+    public function updateVerifie($id)
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE inscriptions_en_attente 
+             SET verifie = 2
+             WHERE id = :id"
+        );
+
+        return $stmt->execute(['id' => $id]);
+    }
+
+    /**
      * DELETE - Delete a user
      * @param int $id User's ID
      * @return bool Success status
      */
-    public function delete($id)
+    public function delete($tableKey, $id)
     {
-        $stmt = $this->pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        $map = [
+            'V' => 'utilisateurs',
+            'P' => 'inscriptions_en_attente',
+        ];
+
+        if (!isset($map[$tableKey])) {
+            return false; // table non autorisée
+        }
+
+        $table = $map[$tableKey];
+
+        // Construction de la requête avec nom de table validé
+        $sql = "DELETE FROM {$table} WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute( ['id' => $id]);
     }
 
     /**
