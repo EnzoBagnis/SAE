@@ -65,7 +65,7 @@ class LoginController extends \BaseController
 
         if ($result['success']) {
             $this->authController->createSession($result['user']);
-            header('Location: /index.php?action=dashboard');
+            header('Location: /index.php?action=resources_list');
             exit;
         } else {
             header('Location: /index.php?action=login&error=' . $result['error']);

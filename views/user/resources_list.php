@@ -14,8 +14,8 @@ require_once __DIR__ . '/../../models/Resource.php';
 $db = Database::getConnection();
 
 $user_id = $_SESSION['id'];
-$user_firstname = $_SESSION['user_firstname'] ?? 'Utilisateur';
-$user_lastname = $_SESSION['user_lastname'] ?? '';
+$user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
+$user_lastname = $_SESSION['nom'] ?? '';
 
 $title = 'StudTraj - Mes Ressources';
 
@@ -28,12 +28,13 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/public/images/favicon.ico">
-    <title><?= htmlspecialchars($title) ?></title>
-    <link rel="stylesheet" href="/public/css/style.css">
-    <link rel="stylesheet" href="/public/css/dashboard.css">
-    <link rel="stylesheet" href="/public/css/footer.css">
-    <script src="/public/js/resources_list.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
+    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="../public/css/dashboard.css">
+    <link rel="stylesheet" href="../public/css/footer.css">
+    <script src="../public/js/modules/import.js"></script>
+    <script src="../public/js/dashboard-main.js"></script>
 
     <meta name="description"
           content="Gérez et visualisez vos ressources pédagogiques et celles partagées.">
@@ -134,21 +135,29 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
         <div class="logo">
             <h1>StudTraj</h1>
         </div>
-        <button class="burger-menu" id="burgerBtn"
-                onclick="toggleBurgerMenu()" aria-label="Menu">
-            <span></span><span></span><span></span>
+
+        <!-- Bouton burger pour mobile -->
+        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
+
         <nav class="nav-menu">
-            <a href="/index.php?action=dashboard">Tableau de bord</a>
-            <a href="/index.php?action=resources_list" class="active">Mes Ressources</a>
+            <a href="/index.php?action=resources_list" class="active">Tableau de bord</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
             <a href="/index.php?action=mentions">Mentions légales</a>
         </nav>
         <div class="user-info">
-            <span>
-                <?= htmlspecialchars($user_firstname) ?>
-                <?= htmlspecialchars($user_lastname) ?>
-            </span>
+            <button onclick="openImportModal()" class="btn-import-trigger">
+                <svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Importer
+            </button>
+            <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
             <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
         </div>
     </header>
@@ -216,7 +225,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                         $ownerFullName = $resource->owner_firstname . ' ' .
                                          $resource->owner_lastname;
                         ?>
-                        <a href="/index.php?action=resource_details&id=<?=
+                        <a href="/index.php?action=dashboard&id=<?=
                                    $resource->resource_id ?>"
                             class="resource-card"
                             data-name="<?= htmlspecialchars($resource->resource_name) ?>"
@@ -257,7 +266,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="/index.php?action=resources_list">Tableau de bord</a></li>
                     <li><a href="/index.php?action=login">Connexion</a></li>
                     <li><a href="/index.php?action=signup">Inscription</a></li>
                     <li>
