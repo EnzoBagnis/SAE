@@ -364,15 +364,58 @@ jobs:
           path: docs/
           retention-days: 90
 
-      - name: Commit and Push Documentation
+      - name: Create branch and Push Documentation
         run: |
+          BRANCH_NAME="docs/auto-update-$(date +%Y%m%d-%H%M%S)"
+          
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
+          
+          # Créer une nouvelle branche
+          git checkout -b "$BRANCH_NAME"
+          
+          # Ajouter les changements
           git add docs/ README.md
-          git diff --staged --quiet || git commit -m "📚 Auto-update: PHPDoc documentation generated [skip ci]"
-          git push origin prod
+          
+          # Commit seulement s'il y a des changements
+          if ! git diff --staged --quiet; then
+            git commit -m "📚 Auto-update: PHPDoc documentation generated"
+            git push origin "$BRANCH_NAME"
+          
+            echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          else
+            echo "No changes to commit"
+            echo "BRANCH_NAME=" >> $GITHUB_ENV
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: Create Pull Request for Documentation
+        if: env.BRANCH_NAME != ''
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh pr create \
+            --base prod \
+            --head "$BRANCH_NAME" \
+            --title "📚 Auto-update: PHPDoc Documentation" \
+            --body "## 📚 Documentation automatiquement générée
+          
+          Cette PR contient la documentation mise à jour générée par phpDocumentor.
+          
+          ### 📂 Fichiers mis à jour :
+          - Dossier \`docs/\` avec la documentation complète
+          - Fichier \`docs/README_DOC.md\` avec le résumé
+          - Fichier \`README.md\` avec le lien vers la documentation
+          
+          ### 📊 Statistiques :
+          - **$(find docs -name '*.html' 2>/dev/null | wc -l)** fichiers HTML générés
+          - **Documentation générée le:** $(date +'%Y-%m-%d %H:%M:%S UTC')
+          
+          ---
+          _Créée automatiquement par GitHub Actions_"
+          
+          echo "✅ Pull request created for documentation update"
 
       - name: Documentation Summary
         run: |
@@ -387,7 +430,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔗 Access Documentation:" >> $GITHUB_STEP_SUMMARY
           echo "- Download the artifact from this workflow run" >> $GITHUB_STEP_SUMMARY
-          echo "- Or check the \`docs/\` folder in the \`prod\` branch" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$BRANCH_NAME" ]; then
+            echo "- A Pull Request has been created for review" >> $GITHUB_STEP_SUMMARY
+          fi
 
   # Job 6: Créer un tag de version sur PROD
   create-release:
@@ -422,8 +467,6 @@ jobs:
           echo "📦 Version: v$(date +%Y.%m.%d-%H%M%S)"
           echo "🌐 Environment: PRODUCTION"
           echo "📚 Documentation: Available in docs/ folder"
-          # Ajoutez ici vos commandes de déploiement réelles si nécessaire
-          # Exemple: ssh deploy@prod-server "cd /var/www && git pull origin prod && php artisan migrate"
 
   # ==================== PULL REQUESTS ====================
   # Job 7: Validation des PRs
