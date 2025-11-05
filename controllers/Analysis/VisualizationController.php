@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Analysis;
 
 require_once __DIR__ . '/../../controllers/BaseController.php';
@@ -7,18 +8,20 @@ require_once __DIR__ . '/../../models/Dataset.php';
 /**
  * Contrôleur pour la visualisation des données avec D3.js
  */
-class VisualizationController extends \BaseController {
-
+class VisualizationController extends \BaseController
+{
     private $datasetModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->datasetModel = new \Dataset();
     }
 
     /**
      * Affiche la page de visualisation
      */
-    public function index() {
+    public function index()
+    {
         $this->requireAuth();
 
         $datasetId = $_GET['dataset_id'] ?? null;
@@ -46,7 +49,8 @@ class VisualizationController extends \BaseController {
     /**
      * API pour récupérer les données formatées pour D3.js
      */
-    public function getData() {
+    public function getData()
+    {
         $this->requireAuth();
 
         $datasetId = $_GET['dataset_id'] ?? null;

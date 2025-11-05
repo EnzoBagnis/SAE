@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Analysis;
 
 require_once __DIR__ . '/../../controllers/BaseController.php';
@@ -7,18 +8,20 @@ require_once __DIR__ . '/../../models/Code2VecService.php';
 /**
  * Contrôleur pour l'upload des données de programmes étudiants
  */
-class UploadController extends \BaseController {
-
+class UploadController extends \BaseController
+{
     private $code2vecService;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->code2vecService = new \Code2VecService();
     }
 
     /**
      * Affiche la page d'upload
      */
-    public function index() {
+    public function index()
+    {
         $this->requireAuth(); // Vérification authentification
 
         $this->loadView('analysis/upload', [
@@ -33,7 +36,8 @@ class UploadController extends \BaseController {
     /**
      * Traite l'upload du fichier JSON
      */
-    public function upload() {
+    public function upload()
+    {
         $this->requireAuth();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
