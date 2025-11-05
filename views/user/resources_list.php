@@ -16,6 +16,12 @@ $db = Database::getConnection();
 $user_id = $_SESSION['id'];
 $user_firstname = $_SESSION['user_firstname'] ?? 'Utilisateur';
 $user_lastname = $_SESSION['user_lastname'] ?? '';
+$data = [
+    'title' => 'StudTraj - Tableau de bord',
+    'user_firstname' => $_SESSION['prenom'] ?? 'Utilisateur',
+    'user_lastname' => $_SESSION['nom'] ?? '',
+    'user_email' => $_SESSION['mail'] ?? ''
+];
 
 $title = 'StudTraj - Mes Ressources';
 
