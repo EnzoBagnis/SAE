@@ -1,134 +1,66 @@
 <?php
 
+require_once __DIR__ . '/Database.php';
+
 /**
- * Student Model - Handles student data from JSON file
+ * Student Model - Handles student data from database
  */
 class Student
 {
-    private $dataFile;
-    private $exercisesFile;
-    private $exercisesData = null;
+    private $db;
 
     public function __construct()
     {
-        $this->dataFile = __DIR__ . '/../data/NewCaledonia_1014.json';
-        $this->exercisesFile = __DIR__ . '/../data/NewCaledonia_exercises.json';
+        $this->db = Database::getConnection();
     }
 
     /**
-     * Get all attempts from JSON file
-     * @return array Array of attempts
+     * Get all students for a specific resource
+     * @param int $resourceId Resource ID
+     * @return array Array of students
      */
-    public function getAllAttempts()
+    public function getAllStudents($resourceId = null)
     {
-        if (!file_exists($this->dataFile)) {
+        try {
+            if ($resourceId === null) {
+                // Si aucune ressource spécifiée, retourner tous les étudiants
+                $query = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif, d.nom_dataset
+                         FROM students s
+                         JOIN datasets d ON s.dataset_id = d.dataset_id
+                         ORDER BY s.student_identifier";
+                $stmt = $this->db->prepare($query);
+                $stmt->execute();
+            } else {
+                // Récupérer les étudiants qui ont des tentatives pour les exercices de cette ressource
+                $query = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif, d.nom_dataset
+                         FROM students s
+                         JOIN datasets d ON s.dataset_id = d.dataset_id
+                         JOIN attempts a ON s.student_id = a.student_id
+                         JOIN exercises e ON a.exercise_id = e.exercise_id
+                         WHERE e.resource_id = :resource_id
+                         ORDER BY s.student_identifier";
+                $stmt = $this->db->prepare($query);
+                $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getting students: " . $e->getMessage());
             return [];
         }
-
-        $jsonContent = file_get_contents($this->dataFile);
-        $data = json_decode($jsonContent, true);
-
-        if (!is_array($data)) {
-            return [];
-        }
-
-        return $data;
     }
 
     /**
-     * Load exercises data from JSON file
-     * @return array Array of exercises
-     */
-    private function loadExercises()
-    {
-        if ($this->exercisesData !== null) {
-            return $this->exercisesData;
-        }
-
-        if (!file_exists($this->exercisesFile)) {
-            $this->exercisesData = [];
-            return $this->exercisesData;
-        }
-
-        $jsonContent = file_get_contents($this->exercisesFile);
-        $this->exercisesData = json_decode($jsonContent, true);
-
-        if (!is_array($this->exercisesData)) {
-            $this->exercisesData = [];
-        }
-
-        return $this->exercisesData;
-    }
-
-    /**
-     * Get exercise details by exercise name
-     * @param string $exerciseName Exercise name (exo_name)
-     * @return array|null Exercise details or null if not found
-     */
-    private function getExerciseByName($exerciseName)
-    {
-        $exercises = $this->loadExercises();
-
-        foreach ($exercises as $exercise) {
-            if (isset($exercise['exo_name']) && $exercise['exo_name'] === $exerciseName) {
-                return $exercise;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get all unique students (users)
-     * @return array Array of unique user IDs
-     */
-    public function getAllStudents()
-    {
-        $allAttempts = $this->getAllAttempts();
-        $students = [];
-
-        foreach ($allAttempts as $attempt) {
-            if (isset($attempt['user']) && !in_array($attempt['user'], $students)) {
-                $students[] = $attempt['user'];
-            }
-        }
-
-        // Tri naturel pour les identifiants numériques
-        // Support pour userId_XX, userid_XX, ou userIdI_XX (insensible à la casse)
-        usort($students, function ($a, $b) {
-            // Extraire les numéros - pattern flexible pour capturer le numéro après le dernier underscore
-            $numA = 0;
-            $numB = 0;
-
-            // Pattern: chercher n'importe quel texte suivi de underscore et des chiffres
-            // Ex: userId_1, userid_10, userIdI_5, etc.
-            if (preg_match('/_(\d+)$/', $a, $matchA)) {
-                $numA = (int)$matchA[1];
-            }
-
-            if (preg_match('/_(\d+)$/', $b, $matchB)) {
-                $numB = (int)$matchB[1];
-            }
-
-            // Comparer les numéros extraits
-            if ($numA === $numB) {
-                return 0;
-            }
-            return ($numA < $numB) ? -1 : 1;
-        });
-
-        return $students;
-    }
-
-    /**
-     * Get paginated students (unique users)
+     * Get paginated students for a specific resource
      * @param int $page Current page number
      * @param int $perPage Number of items per page
+     * @param int $resourceId Resource ID (optional)
      * @return array Paginated data with students and metadata
      */
-    public function getPaginatedStudents($page = 1, $perPage = 15)
+    public function getPaginatedStudents($page = 1, $perPage = 15, $resourceId = null)
     {
-        $allStudents = $this->getAllStudents();
+        $allStudents = $this->getAllStudents($resourceId);
         $total = count($allStudents);
 
         $offset = ($page - 1) * $perPage;
@@ -144,65 +76,219 @@ class Student
     }
 
     /**
-     * Get all attempts for a specific student (user)
-     * @param string $userId User ID (e.g., "userId_36")
-     * @return array Array of attempts for this user with test cases
+     * Get all attempts for a specific student
+     * @param int $studentId Student ID (database ID)
+     * @param int $resourceId Resource ID (optional, pour filtrer par ressource)
+     * @return array Array of attempts with exercise and test cases details
      */
-    public function getStudentAttempts($userId)
+    public function getStudentAttempts($studentId, $resourceId = null)
     {
-        $allAttempts = $this->getAllAttempts();
-        $userAttempts = [];
+        try {
+            $query = "SELECT 
+                        a.attempt_id,
+                        a.submission_date,
+                        a.extension,
+                        a.correct,
+                        a.upload,
+                        a.eval_set,
+                        a.aes0,
+                        a.aes1,
+                        a.aes2,
+                        e.exercise_id,
+                        e.exo_name,
+                        e.funcname,
+                        e.solution,
+                        e.description,
+                        e.difficulte,
+                        r.resource_id,
+                        r.resource_name
+                     FROM attempts a
+                     JOIN exercises e ON a.exercise_id = e.exercise_id
+                     JOIN resources r ON e.resource_id = r.resource_id
+                     WHERE a.student_id = :student_id";
 
-        foreach ($allAttempts as $attempt) {
-            if (isset($attempt['user']) && $attempt['user'] === $userId) {
-                // Ajouter les test cases de l'exercice
-                if (isset($attempt['exercise_name'])) {
-                    $exercise = $this->getExerciseByName($attempt['exercise_name']);
-                    if ($exercise && isset($exercise['entries'])) {
-                        $attempt['test_cases'] = $exercise['entries'];
-                        $attempt['funcname'] = $exercise['funcname'] ?? null;
-                    }
-                }
-                $userAttempts[] = $attempt;
+            if ($resourceId !== null) {
+                $query .= " AND e.resource_id = :resource_id";
             }
+
+            $query .= " ORDER BY a.submission_date DESC";
+
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
+
+            if ($resourceId !== null) {
+                $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
+            }
+
+            $stmt->execute();
+            $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Pour chaque tentative, récupérer les test cases de l'exercice
+            foreach ($attempts as &$attempt) {
+                $attempt['test_cases'] = $this->getExerciseTestCases($attempt['exercise_id']);
+
+                // Décoder les JSON AES si présents
+                if (!empty($attempt['aes0'])) {
+                    $attempt['aes0'] = json_decode($attempt['aes0'], true);
+                }
+                if (!empty($attempt['aes1'])) {
+                    $attempt['aes1'] = json_decode($attempt['aes1'], true);
+                }
+                if (!empty($attempt['aes2'])) {
+                    $attempt['aes2'] = json_decode($attempt['aes2'], true);
+                }
+            }
+
+            return $attempts;
+        } catch (PDOException $e) {
+            error_log("Error getting student attempts: " . $e->getMessage());
+            return [];
         }
+    }
 
-        // Sort by date (most recent first)
-        usort($userAttempts, function ($a, $b) {
-            $dateA = isset($a['date']) ? strtotime($a['date']) : 0;
-            $dateB = isset($b['date']) ? strtotime($b['date']) : 0;
-            return $dateB - $dateA;
-        });
+    /**
+     * Get test cases for a specific exercise
+     * @param int $exerciseId Exercise ID
+     * @return array Array of test cases
+     */
+    private function getExerciseTestCases($exerciseId)
+    {
+        try {
+            $query = "SELECT input_data, expected_output, test_order
+                     FROM test_cases
+                     WHERE exercise_id = :exercise_id
+                     ORDER BY test_order";
 
-        return $userAttempts;
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':exercise_id', $exerciseId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $testCases = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Décoder les JSON
+            foreach ($testCases as &$testCase) {
+                $testCase['input_data'] = json_decode($testCase['input_data'], true);
+                $testCase['expected_output'] = json_decode($testCase['expected_output'], true);
+            }
+
+            return $testCases;
+        } catch (PDOException $e) {
+            error_log("Error getting test cases: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get student by ID
+     * @param int $studentId Student ID
+     * @return array|null Student data or null if not found
+     */
+    public function getStudentById($studentId)
+    {
+        try {
+            $query = "SELECT s.*, d.nom_dataset, d.pays, d.annee
+                     FROM students s
+                     JOIN datasets d ON s.dataset_id = d.dataset_id
+                     WHERE s.student_id = :student_id";
+
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getting student by ID: " . $e->getMessage());
+            return null;
+        }
     }
 
     /**
      * Get statistics for a student
-     * @param string $userId User ID
+     * @param int $studentId Student ID
+     * @param int $resourceId Resource ID (optional)
      * @return array Statistics
      */
-    public function getStudentStats($userId)
+    public function getStudentStats($studentId, $resourceId = null)
     {
-        $attempts = $this->getStudentAttempts($userId);
-        $total = count($attempts);
-        $correct = 0;
-        $exercises = [];
+        try {
+            $query = "SELECT 
+                        COUNT(a.attempt_id) as total_attempts,
+                        SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) as correct_attempts,
+                        COUNT(DISTINCT a.exercise_id) as unique_exercises,
+                        COUNT(DISTINCT CASE WHEN a.correct = 1 THEN a.exercise_id END) as exercises_mastered,
+                        MIN(a.submission_date) as first_attempt,
+                        MAX(a.submission_date) as last_attempt
+                     FROM attempts a
+                     JOIN exercises e ON a.exercise_id = e.exercise_id
+                     WHERE a.student_id = :student_id";
 
-        foreach ($attempts as $attempt) {
-            if (isset($attempt['correct']) && $attempt['correct'] == 1) {
-                $correct++;
+            if ($resourceId !== null) {
+                $query .= " AND e.resource_id = :resource_id";
             }
-            if (isset($attempt['exercise_name'])) {
-                $exercises[$attempt['exercise_name']] = true;
+
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
+
+            if ($resourceId !== null) {
+                $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
             }
+
+            $stmt->execute();
+            $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Calculer le taux de réussite
+            if ($stats['total_attempts'] > 0) {
+                $stats['success_rate'] = round(($stats['correct_attempts'] / $stats['total_attempts']) * 100, 2);
+            } else {
+                $stats['success_rate'] = 0;
+            }
+
+            return $stats;
+        } catch (PDOException $e) {
+            error_log("Error getting student stats: " . $e->getMessage());
+            return [
+                'total_attempts' => 0,
+                'correct_attempts' => 0,
+                'unique_exercises' => 0,
+                'exercises_mastered' => 0,
+                'success_rate' => 0,
+                'first_attempt' => null,
+                'last_attempt' => null
+            ];
         }
+    }
 
-        return [
-            'total_attempts' => $total,
-            'correct_attempts' => $correct,
-            'success_rate' => $total > 0 ? round(($correct / $total) * 100, 2) : 0,
-            'unique_exercises' => count($exercises)
-        ];
+    /**
+     * Get student by identifier (student_identifier)
+     * @param string $identifier Student identifier (e.g., "userId_36")
+     * @param int $datasetId Dataset ID (optional)
+     * @return array|null Student data or null if not found
+     */
+    public function getStudentByIdentifier($identifier, $datasetId = null)
+    {
+        try {
+            $query = "SELECT s.*, d.nom_dataset, d.pays, d.annee
+                     FROM students s
+                     JOIN datasets d ON s.dataset_id = d.dataset_id
+                     WHERE s.student_identifier = :identifier";
+
+            if ($datasetId !== null) {
+                $query .= " AND s.dataset_id = :dataset_id";
+            }
+
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':identifier', $identifier, PDO::PARAM_STR);
+
+            if ($datasetId !== null) {
+                $stmt->bindParam(':dataset_id', $datasetId, PDO::PARAM_INT);
+            }
+
+            $stmt->execute();
+
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getting student by identifier: " . $e->getMessage());
+            return null;
+        }
     }
 }

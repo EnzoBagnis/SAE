@@ -7,6 +7,13 @@ export class StudentListManager {
         this.isLoading = false;
         this.hasMoreStudents = true;
         this.allStudents = [];
+        this.resourceId = this.getResourceIdFromUrl();
+    }
+
+    // Récupérer l'ID de la ressource depuis l'URL
+    getResourceIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('resource_id');
     }
 
     // Charger les étudiants depuis le serveur
@@ -25,7 +32,13 @@ export class StudentListManager {
         studentList.appendChild(loadingDiv);
 
         try {
-            const response = await fetch(`/index.php?action=students&page=${this.currentPage}&perPage=${this.studentsPerPage}`);
+            // Construire l'URL avec le resource_id si disponible
+            let url = `/index.php?action=students&page=${this.currentPage}&perPage=${this.studentsPerPage}`;
+            if (this.resourceId) {
+                url += `&resource_id=${this.resourceId}`;
+            }
+
+            const response = await fetch(url);
 
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des étudiants');
@@ -114,7 +127,13 @@ export class StudentListManager {
     // Charger tous les étudiants pour le menu burger
     async loadAllStudents() {
         try {
-            const response = await fetch('/index.php?action=students&page=1&perPage=50');
+            // Construire l'URL avec le resource_id si disponible
+            let url = '/index.php?action=students&page=1&perPage=50';
+            if (this.resourceId) {
+                url += `&resource_id=${this.resourceId}`;
+            }
+
+            const response = await fetch(url);
 
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des étudiants');
@@ -134,5 +153,8 @@ export class StudentListManager {
     getAllStudents() {
         return this.allStudents;
     }
-}
 
+    getResourceId() {
+        return this.resourceId;
+    }
+}

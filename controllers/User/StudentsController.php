@@ -40,6 +40,7 @@ class StudentsController extends \BaseController
         // Get pagination parameters
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $perPage = isset($_GET['perPage']) ? (int)$_GET['perPage'] : 15;
+        $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
 
         // Validate parameters
         if ($page < 1) {
@@ -50,14 +51,18 @@ class StudentsController extends \BaseController
         }
 
         try {
-            $result = $this->studentModel->getPaginatedStudents($page, $perPage);
+            $result = $this->studentModel->getPaginatedStudents($page, $perPage, $resourceId);
 
             // Format students for display
             $formattedStudents = [];
-            foreach ($result['students'] as $userId) {
+            foreach ($result['students'] as $student) {
                 $formattedStudents[] = [
-                    'id' => $userId,
-                    'title' => $userId // Afficher "userId_XX" directement
+                    'id' => $student['student_id'],
+                    'identifier' => $student['student_identifier'],
+                    'title' => $student['student_identifier'], // Afficher "userId_XX" directement
+                    'nom_fictif' => $student['nom_fictif'],
+                    'prenom_fictif' => $student['prenom_fictif'],
+                    'dataset' => $student['nom_dataset']
                 ];
             }
 
@@ -100,9 +105,11 @@ class StudentsController extends \BaseController
             exit;
         }
 
-        $userId = $_GET['id'] ?? null;
+        // Get student ID from URL parameter
+        $studentId = isset($_GET['id']) ? (int)$_GET['id'] : null;
+        $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
 
-        if (!$userId) {
+        if (!$studentId) {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
@@ -112,34 +119,47 @@ class StudentsController extends \BaseController
         }
 
         try {
-            // Get all attempts for this student
-            $attempts = $this->studentModel->getStudentAttempts($userId);
+            // Get student information
+            $student = $this->studentModel->getStudentById($studentId);
 
-            if (empty($attempts)) {
+            if (!$student) {
                 http_response_code(404);
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Aucune tentative trouvée pour cet étudiant'
+                    'message' => 'Étudiant non trouvé'
                 ]);
                 exit;
             }
 
-            // Get statistics
-            $stats = $this->studentModel->getStudentStats($userId);
+            // Get all attempts for this student
+            $attempts = $this->studentModel->getStudentAttempts($studentId, $resourceId);
 
+            // Get student statistics
+            $stats = $this->studentModel->getStudentStats($studentId, $resourceId);
+
+            // Format the response
             echo json_encode([
                 'success' => true,
                 'data' => [
-                    'userId' => $userId,
+                    'student' => [
+                        'id' => $student['student_id'],
+                        'identifier' => $student['student_identifier'],
+                        'nom_fictif' => $student['nom_fictif'],
+                        'prenom_fictif' => $student['prenom_fictif'],
+                        'dataset' => $student['nom_dataset'],
+                        'pays' => $student['pays'],
+                        'annee' => $student['annee']
+                    ],
                     'attempts' => $attempts,
                     'stats' => $stats
                 ]
             ]);
         } catch (\Exception $e) {
+            error_log("Error in getStudent: " . $e->getMessage());
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'message' => 'Erreur lors du chargement de l\'étudiant'
+                'message' => 'Erreur lors du chargement des données de l\'étudiant'
             ]);
         }
     }
