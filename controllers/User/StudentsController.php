@@ -100,7 +100,7 @@ class StudentsController extends \BaseController
     public function getStudent()
     {
         // Set up error handler to catch any PHP errors and convert to JSON
-        set_error_handler(function($errno, $errstr, $errfile, $errline) {
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
         });
 

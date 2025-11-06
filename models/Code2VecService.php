@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Models;
+
+use PDO;
+
 /**
  * Service pour interagir avec code2aes2vec (Python)
  * Génère les vecteurs de grande dimension à partir des programmes étudiants

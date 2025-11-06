@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 /**
  * BaseController - Base controller class with common methods
  * All controllers should extend this class

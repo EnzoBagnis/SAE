@@ -1,6 +1,10 @@
 <?php
 
-require_once __DIR__ . '/Database.php';
+namespace App\Models;
+
+use PDO;
+use PDOException;
+use Exception;
 
 /**
  * Student Model - Handles student data from database
@@ -25,7 +29,7 @@ class Student
      * Check if the model is properly initialized
      * @return bool
      */
-    public function isInitialized()
+    public function isInitialized(): bool
     {
         return $this->db !== null;
     }
@@ -34,36 +38,36 @@ class Student
      * Get initialization error if any
      * @return string|null
      */
-    public function getInitError()
+    public function getInitError(): ?string
     {
         return $this->initError;
     }
 
     /**
      * Get all students for a specific resource
-     * @param int $resourceId Resource ID
+     * @param int|null $resourceId Resource ID
      * @return array Array of students
      */
-    public function getAllStudents($resourceId = null)
+    public function getAllStudents($resourceId = null): array
     {
         try {
             if ($resourceId === null) {
-                // Si aucune ressource spécifiée, retourner tous les étudiants
-                $query = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif, d.nom_dataset
-                         FROM students s
-                         JOIN datasets d ON s.dataset_id = d.dataset_id
-                         ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
+                $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
+                         "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
+                         "FROM students s " .
+                         "JOIN datasets d ON s.dataset_id = d.dataset_id " .
+                         "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) as UNSIGNED)";
                 $stmt = $this->db->prepare($query);
                 $stmt->execute();
             } else {
-                // Récupérer les étudiants qui ont des tentatives pour les exercices de cette ressource
-                $query = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif, d.nom_dataset
-                         FROM students s
-                         JOIN datasets d ON s.dataset_id = d.dataset_id
-                         JOIN attempts a ON s.student_id = a.student_id
-                         JOIN exercises e ON a.exercise_id = e.exercise_id
-                         WHERE e.resource_id = :resource_id
-                         ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
+                $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
+                         "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
+                         "FROM students s " .
+                         "JOIN datasets d ON s.dataset_id = d.dataset_id " .
+                         "JOIN attempts a ON s.student_id = a.student_id " .
+                         "JOIN exercises e ON a.exercise_id = e.exercise_id " .
+                         "WHERE e.resource_id = :resource_id " .
+                         "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) as UNSIGNED)";
                 $stmt = $this->db->prepare($query);
                 $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
                 $stmt->execute();
@@ -80,10 +84,10 @@ class Student
      * Get paginated students for a specific resource
      * @param int $page Current page number
      * @param int $perPage Number of items per page
-     * @param int $resourceId Resource ID (optional)
+     * @param int|null $resourceId Resource ID (optional)
      * @return array Paginated data with students and metadata
      */
-    public function getPaginatedStudents($page = 1, $perPage = 15, $resourceId = null)
+    public function getPaginatedStudents($page = 1, $perPage = 15, $resourceId = null): array
     {
         $allStudents = $this->getAllStudents($resourceId);
         $total = count($allStudents);
@@ -103,10 +107,10 @@ class Student
     /**
      * Get all attempts for a specific student
      * @param int $studentId Student ID (database ID)
-     * @param int $resourceId Resource ID (optional, pour filtrer par ressource)
+     * @param int|null $resourceId Resource ID (optional, pour filtrer par ressource)
      * @return array Array of attempts with exercise and test cases details
      */
-    public function getStudentAttempts($studentId, $resourceId = null)
+    public function getStudentAttempts($studentId, $resourceId = null): array
     {
         try {
             $query = "SELECT 
@@ -176,7 +180,7 @@ class Student
      * @param int $exerciseId Exercise ID
      * @return array Array of test cases
      */
-    private function getExerciseTestCases($exerciseId)
+    private function getExerciseTestCases($exerciseId): array
     {
         try {
             $query = "SELECT input_data, expected_output, test_order
@@ -192,8 +196,13 @@ class Student
 
             // Décoder les JSON
             foreach ($testCases as &$testCase) {
-                $testCase['input_data'] = !empty($testCase['input_data']) ? json_decode($testCase['input_data'], true) : null;
-                $testCase['expected_output'] = !empty($testCase['expected_output']) ? json_decode($testCase['expected_output'], true) : null;
+                $input = $testCase['input_data'];
+                $testCase['input_data'] = !empty($input) ?
+                    json_decode($input, true) : null;
+
+                $output = $testCase['expected_output'];
+                $testCase['expected_output'] = !empty($output) ?
+                    json_decode($output, true) : null;
             }
 
             return $testCases;
@@ -208,7 +217,7 @@ class Student
      * @param int $studentId Student ID
      * @return array|null Student data or null if not found
      */
-    public function getStudentById($studentId)
+    public function getStudentById($studentId): ?array
     {
         try {
             $query = "SELECT s.*, d.nom_dataset, d.pays, d.annee
@@ -220,7 +229,8 @@ class Student
             $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
             $stmt->execute();
 
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ?: null;
         } catch (PDOException $e) {
             error_log("Error getting student by ID: " . $e->getMessage());
             return null;
@@ -230,17 +240,18 @@ class Student
     /**
      * Get statistics for a student
      * @param int $studentId Student ID
-     * @param int $resourceId Resource ID (optional)
+     * @param int|null $resourceId Resource ID (optional)
      * @return array Statistics
      */
-    public function getStudentStats($studentId, $resourceId = null)
+    public function getStudentStats($studentId, $resourceId = null): array
     {
         try {
             $query = "SELECT 
                         COUNT(a.attempt_id) as total_attempts,
                         SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) as correct_attempts,
                         COUNT(DISTINCT a.exercise_id) as unique_exercises,
-                        COUNT(DISTINCT CASE WHEN a.correct = 1 THEN a.exercise_id END) as exercises_mastered,
+                        COUNT(DISTINCT CASE WHEN a.correct = 1 THEN a.exercise_id END) 
+                            as exercises_mastered,
                         MIN(a.submission_date) as first_attempt,
                         MAX(a.submission_date) as last_attempt
                      FROM attempts a
@@ -263,7 +274,8 @@ class Student
 
             // Calculer le taux de réussite
             if ($stats['total_attempts'] > 0) {
-                $stats['success_rate'] = round(($stats['correct_attempts'] / $stats['total_attempts']) * 100, 2);
+                $rate = ($stats['correct_attempts'] / $stats['total_attempts']) * 100;
+                $stats['success_rate'] = round($rate, 2);
             } else {
                 $stats['success_rate'] = 0;
             }
@@ -286,10 +298,10 @@ class Student
     /**
      * Get student by identifier (student_identifier)
      * @param string $identifier Student identifier (e.g., "userId_36")
-     * @param int $datasetId Dataset ID (optional)
+     * @param int|null $datasetId Dataset ID (optional)
      * @return array|null Student data or null if not found
      */
-    public function getStudentByIdentifier($identifier, $datasetId = null)
+    public function getStudentByIdentifier($identifier, $datasetId = null): ?array
     {
         try {
             $query = "SELECT s.*, d.nom_dataset, d.pays, d.annee
@@ -310,7 +322,8 @@ class Student
 
             $stmt->execute();
 
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ?: null;
         } catch (PDOException $e) {
             error_log("Error getting student by identifier: " . $e->getMessage());
             return null;

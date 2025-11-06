@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Models;
+
+use PDO;
+
 /**
  * PendingRegistration Model - CRUD operations for pending registrations with PDO
  */

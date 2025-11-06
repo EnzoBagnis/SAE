@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Config;
+
 /**
  * Router class - Main application router
  * Handles URL routing and controller dispatching with namespaces

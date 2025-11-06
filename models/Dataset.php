@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Models;
+
+use PDO;
+
 /**
  * Modèle pour gérer les datasets
  * Utilise la structure BD existante

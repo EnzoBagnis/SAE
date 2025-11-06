@@ -1,5 +1,11 @@
 <?php
 
+namespace App\Models;
+
+use PDO;
+use PDOException;
+use Exception;
+
 /**
  * Database class - Database connection manager
  * Handles PDO connection with configuration from .env file
