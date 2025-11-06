@@ -251,36 +251,41 @@ export class AttemptsRenderer {
 
         const scrollBtn = document.createElement('button');
         scrollBtn.id = 'scrollToTopBtn';
-        scrollBtn.innerHTML = '↑';
+        scrollBtn.innerHTML = '⬆';
         scrollBtn.title = 'Retour en haut';
 
         Object.assign(scrollBtn.style, {
             position: 'fixed',
             bottom: '30px',
             right: '30px',
-            width: '50px',
-            height: '50px',
-            borderRadius: '50%',
-            backgroundColor: '#007bff',
+            width: '55px',
+            height: '55px',
+            borderRadius: '12px',
+            backgroundColor: '#2c3e50',
             color: 'white',
-            border: 'none',
-            fontSize: '24px',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+            fontSize: '20px',
             cursor: 'pointer',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+            boxShadow: '0 6px 20px rgba(44, 62, 80, 0.3)',
             display: 'none',
             zIndex: '1000',
-            transition: 'all 0.3s',
-            fontWeight: 'bold'
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
+            opacity: '0.9'
         });
 
         // Effet hover
         scrollBtn.addEventListener('mouseenter', () => {
-            scrollBtn.style.backgroundColor = '#0056b3';
-            scrollBtn.style.transform = 'scale(1.1)';
+            scrollBtn.style.backgroundColor = '#34495e';
+            scrollBtn.style.transform = 'translateY(-3px)';
+            scrollBtn.style.boxShadow = '0 8px 25px rgba(44, 62, 80, 0.4)';
+            scrollBtn.style.opacity = '1';
         });
         scrollBtn.addEventListener('mouseleave', () => {
-            scrollBtn.style.backgroundColor = '#007bff';
-            scrollBtn.style.transform = 'scale(1)';
+            scrollBtn.style.backgroundColor = '#2c3e50';
+            scrollBtn.style.transform = 'translateY(0)';
+            scrollBtn.style.boxShadow = '0 6px 20px rgba(44, 62, 80, 0.3)';
+            scrollBtn.style.opacity = '0.9';
         });
 
         // Clic pour remonter
@@ -295,15 +300,26 @@ export class AttemptsRenderer {
 
         document.body.appendChild(scrollBtn);
 
-        // Afficher/cacher le bouton selon le scroll
+        // Afficher/cacher le bouton selon le scroll avec animation
         const toggleScrollButton = () => {
             const mainContent = document.querySelector('.main-content');
             const scrollTop = mainContent ? mainContent.scrollTop : window.pageYOffset;
 
             if (scrollTop > 300) {
                 scrollBtn.style.display = 'block';
+                // Animation d'apparition
+                setTimeout(() => {
+                    scrollBtn.style.opacity = '0.9';
+                    scrollBtn.style.transform = 'translateY(0)';
+                }, 10);
             } else {
-                scrollBtn.style.display = 'none';
+                scrollBtn.style.opacity = '0';
+                scrollBtn.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    if (scrollTop <= 300) {
+                        scrollBtn.style.display = 'none';
+                    }
+                }, 300);
             }
         };
 
