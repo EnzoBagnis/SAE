@@ -95,6 +95,10 @@ export class AttemptsRenderer {
             transition: 'transform 0.3s'
         });
 
+        // Initialiser l'état de la flèche (fermée par défaut sauf pour la première)
+        if (index !== 0) {
+            toggleIcon.style.transform = 'rotate(-90deg)';
+        }
         const attemptInfo = document.createElement('div');
 
         const attemptNumber = document.createElement('div');
