@@ -38,7 +38,12 @@ export class StudentListManager {
                 url += `&resource_id=${this.resourceId}`;
             }
 
+            console.log('🔍 [StudentList] Chargement des étudiants:', url);
+            console.log('🔍 [StudentList] Resource ID détecté:', this.resourceId);
+
             const response = await fetch(url);
+
+            console.log('📡 [StudentList] Réponse HTTP:', response.status);
 
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des étudiants');
@@ -46,7 +51,10 @@ export class StudentListManager {
 
             const result = await response.json();
 
+            console.log('📦 [StudentList] Données reçues:', result);
+
             if (result.success) {
+                console.log('✅ [StudentList] Nombre d\'étudiants:', result.data.students.length);
                 this.displayStudents(result.data.students);
                 this.hasMoreStudents = result.data.hasMore;
                 this.currentPage++;
@@ -61,9 +69,11 @@ export class StudentListManager {
                     endMessage.textContent = result.data.total + ' étudiants affichés';
                     studentList.appendChild(endMessage);
                 }
+            } else {
+                console.error('❌ [StudentList] Échec:', result.message);
             }
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('❌ [StudentList] Erreur:', error);
             studentList.innerHTML += '<p style="text-align: center; color: #e74c3c;">Erreur de chargement</p>';
         } finally {
             const loadingMsg = studentList.querySelector('.loading-message');
