@@ -14,7 +14,12 @@ class StudentsController extends \BaseController
 
     public function __construct()
     {
-        $this->studentModel = new \Student();
+        try {
+            $this->studentModel = new \Student();
+        } catch (\Exception $e) {
+            error_log("StudentsController initialization error: " . $e->getMessage());
+            $this->studentModel = null;
+        }
     }
 
     /**
@@ -25,6 +30,19 @@ class StudentsController extends \BaseController
         // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+        }
+
+        // Set JSON header
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Check if model is initialized
+        if ($this->studentModel === null) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erreur d\'initialisation du service'
+            ]);
+            exit;
         }
 
         // Check if user is authenticated
@@ -59,7 +77,7 @@ class StudentsController extends \BaseController
                 $formattedStudents[] = [
                     'id' => $student['student_id'],
                     'identifier' => $student['student_identifier'],
-                    'title' => $student['student_identifier'], // Afficher "userId_XX" directement
+                    'title' => $student['student_identifier'],
                     'nom_fictif' => $student['nom_fictif'],
                     'prenom_fictif' => $student['prenom_fictif'],
                     'dataset' => $student['nom_dataset']
@@ -77,6 +95,7 @@ class StudentsController extends \BaseController
                 ]
             ]);
         } catch (\Exception $e) {
+            error_log("Error in getStudents: " . $e->getMessage());
             http_response_code(500);
             echo json_encode([
                 'success' => false,
@@ -97,6 +116,16 @@ class StudentsController extends \BaseController
 
         // Set JSON header
         header('Content-Type: application/json; charset=utf-8');
+
+        // Check if model is initialized
+        if ($this->studentModel === null) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erreur d\'initialisation du service'
+            ]);
+            exit;
+        }
 
         // Check if user is authenticated
         if (!isset($_SESSION['id'])) {
@@ -167,3 +196,4 @@ class StudentsController extends \BaseController
         }
     }
 }
+

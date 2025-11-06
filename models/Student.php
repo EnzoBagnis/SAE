@@ -11,7 +11,12 @@ class Student
 
     public function __construct()
     {
-        $this->db = Database::getConnection();
+        try {
+            $this->db = Database::getConnection();
+        } catch (Exception $e) {
+            error_log("Student model initialization error: " . $e->getMessage());
+            throw new Exception("Impossible d'initialiser le modèle Student");
+        }
     }
 
     /**
