@@ -95,6 +95,9 @@ class StudentsController extends \BaseController
             session_start();
         }
 
+        // Set JSON header
+        header('Content-Type: application/json; charset=utf-8');
+
         // Check if user is authenticated
         if (!isset($_SESSION['id'])) {
             http_response_code(401);
@@ -153,7 +156,7 @@ class StudentsController extends \BaseController
                     'attempts' => $attempts,
                     'stats' => $stats
                 ]
-            ]);
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         } catch (\Exception $e) {
             error_log("Error in getStudent: " . $e->getMessage());
             http_response_code(500);
