@@ -16,16 +16,11 @@ class DashboardController extends \BaseController
      */
     public function index()
     {
-        // Start session if not already started
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
         // Check if user is authenticated
-//        if (!isset($_SESSION['id'])) {
-//            header('Location: /index.php?action=login');
-//            exit;
-//        }
+        if (!isset($_SESSION['id'])) {
+            header('Location: /index.php?action=login');
+            exit;
+        }
 
         // Get resource_id from URL if provided
         $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
@@ -57,4 +52,3 @@ class DashboardController extends \BaseController
         $this->loadView('user/dashboard', $data);
     }
 }
-
