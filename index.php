@@ -16,7 +16,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Désactiver l'affichage des erreurs pour les actions API (après le démarrage de session)
 $action = $_GET['action'] ?? 'home';
-$apiActions = ['students', 'student', 'resources', 'resource', 'upload', 'vector'];
+$apiActions = ['students', 'resources', 'resource', 'upload', 'vector']; // Retiré 'student' temporairement
 if (in_array($action, $apiActions)) {
     ini_set('display_errors', 0);
 } else {
