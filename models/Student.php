@@ -192,8 +192,8 @@ class Student
 
             // Décoder les JSON
             foreach ($testCases as &$testCase) {
-                $testCase['input_data'] = json_decode($testCase['input_data'], true);
-                $testCase['expected_output'] = json_decode($testCase['expected_output'], true);
+                $testCase['input_data'] = !empty($testCase['input_data']) ? json_decode($testCase['input_data'], true) : null;
+                $testCase['expected_output'] = !empty($testCase['expected_output']) ? json_decode($testCase['expected_output'], true) : null;
             }
 
             return $testCases;
