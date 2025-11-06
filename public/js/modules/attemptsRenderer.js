@@ -1,6 +1,11 @@
 // Module de rendu des tentatives
 
 export class AttemptsRenderer {
+    constructor() {
+        this.currentFilter = 'all'; // 'all', 'success', 'failed'
+        this.currentSort = 'recent'; // 'recent', 'oldest'
+    }
+
     renderAttempts(attempts) {
         const attemptsTitle = document.createElement('h3');
         attemptsTitle.textContent = `Historique des tentatives (${attempts.length})`;
@@ -11,10 +16,17 @@ export class AttemptsRenderer {
         const attemptsContainer = document.createElement('div');
         attemptsContainer.className = 'attempts-container';
 
-        attempts.forEach((attempt, index) => {
-            const attemptCard = this.createAttemptCard(attempt, index);
-            attemptsContainer.appendChild(attemptCard);
-        });
+        // Ajouter les contrôles de filtrage et tri
+        const controlsBar = this.createControlsBar(attempts);
+        attemptsContainer.appendChild(controlsBar);
+
+        // Conteneur pour les tentatives
+        const attemptsListContainer = document.createElement('div');
+        attemptsListContainer.id = 'attempts-list';
+        attemptsContainer.appendChild(attemptsListContainer);
+
+        // Afficher les tentatives filtrées et triées
+        this.displayFilteredAttempts(attempts, attemptsListContainer);
 
         // Ajouter le bouton "Retour en haut"
         this.addScrollToTopButton();
@@ -22,7 +34,136 @@ export class AttemptsRenderer {
         return { title: attemptsTitle, container: attemptsContainer };
     }
 
-    createAttemptCard(attempt, index) {
+    createControlsBar(attempts) {
+        const controlsBar = document.createElement('div');
+        Object.assign(controlsBar.style, {
+            display: 'flex',
+            gap: '1rem',
+            marginBottom: '1.5rem',
+            padding: '1rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px',
+            flexWrap: 'wrap',
+            alignItems: 'center'
+        });
+
+        // Filtre par statut
+        const filterLabel = document.createElement('label');
+        filterLabel.textContent = 'Filtrer : ';
+        Object.assign(filterLabel.style, {
+            fontWeight: 'bold',
+            color: '#2c3e50'
+        });
+
+        const filterSelect = document.createElement('select');
+        filterSelect.innerHTML = `
+            <option value="all">Toutes les tentatives</option>
+            <option value="success">Réussies uniquement</option>
+            <option value="failed">Échouées uniquement</option>
+        `;
+        Object.assign(filterSelect.style, {
+            padding: '0.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            cursor: 'pointer'
+        });
+
+        // Tri par date
+        const sortLabel = document.createElement('label');
+        sortLabel.textContent = 'Trier par : ';
+        Object.assign(sortLabel.style, {
+            fontWeight: 'bold',
+            color: '#2c3e50',
+            marginLeft: '1rem'
+        });
+
+        const sortSelect = document.createElement('select');
+        sortSelect.innerHTML = `
+            <option value="recent">Plus récentes d'abord</option>
+            <option value="oldest">Plus anciennes d'abord</option>
+        `;
+        Object.assign(sortSelect.style, {
+            padding: '0.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            cursor: 'pointer'
+        });
+
+        // Compteur de résultats
+        const resultCount = document.createElement('span');
+        resultCount.id = 'result-count';
+        Object.assign(resultCount.style, {
+            marginLeft: 'auto',
+            color: '#666',
+            fontSize: '0.9rem'
+        });
+
+        // Événements
+        filterSelect.addEventListener('change', (e) => {
+            this.currentFilter = e.target.value;
+            const container = document.getElementById('attempts-list');
+            this.displayFilteredAttempts(attempts, container);
+        });
+
+        sortSelect.addEventListener('change', (e) => {
+            this.currentSort = e.target.value;
+            const container = document.getElementById('attempts-list');
+            this.displayFilteredAttempts(attempts, container);
+        });
+
+        controlsBar.appendChild(filterLabel);
+        controlsBar.appendChild(filterSelect);
+        controlsBar.appendChild(sortLabel);
+        controlsBar.appendChild(sortSelect);
+        controlsBar.appendChild(resultCount);
+
+        return controlsBar;
+    }
+
+    displayFilteredAttempts(attempts, container) {
+        container.innerHTML = '';
+
+        // Filtrer les tentatives
+        let filteredAttempts = attempts.filter(attempt => {
+            if (this.currentFilter === 'all') return true;
+            const isCorrect = attempt.correct === 1 || attempt.correct === '1';
+            if (this.currentFilter === 'success') return isCorrect;
+            if (this.currentFilter === 'failed') return !isCorrect;
+            return true;
+        });
+
+        // Trier les tentatives
+        if (this.currentSort === 'oldest') {
+            filteredAttempts = [...filteredAttempts].reverse();
+        }
+
+        // Mettre à jour le compteur
+        const resultCount = document.getElementById('result-count');
+        if (resultCount) {
+            resultCount.textContent = `${filteredAttempts.length} tentative(s) affichée(s)`;
+        }
+
+        // Afficher les tentatives
+        filteredAttempts.forEach((attempt, index) => {
+            const attemptCard = this.createAttemptCard(attempt, index, filteredAttempts.length);
+            container.appendChild(attemptCard);
+        });
+
+        // Message si aucune tentative
+        if (filteredAttempts.length === 0) {
+            const noResults = document.createElement('div');
+            Object.assign(noResults.style, {
+                textAlign: 'center',
+                padding: '2rem',
+                color: '#666',
+                fontSize: '1.1rem'
+            });
+            noResults.textContent = 'Aucune tentative ne correspond aux critères sélectionnés.';
+            container.appendChild(noResults);
+        }
+    }
+
+    createAttemptCard(attempt, index, totalDisplayed) {
         const card = document.createElement('div');
         Object.assign(card.style, {
             background: 'white',
@@ -33,7 +174,7 @@ export class AttemptsRenderer {
             overflow: 'hidden'
         });
 
-        const header = this.createAttemptHeader(attempt, index);
+        const header = this.createAttemptHeader(attempt, index, totalDisplayed);
         card.appendChild(header);
 
         // Conteneur pour le contenu rétractable
@@ -61,7 +202,7 @@ export class AttemptsRenderer {
         return card;
     }
 
-    createAttemptHeader(attempt, index) {
+    createAttemptHeader(attempt, index, totalDisplayed) {
         const header = document.createElement('div');
         Object.assign(header.style, {
             display: 'flex',
@@ -100,6 +241,7 @@ export class AttemptsRenderer {
         if (index !== 0) {
             toggleIcon.style.transform = 'rotate(-90deg)';
         }
+
         const attemptInfo = document.createElement('div');
 
         const attemptNumber = document.createElement('div');
