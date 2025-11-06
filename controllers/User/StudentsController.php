@@ -22,11 +22,6 @@ class StudentsController extends \BaseController
      */
     public function getStudents()
     {
-        // Start session if not already started
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
         // Set JSON header
         header('Content-Type: application/json; charset=utf-8');
 
@@ -110,11 +105,6 @@ class StudentsController extends \BaseController
         });
 
         try {
-            // Start session if not already started
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-            }
-
             // Set JSON header FIRST
             header('Content-Type: application/json; charset=utf-8');
 
