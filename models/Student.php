@@ -49,21 +49,23 @@ class Student
         try {
             if ($resourceId === null) {
                 // Si aucune ressource spécifiée, retourner tous les étudiants
-                $query = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif, d.nom_dataset
-                         FROM students s
-                         JOIN datasets d ON s.dataset_id = d.dataset_id
-                         ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
+                $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
+                         "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
+                         "FROM students s " .
+                         "JOIN datasets d ON s.dataset_id = d.dataset_id " .
+                         "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
                 $stmt = $this->db->prepare($query);
                 $stmt->execute();
             } else {
                 // Récupérer les étudiants qui ont des tentatives pour les exercices de cette ressource
-                $query = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif, d.nom_dataset
-                         FROM students s
-                         JOIN datasets d ON s.dataset_id = d.dataset_id
-                         JOIN attempts a ON s.student_id = a.student_id
-                         JOIN exercises e ON a.exercise_id = e.exercise_id
-                         WHERE e.resource_id = :resource_id
-                         ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
+                $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
+                         "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
+                         "FROM students s " .
+                         "JOIN datasets d ON s.dataset_id = d.dataset_id " .
+                         "JOIN attempts a ON s.student_id = a.student_id " .
+                         "JOIN exercises e ON a.exercise_id = e.exercise_id " .
+                         "WHERE e.resource_id = :resource_id " .
+                         "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
                 $stmt = $this->db->prepare($query);
                 $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
                 $stmt->execute();
@@ -192,8 +194,12 @@ class Student
 
             // Décoder les JSON
             foreach ($testCases as &$testCase) {
-                $testCase['input_data'] = !empty($testCase['input_data']) ? json_decode($testCase['input_data'], true) : null;
-                $testCase['expected_output'] = !empty($testCase['expected_output']) ? json_decode($testCase['expected_output'], true) : null;
+                $testCase['input_data'] = !empty($testCase['input_data'])
+                    ? json_decode($testCase['input_data'], true)
+                    : null;
+                $testCase['expected_output'] = !empty($testCase['expected_output'])
+                    ? json_decode($testCase['expected_output'], true)
+                    : null;
             }
 
             return $testCases;

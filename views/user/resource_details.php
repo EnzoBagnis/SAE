@@ -12,7 +12,9 @@
     <script src="../public/js/modules/import.js"></script>
     <script src="../public/js/dashboard-main.js"></script>
 
-    <meta name="description" content="Liste des Travaux Pratiques pour la ressource <?= htmlspecialchars($resource->resource_name ?? '') ?>.">
+    <meta name="description"
+          content="Liste des Travaux Pratiques pour la ressource
+<?= htmlspecialchars($resource->resource_name ?? '') ?>.">
     <meta name="robots" content="noindex, nofollow">
     <style>
         /* Styles des TPs */
@@ -149,9 +151,16 @@
     <div class="main-content">
         <div class="resource-details-header">
             <h1><?= htmlspecialchars($resource->resource_name ?? '') ?></h1>
-            <p><?= htmlspecialchars($resource->description ?? 'Pas de description pour cette ressource.') ?></p>
+            <p>
+                <?= htmlspecialchars(
+                    $resource->description ?? 'Pas de description pour cette ressource.'
+                ) ?>
+            </p>
             <div class="owner-info">
-                Créée par <?= htmlspecialchars(($resource->owner_firstname ?? '') . ' ' . ($resource->owner_lastname ?? '')) ?>
+                Créée par <?= htmlspecialchars(
+                    ($resource->owner_firstname ?? '') . ' ' .
+                    ($resource->owner_lastname ?? '')
+                ) ?>
             </div>
         </div>
 
@@ -167,7 +176,8 @@
                             </p>
                         </div>
                         <div class="tp-item-actions">
-                            <a href="/index.php?action=exercise_details&id=<?= $exercise->exercise_id ?>" class="btn">Voir le TP</a>
+                            <a href="/index.php?action=exercise_details&id=<?= $exercise->exercise_id ?>"
+                               class="btn">Voir le TP</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -235,4 +245,3 @@
     </script>
 </body>
 </html>
-
