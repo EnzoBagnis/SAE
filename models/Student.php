@@ -8,6 +8,7 @@ require_once __DIR__ . '/Database.php';
 class Student
 {
     private $db;
+    private $initError = null;
 
     public function __construct()
     {
@@ -15,8 +16,27 @@ class Student
             $this->db = Database::getConnection();
         } catch (Exception $e) {
             error_log("Student model initialization error: " . $e->getMessage());
-            throw new Exception("Impossible d'initialiser le modèle Student");
+            $this->initError = $e->getMessage();
+            $this->db = null;
         }
+    }
+
+    /**
+     * Check if the model is properly initialized
+     * @return bool
+     */
+    public function isInitialized()
+    {
+        return $this->db !== null;
+    }
+
+    /**
+     * Get initialization error if any
+     * @return string|null
+     */
+    public function getInitError()
+    {
+        return $this->initError;
     }
 
     /**

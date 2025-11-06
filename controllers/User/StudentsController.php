@@ -14,12 +14,7 @@ class StudentsController extends \BaseController
 
     public function __construct()
     {
-        try {
-            $this->studentModel = new \Student();
-        } catch (\Exception $e) {
-            error_log("StudentsController initialization error: " . $e->getMessage());
-            $this->studentModel = null;
-        }
+        $this->studentModel = new \Student();
     }
 
     /**
@@ -36,7 +31,7 @@ class StudentsController extends \BaseController
         header('Content-Type: application/json; charset=utf-8');
 
         // Check if model is initialized
-        if ($this->studentModel === null) {
+        if (!$this->studentModel->isInitialized()) {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
@@ -118,7 +113,7 @@ class StudentsController extends \BaseController
         header('Content-Type: application/json; charset=utf-8');
 
         // Check if model is initialized
-        if ($this->studentModel === null) {
+        if (!$this->studentModel->isInitialized()) {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
