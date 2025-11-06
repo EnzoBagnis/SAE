@@ -1,6 +1,11 @@
 // Module de rendu des tentatives
 
 export class AttemptsRenderer {
+    constructor() {
+        this.currentFilter = 'all'; // 'all', 'success', 'failed'
+        this.currentSort = 'recent'; // 'recent', 'oldest'
+    }
+
     renderAttempts(attempts) {
         const attemptsTitle = document.createElement('h3');
         attemptsTitle.textContent = `Historique des tentatives (${attempts.length})`;
@@ -11,54 +16,233 @@ export class AttemptsRenderer {
         const attemptsContainer = document.createElement('div');
         attemptsContainer.className = 'attempts-container';
 
-        attempts.forEach((attempt, index) => {
-            const attemptCard = this.createAttemptCard(attempt, index);
-            attemptsContainer.appendChild(attemptCard);
-        });
+        // Ajouter les contrôles de filtrage et tri
+        const controlsBar = this.createControlsBar(attempts);
+        attemptsContainer.appendChild(controlsBar);
+
+        // Conteneur pour les tentatives
+        const attemptsListContainer = document.createElement('div');
+        attemptsListContainer.id = 'attempts-list';
+        attemptsContainer.appendChild(attemptsListContainer);
+
+        // Afficher les tentatives filtrées et triées
+        this.displayFilteredAttempts(attempts, attemptsListContainer);
+
+        // Ajouter le bouton "Retour en haut"
+        this.addScrollToTopButton();
 
         return { title: attemptsTitle, container: attemptsContainer };
     }
 
-    createAttemptCard(attempt, index) {
+    createControlsBar(attempts) {
+        const controlsBar = document.createElement('div');
+        Object.assign(controlsBar.style, {
+            display: 'flex',
+            gap: '1rem',
+            marginBottom: '1.5rem',
+            padding: '1rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px',
+            flexWrap: 'wrap',
+            alignItems: 'center'
+        });
+
+        // Filtre par statut
+        const filterLabel = document.createElement('label');
+        filterLabel.textContent = 'Filtrer : ';
+        Object.assign(filterLabel.style, {
+            fontWeight: 'bold',
+            color: '#2c3e50'
+        });
+
+        const filterSelect = document.createElement('select');
+        filterSelect.innerHTML = `
+            <option value="all">Toutes les tentatives</option>
+            <option value="success">Réussies uniquement</option>
+            <option value="failed">Échouées uniquement</option>
+        `;
+        Object.assign(filterSelect.style, {
+            padding: '0.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            cursor: 'pointer'
+        });
+
+        // Tri par date
+        const sortLabel = document.createElement('label');
+        sortLabel.textContent = 'Trier par : ';
+        Object.assign(sortLabel.style, {
+            fontWeight: 'bold',
+            color: '#2c3e50',
+            marginLeft: '1rem'
+        });
+
+        const sortSelect = document.createElement('select');
+        sortSelect.innerHTML = `
+            <option value="recent">Plus récentes d'abord</option>
+            <option value="oldest">Plus anciennes d'abord</option>
+        `;
+        Object.assign(sortSelect.style, {
+            padding: '0.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            cursor: 'pointer'
+        });
+
+        // Compteur de résultats
+        const resultCount = document.createElement('span');
+        resultCount.id = 'result-count';
+        Object.assign(resultCount.style, {
+            marginLeft: 'auto',
+            color: '#666',
+            fontSize: '0.9rem'
+        });
+
+        // Événements
+        filterSelect.addEventListener('change', (e) => {
+            this.currentFilter = e.target.value;
+            const container = document.getElementById('attempts-list');
+            this.displayFilteredAttempts(attempts, container);
+        });
+
+        sortSelect.addEventListener('change', (e) => {
+            this.currentSort = e.target.value;
+            const container = document.getElementById('attempts-list');
+            this.displayFilteredAttempts(attempts, container);
+        });
+
+        controlsBar.appendChild(filterLabel);
+        controlsBar.appendChild(filterSelect);
+        controlsBar.appendChild(sortLabel);
+        controlsBar.appendChild(sortSelect);
+        controlsBar.appendChild(resultCount);
+
+        return controlsBar;
+    }
+
+    displayFilteredAttempts(attempts, container) {
+        container.innerHTML = '';
+
+        // Filtrer les tentatives
+        let filteredAttempts = attempts.filter(attempt => {
+            if (this.currentFilter === 'all') return true;
+            const isCorrect = attempt.correct === 1 || attempt.correct === '1';
+            if (this.currentFilter === 'success') return isCorrect;
+            if (this.currentFilter === 'failed') return !isCorrect;
+            return true;
+        });
+
+        // Trier les tentatives
+        if (this.currentSort === 'oldest') {
+            filteredAttempts = [...filteredAttempts].reverse();
+        }
+
+        // Mettre à jour le compteur
+        const resultCount = document.getElementById('result-count');
+        if (resultCount) {
+            resultCount.textContent = `${filteredAttempts.length} tentative(s) affichée(s)`;
+        }
+
+        // Afficher les tentatives
+        filteredAttempts.forEach((attempt, index) => {
+            const attemptCard = this.createAttemptCard(attempt, index, filteredAttempts.length);
+            container.appendChild(attemptCard);
+        });
+
+        // Message si aucune tentative
+        if (filteredAttempts.length === 0) {
+            const noResults = document.createElement('div');
+            Object.assign(noResults.style, {
+                textAlign: 'center',
+                padding: '2rem',
+                color: '#666',
+                fontSize: '1.1rem'
+            });
+            noResults.textContent = 'Aucune tentative ne correspond aux critères sélectionnés.';
+            container.appendChild(noResults);
+        }
+    }
+
+    createAttemptCard(attempt, index, totalDisplayed) {
         const card = document.createElement('div');
         Object.assign(card.style, {
             background: 'white',
             border: '1px solid #e0e0e0',
             borderRadius: '8px',
-            padding: '1.5rem',
             marginBottom: '1rem',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+            overflow: 'hidden'
         });
 
-        const header = this.createAttemptHeader(attempt, index);
+        const header = this.createAttemptHeader(attempt, index, totalDisplayed);
         card.appendChild(header);
 
+        // Conteneur pour le contenu rétractable
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'attempt-content';
+        contentWrapper.style.padding = '0 1.5rem 1.5rem 1.5rem';
+        // Par défaut fermé (sauf pour la première tentative)
+        contentWrapper.style.display = index === 0 ? 'block' : 'none';
+
         const detailsTable = this.createDetailsTable(attempt);
-        card.appendChild(detailsTable);
+        contentWrapper.appendChild(detailsTable);
 
         if (attempt.upload) {
             const codeSection = this.createCodeSection(attempt.upload);
-            card.appendChild(codeSection);
+            contentWrapper.appendChild(codeSection);
         }
 
         if (attempt.test_cases && Array.isArray(attempt.test_cases) && attempt.test_cases.length > 0) {
             const testCasesSection = this.createTestCasesSection(attempt);
-            card.appendChild(testCasesSection);
+            contentWrapper.appendChild(testCasesSection);
         }
+
+        card.appendChild(contentWrapper);
 
         return card;
     }
 
-    createAttemptHeader(attempt, index) {
+    createAttemptHeader(attempt, index, totalDisplayed) {
         const header = document.createElement('div');
         Object.assign(header.style, {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '1rem',
-            paddingBottom: '1rem',
-            borderBottom: '2px solid #f0f0f0'
+            padding: '1.5rem',
+            borderBottom: '2px solid #f0f0f0',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s'
         });
+
+        // Hover effect
+        header.addEventListener('mouseenter', () => {
+            header.style.backgroundColor = '#f8f9fa';
+        });
+        header.addEventListener('mouseleave', () => {
+            header.style.backgroundColor = 'transparent';
+        });
+
+        const leftSection = document.createElement('div');
+        leftSection.style.display = 'flex';
+        leftSection.style.alignItems = 'center';
+        leftSection.style.gap = '1rem';
+
+        // Icône de dépliage/rétractation
+        const toggleIcon = document.createElement('span');
+        toggleIcon.className = 'toggle-icon';
+        toggleIcon.textContent = '▼';
+        Object.assign(toggleIcon.style, {
+            fontSize: '0.8rem',
+            color: '#666',
+            transition: 'transform 0.3s'
+        });
+
+        // Initialiser l'état de la flèche (fermée par défaut sauf pour la première)
+        if (index !== 0) {
+            toggleIcon.style.transform = 'rotate(-90deg)';
+        }
+
+        const attemptInfo = document.createElement('div');
 
         const attemptNumber = document.createElement('div');
         Object.assign(attemptNumber.style, {
@@ -68,10 +252,45 @@ export class AttemptsRenderer {
         });
         attemptNumber.textContent = `Tentative #${index + 1}`;
 
+        // Afficher la date et l'exercice
+        const metaInfo = document.createElement('div');
+        Object.assign(metaInfo.style, {
+            fontSize: '0.85rem',
+            color: '#666',
+            marginTop: '0.25rem'
+        });
+
+        const dateStr = attempt.submission_date ?
+            new Date(attempt.submission_date).toLocaleString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Date inconnue';
+
+        const exerciseName = attempt.funcname || attempt.exo_name || 'Exercice inconnu';
+        metaInfo.innerHTML = `📅 ${dateStr} | 📝 <strong>${exerciseName}</strong>`;
+
+        attemptInfo.appendChild(attemptNumber);
+        attemptInfo.appendChild(metaInfo);
+
+        leftSection.appendChild(toggleIcon);
+        leftSection.appendChild(attemptInfo);
+
         const badge = this.createStatusBadge(attempt.correct);
 
-        header.appendChild(attemptNumber);
+        header.appendChild(leftSection);
         header.appendChild(badge);
+
+        // Ajouter l'événement de clic pour rétracter/déplier
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const isVisible = content.style.display !== 'none';
+
+            content.style.display = isVisible ? 'none' : 'block';
+            toggleIcon.style.transform = isVisible ? 'rotate(-90deg)' : 'rotate(0deg)';
+        });
 
         return header;
     }
@@ -97,12 +316,12 @@ export class AttemptsRenderer {
         const table = document.createElement('table');
         table.style.width = '100%';
         table.style.borderCollapse = 'collapse';
+        table.style.marginTop = '1rem';
 
         const details = [
-            { label: 'Date', value: attempt.date || 'N/A' },
-            { label: 'Exercice', value: attempt.exercise_name || 'N/A' },
             { label: 'Extension', value: attempt.extension || 'N/A' },
-            { label: 'Eval Set', value: attempt.eval_set || 'N/A' }
+            { label: 'Eval Set', value: attempt.eval_set || 'N/A' },
+            { label: 'Ressource', value: attempt.resource_name || 'N/A' }
         ];
 
         details.forEach(detail => {
@@ -115,15 +334,14 @@ export class AttemptsRenderer {
                 color: '#555',
                 width: '150px'
             });
-            labelCell.textContent = detail.label;
+            labelCell.textContent = detail.label + ' :';
 
             const valueCell = document.createElement('td');
             Object.assign(valueCell.style, {
                 padding: '0.5rem',
                 color: '#333',
                 wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                maxWidth: '300px'
+                overflowWrap: 'break-word'
             });
             valueCell.textContent = typeof detail.value === 'string' ? detail.value : String(detail.value);
 
@@ -154,9 +372,10 @@ export class AttemptsRenderer {
             borderRadius: '4px',
             overflow: 'auto',
             fontSize: '0.85rem',
-            maxHeight: '200px',
+            maxHeight: '300px',
             whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word'
+            wordBreak: 'break-word',
+            border: '1px solid #ddd'
         });
 
         let uploadContent = upload;
@@ -169,6 +388,97 @@ export class AttemptsRenderer {
         container.appendChild(codeBlock);
 
         return container;
+    }
+
+    addScrollToTopButton() {
+        // Vérifier si le bouton existe déjà
+        if (document.getElementById('scrollToTopBtn')) {
+            return;
+        }
+
+        const scrollBtn = document.createElement('button');
+        scrollBtn.id = 'scrollToTopBtn';
+        scrollBtn.innerHTML = '⬆';
+        scrollBtn.title = 'Retour en haut';
+
+        Object.assign(scrollBtn.style, {
+            position: 'fixed',
+            bottom: '30px',
+            right: '30px',
+            width: '55px',
+            height: '55px',
+            borderRadius: '12px',
+            backgroundColor: '#2c3e50',
+            color: 'white',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+            fontSize: '20px',
+            cursor: 'pointer',
+            boxShadow: '0 6px 20px rgba(44, 62, 80, 0.3)',
+            zIndex: '1000',
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
+            opacity: '0.9',
+            // Centrer le contenu avec flexbox
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        });
+
+        // Effet hover
+        scrollBtn.addEventListener('mouseenter', () => {
+            scrollBtn.style.backgroundColor = '#34495e';
+            scrollBtn.style.transform = 'translateY(-3px)';
+            scrollBtn.style.boxShadow = '0 8px 25px rgba(44, 62, 80, 0.4)';
+            scrollBtn.style.opacity = '1';
+        });
+        scrollBtn.addEventListener('mouseleave', () => {
+            scrollBtn.style.backgroundColor = '#2c3e50';
+            scrollBtn.style.transform = 'translateY(0)';
+            scrollBtn.style.boxShadow = '0 6px 20px rgba(44, 62, 80, 0.3)';
+            scrollBtn.style.opacity = '0.9';
+        });
+
+        // Clic pour remonter
+        scrollBtn.addEventListener('click', () => {
+            const mainContent = document.querySelector('.main-content') || window;
+            if (mainContent === window) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        document.body.appendChild(scrollBtn);
+
+        // Afficher/cacher le bouton selon le scroll avec animation
+        const toggleScrollButton = () => {
+            const mainContent = document.querySelector('.main-content');
+            const scrollTop = mainContent ? mainContent.scrollTop : window.pageYOffset;
+
+            if (scrollTop > 300) {
+                scrollBtn.style.display = 'block';
+                // Animation d'apparition
+                setTimeout(() => {
+                    scrollBtn.style.opacity = '0.9';
+                    scrollBtn.style.transform = 'translateY(0)';
+                }, 10);
+            } else {
+                scrollBtn.style.opacity = '0';
+                scrollBtn.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    if (scrollTop <= 300) {
+                        scrollBtn.style.display = 'none';
+                    }
+                }, 300);
+            }
+        };
+
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.addEventListener('scroll', toggleScrollButton);
+        } else {
+            window.addEventListener('scroll', toggleScrollButton);
+        }
     }
 
     createTestCasesSection(attempt) {

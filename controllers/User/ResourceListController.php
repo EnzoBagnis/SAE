@@ -12,11 +12,6 @@ class ResourceListController extends \BaseController
      */
     public function index()
     {
-        // Start session if not already started
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
         // Check if user is authenticated
         if (!isset($_SESSION['id'])) {
             header('Location: /index.php?action=login');

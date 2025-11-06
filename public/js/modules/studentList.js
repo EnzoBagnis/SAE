@@ -7,6 +7,13 @@ export class StudentListManager {
         this.isLoading = false;
         this.hasMoreStudents = true;
         this.allStudents = [];
+        this.resourceId = this.getResourceIdFromUrl();
+    }
+
+    // Récupérer l'ID de la ressource depuis l'URL
+    getResourceIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('resource_id');
     }
 
     // Charger les étudiants depuis le serveur
@@ -25,7 +32,18 @@ export class StudentListManager {
         studentList.appendChild(loadingDiv);
 
         try {
-            const response = await fetch(`/index.php?action=students&page=${this.currentPage}&perPage=${this.studentsPerPage}`);
+            // Construire l'URL avec le resource_id si disponible
+            let url = `/index.php?action=students&page=${this.currentPage}&perPage=${this.studentsPerPage}`;
+            if (this.resourceId) {
+                url += `&resource_id=${this.resourceId}`;
+            }
+
+            console.log('🔍 [StudentList] Chargement des étudiants:', url);
+            console.log('🔍 [StudentList] Resource ID détecté:', this.resourceId);
+
+            const response = await fetch(url);
+
+            console.log('📡 [StudentList] Réponse HTTP:', response.status);
 
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des étudiants');
@@ -33,7 +51,10 @@ export class StudentListManager {
 
             const result = await response.json();
 
+            console.log('📦 [StudentList] Données reçues:', result);
+
             if (result.success) {
+                console.log('✅ [StudentList] Nombre d\'étudiants:', result.data.students.length);
                 this.displayStudents(result.data.students);
                 this.hasMoreStudents = result.data.hasMore;
                 this.currentPage++;
@@ -48,9 +69,11 @@ export class StudentListManager {
                     endMessage.textContent = result.data.total + ' étudiants affichés';
                     studentList.appendChild(endMessage);
                 }
+            } else {
+                console.error('❌ [StudentList] Échec:', result.message);
             }
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('❌ [StudentList] Erreur:', error);
             studentList.innerHTML += '<p style="text-align: center; color: #e74c3c;">Erreur de chargement</p>';
         } finally {
             const loadingMsg = studentList.querySelector('.loading-message');
@@ -114,7 +137,13 @@ export class StudentListManager {
     // Charger tous les étudiants pour le menu burger
     async loadAllStudents() {
         try {
-            const response = await fetch('/index.php?action=students&page=1&perPage=50');
+            // Construire l'URL avec le resource_id si disponible
+            let url = '/index.php?action=students&page=1&perPage=50';
+            if (this.resourceId) {
+                url += `&resource_id=${this.resourceId}`;
+            }
+
+            const response = await fetch(url);
 
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des étudiants');
@@ -134,5 +163,8 @@ export class StudentListManager {
     getAllStudents() {
         return this.allStudents;
     }
-}
 
+    getResourceId() {
+        return this.resourceId;
+    }
+}

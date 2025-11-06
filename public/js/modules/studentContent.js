@@ -10,6 +10,13 @@ export class StudentContentManager {
         this.tabManager = new TabManager();
         this.statsRenderer = new StatsRenderer();
         this.attemptsRenderer = new AttemptsRenderer();
+        this.resourceId = this.getResourceIdFromUrl();
+    }
+
+    // Récupérer l'ID de la ressource depuis l'URL
+    getResourceIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('resource_id');
     }
 
     selectStudent(studentId) {
@@ -41,13 +48,19 @@ export class StudentContentManager {
         dataZone.innerHTML = '<div class="loading-spinner">⏳ Chargement...</div>';
 
         try {
-            const response = await fetch(`/index.php?action=student&id=${studentId}`);
+            // Construire l'URL avec le resource_id si disponible
+            let url = `/index.php?action=student&id=${studentId}`;
+            if (this.resourceId) {
+                url += `&resource_id=${this.resourceId}`;
+            }
+
+            const response = await fetch(url);
             if (!response.ok) throw new Error('Erreur lors du chargement de l\'étudiant');
 
             const result = await response.json();
             if (result.success) {
-                const { userId, attempts, stats } = result.data;
-                this.renderStudentData(dataZone, userId, attempts, stats);
+                const { student, attempts, stats } = result.data;
+                this.renderStudentData(dataZone, student, attempts, stats);
             }
         } catch (error) {
             console.error('Erreur:', error);
@@ -55,13 +68,29 @@ export class StudentContentManager {
         }
     }
 
-    renderStudentData(dataZone, userId, attempts, stats) {
+    renderStudentData(dataZone, student, attempts, stats) {
         dataZone.innerHTML = '';
 
         const titleElement = document.createElement('h2');
-        titleElement.textContent = userId;
+        titleElement.textContent = student.identifier;
         titleElement.style.marginBottom = '1.5rem';
         dataZone.appendChild(titleElement);
+
+        // Afficher les informations de l'étudiant
+        if (student.nom_fictif || student.prenom_fictif) {
+            const studentInfo = document.createElement('div');
+            studentInfo.style.marginBottom = '1rem';
+            studentInfo.style.padding = '0.75rem';
+            studentInfo.style.backgroundColor = '#ecf0f1';
+            studentInfo.style.borderRadius = '0.5rem';
+            studentInfo.innerHTML = `
+                <strong>Nom fictif:</strong> ${student.nom_fictif || 'N/A'} ${student.prenom_fictif || ''}<br>
+                <strong>Dataset:</strong> ${student.dataset || 'N/A'}
+                ${student.pays ? `<br><strong>Pays:</strong> ${student.pays}` : ''}
+                ${student.annee ? `<br><strong>Année:</strong> ${student.annee}` : ''}
+            `;
+            dataZone.appendChild(studentInfo);
+        }
 
         const tabsContainer = this.tabManager.createTabs();
         dataZone.appendChild(tabsContainer);
@@ -111,5 +140,8 @@ export class StudentContentManager {
     getCurrentStudentId() {
         return this.currentStudentId;
     }
-}
 
+    getResourceId() {
+        return this.resourceId;
+    }
+}
