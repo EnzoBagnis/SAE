@@ -40,7 +40,8 @@ export class AttemptsRenderer {
         const contentWrapper = document.createElement('div');
         contentWrapper.className = 'attempt-content';
         contentWrapper.style.padding = '0 1.5rem 1.5rem 1.5rem';
-        contentWrapper.style.display = 'block'; // Par défaut déplié
+        // Par défaut fermé (sauf pour la première tentative)
+        contentWrapper.style.display = index === 0 ? 'block' : 'none';
 
         const detailsTable = this.createDetailsTable(attempt);
         contentWrapper.appendChild(detailsTable);
@@ -271,11 +272,14 @@ export class AttemptsRenderer {
             fontSize: '20px',
             cursor: 'pointer',
             boxShadow: '0 6px 20px rgba(44, 62, 80, 0.3)',
-            display: 'none',
             zIndex: '1000',
             transition: 'all 0.3s ease',
             fontWeight: 'bold',
-            opacity: '0.9'
+            opacity: '0.9',
+            // Centrer le contenu avec flexbox
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
         });
 
         // Effet hover
