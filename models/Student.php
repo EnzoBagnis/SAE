@@ -27,7 +27,7 @@ class Student
                 $query = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif, d.nom_dataset
                          FROM students s
                          JOIN datasets d ON s.dataset_id = d.dataset_id
-                         ORDER BY s.student_identifier";
+                         ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
                 $stmt = $this->db->prepare($query);
                 $stmt->execute();
             } else {
@@ -38,7 +38,7 @@ class Student
                          JOIN attempts a ON s.student_id = a.student_id
                          JOIN exercises e ON a.exercise_id = e.exercise_id
                          WHERE e.resource_id = :resource_id
-                         ORDER BY s.student_identifier";
+                         ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
                 $stmt = $this->db->prepare($query);
                 $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
                 $stmt->execute();
