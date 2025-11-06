@@ -16,6 +16,9 @@ export class AttemptsRenderer {
             attemptsContainer.appendChild(attemptCard);
         });
 
+        // Ajouter le bouton "Retour en haut"
+        this.addScrollToTopButton();
+
         return { title: attemptsTitle, container: attemptsContainer };
     }
 
@@ -25,26 +28,34 @@ export class AttemptsRenderer {
             background: 'white',
             border: '1px solid #e0e0e0',
             borderRadius: '8px',
-            padding: '1.5rem',
             marginBottom: '1rem',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+            overflow: 'hidden'
         });
 
         const header = this.createAttemptHeader(attempt, index);
         card.appendChild(header);
 
+        // Conteneur pour le contenu rétractable
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'attempt-content';
+        contentWrapper.style.padding = '0 1.5rem 1.5rem 1.5rem';
+        contentWrapper.style.display = 'block'; // Par défaut déplié
+
         const detailsTable = this.createDetailsTable(attempt);
-        card.appendChild(detailsTable);
+        contentWrapper.appendChild(detailsTable);
 
         if (attempt.upload) {
             const codeSection = this.createCodeSection(attempt.upload);
-            card.appendChild(codeSection);
+            contentWrapper.appendChild(codeSection);
         }
 
         if (attempt.test_cases && Array.isArray(attempt.test_cases) && attempt.test_cases.length > 0) {
             const testCasesSection = this.createTestCasesSection(attempt);
-            card.appendChild(testCasesSection);
+            contentWrapper.appendChild(testCasesSection);
         }
+
+        card.appendChild(contentWrapper);
 
         return card;
     }
@@ -55,10 +66,36 @@ export class AttemptsRenderer {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '1rem',
-            paddingBottom: '1rem',
-            borderBottom: '2px solid #f0f0f0'
+            padding: '1.5rem',
+            borderBottom: '2px solid #f0f0f0',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s'
         });
+
+        // Hover effect
+        header.addEventListener('mouseenter', () => {
+            header.style.backgroundColor = '#f8f9fa';
+        });
+        header.addEventListener('mouseleave', () => {
+            header.style.backgroundColor = 'transparent';
+        });
+
+        const leftSection = document.createElement('div');
+        leftSection.style.display = 'flex';
+        leftSection.style.alignItems = 'center';
+        leftSection.style.gap = '1rem';
+
+        // Icône de dépliage/rétractation
+        const toggleIcon = document.createElement('span');
+        toggleIcon.className = 'toggle-icon';
+        toggleIcon.textContent = '▼';
+        Object.assign(toggleIcon.style, {
+            fontSize: '0.8rem',
+            color: '#666',
+            transition: 'transform 0.3s'
+        });
+
+        const attemptInfo = document.createElement('div');
 
         const attemptNumber = document.createElement('div');
         Object.assign(attemptNumber.style, {
@@ -68,10 +105,45 @@ export class AttemptsRenderer {
         });
         attemptNumber.textContent = `Tentative #${index + 1}`;
 
+        // Afficher la date et l'exercice
+        const metaInfo = document.createElement('div');
+        Object.assign(metaInfo.style, {
+            fontSize: '0.85rem',
+            color: '#666',
+            marginTop: '0.25rem'
+        });
+
+        const dateStr = attempt.submission_date ?
+            new Date(attempt.submission_date).toLocaleString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Date inconnue';
+
+        const exerciseName = attempt.funcname || attempt.exo_name || 'Exercice inconnu';
+        metaInfo.innerHTML = `📅 ${dateStr} | 📝 <strong>${exerciseName}</strong>`;
+
+        attemptInfo.appendChild(attemptNumber);
+        attemptInfo.appendChild(metaInfo);
+
+        leftSection.appendChild(toggleIcon);
+        leftSection.appendChild(attemptInfo);
+
         const badge = this.createStatusBadge(attempt.correct);
 
-        header.appendChild(attemptNumber);
+        header.appendChild(leftSection);
         header.appendChild(badge);
+
+        // Ajouter l'événement de clic pour rétracter/déplier
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const isVisible = content.style.display !== 'none';
+
+            content.style.display = isVisible ? 'none' : 'block';
+            toggleIcon.style.transform = isVisible ? 'rotate(-90deg)' : 'rotate(0deg)';
+        });
 
         return header;
     }
@@ -97,12 +169,12 @@ export class AttemptsRenderer {
         const table = document.createElement('table');
         table.style.width = '100%';
         table.style.borderCollapse = 'collapse';
+        table.style.marginTop = '1rem';
 
         const details = [
-            { label: 'Date', value: attempt.date || 'N/A' },
-            { label: 'Exercice', value: attempt.exercise_name || 'N/A' },
             { label: 'Extension', value: attempt.extension || 'N/A' },
-            { label: 'Eval Set', value: attempt.eval_set || 'N/A' }
+            { label: 'Eval Set', value: attempt.eval_set || 'N/A' },
+            { label: 'Ressource', value: attempt.resource_name || 'N/A' }
         ];
 
         details.forEach(detail => {
@@ -115,15 +187,14 @@ export class AttemptsRenderer {
                 color: '#555',
                 width: '150px'
             });
-            labelCell.textContent = detail.label;
+            labelCell.textContent = detail.label + ' :';
 
             const valueCell = document.createElement('td');
             Object.assign(valueCell.style, {
                 padding: '0.5rem',
                 color: '#333',
                 wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                maxWidth: '300px'
+                overflowWrap: 'break-word'
             });
             valueCell.textContent = typeof detail.value === 'string' ? detail.value : String(detail.value);
 
@@ -154,9 +225,10 @@ export class AttemptsRenderer {
             borderRadius: '4px',
             overflow: 'auto',
             fontSize: '0.85rem',
-            maxHeight: '200px',
+            maxHeight: '300px',
             whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word'
+            wordBreak: 'break-word',
+            border: '1px solid #ddd'
         });
 
         let uploadContent = upload;
@@ -169,6 +241,78 @@ export class AttemptsRenderer {
         container.appendChild(codeBlock);
 
         return container;
+    }
+
+    addScrollToTopButton() {
+        // Vérifier si le bouton existe déjà
+        if (document.getElementById('scrollToTopBtn')) {
+            return;
+        }
+
+        const scrollBtn = document.createElement('button');
+        scrollBtn.id = 'scrollToTopBtn';
+        scrollBtn.innerHTML = '↑';
+        scrollBtn.title = 'Retour en haut';
+
+        Object.assign(scrollBtn.style, {
+            position: 'fixed',
+            bottom: '30px',
+            right: '30px',
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            fontSize: '24px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+            display: 'none',
+            zIndex: '1000',
+            transition: 'all 0.3s',
+            fontWeight: 'bold'
+        });
+
+        // Effet hover
+        scrollBtn.addEventListener('mouseenter', () => {
+            scrollBtn.style.backgroundColor = '#0056b3';
+            scrollBtn.style.transform = 'scale(1.1)';
+        });
+        scrollBtn.addEventListener('mouseleave', () => {
+            scrollBtn.style.backgroundColor = '#007bff';
+            scrollBtn.style.transform = 'scale(1)';
+        });
+
+        // Clic pour remonter
+        scrollBtn.addEventListener('click', () => {
+            const mainContent = document.querySelector('.main-content') || window;
+            if (mainContent === window) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        document.body.appendChild(scrollBtn);
+
+        // Afficher/cacher le bouton selon le scroll
+        const toggleScrollButton = () => {
+            const mainContent = document.querySelector('.main-content');
+            const scrollTop = mainContent ? mainContent.scrollTop : window.pageYOffset;
+
+            if (scrollTop > 300) {
+                scrollBtn.style.display = 'block';
+            } else {
+                scrollBtn.style.display = 'none';
+            }
+        };
+
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.addEventListener('scroll', toggleScrollButton);
+        } else {
+            window.addEventListener('scroll', toggleScrollButton);
+        }
     }
 
     createTestCasesSection(attempt) {
