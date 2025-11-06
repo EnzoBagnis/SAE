@@ -120,10 +120,13 @@ class StudentsController extends \BaseController
 
             // Check if model is initialized
             if (!$this->studentModel->isInitialized()) {
+                $initError = $this->studentModel->getInitError();
+                error_log("Student model not initialized: " . $initError);
                 http_response_code(500);
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Erreur d\'initialisation du service'
+                    'message' => 'Erreur d\'initialisation du service',
+                    'debug' => $initError
                 ]);
                 exit;
             }
@@ -152,9 +155,11 @@ class StudentsController extends \BaseController
             }
 
             // Get student information
+            error_log("Fetching student by ID: $studentId");
             $student = $this->studentModel->getStudentById($studentId);
 
             if (!$student) {
+                error_log("Student not found: $studentId");
                 http_response_code(404);
                 echo json_encode([
                     'success' => false,
@@ -163,11 +168,15 @@ class StudentsController extends \BaseController
                 exit;
             }
 
+            error_log("Student found, fetching attempts for student $studentId with resource $resourceId");
             // Get all attempts for this student
             $attempts = $this->studentModel->getStudentAttempts($studentId, $resourceId);
+            error_log("Found " . count($attempts) . " attempts");
 
+            error_log("Fetching stats for student $studentId with resource $resourceId");
             // Get student statistics
             $stats = $this->studentModel->getStudentStats($studentId, $resourceId);
+            error_log("Stats fetched successfully");
 
             // Format the response
             echo json_encode([
@@ -176,24 +185,34 @@ class StudentsController extends \BaseController
                     'student' => [
                         'id' => $student['student_id'],
                         'identifier' => $student['student_identifier'],
-                        'nom_fictif' => $student['nom_fictif'],
-                        'prenom_fictif' => $student['prenom_fictif'],
-                        'dataset' => $student['nom_dataset'],
-                        'pays' => $student['pays'],
-                        'annee' => $student['annee']
+                        'nom_fictif' => $student['nom_fictif'] ?? null,
+                        'prenom_fictif' => $student['prenom_fictif'] ?? null,
+                        'dataset' => $student['nom_dataset'] ?? null,
+                        'pays' => $student['pays'] ?? null,
+                        'annee' => $student['annee'] ?? null
                     ],
                     'attempts' => $attempts,
                     'stats' => $stats
                 ]
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         } catch (\Exception $e) {
-            error_log("Error in getStudent: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
+            $errorDetails = [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ];
+            error_log("Error in getStudent: " . json_encode($errorDetails));
+
             http_response_code(500);
             echo json_encode([
                 'success' => false,
                 'message' => 'Erreur lors du chargement des données de l\'étudiant',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'debug' => [
+                    'file' => basename($e->getFile()),
+                    'line' => $e->getLine()
+                ]
             ]);
         } finally {
             restore_error_handler();
