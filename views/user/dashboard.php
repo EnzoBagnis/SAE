@@ -71,6 +71,15 @@
                         <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
+                 <li class="has-submenu">
+                    <a href="#" class="burger-link" onclick="toggleTpSubmenu(event)">
+                        Liste des TPs
+                        <span class="submenu-arrow">▼</span>
+                    </a>
+                    <ul class="burger-submenu" id="burgerTpList">
+                        <!-- Les TPs seront chargés ici dynamiquement -->
+                    </ul>
+                </li>
                 <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
@@ -78,18 +87,33 @@
     </nav>
 
     <div class="dashboard-container">
-        <!-- Sidebar gauche pour les Étudiants -->
+        <!-- Sidebar gauche pour les Étudiants et TPs -->
         <aside class="sidebar">
-            <h2>Liste des Étudiants</h2>
-            <div class="student-list" id="student-list">
-                <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab active" onclick="switchSidebarTab('students')">Étudiants</button>
+                <button class="sidebar-tab" onclick="switchSidebarTab('tps')">TPs</button>
+            </div>
+
+            <div id="studentsTabContent" class="sidebar-content active">
+                <h2>Liste des Étudiants</h2>
+                <div class="student-list" id="student-list">
+                    <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
+                </div>
+            </div>
+
+            <div id="tpsTabContent" class="sidebar-content" style="display:none;">
+                <h2>Liste des TPs</h2>
+                <div class="tp-list" id="tp-list">
+                    <!-- La liste des TPs sera ajoutée ici dynamiquement via JavaScript -->
+                    <p class="placeholder-message">Les TPs seront affichés ici</p>
+                </div>
             </div>
         </aside>
 
         <!-- Zone principale de visualisation -->
         <main class="main-content">
             <div class="data-zone">
-                <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
+                <p class="placeholder-message">Les données de l'étudiant ou du TP seront affichées ici</p>
             </div>
         </main>
     </div>
@@ -182,5 +206,31 @@
 
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
+    <script>
+        function switchSidebarTab(tab) {
+            document.querySelectorAll('.sidebar-tab').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelectorAll('.sidebar-content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            if (tab === 'students') {
+                document.querySelector('.sidebar-tab:nth-child(1)').classList.add('active');
+                document.getElementById('studentsTabContent').style.display = 'block';
+            } else if (tab === 'tps') {
+                document.querySelector('.sidebar-tab:nth-child(2)').classList.add('active');
+                document.getElementById('tpsTabContent').style.display = 'block';
+            }
+        }
+
+        // Add a function for the TP submenu in the burger menu
+        function toggleTpSubmenu(event) {
+            event.preventDefault();
+            const submenu = document.getElementById('burgerTpList');
+            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+            event.target.querySelector('.submenu-arrow').textContent = submenu.style.display === 'block' ? '▲' : '▼';
+        }
+    </script>
 </body>
 </html>
