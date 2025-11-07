@@ -89,62 +89,62 @@
     <div class="dashboard-container">
         <!-- Sidebar gauche pour les Étudiants et TPs -->
         <aside class="sidebar">
-            <div class="sidebar-tabs-container" style="display: flex; justify-content: space-around; border-bottom: 1px solid #ddd; margin-bottom: 10px;">
-                <button class="sidebar-tab active" onclick="switchSidebarTab('students')" style="flex-grow: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 1em; color: #555; border-bottom: 2px solid transparent; transition: all 0.3s ease;">Étudiants</button>
-                <button class="sidebar-tab" onclick="switchSidebarTab('tps')" style="flex-grow: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 1em; color: #555; border-bottom: 2px solid transparent; transition: all 0.3s ease;">TPs</button>
+            <div class="sidebar-tabs-container">
+                <button class="sidebar-tab active" onclick="switchSidebarTab('students')">Étudiants</button>
+                <button class="sidebar-tab" onclick="switchSidebarTab('tps')">TPs</button>
             </div>
 
-            <div id="studentsTabContent" class="sidebar-content active" style="flex-grow: 1; overflow-y: auto;">
+            <div id="studentsTabContent" class="sidebar-content active">
                 <h2>Liste des Étudiants</h2>
-                <div class="student-list" id="student-list" style="max-height: calc(100% - 40px); overflow-y: auto;">
+                <div class="student-list" id="student-list">
                     <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
                     <p class="placeholder-message">Chargement des étudiants...</p>
                     <!-- Example student items for scrollability -->
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student A</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student B</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student C</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student D</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student E</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student F</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student G</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student H</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student I</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student J</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student K</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student L</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student M</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student N</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student O</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student P</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student Q</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student R</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student S</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">Student T</div>
+                    <div class="student-item">Student A</div>
+                    <div class="student-item">Student B</div>
+                    <div class="student-item">Student C</div>
+                    <div class="student-item">Student D</div>
+                    <div class="student-item">Student E</div>
+                    <div class="student-item">Student F</div>
+                    <div class="student-item">Student G</div>
+                    <div class="student-item">Student H</div>
+                    <div class="student-item">Student I</div>
+                    <div class="student-item">Student J</div>
+                    <div class="student-item">Student K</div>
+                    <div class="student-item">Student L</div>
+                    <div class="student-item">Student M</div>
+                    <div class="student-item">Student N</div>
+                    <div class="student-item">Student O</div>
+                    <div class="student-item">Student P</div>
+                    <div class="student-item">Student Q</div>
+                    <div class="student-item">Student R</div>
+                    <div class="student-item">Student S</div>
+                    <div class="student-item">Student T</div>
                 </div>
             </div>
 
-            <div id="tpsTabContent" class="sidebar-content" style="display:none; flex-grow: 1; overflow-y: auto;">
+            <div id="tpsTabContent" class="sidebar-content">
                 <h2>Liste des TPs</h2>
-                <div class="tp-list" id="tp-list" style="max-height: calc(100% - 40px); overflow-y: auto;">
+                <div class="tp-list" id="tp-list">
                     <!-- La liste des TPs sera ajoutée ici dynamiquement via JavaScript -->
                     <p class="placeholder-message">Chargement des TPs...</p>
                     <!-- Example TP items for scrollability -->
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 1: Introduction to Programming</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 2: Data Structures</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 3: Algorithms Analysis</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 4: Web Development Basics</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 5: Database Management</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 6: Object-Oriented Design</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 7: Network Protocols</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 8: Operating Systems</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 9: Machine Learning Fundamentals</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 10: Cybersecurity Essentials</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 11: Cloud Computing</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 12: Mobile App Development</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 13: Game Development</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 14: Artificial Intelligence</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 15: Software Testing</div>
-                    <div style="padding: 8px; border-bottom: 1px solid #eee;">TP 16: Project Management</div>
+                    <div class="tp-item">TP 1: Introduction to Programming</div>
+                    <div class="tp-item">TP 2: Data Structures</div>
+                    <div class="tp-item">TP 3: Algorithms Analysis</div>
+                    <div class="tp-item">TP 4: Web Development Basics</div>
+                    <div class="tp-item">TP 5: Database Management</div>
+                    <div class="tp-item">TP 6: Object-Oriented Design</div>
+                    <div class="tp-item">TP 7: Network Protocols</div>
+                    <div class="tp-item">TP 8: Operating Systems</div>
+                    <div class="tp-item">TP 9: Machine Learning Fundamentals</div>
+                    <div class="tp-item">TP 10: Cybersecurity Essentials</div>
+                    <div class="tp-item">TP 11: Cloud Computing</div>
+                    <div class="tp-item">TP 12: Mobile App Development</div>
+                    <div class="tp-item">TP 13: Game Development</div>
+                    <div class="tp-item">TP 14: Artificial Intelligence</div>
+                    <div class="tp-item">TP 15: Software Testing</div>
+                    <div class="tp-item">TP 16: Project Management</div>
                 </div>
             </div>
         </aside>
@@ -249,32 +249,30 @@
         function switchSidebarTab(tab) {
             document.querySelectorAll('.sidebar-tab').forEach(button => {
                 button.classList.remove('active');
-                button.style.color = '#555';
-                button.style.borderBottom = '2px solid transparent';
             });
             document.querySelectorAll('.sidebar-content').forEach(content => {
                 content.style.display = 'none';
             });
 
             if (tab === 'students') {
-                const studentTabButton = document.querySelector('.sidebar-tab-container button:nth-child(1)');
-                studentTabButton.classList.add('active');
-                studentTabButton.style.color = '#007bff'; // Example active color
-                studentTabButton.style.borderBottom = '2px solid #007bff'; // Example active border
-                document.getElementById('studentsTabContent').style.display = 'flex'; // Use flex to allow internal scrolling
+                document.querySelector('.sidebar-tabs-container button:nth-child(1)').classList.add('active');
+                document.getElementById('studentsTabContent').style.display = 'flex';
             } else if (tab === 'tps') {
-                const tpTabButton = document.querySelector('.sidebar-tab-container button:nth-child(2)');
-                tpTabButton.classList.add('active');
-                tpTabButton.style.color = '#007bff'; // Example active color
-                tpTabButton.style.borderBottom = '2px solid #007bff'; // Example active border
-                document.getElementById('tpsTabContent').style.display = 'flex'; // Use flex to allow internal scrolling
+                document.querySelector('.sidebar-tabs-container button:nth-child(2)').classList.add('active');
+                document.getElementById('tpsTabContent').style.display = 'flex';
             }
         }
 
-        // Add a function for the TP submenu in the burger menu
         function toggleTpSubmenu(event) {
             event.preventDefault();
             const submenu = document.getElementById('burgerTpList');
+            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+            event.target.querySelector('.submenu-arrow').textContent = submenu.style.display === 'block' ? '▲' : '▼';
+        }
+
+        function toggleStudentSubmenu(event) { // Ensure this function exists for the burger menu
+             event.preventDefault();
+            const submenu = document.getElementById('burgerStudentList');
             submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
             event.target.querySelector('.submenu-arrow').textContent = submenu.style.display === 'block' ? '▲' : '▼';
         }
@@ -284,36 +282,5 @@
             switchSidebarTab('students');
         });
     </script>
-    <style>
-        /* Basic styling for the new tab structure */
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            /* Adjust these values based on your dashboard.css sidebar styling */
-            /* For example, if your sidebar has a fixed width or height,
-               ensure these new flex properties align with it */
-        }
-
-        .sidebar-tabs-container button.active {
-            color: #007bff; /* Highlight active tab */
-            border-bottom: 2px solid #007bff; /* Underline active tab */
-        }
-
-        .sidebar-content {
-            display: flex; /* Changed from 'block' to 'flex' */
-            flex-direction: column;
-            height: 100%; /* Make content take full height of its container */
-        }
-
-        /* Ensure scrollable lists have a defined height */
-        .student-list, .tp-list {
-            /* This max-height needs to be calculated based on the total sidebar height
-               minus the height of the tab container, title (h2), and any padding/margins.
-               For now, a dynamic calc() value is used, but you might need to fine-tune it. */
-            flex-grow: 1; /* Allow the list to take available space */
-            overflow-y: auto; /* Enable vertical scrolling */
-            padding-right: 5px; /* Add some padding for the scrollbar */
-        }
-    </style>
 </body>
 </html>
