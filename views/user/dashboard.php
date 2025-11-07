@@ -71,80 +71,35 @@
                         <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
-                 <li class="has-submenu">
-                    <a href="#" class="burger-link" onclick="toggleTpSubmenu(event)">
-                        Liste des TPs
-                        <span class="submenu-arrow">▼</span>
-                    </a>
-                    <ul class="burger-submenu" id="burgerTpList">
-                        <!-- Les TPs seront chargés ici dynamiquement -->
-                    </ul>
-                </li>
                 <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
-                <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
+                <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</button></li>
             </ul>
         </div>
     </nav>
 
     <div class="dashboard-container">
-        <!-- Sidebar gauche pour les Étudiants et TPs -->
+        <!-- Sidebar gauche pour les Étudiants et les TPs -->
         <aside class="sidebar">
-            <div class="sidebar-tabs-container">
+            <div class="sidebar-tabs">
                 <button class="sidebar-tab active" onclick="switchSidebarTab('students')">Étudiants</button>
                 <button class="sidebar-tab" onclick="switchSidebarTab('tps')">TPs</button>
             </div>
 
-            <div id="studentsTabContent" class="sidebar-content active">
+            <div id="studentsTabContent" class="sidebar-tab-content active">
                 <h2>Liste des Étudiants</h2>
                 <div class="student-list" id="student-list">
                     <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
-                    <p class="placeholder-message">Chargement des étudiants...</p>
-                    <!-- Example student items for scrollability -->
-                    <div class="student-item">Student A</div>
-                    <div class="student-item">Student B</div>
-                    <div class="student-item">Student C</div>
-                    <div class="student-item">Student D</div>
-                    <div class="student-item">Student E</div>
-                    <div class="student-item">Student F</div>
-                    <div class="student-item">Student G</div>
-                    <div class="student-item">Student H</div>
-                    <div class="student-item">Student I</div>
-                    <div class="student-item">Student J</div>
-                    <div class="student-item">Student K</div>
-                    <div class="student-item">Student L</div>
-                    <div class="student-item">Student M</div>
-                    <div class="student-item">Student N</div>
-                    <div class="student-item">Student O</div>
-                    <div class="student-item">Student P</div>
-                    <div class="student-item">Student Q</div>
-                    <div class="student-item">Student R</div>
-                    <div class="student-item">Student S</div>
-                    <div class="student-item">Student T</div>
                 </div>
             </div>
 
-            <div id="tpsTabContent" class="sidebar-content">
+            <div id="tpsTabContent" class="sidebar-tab-content">
                 <h2>Liste des TPs</h2>
                 <div class="tp-list" id="tp-list">
                     <!-- La liste des TPs sera ajoutée ici dynamiquement via JavaScript -->
-                    <p class="placeholder-message">Chargement des TPs...</p>
-                    <!-- Example TP items for scrollability -->
-                    <div class="tp-item">TP 1: Introduction to Programming</div>
-                    <div class="tp-item">TP 2: Data Structures</div>
-                    <div class="tp-item">TP 3: Algorithms Analysis</div>
-                    <div class="tp-item">TP 4: Web Development Basics</div>
-                    <div class="tp-item">TP 5: Database Management</div>
-                    <div class="tp-item">TP 6: Object-Oriented Design</div>
-                    <div class="tp-item">TP 7: Network Protocols</div>
-                    <div class="tp-item">TP 8: Operating Systems</div>
-                    <div class="tp-item">TP 9: Machine Learning Fundamentals</div>
-                    <div class="tp-item">TP 10: Cybersecurity Essentials</div>
-                    <div class="tp-item">TP 11: Cloud Computing</div>
-                    <div class="tp-item">TP 12: Mobile App Development</div>
-                    <div class="tp-item">TP 13: Game Development</div>
-                    <div class="tp-item">TP 14: Artificial Intelligence</div>
-                    <div class="tp-item">TP 15: Software Testing</div>
-                    <div class="tp-item">TP 16: Project Management</div>
+                    <!-- Exemple de structure (à remplir dynamiquement) -->
+                    <p>TP 1: Introduction au JS</p>
+                    <p>TP 2: Manipulation du DOM</p>
+                    <p>TP 3: Requêtes Asynchrones</p>
                 </div>
             </div>
         </aside>
@@ -152,7 +107,7 @@
         <!-- Zone principale de visualisation -->
         <main class="main-content">
             <div class="data-zone">
-                <p class="placeholder-message">Les données de l'étudiant ou du TP seront affichées ici</p>
+                <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
             </div>
         </main>
     </div>
@@ -245,40 +200,92 @@
 
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
+    <style>
+        /* Styles pour les onglets de la sidebar */
+        .sidebar-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .sidebar-tab {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            font-size: 1em;
+            color: #555;
+            transition: all 0.3s ease;
+            position: relative;
+            text-align: center;
+        }
+
+        .sidebar-tab:hover {
+            color: #007bff;
+        }
+
+        .sidebar-tab.active {
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .sidebar-tab.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -1px; /* Pour chevaucher la bordure */
+            width: 100%;
+            height: 2px;
+            background-color: #007bff;
+        }
+
+        .sidebar-tab-content {
+            display: none;
+        }
+
+        .sidebar-tab-content.active {
+            display: block;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .tp-list p {
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        .tp-list p:last-child {
+            border-bottom: none;
+        }
+    </style>
+
     <script>
-        function switchSidebarTab(tab) {
+        function switchSidebarTab(tabName) {
+            // Désactiver tous les onglets
             document.querySelectorAll('.sidebar-tab').forEach(button => {
                 button.classList.remove('active');
             });
-            document.querySelectorAll('.sidebar-content').forEach(content => {
-                content.style.display = 'none';
+            // Désactiver tout le contenu des onglets
+            document.querySelectorAll('.sidebar-tab-content').forEach(content => {
+                content.classList.remove('active');
             });
 
-            if (tab === 'students') {
-                document.querySelector('.sidebar-tabs-container button:nth-child(1)').classList.add('active');
-                document.getElementById('studentsTabContent').style.display = 'flex';
-            } else if (tab === 'tps') {
-                document.querySelector('.sidebar-tabs-container button:nth-child(2)').classList.add('active');
-                document.getElementById('tpsTabContent').style.display = 'flex';
-            }
+            // Activer l'onglet cliqué
+            document.querySelector(`.sidebar-tab[onclick="switchSidebarTab('${tabName}')"]`).classList.add('active');
+            // Activer le contenu de l'onglet cliqué
+            document.getElementById(`${tabName}TabContent`).classList.add('active');
         }
 
-        function toggleTpSubmenu(event) {
-            event.preventDefault();
-            const submenu = document.getElementById('burgerTpList');
-            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-            event.target.querySelector('.submenu-arrow').textContent = submenu.style.display === 'block' ? '▲' : '▼';
-        }
-
-        function toggleStudentSubmenu(event) { // Ensure this function exists for the burger menu
-             event.preventDefault();
-            const submenu = document.getElementById('burgerStudentList');
-            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-            event.target.querySelector('.submenu-arrow').textContent = submenu.style.display === 'block' ? '▲' : '▼';
-        }
-
-        // Initialize the first tab as active on load
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialisation: s'assurer que l'onglet 'Étudiants' est actif par défaut au chargement
+        document.addEventListener('DOMContentLoaded', (event) => {
             switchSidebarTab('students');
         });
     </script>
