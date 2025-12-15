@@ -16,22 +16,19 @@ $db = Database::getConnection();
 $user_id = $_SESSION['id'];
 $user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
 $user_lastname = $_SESSION['nom'] ?? '';
-
 $title = 'StudTraj - Mes Ressources';
 
 // Récupération des ressources via le Modèle
 $resources = Resource::getAllAccessibleResources($db, $user_id);
 
-// --- RECUPERATION DES PARTENAIRES (Table 'utilisateur') ---
+// --- RECUPERATION DES PARTENAIRES (Table 'utilisateurs') ---
 $all_users = [];
 try {
-    // Correction ici : on utilise la table 'utilisateur' au lieu de 'users'
-    $stmt_users = $db->prepare("SELECT id, prenom, nom FROM utilisateur WHERE id != :id ORDER BY nom ASC");
+    // On utilise la table 'utilisateurs' comme vu dans le diagnostic
+    $stmt_users = $db->prepare("SELECT id, prenom, nom FROM utilisateurs WHERE id != :id ORDER BY nom ASC");
     $stmt_users->execute([':id' => $user_id]);
     $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
 } catch (PDOException $e) {
-    // Si la table 'utilisateur' n'existe pas non plus, on laisse la liste vide sans planter
-    // Vous pouvez tester 'users' ou 'compte' ici si besoin
     $all_users = [];
 }
 ?>
@@ -53,28 +50,20 @@ try {
         .resource-card-image { width: 100%; height: 180px; object-fit: cover; background-color: #f0f0f0; }
         .resource-card-content { padding: 15px; }
         .resource-card-owner { font-size: 0.8em; color: #999; display:block; text-align: right; margin-top:10px; }
-
-        /* Bouton Edit (Crayon) */
         .btn-edit-resource { position: absolute; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
         .btn-edit-resource:hover { background-color: #f0f0f0; }
-
-        /* Filtres */
         .filter-bar { padding: 20px; background: #eef; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
         .filter-bar input, .filter-bar select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
 
-        /* Modal */
+        /* Modal & Formulaire */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px; }
         .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close:hover { color: black; }
-
-        /* Formulaire */
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group input[type="text"], .form-group textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
         .users-checklist { max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fafafa; }
         .btn-submit { background-color: #4CAF50; color: white; padding: 12px; border: none; width: 100%; cursor: pointer; border-radius: 4px; font-size: 16px; margin-top: 10px; }
-        .btn-submit:hover { background-color: #45a049; }
     </style>
     <script src="../public/js/dashboard-main.js"></script>
 </head>
@@ -82,7 +71,6 @@ try {
 <header class="top-menu">
     <div class="logo"><h1>StudTraj</h1></div>
     <div class="user-info">
-        <!-- Bouton pour ouvrir le modal -->
         <button onclick="openResourceModal('create')" style="cursor:pointer; padding:5px 10px;">
             ➕ Créer une ressource
         </button>
@@ -95,7 +83,6 @@ try {
     <main class="main-content">
         <h2 style="padding: 20px 20px 0;">Tableau de bord</h2>
 
-        <!-- Barre de recherche et filtres -->
         <div class="filter-bar">
             <input type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
             <select id="filterType" onchange="filterResources()">
@@ -109,25 +96,20 @@ try {
             <?php if (!empty($resources)) : ?>
                 <?php foreach ($resources as $resource) : ?>
                     <?php
-                    // 1. CORRECTION NOM COLONNE PROPRIETAIRE
-                    // On vérifie plusieurs noms possibles pour éviter l'erreur "Undefined property"
-                    $creatorId = $resource->id_createur
-                        ?? $resource->owner_id
-                        ?? $resource->id_utilisateur
-                        ?? 0;
+                    // --- CONFIGURATION CORRECTE BASÉE SUR VOTRE BDD ---
+                    // Table 'resources' -> colonne 'owner_user_id'
+                    $creatorId = $resource->owner_user_id ?? $resource->id_createur ?? 0;
 
-                    // 2. CORRECTION NOM COLONNES RESSOURCE
                     $resId = $resource->resource_id ?? $resource->id;
-                    $resName = $resource->resource_name ?? $resource->titre ?? 'Sans titre';
+                    $resName = $resource->resource_name ?? 'Sans titre';
                     $resDesc = $resource->description ?? '';
-                    $resImg = $resource->image_path ?? $resource->image ?? '';
+                    $resImg = $resource->image_path ?? '';
 
-                    // Est-ce que c'est ma ressource ?
                     $isOwner = ($creatorId == $user_id);
 
-                    // Nom du propriétaire pour l'affichage
+                    // Affichage du nom du proprio
                     $ownerName = ($resource->owner_firstname ?? '') . ' ' . ($resource->owner_lastname ?? '');
-                    if (trim($ownerName) == '') $ownerName = "Utilisateur $creatorId";
+                    if (trim($ownerName) == '') $ownerName = "Utilisateur #$creatorId";
                     ?>
 
                     <div class="resource-card"
@@ -146,9 +128,7 @@ try {
                             <?php if(!empty($resImg)) : ?>
                                 <img src="/images/<?= htmlspecialchars($resImg) ?>" class="resource-card-image" alt="Image">
                             <?php else : ?>
-                                <div class="resource-card-image" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#777;">
-                                    Pas d'image
-                                </div>
+                                <div class="resource-card-image" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#777;">Pas d'image</div>
                             <?php endif; ?>
 
                             <div class="resource-card-content">
@@ -166,25 +146,23 @@ try {
     </main>
 </div>
 
-<!-- MODAL (Formulaire de Création / Edition) -->
+<!-- MODAL -->
 <div id="resourceModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeResourceModal()">&times;</span>
         <h2 id="modalTitle">Nouvelle Ressource</h2>
 
-        <!-- ACTION DU FORMULAIRE : pointe vers save_resource -->
         <form id="resourceForm" action="/index.php?action=save_resource" method="POST" enctype="multipart/form-data">
-            <!-- Champ caché ID (vide en création, rempli en édition) -->
             <input type="hidden" name="resource_id" id="formResourceId" value="">
 
             <div class="form-group">
-                <label>Nom de la ressource :</label>
-                <input type="text" id="resourceName" name="name" required placeholder="Ex: Cours de PHP">
+                <label>Nom :</label>
+                <input type="text" id="resourceName" name="name" required placeholder="Titre de la ressource">
             </div>
 
             <div class="form-group">
                 <label>Description :</label>
-                <textarea id="resourceDesc" name="description" rows="3" placeholder="Description courte..."></textarea>
+                <textarea id="resourceDesc" name="description" rows="3"></textarea>
             </div>
 
             <div class="form-group">
@@ -197,7 +175,7 @@ try {
                 <label>Partager avec :</label>
                 <div class="users-checklist">
                     <?php if (empty($all_users)): ?>
-                        <p style="color:#999; font-style:italic;">Aucun autre utilisateur trouvé (vérifiez la table 'utilisateur').</p>
+                        <p style="color:#999;">Aucun autre utilisateur trouvé.</p>
                     <?php else: ?>
                         <?php foreach ($all_users as $u): ?>
                             <label style="display:block; margin-bottom:5px; cursor:pointer;">
@@ -209,33 +187,26 @@ try {
                 </div>
             </div>
 
-            <button type="submit" class="btn-submit" id="modalSubmitBtn">Enregistrer la ressource</button>
+            <button type="submit" class="btn-submit" id="modalSubmitBtn">Enregistrer</button>
         </form>
     </div>
 </div>
 
 <script>
-    // Gestion ouverture/fermeture du Modal
     function openResourceModal(mode, btn = null) {
         const modal = document.getElementById('resourceModal');
         const form = document.getElementById('resourceForm');
-        const title = document.getElementById('modalTitle');
-        const btnSubmit = document.getElementById('modalSubmitBtn');
         const hiddenId = document.getElementById('formResourceId');
 
-        // Reset du formulaire
         form.reset();
         hiddenId.value = '';
         document.getElementById('currentImageName').style.display = 'none';
-        // Décocher cases
         document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
 
         if (mode === 'edit' && btn) {
-            // Mode Modification
-            title.textContent = "Modifier la ressource";
-            btnSubmit.textContent = "Mettre à jour";
+            document.getElementById('modalTitle').textContent = "Modifier la ressource";
+            document.getElementById('modalSubmitBtn').textContent = "Mettre à jour";
 
-            // On récupère les infos stockées dans les data-attributes de la carte
             const card = btn.closest('.resource-card');
             hiddenId.value = card.dataset.id;
             document.getElementById('resourceName').value = card.dataset.name;
@@ -246,16 +217,10 @@ try {
                 p.textContent = "Image actuelle : " + card.dataset.image;
                 p.style.display = 'block';
             }
-
-            // Note : Pour pré-cocher les utilisateurs partagés, il faudrait que le PHP
-            // renvoie la liste des IDs dans un data-attribute (ex: data-shared="1,5").
-            // Si non disponible, les cases resteront vides à l'édition.
         } else {
-            // Mode Création
-            title.textContent = "Nouvelle Ressource";
-            btnSubmit.textContent = "Créer la ressource";
+            document.getElementById('modalTitle').textContent = "Nouvelle Ressource";
+            document.getElementById('modalSubmitBtn').textContent = "Créer la ressource";
         }
-
         modal.style.display = "block";
     }
 
@@ -263,14 +228,10 @@ try {
         document.getElementById('resourceModal').style.display = "none";
     }
 
-    // Fermer si clic en dehors
     window.onclick = function(event) {
-        if (event.target == document.getElementById('resourceModal')) {
-            closeResourceModal();
-        }
+        if (event.target == document.getElementById('resourceModal')) closeResourceModal();
     }
 
-    // Filtre JS simple
     function filterResources() {
         let input = document.getElementById('searchBar').value.toLowerCase();
         let type = document.getElementById('filterType').value;
@@ -280,10 +241,8 @@ try {
             let name = card.dataset.name.toLowerCase();
             let access = card.dataset.accessType;
             let show = true;
-
             if (!name.includes(input)) show = false;
             if (type !== 'all' && access !== type) show = false;
-
             card.style.display = show ? "flex" : "none";
         }
     }
