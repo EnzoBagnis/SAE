@@ -245,7 +245,7 @@ class ExercisesController extends \BaseController
     {
         $sql = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif,
                        COUNT(a.attempt_id) as attempt_count,
-                       MAX(a.timestamp) as last_attempt
+                       MAX(a.submission_date) as last_attempt
                 FROM students s
                 INNER JOIN attempts a ON s.student_id = a.student_id
                 WHERE a.exercise_id = :exerciseId
