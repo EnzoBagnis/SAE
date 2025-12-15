@@ -21,12 +21,27 @@ $title = 'StudTraj - Mes Ressources';
 
 $resources = Resource::getAllAccessibleResources($db, $user_id);
 
-// Récupération de tous les utilisateurs pour la liste de partage
-// (On exclut l'utilisateur courant)
-$stmt_users = $db->prepare("SELECT id, prenom, nom FROM users WHERE id != :id ORDER BY nom ASC");
-$stmt_users->execute([':id' => $user_id]);
-$all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
-
+// --- RECUPERATION DES UTILISATEURS POUR LE PARTAGE ---
+$all_users = [];
+try {
+    // TENTATIVE 1 : On essaie avec le nom de table 'utilisateur'
+    // ATTENTION : Si votre table s'appelle 'users', 'membres', etc., changez le mot 'utilisateur' ci-dessous
+    $stmt_users = $db->prepare("SELECT id, prenom, nom FROM utilisateur WHERE id != :id ORDER BY nom ASC");
+    $stmt_users->execute([':id' => $user_id]);
+    $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
+} catch (PDOException $e) {
+    // Si la table 'utilisateur' n'existe pas, on essaie 'users' par sécurité
+    try {
+        $stmt_users = $db->prepare("SELECT id, prenom, nom FROM users WHERE id != :id ORDER BY nom ASC");
+        $stmt_users->execute([':id' => $user_id]);
+        $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
+    } catch (PDOException $e2) {
+        // Si ça échoue encore, on ne fait rien (la liste de partage sera vide) pour ne pas planter la page
+        // Vous pouvez décommenter la ligne suivante pour voir l'erreur exacte si besoin :
+        // echo "Erreur table utilisateurs : " . $e2->getMessage();
+        $all_users = [];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -65,7 +80,7 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             display: flex;
             flex-direction: column;
-            position: relative; /* Pour positionner le bouton edit */
+            position: relative;
         }
 
         .resource-card:hover {
@@ -73,7 +88,6 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
 
-        /* Lien clicable sur toute la carte sauf le bouton edit */
         .resource-link-wrapper {
             text-decoration: none;
             color: inherit;
@@ -162,69 +176,28 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
             font-size: 1em;
         }
 
-        /* Styles spécifiques pour le Modal Formulaire */
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+        /* Styles Modal */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group input[type="text"],
         .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .users-checklist {
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 4px;
-            background: #fff;
-        }
-        .checklist-item {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .btn-submit {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-            width: 100%;
-        }
-        .btn-submit:hover {
-            background-color: #45a049;
-        }
+        .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .users-checklist { max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 4px; background: #fff; }
+        .checklist-item { display: block; margin-bottom: 5px; }
+        .btn-submit { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; }
+        .btn-submit:hover { background-color: #45a049; }
     </style>
 </head>
 <body>
-<!-- Menu du haut -->
 <header class="top-menu">
-    <div class="logo">
-        <h1>StudTraj</h1>
-    </div>
-
+    <div class="logo"><h1>StudTraj</h1></div>
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
     </button>
-
     <nav class="nav-menu">
         <a href="/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
     <div class="user-info">
-        <!-- Bouton Créer modifié -->
         <button onclick="openResourceModal('create')" class="btn-import-trigger">
             <svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -237,7 +210,6 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
     </div>
 </header>
 
-<!-- Menu burger mobile -->
 <nav class="burger-nav" id="burgerNav">
     <div class="burger-nav-content">
         <div class="burger-user-info">
@@ -256,7 +228,6 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
     <main class="main-content">
         <h2 style="padding: 20px 20px 0;">Vos ressources et celles partagées</h2>
 
-        <!-- Filtres -->
         <div class="filter-bar">
             <select id="filterType" onchange="filterResources()">
                 <option value="all">Toutes les ressources</option>
@@ -276,16 +247,10 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
                 <?php foreach ($resources as $resource) : ?>
                     <?php
                     $ownerFullName = $resource->owner_firstname . ' ' . $resource->owner_lastname;
-                    // On vérifie si l'utilisateur est le propriétaire
                     $isOwner = ($resource->owner_id == $user_id);
-
-                    // Simulation de la récupération des utilisateurs avec qui c'est partagé
-                    // Note: Idéalement, votre modèle Resource devrait retourner un tableau d'IDs pour shared_users
-                    // Ici on utilise un attribut data vide ou supposé si votre modèle le supporte
-                    $sharedWithIds = $resource->shared_with_ids ?? ''; // Ex: "1,4,12"
+                    $sharedWithIds = $resource->shared_with_ids ?? '';
                     ?>
 
-                    <!-- Modification: Div au lieu de A pour gérer le bouton edit séparément -->
                     <div class="resource-card"
                          data-name="<?= htmlspecialchars($resource->resource_name) ?>"
                          data-owner="<?= htmlspecialchars($ownerFullName) ?>"
@@ -295,7 +260,6 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
                          data-shared="<?= htmlspecialchars($sharedWithIds) ?>"
                          data-image="<?= htmlspecialchars($resource->image_path ?? '') ?>">
 
-                        <!-- Bouton Edit (visible seulement si propriétaire) -->
                         <?php if ($isOwner) : ?>
                             <button class="btn-edit-resource" onclick="openResourceModal('edit', this)" title="Modifier">
                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:#555">
@@ -305,7 +269,6 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
                             </button>
                         <?php endif; ?>
 
-                        <!-- Lien englobant le contenu -->
                         <a href="/index.php?action=dashboard&resource_id=<?= $resource->resource_id ?>" class="resource-link-wrapper">
                             <?php if (!empty($resource->image_path)) : ?>
                                 <img src="/images/<?= htmlspecialchars($resource->image_path) ?>"
@@ -326,23 +289,19 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
                     </div>
                 <?php endforeach; ?>
             <?php else : ?>
-                <p class="placeholder-message">
-                    Aucune ressource disponible pour le moment.
-                </p>
+                <p class="placeholder-message">Aucune ressource disponible pour le moment.</p>
             <?php endif; ?>
         </div>
     </main>
 </div>
 
-<!-- Modal: Créer / Modifier une ressource -->
+<!-- Modal Formulaire -->
 <div id="resourceModal" class="modal" style="display:none;">
     <div class="modal-content">
         <span class="close" onclick="closeResourceModal()">&times;</span>
         <h2 id="modalTitle">Créer une ressource</h2>
 
-        <!-- Le formulaire pointera vers votre routeur PHP -->
         <form id="resourceForm" action="/index.php?action=save_resource" method="POST" enctype="multipart/form-data">
-            <!-- Champ caché pour l'ID si modification -->
             <input type="hidden" name="resource_id" id="formResourceId" value="">
 
             <div class="form-group">
@@ -352,7 +311,7 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
 
             <div class="form-group">
                 <label for="resourceDesc">Description :</label>
-                <textarea id="resourceDesc" name="description" rows="3" placeholder="Description du contenu..."></textarea>
+                <textarea id="resourceDesc" name="description" rows="3" placeholder="Description..."></textarea>
             </div>
 
             <div class="form-group">
@@ -364,12 +323,16 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
             <div class="form-group">
                 <label>Partager avec :</label>
                 <div class="users-checklist">
-                    <?php foreach ($all_users as $u): ?>
-                        <label class="checklist-item">
-                            <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>" class="user-checkbox">
-                            <?= htmlspecialchars($u->prenom . ' ' . $u->nom) ?>
-                        </label>
-                    <?php endforeach; ?>
+                    <?php if (empty($all_users)): ?>
+                        <p style="color:#999; font-style:italic;">Aucun autre utilisateur trouvé.</p>
+                    <?php else: ?>
+                        <?php foreach ($all_users as $u): ?>
+                            <label class="checklist-item">
+                                <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>" class="user-checkbox">
+                                <?= htmlspecialchars($u->prenom . ' ' . $u->nom) ?>
+                            </label>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -381,37 +344,28 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
 <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
 <script>
-    // --- Gestion du Modal Création / Edition ---
-
     function openResourceModal(mode, btnElement = null) {
         const modal = document.getElementById('resourceModal');
         const title = document.getElementById('modalTitle');
         const submitBtn = document.getElementById('modalSubmitBtn');
         const form = document.getElementById('resourceForm');
 
-        // Reset du formulaire
         form.reset();
         document.getElementById('formResourceId').value = '';
         document.getElementById('currentImageName').style.display = 'none';
-
-        // Décocher toutes les checkboxes
         document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
 
         if (mode === 'edit' && btnElement) {
-            // Mode Modification
             title.textContent = 'Modifier la ressource';
             submitBtn.textContent = 'Mettre à jour';
 
-            // Récupération des données depuis la carte parente
             const card = btnElement.closest('.resource-card');
             const id = card.dataset.id;
             const name = card.dataset.name;
             const desc = card.dataset.description;
             const image = card.dataset.image;
-            // On suppose que data-shared contient des IDs séparés par virgule: "1,5,10"
             const shared = card.dataset.shared ? card.dataset.shared.split(',') : [];
 
-            // Remplissage des champs
             document.getElementById('formResourceId').value = id;
             document.getElementById('resourceName').value = name;
             document.getElementById('resourceDesc').value = desc;
@@ -422,26 +376,20 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
                 imgText.style.display = 'block';
             }
 
-            // Cocher les utilisateurs avec qui c'est partagé
             shared.forEach(userId => {
                 const cb = document.querySelector(`.user-checkbox[value="${userId}"]`);
                 if (cb) cb.checked = true;
             });
-
         } else {
-            // Mode Création
             title.textContent = 'Nouvelle Ressource';
             submitBtn.textContent = 'Créer la ressource';
         }
-
         modal.style.display = "block";
     }
 
     function closeResourceModal() {
         document.getElementById('resourceModal').style.display = "none";
     }
-
-    // --- Fonctions existantes (Filtres, Burger, Logout) ---
 
     function filterResources() {
         const searchText = document.getElementById('searchBar').value.toLowerCase();
@@ -453,35 +401,14 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
         cards.forEach(card => {
             const name = card.dataset.name.toLowerCase();
             const owner = card.dataset.owner.toLowerCase();
-            const accessType = card.dataset.accessType; // 'owner' ou 'shared'
-
-            // Logique simplifiée pour accessType car PHP envoie le type réel
-            // Si accessType n'est pas dans le dataset, on le déduit (optionnel)
-            // Ici on suppose que le backend envoie "owner" si c'est à moi, "shared" sinon
-
-            // Si accessType est null dans le data, on peut le déduire :
-            // let actualAccess = (owner.includes("<?= strtolower($user_lastname) ?>")) ? 'owner' : 'shared';
+            const accessType = card.dataset.accessType;
 
             const matchesSearch = name.includes(searchText) || owner.includes(searchText);
-
-            // Filtre Type : 'all', 'owner', 'shared'
-            // Pour que cela fonctionne parfaitement, assurez-vous que $resource->access_type
-            // renvoie bien 'owner' ou 'shared' depuis le PHP.
-            // Sinon on peut utiliser la classe ou le nom du propriétaire pour filtrer.
-
             let matchesType = true;
-            if(filterType === 'owner') {
-                // Vérification simple via le nom ou un attribut data
-                matchesType = (card.dataset.accessType === 'owner');
-            } else if (filterType === 'shared') {
-                matchesType = (card.dataset.accessType === 'shared');
-            }
+            if(filterType === 'owner') matchesType = (accessType === 'owner');
+            else if (filterType === 'shared') matchesType = (accessType === 'shared');
 
-            if (matchesSearch && matchesType) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
+            card.style.display = (matchesSearch && matchesType) ? 'flex' : 'none';
         });
 
         cards.sort((a, b) => {
@@ -495,12 +422,10 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
             if (sortOrder === 'owner_name_asc') return ownerA.localeCompare(ownerB);
             return 0;
         });
-
         cards.forEach(card => grid.appendChild(card));
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Events listeners
         const filterTypeElement = document.getElementById('filterType');
         if (filterTypeElement) filterTypeElement.addEventListener('change', filterResources);
 
@@ -510,14 +435,11 @@ $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
         const sortOrderElement = document.getElementById('sortOrder');
         if (sortOrderElement) sortOrderElement.addEventListener('change', filterResources);
 
-        // Fermeture modal au clic en dehors
         window.onclick = function(event) {
-            const modal = document.getElementById('resourceModal');
-            if (event.target == modal) {
+            if (event.target == document.getElementById('resourceModal')) {
                 closeResourceModal();
             }
         }
-
         filterResources();
     });
 
