@@ -179,10 +179,10 @@ export class StudentContentManager {
     }
 
     /**
-     * Render exercise with all student attempts
+     * Render exercise with all student attempts (same style as student view)
      * @param {HTMLElement} dataZone - The container element
      * @param {Object} exercise - The exercise data
-     * @param {Array} attempts - List of student attempts for this exercise
+     * @param {Array} attempts - List of attempts for this exercise
      */
     renderExerciseAttempts(dataZone, exercise, attempts) {
         dataZone.innerHTML = '';
@@ -193,29 +193,27 @@ export class StudentContentManager {
         dataZone.appendChild(titleElement);
 
         // Info exercice
-        if (exercise.description || exercise.exo_name) {
-            const exerciseInfo = document.createElement('div');
-            exerciseInfo.style.marginBottom = '1.5rem';
-            exerciseInfo.style.padding = '1rem';
-            exerciseInfo.style.backgroundColor = '#ecf0f1';
-            exerciseInfo.style.borderRadius = '0.5rem';
+        const exerciseInfo = document.createElement('div');
+        exerciseInfo.style.marginBottom = '1.5rem';
+        exerciseInfo.style.padding = '1rem';
+        exerciseInfo.style.backgroundColor = '#ecf0f1';
+        exerciseInfo.style.borderRadius = '0.5rem';
 
-            let infoHtml = '';
-            if (exercise.funcname && exercise.exo_name) {
-                infoHtml += `<strong>ID:</strong> <code style="font-size: 0.85rem;">${exercise.exo_name}</code><br>`;
-            }
-            if (exercise.description) {
-                infoHtml += `<strong>Description:</strong> ${exercise.description}`;
-            }
-            exerciseInfo.innerHTML = infoHtml || 'Aucune description disponible';
-            dataZone.appendChild(exerciseInfo);
+        let infoHtml = '';
+        if (exercise.funcname && exercise.exo_name) {
+            infoHtml += `<strong>ID:</strong> <code style="font-size: 0.85rem;">${exercise.exo_name}</code><br>`;
         }
+        if (exercise.description) {
+            infoHtml += `<strong>Description:</strong> ${exercise.description}`;
+        }
+        exerciseInfo.innerHTML = infoHtml || 'Aucune description disponible';
+        dataZone.appendChild(exerciseInfo);
 
         // Titre section tentatives
         const attemptsHeader = document.createElement('h3');
         attemptsHeader.style.marginBottom = '1rem';
         attemptsHeader.style.color = '#2c3e50';
-        attemptsHeader.textContent = `Tentatives des étudiants (${attempts ? attempts.length : 0})`;
+        attemptsHeader.textContent = `Historique des tentatives (${attempts ? attempts.length : 0})`;
         dataZone.appendChild(attemptsHeader);
 
         if (!attempts || attempts.length === 0) {
@@ -226,52 +224,10 @@ export class StudentContentManager {
             return;
         }
 
-        // Container des tentatives
-        const attemptsContainer = document.createElement('div');
-        attemptsContainer.className = 'attempts-list';
-
-        attempts.forEach((attempt, index) => {
-            const attemptCard = document.createElement('div');
-            attemptCard.className = 'attempt-card';
-            attemptCard.style.cssText = `
-                background: white;
-                border: 1px solid #dee2e6;
-                border-radius: 8px;
-                padding: 1rem;
-                margin-bottom: 1rem;
-                cursor: pointer;
-                transition: box-shadow 0.2s;
-            `;
-            attemptCard.addEventListener('mouseover', () => {
-                attemptCard.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-            });
-            attemptCard.addEventListener('mouseout', () => {
-                attemptCard.style.boxShadow = 'none';
-            });
-
-            // Header de la carte
-            const studentName = attempt.student_identifier || attempt.nom_fictif || `Étudiant #${attempt.student_id}`;
-            const attemptCount = attempt.attempt_count || 1;
-
-            attemptCard.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <strong style="color: #2c3e50;">${studentName}</strong>
-                    <span style="background: #3498db; color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem;">
-                        ${attemptCount} tentative${attemptCount > 1 ? 's' : ''}
-                    </span>
-                </div>
-                ${attempt.prenom_fictif ? `<div style="color: #7f8c8d; font-size: 0.9rem;">Prénom: ${attempt.prenom_fictif}</div>` : ''}
-            `;
-
-            // Click pour voir les détails de l'étudiant
-            attemptCard.addEventListener('click', () => {
-                window.dispatchEvent(new CustomEvent('studentSelected', { detail: attempt.student_id }));
-            });
-
-            attemptsContainer.appendChild(attemptCard);
-        });
-
-        dataZone.appendChild(attemptsContainer);
+        // Utiliser le même renderer que pour les étudiants
+        const { title, container } = this.attemptsRenderer.renderAttempts(attempts);
+        // Ne pas réafficher le titre car on l'a déjà
+        dataZone.appendChild(container);
 
         const mainContent = document.querySelector('.main-content');
         if (mainContent) mainContent.scrollTop = 0;

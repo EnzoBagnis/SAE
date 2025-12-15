@@ -236,21 +236,22 @@ class ExercisesController extends \BaseController
     }
 
     /**
-     * Fetch students who attempted a specific exercise
+     * Fetch all attempts for a specific exercise with student info
      *
      * @param int $exerciseId The exercise ID
-     * @return array Array of students with attempt count
+     * @return array Array of attempts with student details
      */
     private function fetchStudentsByExercise(int $exerciseId): array
     {
-        $sql = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif,
-                       COUNT(a.attempt_id) as attempt_count,
-                       MAX(a.submission_date) as last_attempt
-                FROM students s
-                INNER JOIN attempts a ON s.student_id = a.student_id
+        $sql = "SELECT a.attempt_id, a.student_id, a.exercise_id, a.upload, a.correct,
+                       a.submission_date, a.aes0, a.aes1, a.aes2,
+                       s.student_identifier, s.nom_fictif, s.prenom_fictif,
+                       e.exo_name, e.funcname, e.description
+                FROM attempts a
+                INNER JOIN students s ON a.student_id = s.student_id
+                INNER JOIN exercises e ON a.exercise_id = e.exercise_id
                 WHERE a.exercise_id = :exerciseId
-                GROUP BY s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif
-                ORDER BY s.student_identifier ASC";
+                ORDER BY s.student_identifier ASC, a.submission_date DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['exerciseId' => $exerciseId]);
