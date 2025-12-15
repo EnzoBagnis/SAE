@@ -80,7 +80,13 @@ function handleFileSelect(event, type) {
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
-            const data = JSON.parse(e.target.result);
+            // Robustify: remove BOM and trim
+            let text = e.target.result;
+            if (typeof text === 'string') {
+                text = text.replace(/^\uFEFF/, '').trim();
+            }
+
+            const data = JSON.parse(text);
 
             if (type === 'exercises') {
                 currentExercisesData = data;
@@ -90,7 +96,10 @@ function handleFileSelect(event, type) {
                 displayAttemptsPreview(data);
             }
         } catch (error) {
-            showImportStatus(`Erreur lors de la lecture du fichier: ${error.message}`, 'error');
+            // Afficher message plus utile au user
+            let msg = error && error.message ? error.message : String(error);
+            showImportStatus(`Erreur lors de la lecture du fichier: ${msg}. Vérifiez que le fichier est un JSON valide (tableau d'exercices ou objet avec la clé \"exercises\").`, 'error');
+            console.error('JSON parse error:', error);
         }
     };
     reader.readAsText(file);
@@ -192,31 +201,60 @@ async function importExercises() {
     showImportStatus('Import en cours... <span class="loading-spinner"></span>', 'warning');
 
     try {
+        // Préparer le payload attendu par le serveur
+        let payload;
+        if (Array.isArray(currentExercisesData)) {
+            payload = { exercises: currentExercisesData };
+        } else if (typeof currentExercisesData === 'object' && currentExercisesData !== null) {
+            // Si l'objet contient déjà la clé exercises, l'utiliser sinon tenter de l'envelopper
+            if (Array.isArray(currentExercisesData.exercises)) {
+                payload = currentExercisesData;
+            } else {
+                // Tentative : s'il s'agit d'un tableau sous une autre clé commune, essayer de le détecter
+                const possibleKeys = ['data', 'exos', 'exercises_list'];
+                let found = false;
+                for (const k of possibleKeys) {
+                    if (Array.isArray(currentExercisesData[k])) {
+                        payload = { exercises: currentExercisesData[k] };
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) payload = { exercises: [currentExercisesData] };
+            }
+        } else {
+            throw new Error('Format des données non reconnu');
+        }
+
         // Appel API pour importer les exercices
-        const response = await fetch('/api/exercises/import', {
+        const response = await fetch('index.php?action=api/exercises/import', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(currentExercisesData)
+            body: JSON.stringify(payload)
         });
 
+        const text = await response.text();
+        let result = null;
+        try { result = JSON.parse(text); } catch (e) { /* ignore, will handle below */ }
+
         if (response.ok) {
-            const result = await response.json();
-            showImportStatus(`✓ Import réussi ! ${result.count || currentExercisesData.length} exercice(s) importé(s).`, 'success');
+            const count = (result && (result.count || result.success_count)) || (payload.exercises ? payload.exercises.length : 0);
+            showImportStatus(`✓ Import réussi ! ${count} exercice(s) importé(s).`, 'success');
 
             // Rafraîchir la liste des TPs après 2 secondes
             setTimeout(() => {
                 closeImportModal();
-                // Rafraîchir la liste si la fonction existe (depuis dashboard.js)
                 if (typeof loadTPList === 'function') {
                     loadTPList();
                 }
-                // Recharger la page en dernier recours
                 window.location.reload();
             }, 2000);
         } else {
-            throw new Error('Erreur lors de l\'import');
+            // essayer de récupérer le message d'erreur du serveur
+            const serverMsg = (result && (result.error || (result.errors && result.errors.join('; ')))) || text || 'Erreur lors de l\'import';
+            throw new Error(serverMsg);
         }
     } catch (error) {
         console.error('Erreur import exercices:', error);
@@ -224,7 +262,7 @@ async function importExercises() {
         // Mode démo: stocker localement
         console.log('Mode démo activé - Données stockées localement');
         localStorage.setItem('exercises_import', JSON.stringify(currentExercisesData));
-        showImportStatus(`✓ Import réussi (mode démo) ! ${currentExercisesData.length} exercice(s) stocké(s) localement.`, 'success');
+        showImportStatus(`Erreur serveur ou réseau: ${error.message}. Données sauvegardées localement.`, 'error');
 
         setTimeout(() => {
             closeImportModal();
@@ -244,25 +282,55 @@ async function importAttempts() {
     showImportStatus('Import en cours... <span class="loading-spinner"></span>', 'warning');
 
     try {
+        // Préparer le payload attendu par le serveur
+        let payload;
+        if (Array.isArray(currentAttemptsData)) {
+            payload = { attempts: currentAttemptsData };
+        } else if (typeof currentAttemptsData === 'object' && currentAttemptsData !== null) {
+            if (Array.isArray(currentAttemptsData.attempts)) {
+                payload = currentAttemptsData;
+            } else {
+                // Si l'objet contient dataset_info + attempts sous d'autres clés
+                const possibleKeys = ['data', 'attempts_list'];
+                let found = false;
+                for (const k of possibleKeys) {
+                    if (Array.isArray(currentAttemptsData[k])) {
+                        payload = { attempts: currentAttemptsData[k] };
+                        if (currentAttemptsData.dataset_info) payload.dataset_info = currentAttemptsData.dataset_info;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) payload = { attempts: [currentAttemptsData] };
+            }
+        } else {
+            throw new Error('Format des données non reconnu');
+        }
+
         // Appel API pour importer les tentatives
-        const response = await fetch('/api/attempts/import', {
+        const response = await fetch('index.php?action=api/attempts/import', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(currentAttemptsData)
+            body: JSON.stringify(payload)
         });
 
+        const text = await response.text();
+        let result = null;
+        try { result = JSON.parse(text); } catch (e) { /* ignore */ }
+
         if (response.ok) {
-            const result = await response.json();
-            showImportStatus(`✓ Import réussi ! ${result.count || currentAttemptsData.length} tentative(s) importée(s).`, 'success');
+            const count = (result && (result.count || result.success_count)) || (payload.attempts ? payload.attempts.length : 0);
+            showImportStatus(`✓ Import réussi ! ${count} tentative(s) importée(s).`, 'success');
 
             // Fermer le modal après 2 secondes
             setTimeout(() => {
                 closeImportModal();
             }, 2000);
         } else {
-            throw new Error('Erreur lors de l\'import');
+            const serverMsg = (result && (result.error || (result.errors && result.errors.join('; ')))) || text || 'Erreur lors de l\'import';
+            throw new Error(serverMsg);
         }
     } catch (error) {
         console.error('Erreur import tentatives:', error);
@@ -270,7 +338,7 @@ async function importAttempts() {
         // Mode démo: stocker localement
         console.log('Mode démo activé - Données stockées localement');
         localStorage.setItem('attempts_import', JSON.stringify(currentAttemptsData));
-        showImportStatus(`✓ Import réussi (mode démo) ! ${currentAttemptsData.length} tentative(s) stockée(s) localement.`, 'success');
+        showImportStatus(`Erreur serveur ou réseau: ${error.message}. Données sauvegardées localement.`, 'error');
 
         setTimeout(() => {
             closeImportModal();
