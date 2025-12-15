@@ -159,6 +159,16 @@ class ExercisesController extends \BaseController
             exit;
         }
 
+        // Check database connection
+        if (!$this->db) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erreur de connexion à la base de données'
+            ]);
+            exit;
+        }
+
         // Get exercise ID
         $exerciseId = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
@@ -199,7 +209,7 @@ class ExercisesController extends \BaseController
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'message' => 'Erreur lors du chargement de l\'exercice'
+                'message' => 'Erreur lors du chargement de l\'exercice: ' . $e->getMessage()
             ]);
         }
     }

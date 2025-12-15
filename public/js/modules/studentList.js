@@ -123,10 +123,12 @@ export class StudentListManager {
             const result = await response.json();
 
             if (result.success) {
-                // Trier par nom alphabétique
-                this.allExercises = (result.data.exercises || []).sort((a, b) =>
-                    (a.exo_name || '').localeCompare(b.exo_name || '')
-                );
+                // Trier par nom alphabétique (funcname prioritaire, sinon exo_name)
+                this.allExercises = (result.data.exercises || []).sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameA.localeCompare(nameB);
+                });
                 this.renderExercisesList();
             }
         } catch (error) {
@@ -149,7 +151,8 @@ export class StudentListManager {
             const item = document.createElement('div');
             item.className = 'sidebar-list-item';
             item.dataset.exerciseId = exercise.exercise_id;
-            item.textContent = exercise.exo_name || `Exercice #${exercise.exercise_id}`;
+            // Utiliser funcname si disponible, sinon exo_name
+            item.textContent = exercise.funcname || exercise.exo_name || `Exercice #${exercise.exercise_id}`;
 
             item.addEventListener('click', () => {
                 document.querySelectorAll('.sidebar-list-item').forEach(el => el.classList.remove('active'));

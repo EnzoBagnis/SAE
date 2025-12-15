@@ -161,17 +161,19 @@ export class StudentContentManager {
                 url += `&resource_id=${this.resourceId}`;
             }
 
+            console.log('🔍 [Exercise] Chargement:', url);
             const response = await fetch(url);
-            if (!response.ok) throw new Error('Erreur lors du chargement');
 
             const result = await response.json();
+            console.log('📦 [Exercise] Données reçues:', result);
+
             if (result.success) {
-                this.renderExerciseAttempts(dataZone, result.data.exercise, result.data.attempts || result.data.students);
+                this.renderExerciseAttempts(dataZone, result.data.exercise, result.data.students || []);
             } else {
-                dataZone.innerHTML = '<p class="placeholder-message">Erreur lors du chargement des données</p>';
+                dataZone.innerHTML = `<p class="placeholder-message">Erreur: ${result.message || 'Impossible de charger les données'}</p>`;
             }
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('❌ [Exercise] Erreur:', error);
             dataZone.innerHTML = '<p class="placeholder-message">Erreur lors du chargement des tentatives</p>';
         }
     }
@@ -185,22 +187,27 @@ export class StudentContentManager {
     renderExerciseAttempts(dataZone, exercise, attempts) {
         dataZone.innerHTML = '';
 
-        // Titre de l'exercice
+        // Titre de l'exercice (funcname prioritaire, sinon exo_name)
         const titleElement = document.createElement('h2');
-        titleElement.textContent = exercise.exo_name || 'Exercice sans nom';
+        titleElement.textContent = exercise.funcname || exercise.exo_name || 'Exercice sans nom';
         dataZone.appendChild(titleElement);
 
         // Info exercice
-        if (exercise.description || exercise.funcname) {
+        if (exercise.description || exercise.exo_name) {
             const exerciseInfo = document.createElement('div');
             exerciseInfo.style.marginBottom = '1.5rem';
             exerciseInfo.style.padding = '1rem';
             exerciseInfo.style.backgroundColor = '#ecf0f1';
             exerciseInfo.style.borderRadius = '0.5rem';
-            exerciseInfo.innerHTML = `
-                ${exercise.funcname ? `<strong>Fonction:</strong> <code>${exercise.funcname}</code><br>` : ''}
-                ${exercise.description ? `<strong>Description:</strong> ${exercise.description}` : ''}
-            `;
+
+            let infoHtml = '';
+            if (exercise.funcname && exercise.exo_name) {
+                infoHtml += `<strong>ID:</strong> <code style="font-size: 0.85rem;">${exercise.exo_name}</code><br>`;
+            }
+            if (exercise.description) {
+                infoHtml += `<strong>Description:</strong> ${exercise.description}`;
+            }
+            exerciseInfo.innerHTML = infoHtml || 'Aucune description disponible';
             dataZone.appendChild(exerciseInfo);
         }
 
