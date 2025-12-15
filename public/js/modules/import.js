@@ -227,7 +227,7 @@ async function importExercises() {
         }
 
         // Appel API pour importer les exercices
-        const response = await fetch('index.php?action=api/exercises/import', {
+        const response = await fetch('api_import_exercises.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -308,7 +308,7 @@ async function importAttempts() {
         }
 
         // Appel API pour importer les tentatives
-        const response = await fetch('index.php?action=api/attempts/import', {
+        const response = await fetch('api_import_attempts.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
