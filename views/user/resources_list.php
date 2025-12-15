@@ -144,7 +144,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
         </button>
 
         <nav class="nav-menu">
-            <a href="/index.php?action=resources_list" class="active">Tableau de bord</a>
+            <a href="/index.php?action=resources_list" class="active">Ressources</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
             <a href="/index.php?action=mentions">Mentions légales</a>
         </nav>
