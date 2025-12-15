@@ -225,7 +225,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                         $ownerFullName = $resource->owner_firstname . ' ' .
                                          $resource->owner_lastname;
                         ?>
-                        <a href="/index.php?action=dashboard&id=<?=
+                        <a href="/index.php?action=dashboard&resource_id=<?=
                                    $resource->resource_id ?>"
                             class="resource-card"
                             data-name="<?= htmlspecialchars($resource->resource_name) ?>"

@@ -33,7 +33,9 @@ class Database
             );
             return $pdo;
         } catch (PDOException $e) {
-            die("Connection error: " . $e->getMessage());
+            // Log l'erreur et lancer une exception au lieu de die()
+            error_log("Database connection error: " . $e->getMessage());
+            throw new Exception("Erreur de connexion à la base de données");
         }
     }
 }

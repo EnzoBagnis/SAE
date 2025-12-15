@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../public/css/dashboard.css">
      <link rel="stylesheet" href="../public/css/footer.css">
     <script src="../public/js/modules/import.js"></script>
-    <script src="../public/js/dashboard-main.js"></script>
+    <script type="module" src="../public/js/dashboard-main.js"></script>
 
 
     <!-- SEO Meta Tags -->
