@@ -91,9 +91,16 @@ export class StudentListManager {
         if (!studentList) return;
 
         if (students.length === 0 && this.currentPage === 1) {
-            studentList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Aucun étudiant disponible</p>';
+            studentList.innerHTML = '<p class="empty-message">Aucun étudiant disponible</p>';
             return;
         }
+
+        // Sort students by ID (user_id numeric sort)
+        students.sort((a, b) => {
+            const idA = parseInt(a.id) || 0;
+            const idB = parseInt(b.id) || 0;
+            return idA - idB;
+        });
 
         students.forEach((student) => {
             if (!this.allStudents.find(s => s.id === student.id)) {
@@ -101,15 +108,19 @@ export class StudentListManager {
             }
 
             const studentItem = document.createElement('div');
-            studentItem.className = 'student-item';
+            studentItem.className = 'student-item list-item';
             studentItem.dataset.studentId = student.id;
 
-            const title = document.createElement('h3');
+            const title = document.createElement('span');
+            title.className = 'item-title';
             title.textContent = student.title;
             studentItem.appendChild(title);
 
             studentItem.addEventListener('click', () => {
                 window.dispatchEvent(new CustomEvent('studentSelected', { detail: student.id }));
+                // Update active state
+                document.querySelectorAll('.student-item').forEach(item => item.classList.remove('active'));
+                studentItem.classList.add('active');
             });
 
             studentList.appendChild(studentItem);
@@ -166,5 +177,130 @@ export class StudentListManager {
 
     getResourceId() {
         return this.resourceId;
+    }
+
+    /**
+     * Switch between students and exercises view
+     * @param {string} view - The view to switch to ('students' or 'exercises')
+     */
+    switchView(view) {
+        const studentsContainer = document.getElementById('students-list-container');
+        const exercisesContainer = document.getElementById('exercises-list-container');
+        const btnStudents = document.getElementById('btnStudents');
+        const btnExercises = document.getElementById('btnExercises');
+
+        if (view === 'students') {
+            studentsContainer.style.display = 'block';
+            exercisesContainer.style.display = 'none';
+            btnStudents.classList.add('active');
+            btnExercises.classList.remove('active');
+        } else if (view === 'exercises') {
+            studentsContainer.style.display = 'none';
+            exercisesContainer.style.display = 'block';
+            btnStudents.classList.remove('active');
+            btnExercises.classList.add('active');
+            // Load exercises if not already loaded
+            this.loadExercises();
+        }
+    }
+
+    /**
+     * Toggle accordion section
+     * @param {string} accordionId - The ID of the accordion content to toggle
+     */
+    toggleAccordion(accordionId) {
+        const accordionContent = document.getElementById(accordionId);
+        const accordionArrow = document.getElementById(accordionId + '-arrow');
+
+        if (accordionContent && accordionArrow) {
+            accordionContent.classList.toggle('active');
+            accordionArrow.classList.toggle('rotated');
+        }
+    }
+
+    /**
+     * Load exercises from the server
+     */
+    async loadExercises() {
+        const exerciseList = document.getElementById('exercise-list');
+
+        // Skip if already loaded
+        if (exerciseList.children.length > 0) return;
+
+        exerciseList.innerHTML = '<div class="loading-message" style="text-align: center; padding: 1rem; color: #3498db;">⏳ Chargement...</div>';
+
+        try {
+            let url = '/index.php?action=exercises';
+            if (this.resourceId) {
+                url += `&resource_id=${this.resourceId}`;
+            }
+
+            console.log('🔍 [ExerciseList] Chargement des exercices:', url);
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error('Erreur lors du chargement des exercices');
+            }
+
+            const result = await response.json();
+            console.log('📦 [ExerciseList] Données reçues:', result);
+
+            if (result.success) {
+                this.displayExercises(result.data.exercises);
+            } else {
+                exerciseList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Erreur de chargement</p>';
+            }
+        } catch (error) {
+            console.error('❌ [ExerciseList] Erreur:', error);
+            exerciseList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Erreur de chargement</p>';
+        }
+    }
+
+    /**
+     * Display exercises in the sidebar
+     * @param {Array} exercises - Array of exercise objects
+     */
+    displayExercises(exercises) {
+        const exerciseList = document.getElementById('exercise-list');
+        exerciseList.innerHTML = '';
+
+        if (!exercises || exercises.length === 0) {
+            exerciseList.innerHTML = '<p class="empty-message">Aucun exercice disponible</p>';
+            return;
+        }
+
+        // Sort exercises by name
+        exercises.sort((a, b) => (a.exo_name || '').localeCompare(b.exo_name || ''));
+
+        exercises.forEach((exercise) => {
+            const exerciseItem = document.createElement('div');
+            exerciseItem.className = 'list-item exercise-item';
+            exerciseItem.dataset.exerciseId = exercise.exercise_id;
+
+            // Difficulty badge
+            const difficultyClass = exercise.difficulte || 'moyen';
+            const difficultyLabels = {
+                'facile': 'Facile',
+                'moyen': 'Moyen',
+                'difficile': 'Difficile'
+            };
+
+            exerciseItem.innerHTML = `
+                <div class="item-content">
+                    <span class="item-title">${exercise.exo_name || 'Exercice sans nom'}</span>
+                    ${exercise.difficulte ? `<span class="difficulty-badge ${difficultyClass}">${difficultyLabels[exercise.difficulte] || exercise.difficulte}</span>` : ''}
+                </div>
+            `;
+
+            exerciseItem.addEventListener('click', () => {
+                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.exercise_id }));
+                // Update active state
+                document.querySelectorAll('.exercise-item').forEach(item => item.classList.remove('active'));
+                exerciseItem.classList.add('active');
+            });
+
+            exerciseList.appendChild(exerciseItem);
+        });
     }
 }

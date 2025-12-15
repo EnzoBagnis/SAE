@@ -98,12 +98,11 @@
     height: 16px;
 }
 
-/* Sidebar */
+/* Sidebar - Design Accordéon style mobile */
 .sidebar {
     width: 300px;
-    background: #ecf0f1;
-    padding: 2rem;
-    border-right: 1px solid #bdc3c7;
+    background: #2c3e50;
+    border-right: 1px solid #1a252f;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -112,51 +111,248 @@
     overflow: hidden;
 }
 
-.sidebar h2 {
-    margin-top: 0;
-    color: #2c3e50;
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
+.sidebar-accordion {
+    padding: 0;
+}
+
+.sidebar-header {
+    padding: 1.25rem 1.5rem;
+    background: #34495e;
+    border-bottom: 2px solid #3498db;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* Sélecteur de vue (Étudiants / TP) */
+.view-selector {
+    display: flex;
+    background: #1a252f;
+    border-bottom: 1px solid #34495e;
+}
+
+.view-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    background: transparent;
+    border: none;
+    color: #bdc3c7;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.view-btn:hover {
+    background: #2c3e50;
+    color: white;
+}
+
+.view-btn.active {
+    background: #2c3e50;
+    color: #3498db;
+    border-bottom-color: #3498db;
+}
+
+.view-btn svg {
+    stroke: currentColor;
+}
+
+/* Accordéon */
+.accordion-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: #34495e;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1rem;
+    border-bottom: 1px solid #2c3e50;
+    transition: background 0.3s;
+}
+
+.accordion-header:hover {
+    background: #3d566e;
+}
+
+.accordion-arrow {
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.accordion-arrow.rotated {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    flex: 1;
+    max-height: 0;
+    overflow: hidden;
+    background: #1a252f;
+    transition: max-height 0.3s ease;
+}
+
+.accordion-content.active {
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+/* Liste des items (étudiants ou exercices) */
+.list-items {
+    padding: 0.5rem 0;
+}
+
+.list-item {
+    display: block;
+    padding: 0.85rem 1.5rem;
+    color: #bdc3c7;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #2c3e50;
+    font-size: 0.95rem;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.list-item:hover {
+    background: #2c3e50;
+    color: white;
+    padding-left: 2rem;
+}
+
+.list-item.active {
+    background: #3498db;
+    color: white;
+}
+
+/* Item content avec badges */
+.item-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.item-title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badge de difficulté */
+.difficulty-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
     flex-shrink: 0;
 }
 
-.student-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1;
-    padding-right: 0.5rem;
-    height: 100%;
+.difficulty-badge.facile {
+    background: #27ae60;
+    color: white;
 }
 
-/* Student Items */
+.difficulty-badge.moyen {
+    background: #f39c12;
+    color: white;
+}
+
+.difficulty-badge.difficile {
+    background: #e74c3c;
+    color: white;
+}
+
+/* Message vide */
+.empty-message {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 2rem 1rem;
+    font-size: 0.95rem;
+}
+
+/* Student Items - Pour compatibilité */
 .student-item {
-    background: white;
-    padding: 1rem 1.25rem;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: block;
+    padding: 0.85rem 1.5rem;
+    color: #bdc3c7;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #2c3e50;
+    font-size: 0.95rem;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    border-left: none;
 }
 
 .student-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background: #2c3e50;
+    color: white;
+    padding-left: 2rem;
+    transform: none;
+    box-shadow: none;
 }
 
 .student-item.active {
-    border-left: 4px solid #3498db;
-    background: #e8f4f8;
+    background: #3498db;
+    color: white;
+    border-left: none;
 }
 
 .student-item h3 {
     margin: 0;
-    color: #2c3e50;
-    font-size: 1.1rem;
-    font-weight: 500;
+    color: inherit;
+    font-size: 0.95rem;
+    font-weight: 400;
+}
+
+/* Scrollbar styling pour sidebar sombre */
+.sidebar::-webkit-scrollbar,
+.accordion-content::-webkit-scrollbar,
+.list-items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.accordion-content::-webkit-scrollbar-track,
+.list-items::-webkit-scrollbar-track {
+    background: #1a252f;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.accordion-content::-webkit-scrollbar-thumb,
+.list-items::-webkit-scrollbar-thumb {
+    background: #4a6785;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.accordion-content::-webkit-scrollbar-thumb:hover,
+.list-items::-webkit-scrollbar-thumb:hover {
+    background: #5a7795;
 }
 
 /* Main Content */
@@ -194,28 +390,20 @@
     margin-top: 3rem;
 }
 
-/* Scrollbar styling */
-.student-list::-webkit-scrollbar,
-.sidebar::-webkit-scrollbar,
+/* Scrollbar styling pour main content */
 .main-content::-webkit-scrollbar {
     width: 8px;
 }
 
-.student-list::-webkit-scrollbar-track,
-.sidebar::-webkit-scrollbar-track,
 .main-content::-webkit-scrollbar-track {
     background: #f1f1f1;
 }
 
-.student-list::-webkit-scrollbar-thumb,
-.sidebar::-webkit-scrollbar-thumb,
 .main-content::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 4px;
 }
 
-.student-list::-webkit-scrollbar-thumb:hover,
-.sidebar::-webkit-scrollbar-thumb:hover,
 .main-content::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
