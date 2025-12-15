@@ -236,27 +236,43 @@ class ExercisesController extends \BaseController
     }
 
     /**
-     * Fetch all attempts for a specific exercise with student info
+     * Fetch all attempts for a specific exercise grouped by student
      *
      * @param int $exerciseId The exercise ID
-     * @return array Array of attempts with student details
+     * @return array Array of students with their attempts
      */
     private function fetchStudentsByExercise(int $exerciseId): array
     {
-        $sql = "SELECT a.attempt_id, a.student_id, a.exercise_id, a.upload, a.correct,
-                       a.submission_date, a.aes0, a.aes1, a.aes2,
-                       s.student_identifier, s.nom_fictif, s.prenom_fictif,
-                       e.exo_name, e.funcname, e.description
-                FROM attempts a
-                INNER JOIN students s ON a.student_id = s.student_id
-                INNER JOIN exercises e ON a.exercise_id = e.exercise_id
-                WHERE a.exercise_id = :exerciseId
-                ORDER BY s.student_identifier ASC, a.submission_date DESC";
+        // D'abord récupérer les étudiants avec le nombre de tentatives
+        $sqlStudents = "SELECT DISTINCT s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif,
+                               COUNT(a.attempt_id) as attempt_count
+                        FROM students s
+                        INNER JOIN attempts a ON s.student_id = a.student_id
+                        WHERE a.exercise_id = :exerciseId
+                        GROUP BY s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif
+                        ORDER BY s.student_identifier ASC";
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->prepare($sqlStudents);
         $stmt->execute(['exerciseId' => $exerciseId]);
+        $students = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        // Pour chaque étudiant, récupérer ses tentatives
+        $sqlAttempts = "SELECT a.attempt_id, a.upload, a.correct, a.submission_date,
+                               a.aes0, a.aes1, a.aes2
+                        FROM attempts a
+                        WHERE a.exercise_id = :exerciseId AND a.student_id = :studentId
+                        ORDER BY a.submission_date DESC";
+
+        foreach ($students as &$student) {
+            $stmtAttempts = $this->db->prepare($sqlAttempts);
+            $stmtAttempts->execute([
+                'exerciseId' => $exerciseId,
+                'studentId' => $student['student_id']
+            ]);
+            $student['attempts'] = $stmtAttempts->fetchAll(\PDO::FETCH_ASSOC);
+        }
+
+        return $students;
     }
 }
 

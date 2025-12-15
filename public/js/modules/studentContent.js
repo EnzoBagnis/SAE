@@ -179,12 +179,12 @@ export class StudentContentManager {
     }
 
     /**
-     * Render exercise with all student attempts (same style as student view)
+     * Render exercise with students and their collapsible attempts
      * @param {HTMLElement} dataZone - The container element
      * @param {Object} exercise - The exercise data
-     * @param {Array} attempts - List of attempts for this exercise
+     * @param {Array} students - List of students with their attempts
      */
-    renderExerciseAttempts(dataZone, exercise, attempts) {
+    renderExerciseAttempts(dataZone, exercise, students) {
         dataZone.innerHTML = '';
 
         // Titre de l'exercice (funcname prioritaire, sinon exo_name)
@@ -209,27 +209,199 @@ export class StudentContentManager {
         exerciseInfo.innerHTML = infoHtml || 'Aucune description disponible';
         dataZone.appendChild(exerciseInfo);
 
-        // Titre section tentatives
-        const attemptsHeader = document.createElement('h3');
-        attemptsHeader.style.marginBottom = '1rem';
-        attemptsHeader.style.color = '#2c3e50';
-        attemptsHeader.textContent = `Historique des tentatives (${attempts ? attempts.length : 0})`;
-        dataZone.appendChild(attemptsHeader);
+        // Titre section étudiants
+        const studentsHeader = document.createElement('h3');
+        studentsHeader.style.marginBottom = '1rem';
+        studentsHeader.style.color = '#2c3e50';
+        studentsHeader.textContent = `Étudiants ayant tenté cet exercice (${students ? students.length : 0})`;
+        dataZone.appendChild(studentsHeader);
 
-        if (!attempts || attempts.length === 0) {
-            const noAttempts = document.createElement('p');
-            noAttempts.className = 'placeholder-message';
-            noAttempts.textContent = 'Aucune tentative pour cet exercice';
-            dataZone.appendChild(noAttempts);
+        if (!students || students.length === 0) {
+            const noStudents = document.createElement('p');
+            noStudents.className = 'placeholder-message';
+            noStudents.textContent = 'Aucune tentative pour cet exercice';
+            dataZone.appendChild(noStudents);
             return;
         }
 
-        // Utiliser le même renderer que pour les étudiants
-        const { title, container } = this.attemptsRenderer.renderAttempts(attempts);
-        // Ne pas réafficher le titre car on l'a déjà
-        dataZone.appendChild(container);
+        // Container des étudiants
+        const studentsContainer = document.createElement('div');
+        studentsContainer.className = 'students-attempts-list';
+
+        students.forEach((student) => {
+            const studentCard = this.createStudentAttemptCard(student, exercise);
+            studentsContainer.appendChild(studentCard);
+        });
+
+        dataZone.appendChild(studentsContainer);
 
         const mainContent = document.querySelector('.main-content');
         if (mainContent) mainContent.scrollTop = 0;
+    }
+
+    /**
+     * Create a student card with collapsible attempts
+     * @param {Object} student - Student data with attempts
+     * @param {Object} exercise - Exercise data
+     */
+    createStudentAttemptCard(student, exercise) {
+        const card = document.createElement('div');
+        card.style.cssText = `
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        `;
+
+        // Header cliquable
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #eee;
+        `;
+        header.addEventListener('mouseenter', () => header.style.background = '#f8f9fa');
+        header.addEventListener('mouseleave', () => header.style.background = 'white');
+
+        const leftSection = document.createElement('div');
+        leftSection.style.cssText = 'display: flex; align-items: center; gap: 1rem;';
+
+        // Flèche
+        const arrow = document.createElement('span');
+        arrow.textContent = '▶';
+        arrow.style.cssText = 'font-size: 0.8rem; color: #666; transition: transform 0.3s;';
+
+        // Info étudiant
+        const studentInfo = document.createElement('div');
+        const studentName = student.student_identifier || `Étudiant #${student.student_id}`;
+        studentInfo.innerHTML = `<strong style="color: #2c3e50;">${studentName}</strong>`;
+
+        leftSection.appendChild(arrow);
+        leftSection.appendChild(studentInfo);
+
+        // Badge nombre de tentatives
+        const badge = document.createElement('span');
+        const attemptCount = student.attempt_count || (student.attempts ? student.attempts.length : 0);
+        badge.textContent = `${attemptCount} tentative${attemptCount > 1 ? 's' : ''}`;
+        badge.style.cssText = `
+            background: #3498db;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        `;
+
+        header.appendChild(leftSection);
+        header.appendChild(badge);
+
+        // Contenu déroulable (tentatives)
+        const content = document.createElement('div');
+        content.style.cssText = 'display: none; padding: 1rem 1.5rem; background: #f8f9fa;';
+
+        // Afficher les tentatives de cet étudiant
+        if (student.attempts && student.attempts.length > 0) {
+            student.attempts.forEach((attempt, index) => {
+                const attemptItem = this.createAttemptItem(attempt, index, student.attempts.length);
+                content.appendChild(attemptItem);
+            });
+        } else {
+            content.innerHTML = '<p style="color: #7f8c8d; text-align: center;">Aucune tentative détaillée disponible</p>';
+        }
+
+        // Toggle au clic
+        header.addEventListener('click', () => {
+            const isOpen = content.style.display !== 'none';
+            content.style.display = isOpen ? 'none' : 'block';
+            arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+        });
+
+        card.appendChild(header);
+        card.appendChild(content);
+
+        return card;
+    }
+
+    /**
+     * Create an attempt item inside the collapsible section
+     * @param {Object} attempt - Attempt data
+     * @param {number} index - Index of the attempt
+     * @param {number} total - Total number of attempts
+     */
+    createAttemptItem(attempt, index, total) {
+        const item = document.createElement('div');
+        item.style.cssText = `
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        `;
+
+        // Header de la tentative
+        const header = document.createElement('div');
+        header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;';
+
+        const attemptNumber = document.createElement('span');
+        attemptNumber.style.cssText = 'font-weight: 600; color: #2c3e50;';
+        attemptNumber.textContent = `Tentative #${total - index}`;
+
+        const statusBadge = document.createElement('span');
+        const isCorrect = attempt.correct === 1 || attempt.correct === '1';
+        statusBadge.textContent = isCorrect ? '✓ Réussi' : '✗ Échoué';
+        statusBadge.style.cssText = `
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: ${isCorrect ? '#d4edda' : '#f8d7da'};
+            color: ${isCorrect ? '#155724' : '#721c24'};
+        `;
+
+        header.appendChild(attemptNumber);
+        header.appendChild(statusBadge);
+
+        // Date
+        const dateDiv = document.createElement('div');
+        dateDiv.style.cssText = 'font-size: 0.85rem; color: #666; margin-bottom: 0.5rem;';
+        const dateStr = attempt.submission_date ?
+            new Date(attempt.submission_date).toLocaleString('fr-FR') : 'Date inconnue';
+        dateDiv.textContent = `📅 ${dateStr}`;
+
+        item.appendChild(header);
+        item.appendChild(dateDiv);
+
+        // Code soumis
+        if (attempt.upload) {
+            const codeSection = document.createElement('details');
+            codeSection.style.marginTop = '0.5rem';
+
+            const summary = document.createElement('summary');
+            summary.style.cssText = 'cursor: pointer; color: #3498db; font-size: 0.9rem;';
+            summary.textContent = '👁 Voir le code soumis';
+
+            const codeBlock = document.createElement('pre');
+            codeBlock.style.cssText = `
+                background: #2c3e50;
+                color: #ecf0f1;
+                padding: 1rem;
+                border-radius: 4px;
+                overflow-x: auto;
+                font-size: 0.85rem;
+                margin-top: 0.5rem;
+            `;
+            codeBlock.textContent = attempt.upload;
+
+            codeSection.appendChild(summary);
+            codeSection.appendChild(codeBlock);
+            item.appendChild(codeSection);
+        }
+
+        return item;
     }
 }
