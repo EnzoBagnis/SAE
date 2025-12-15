@@ -98,9 +98,9 @@
     height: 16px;
 }
 
-/* Sidebar - Design Accordéon style mobile */
+/* Sidebar - Design style mobile simplifié */
 .sidebar {
-    width: 300px;
+    width: 280px;
     background: #2c3e50;
     border-right: 1px solid #1a252f;
     flex-shrink: 0;
@@ -111,248 +111,103 @@
     overflow: hidden;
 }
 
-.sidebar-accordion {
+.sidebar-mobile-style {
     padding: 0;
 }
 
-.sidebar-header {
-    padding: 1.25rem 1.5rem;
-    background: #34495e;
-    border-bottom: 2px solid #3498db;
-}
-
-.sidebar-header h2 {
-    margin: 0;
-    color: white;
-    font-size: 1.3rem;
-    font-weight: 600;
-}
-
-/* Sélecteur de vue (Étudiants / TP) */
-.view-selector {
+/* Header avec les deux boutons côte à côte */
+.view-selector-header {
     display: flex;
-    background: #1a252f;
-    border-bottom: 1px solid #34495e;
+    background: #34495e;
+    border-bottom: 1px solid #1a252f;
 }
 
-.view-btn {
+.view-tab {
     flex: 1;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.85rem 1rem;
-    background: transparent;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: #2c3e50;
     border: none;
-    color: #bdc3c7;
-    font-size: 0.9rem;
+    color: white;
+    font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
 }
 
-.view-btn:hover {
-    background: #2c3e50;
-    color: white;
+.view-tab:first-child {
+    border-right: 1px solid #1a252f;
 }
 
-.view-btn.active {
-    background: #2c3e50;
-    color: #3498db;
+.view-tab:hover {
+    background: #34495e;
+}
+
+.view-tab.active {
+    background: #1a252f;
     border-bottom-color: #3498db;
 }
 
-.view-btn svg {
-    stroke: currentColor;
-}
-
-/* Accordéon */
-.accordion-list {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.accordion-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-    background: #34495e;
-    color: white;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 1rem;
-    border-bottom: 1px solid #2c3e50;
-    transition: background 0.3s;
-}
-
-.accordion-header:hover {
-    background: #3d566e;
-}
-
-.accordion-arrow {
-    font-size: 0.8rem;
-    transition: transform 0.3s ease;
-}
-
-.accordion-arrow.rotated {
-    transform: rotate(180deg);
-}
-
-.accordion-content {
-    flex: 1;
-    max-height: 0;
-    overflow: hidden;
-    background: #1a252f;
-    transition: max-height 0.3s ease;
-}
-
-.accordion-content.active {
-    max-height: 100%;
-    overflow-y: auto;
-}
-
-/* Liste des items (étudiants ou exercices) */
-.list-items {
-    padding: 0.5rem 0;
-}
-
-.list-item {
-    display: block;
-    padding: 0.85rem 1.5rem;
-    color: #bdc3c7;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid #2c3e50;
-    font-size: 0.95rem;
-}
-
-.list-item:last-child {
-    border-bottom: none;
-}
-
-.list-item:hover {
-    background: #2c3e50;
-    color: white;
-    padding-left: 2rem;
-}
-
-.list-item.active {
-    background: #3498db;
-    color: white;
-}
-
-/* Item content avec badges */
-.item-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-}
-
-.item-title {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Badge de difficulté */
-.difficulty-badge {
-    padding: 0.2rem 0.5rem;
-    border-radius: 12px;
+.view-tab .toggle-arrow {
     font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    flex-shrink: 0;
-}
-
-.difficulty-badge.facile {
-    background: #27ae60;
-    color: white;
-}
-
-.difficulty-badge.moyen {
-    background: #f39c12;
-    color: white;
-}
-
-.difficulty-badge.difficile {
-    background: #e74c3c;
-    color: white;
-}
-
-/* Message vide */
-.empty-message {
-    text-align: center;
     color: #7f8c8d;
-    padding: 2rem 1rem;
-    font-size: 0.95rem;
 }
 
-/* Student Items - Pour compatibilité */
-.student-item {
+/* Liste scrollable */
+.sidebar-list {
+    flex: 1;
+    overflow-y: auto;
+    background: #1a252f;
+}
+
+/* Items de la liste (étudiants ou TP) */
+.sidebar-list-item {
     display: block;
-    padding: 0.85rem 1.5rem;
+    padding: 0.9rem 1.5rem;
     color: #bdc3c7;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     border-bottom: 1px solid #2c3e50;
     font-size: 0.95rem;
-    background: transparent;
-    border-radius: 0;
-    box-shadow: none;
-    border-left: none;
 }
 
-.student-item:hover {
+.sidebar-list-item:hover {
     background: #2c3e50;
     color: white;
-    padding-left: 2rem;
-    transform: none;
-    box-shadow: none;
 }
 
-.student-item.active {
+.sidebar-list-item.active {
     background: #3498db;
     color: white;
-    border-left: none;
 }
 
-.student-item h3 {
-    margin: 0;
-    color: inherit;
-    font-size: 0.95rem;
-    font-weight: 400;
-}
-
-/* Scrollbar styling pour sidebar sombre */
-.sidebar::-webkit-scrollbar,
-.accordion-content::-webkit-scrollbar,
-.list-items::-webkit-scrollbar {
+/* Scrollbar pour la sidebar */
+.sidebar-list::-webkit-scrollbar {
     width: 6px;
 }
 
-.sidebar::-webkit-scrollbar-track,
-.accordion-content::-webkit-scrollbar-track,
-.list-items::-webkit-scrollbar-track {
+.sidebar-list::-webkit-scrollbar-track {
     background: #1a252f;
 }
 
-.sidebar::-webkit-scrollbar-thumb,
-.accordion-content::-webkit-scrollbar-thumb,
-.list-items::-webkit-scrollbar-thumb {
+.sidebar-list::-webkit-scrollbar-thumb {
     background: #4a6785;
     border-radius: 3px;
 }
 
-.sidebar::-webkit-scrollbar-thumb:hover,
-.accordion-content::-webkit-scrollbar-thumb:hover,
-.list-items::-webkit-scrollbar-thumb:hover {
+.sidebar-list::-webkit-scrollbar-thumb:hover {
     background: #5a7795;
+}
+
+/* Message vide ou chargement */
+.sidebar-message {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
 }
 
 /* Main Content */

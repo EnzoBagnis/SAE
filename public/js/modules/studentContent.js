@@ -146,106 +146,125 @@ export class StudentContentManager {
     }
 
     /**
-     * Select an exercise and display its details
+     * Select an exercise and display all student attempts for this exercise
      * @param {number} exerciseId - The ID of the exercise to select
      */
     async selectExercise(exerciseId) {
         const dataZone = document.querySelector('.data-zone');
         if (!dataZone) return;
 
-        dataZone.innerHTML = '<div class="loading-spinner">⏳ Chargement de l\'exercice...</div>';
+        dataZone.innerHTML = '<div class="loading-spinner">⏳ Chargement des tentatives...</div>';
 
         try {
-            // Build URL with resource_id if available
             let url = `/index.php?action=exercise&id=${exerciseId}`;
             if (this.resourceId) {
                 url += `&resource_id=${this.resourceId}`;
             }
 
             const response = await fetch(url);
-            if (!response.ok) throw new Error('Erreur lors du chargement de l\'exercice');
+            if (!response.ok) throw new Error('Erreur lors du chargement');
 
             const result = await response.json();
             if (result.success) {
-                this.renderExerciseData(dataZone, result.data.exercise, result.data.students);
+                this.renderExerciseAttempts(dataZone, result.data.exercise, result.data.attempts || result.data.students);
             } else {
-                // If API not available yet, show basic info
-                dataZone.innerHTML = `
-                    <div class="exercise-details">
-                        <h2>Exercice #${exerciseId}</h2>
-                        <p class="placeholder-message">Détails de l'exercice en cours de chargement...</p>
-                    </div>
-                `;
+                dataZone.innerHTML = '<p class="placeholder-message">Erreur lors du chargement des données</p>';
             }
         } catch (error) {
             console.error('Erreur:', error);
-            // Show placeholder if exercise API is not implemented
-            dataZone.innerHTML = `
-                <div class="exercise-details">
-                    <h2>Exercice sélectionné</h2>
-                    <p class="placeholder-message">L'affichage détaillé des exercices sera disponible prochainement.</p>
-                </div>
-            `;
+            dataZone.innerHTML = '<p class="placeholder-message">Erreur lors du chargement des tentatives</p>';
         }
     }
 
     /**
-     * Render exercise data in the content area
+     * Render exercise with all student attempts
      * @param {HTMLElement} dataZone - The container element
      * @param {Object} exercise - The exercise data
-     * @param {Array} students - List of students who attempted the exercise
+     * @param {Array} attempts - List of student attempts for this exercise
      */
-    renderExerciseData(dataZone, exercise, students) {
+    renderExerciseAttempts(dataZone, exercise, attempts) {
         dataZone.innerHTML = '';
 
+        // Titre de l'exercice
         const titleElement = document.createElement('h2');
         titleElement.textContent = exercise.exo_name || 'Exercice sans nom';
-        titleElement.style.marginBottom = '1.5rem';
         dataZone.appendChild(titleElement);
 
-        // Exercise info card
-        const exerciseInfo = document.createElement('div');
-        exerciseInfo.className = 'exercise-info-card';
-        exerciseInfo.style.marginBottom = '1.5rem';
-        exerciseInfo.style.padding = '1rem';
-        exerciseInfo.style.backgroundColor = '#ecf0f1';
-        exerciseInfo.style.borderRadius = '0.5rem';
-
-        const difficultyColors = {
-            'facile': '#27ae60',
-            'moyen': '#f39c12',
-            'difficile': '#e74c3c'
-        };
-        const difficultyLabels = {
-            'facile': 'Facile',
-            'moyen': 'Moyen',
-            'difficile': 'Difficile'
-        };
-
-        exerciseInfo.innerHTML = `
-            ${exercise.funcname ? `<strong>Fonction:</strong> ${exercise.funcname}<br>` : ''}
-            ${exercise.description ? `<strong>Description:</strong> ${exercise.description}<br>` : ''}
-            ${exercise.difficulte ? `<strong>Difficulté:</strong> <span style="color: ${difficultyColors[exercise.difficulte] || '#333'}">${difficultyLabels[exercise.difficulte] || exercise.difficulte}</span><br>` : ''}
-            ${exercise.resource_name ? `<strong>Ressource:</strong> ${exercise.resource_name}` : ''}
-        `;
-        dataZone.appendChild(exerciseInfo);
-
-        // Students who attempted this exercise
-        if (students && students.length > 0) {
-            const studentsSection = document.createElement('div');
-            studentsSection.innerHTML = `
-                <h3 style="margin-bottom: 1rem; color: #2c3e50;">Étudiants ayant tenté cet exercice (${students.length})</h3>
-                <div class="students-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;">
-                    ${students.map(s => `
-                        <div class="student-card" style="padding: 0.75rem; background: white; border-radius: 4px; border: 1px solid #dee2e6; cursor: pointer;" 
-                             onclick="window.dispatchEvent(new CustomEvent('studentSelected', { detail: ${s.student_id} }))">
-                            ${s.student_identifier || 'Étudiant #' + s.student_id}
-                        </div>
-                    `).join('')}
-                </div>
+        // Info exercice
+        if (exercise.description || exercise.funcname) {
+            const exerciseInfo = document.createElement('div');
+            exerciseInfo.style.marginBottom = '1.5rem';
+            exerciseInfo.style.padding = '1rem';
+            exerciseInfo.style.backgroundColor = '#ecf0f1';
+            exerciseInfo.style.borderRadius = '0.5rem';
+            exerciseInfo.innerHTML = `
+                ${exercise.funcname ? `<strong>Fonction:</strong> <code>${exercise.funcname}</code><br>` : ''}
+                ${exercise.description ? `<strong>Description:</strong> ${exercise.description}` : ''}
             `;
-            dataZone.appendChild(studentsSection);
+            dataZone.appendChild(exerciseInfo);
         }
+
+        // Titre section tentatives
+        const attemptsHeader = document.createElement('h3');
+        attemptsHeader.style.marginBottom = '1rem';
+        attemptsHeader.style.color = '#2c3e50';
+        attemptsHeader.textContent = `Tentatives des étudiants (${attempts ? attempts.length : 0})`;
+        dataZone.appendChild(attemptsHeader);
+
+        if (!attempts || attempts.length === 0) {
+            const noAttempts = document.createElement('p');
+            noAttempts.className = 'placeholder-message';
+            noAttempts.textContent = 'Aucune tentative pour cet exercice';
+            dataZone.appendChild(noAttempts);
+            return;
+        }
+
+        // Container des tentatives
+        const attemptsContainer = document.createElement('div');
+        attemptsContainer.className = 'attempts-list';
+
+        attempts.forEach((attempt, index) => {
+            const attemptCard = document.createElement('div');
+            attemptCard.className = 'attempt-card';
+            attemptCard.style.cssText = `
+                background: white;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                cursor: pointer;
+                transition: box-shadow 0.2s;
+            `;
+            attemptCard.addEventListener('mouseover', () => {
+                attemptCard.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            });
+            attemptCard.addEventListener('mouseout', () => {
+                attemptCard.style.boxShadow = 'none';
+            });
+
+            // Header de la carte
+            const studentName = attempt.student_identifier || attempt.nom_fictif || `Étudiant #${attempt.student_id}`;
+            const attemptCount = attempt.attempt_count || 1;
+
+            attemptCard.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: #2c3e50;">${studentName}</strong>
+                    <span style="background: #3498db; color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem;">
+                        ${attemptCount} tentative${attemptCount > 1 ? 's' : ''}
+                    </span>
+                </div>
+                ${attempt.prenom_fictif ? `<div style="color: #7f8c8d; font-size: 0.9rem;">Prénom: ${attempt.prenom_fictif}</div>` : ''}
+            `;
+
+            // Click pour voir les détails de l'étudiant
+            attemptCard.addEventListener('click', () => {
+                window.dispatchEvent(new CustomEvent('studentSelected', { detail: attempt.student_id }));
+            });
+
+            attemptsContainer.appendChild(attemptCard);
+        });
+
+        dataZone.appendChild(attemptsContainer);
 
         const mainContent = document.querySelector('.main-content');
         if (mainContent) mainContent.scrollTop = 0;

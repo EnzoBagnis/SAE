@@ -78,59 +78,23 @@
     </nav>
 
     <div class="dashboard-container">
-        <!-- Sidebar gauche - Design accordéon style mobile -->
-        <aside class="sidebar sidebar-accordion">
-            <div class="sidebar-header">
-                <h2>Navigation</h2>
-            </div>
-
-            <!-- Sélecteur de vue -->
-            <div class="view-selector">
-                <button class="view-btn active" id="btnStudents" onclick="switchListView('students')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    Étudiants
+        <!-- Sidebar gauche - Design style mobile -->
+        <aside class="sidebar sidebar-mobile-style">
+            <!-- Sélecteur de vue côte à côte -->
+            <div class="view-selector-header">
+                <button class="view-tab active" id="btnStudents" onclick="switchListView('students')">
+                    Liste des Étudiants
+                    <span class="toggle-arrow">▲</span>
                 </button>
-                <button class="view-btn" id="btnExercises" onclick="switchListView('exercises')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    TP / Exercices
+                <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
+                    Liste des TP
+                    <span class="toggle-arrow">▲</span>
                 </button>
             </div>
 
-            <!-- Liste des étudiants (accordéon) -->
-            <div class="accordion-list" id="students-list-container">
-                <div class="accordion-header" onclick="toggleAccordion('students-accordion')">
-                    <span>Liste des Étudiants</span>
-                    <span class="accordion-arrow" id="students-accordion-arrow">▼</span>
-                </div>
-                <div class="accordion-content active" id="students-accordion">
-                    <div class="list-items" id="student-list">
-                        <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Liste des TP/Exercices (accordéon) -->
-            <div class="accordion-list" id="exercises-list-container" style="display: none;">
-                <div class="accordion-header" onclick="toggleAccordion('exercises-accordion')">
-                    <span>Liste des TP</span>
-                    <span class="accordion-arrow" id="exercises-accordion-arrow">▼</span>
-                </div>
-                <div class="accordion-content active" id="exercises-accordion">
-                    <div class="list-items" id="exercise-list">
-                        <!-- La liste des exercices sera ajoutée ici dynamiquement via JavaScript -->
-                    </div>
-                </div>
+            <!-- Liste unique qui change selon le mode -->
+            <div class="sidebar-list" id="sidebar-list">
+                <!-- Contenu dynamique : étudiants ou exercices -->
             </div>
         </aside>
 
