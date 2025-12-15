@@ -2,7 +2,7 @@
 namespace Controllers\Analysis;
 
 require_once __DIR__ . '/../BaseController.php';
-require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../models/Database.php';
 
 /**
  * ImportController - Gère l'import de données JSON
@@ -36,18 +36,26 @@ class ImportController extends \BaseController {
         try {
             // Récupérer les données JSON
             $json_data = file_get_contents('php://input');
+
+            // Log pour debug
+            error_log("Import exercises - Raw data length: " . strlen($json_data));
+
             $data = json_decode($json_data, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('JSON invalide');
+                error_log("JSON decode error: " . json_last_error_msg());
+                throw new \Exception('JSON invalide: ' . json_last_error_msg());
             }
 
             // Valider la structure
             if (!isset($data['exercises']) || !is_array($data['exercises'])) {
+                error_log("Invalid structure - keys: " . implode(', ', array_keys($data)));
                 throw new \Exception('Format JSON invalide - "exercises" array requis');
             }
 
             $exercises = $data['exercises'];
+            error_log("Processing " . count($exercises) . " exercises");
+
             $success_count = 0;
             $error_count = 0;
             $errors = [];
@@ -115,6 +123,8 @@ class ImportController extends \BaseController {
 
             $this->db->commit();
 
+            error_log("Import completed - Success: $success_count, Errors: $error_count");
+
             echo json_encode([
                 'success' => true,
                 'count' => count($exercises),
@@ -127,8 +137,9 @@ class ImportController extends \BaseController {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
+            error_log("Import error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             http_response_code(400);
-            echo json_encode(['error' => $e->getMessage()]);
+            echo json_encode(['error' => $e->getMessage(), 'trace' => $e->getFile() . ':' . $e->getLine()]);
         }
     }
 

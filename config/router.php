@@ -132,12 +132,7 @@ class Router
                 $this->loadNamespacedController('Controllers\Analysis\VisualizationController', 'getData');
                 break;
 
-            default:
-                $this->loadController('HomeController', 'index');
-                break;
-
             // ========== IMPORT - API ==========
-
             case 'api/exercises/import':
             case 'import-exercises':
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -156,6 +151,10 @@ class Router
                     http_response_code(405);
                     echo json_encode(['error' => 'Méthode non autorisée']);
                 }
+                break;
+
+            default:
+                $this->loadController('HomeController', 'index');
                 break;
         }
     }
