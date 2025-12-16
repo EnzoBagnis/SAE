@@ -42,25 +42,34 @@ class User
     }
 
     /**
-     * READ - Find a user by email
+     * CREATE - Create a new user
+     * @param string $lastName User's last name
+     * @param string $firstName User's first name
      * @param string $email User's email address
-     * @return array|false User data or false if not found
+     * @param string $password User's password (will be hashed)
+     * @param string|null $verificationCode Verification code for email
+     * @param int $isVerified Whether email is verified (0 or 1)
+     * @return bool Success status
      */
-
-    public function createBanUser($mail, $duree_ban)
+    public function switchUser($id)
     {
+        $user = $this->findByIdInPending($id);
+
         $stmt = $this->pdo->prepare(
-            "INSERT INTO utilisateurs_bloques (mail, duree_ban, date_de_ban)
-            VALUES (:mail, :duree_ban, CURRENT_TIMESTAMP)"
+            "INSERT INTO utilisateurs (nom, prenom, mdp, mail, code_verif, date_creation) 
+             VALUES (:nom, :prenom, :mdp, :mail, :code_verif, :date_creation)"
         );
-        return $stmt->execute([
-            'mail' => $mail,
-            'duree_ban' => $duree_ban
+
+        $stmt->execute([
+            'nom' => $user['nom'],
+            'prenom' => $user['prenom'],
+            'mdp' => $user['mdp'],
+            'mail' => $user['mail'],
+            'code_verif' => $user['code_verif'],
+            'date_creation' => $user['date_creation']
         ]);
-
+        return $this->delete("P", $id);
     }
-
-
 
     /**
      * READ - Find a user by email
@@ -99,15 +108,15 @@ class User
     }
 
     /**
-     * READ - Find all blocked user
-     * FOR ADMIN PANEL
-     * @return array User data
+     * READ - Find a user by ID
+     * @param int $id User's ID
+     * @return array|false User data or false if not found
      */
-    public function showBlockedUser()
+    public function findByIdInPending($id)
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs_bloques");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->pdo->prepare("SELECT * FROM inscriptions_en_attente WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -234,34 +243,11 @@ class User
     {
         $stmt = $this->pdo->prepare(
             "UPDATE inscriptions_en_attente 
-             SET verifie = 1
+             SET verifie = 2
              WHERE id = :id"
         );
 
         return $stmt->execute(['id' => $id]);
-    }
-
-    /**
-     * UPDATE - Update user information
-     * @param int $id User's ID
-     * @param string $lastName User's last name
-     * @param string $firstName User's first name
-     * @param string $email User's email
-     * @return bool Success status
-     */
-    public function updateBan($id, $email, $duree_ban)
-    {
-        $stmt = $this->pdo->prepare(
-            "UPDATE utilisateurs_bloques
-             SET duree_ban = :duree_ban
-             WHERE id = :id AND mail = :mail"
-        );
-
-        return $stmt->execute([
-            'duree_ban' => $duree_ban,
-            'mail' => $email,
-            'id' => $id
-        ]);
     }
 
     /**
@@ -274,7 +260,6 @@ class User
         $map = [
             'V' => 'utilisateurs',
             'P' => 'inscriptions_en_attente',
-            'B' => 'utilisateurs_bloques'
         ];
 
         if (!isset($map[$tableKey])) {

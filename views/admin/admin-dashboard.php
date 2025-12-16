@@ -98,14 +98,13 @@
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('V', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>', '', '', '')">Modifier</button>
+                                <button class="btn-edit" onclick="openEditPopup('2', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>')">Modifier</button>
 
                                 <a href="index.php?action=adminDeleteUser&table=V&id=<?= urlencode($user['id']) ?>"
                                    class="btn-delete"
                                    <!-- onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"> -->
                                     Supprimer
                                 </a>
-                                <button class="btn-edit" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '', '')">Bannir</button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -141,23 +140,18 @@
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('P', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>', '<?= htmlspecialchars($user['verifie']) ?>', '', '')">Modifier</button>
+                                <button class="btn-edit" onclick="openEditPopup('<?= htmlspecialchars($user['verifie']) ?>', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>')">Modifier</button>
 
+                                <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
+                                   class="btn-delete"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                    Supprimer
+                                </a>
                                 <?php if ($user['verifie'] == 1): ?>
                                 <a href="index.php?action=adminValidUser&id=<?= urlencode($user['id']) ?>"
                                    class="btn-validate"
                                    onclick="return confirm('Êtes-vous sûr de vouloir valider cet utilisateur ?')">
                                     Valider
-                                </a>
-                                <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
-                                   class="btn-delete"
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
-                                    Supprimer
-                                </a>
-                                <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
-                                   class="btn-delete"
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
-                                    Supprimer
                                 </a>
                                 <?php endif; ?>
                             </td>
@@ -174,38 +168,16 @@
                 <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
                     <th>Email</th>
-                    <th>Date de ban</th>
-                    <th>Durée de bannissement</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
-
-                <?php if (empty($blockedUsers)): ?>
-                    <tr>
-                        <?php echo"<script>console.log(" . json_encode($blockedUsers) . ");</script>" ?>
-                        <td colspan="5" class="text-center">Aucun utilisateur vérifié</td>
-                    </tr>
-                <?php else: ?>
-                    <?php foreach ($blockedUsers as $user): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
-                            <td><?= htmlspecialchars($user['mail']) ?></td>
-                            <td><?= htmlspecialchars($user['date_de_ban']) ?></td>
-                            <td><?= htmlspecialchars($user['duree_ban']) ?></td>
-                            <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?= htmlspecialchars($user['date_de_ban']) ?>', '<?= htmlspecialchars($user['duree_ban']) ?>')">Modifier</button>
-
-                                <a href="index.php?action=adminDeleteUser&table=B&id=<?= urlencode($user['mail']) ?>"
-                                   class="btn-delete"
-                                <!-- onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"> -->
-                                Supprimer
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                <tr>
+                    <td colspan="5" class="text-center">Fonctionnalité à venir</td>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -216,81 +188,28 @@
 <!-- Overlay + Popup -->
 <div id="editPopupOverlay" class="popup-overlay" onclick="closeEditPopup()"></div>
 
-<div id="editVerifie" class="popup-container">
+<div id="editPopup" class="popup-container">
     <h2>Modifier l'utilisateur</h2>
     <form id="editUserForm" class="card" method="POST" action="index.php?action=adminEditUser">
         <div class="form-group">
-            <label for="idVerifie">id</label>
-            <input type="text" id="idVerifie" name="id" readonly>
-        </div>
-            <div class="form-group">
-                <label for="editNomVerifie">Nom</label>
-                <input type="text" id="editNomVerifie" name="nom" required>
-            </div>
-        <div class="form-group">
-            <label for="editPrenomVerifie">Prénom</label>
-            <input type="text" id="editPrenomVerifie" name="prenom" required>
+            <label for="id">id</label>
+            <input type="text" id="id" name="id" readonly>
         </div>
         <div class="form-group">
-            <label for="editEmailVerifie">Email</label>
-            <input type="email" id="editEmailVerifie" name="email" required>
-        </div>
-        <button type="submit" class="btn-submit" name="ok">Valider</button>
-        <div class="form-actions">
-            <button type="button" class="btn-cancel" onclick="closeEditPopup()">Annuler</button>
-        </div>
-    </form>
-</div>
-
-<div id="editPending" class="popup-container">
-    <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="index.php?action=adminEditUser">
-        <div class="form-group">
-            <label for="idPending">id</label>
-            <input type="text" id="idPending" name="id" readonly>
+            <label for="editNom">Nom</label>
+            <input type="text" id="editNom" name="nom" required>
         </div>
         <div class="form-group">
-            <label for="editNomPending">Nom</label>
-            <input type="text" id="editNomPending" name="nom" required>
+            <label for="editPrenom">Prénom</label>
+            <input type="text" id="editPrenom" name="prenom" required>
         </div>
         <div class="form-group">
-            <label for="editPrenomPending">Prénom</label>
-            <input type="text" id="editPrenomPending" name="prenom" required>
+            <label for="editEmail">Email</label>
+            <input type="email" id="editEmail" name="email" required>
         </div>
         <div class="form-group">
-            <label for="editEmailPending">Email</label>
-            <input type="email" id="editEmailPending" name="email" required>
-        </div>
-        <div class="form-group">
-            <label for="verifiePending">Verifie</label>
-            <input type="int" id="verifiePending" name="nom" readonly>
-        </div>
-        <button type="submit" class="btn-submit" name="ok">Valider</button>
-
-        <div class="form-actions">
-            <button type="button" class="btn-cancel" onclick="closeEditPopup()">Annuler</button>
-        </div>
-    </form>
-</div>
-
-<div id="editBlocked" class="popup-container">
-    <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="index.php?action=adminBanUser&table=V">
-        <div class="form-group">
-            <label for="idBlocked">id</label>
-            <input type="text" id="idBlocked" name="id" readonly>
-        </div>
-        <div class="form-group">
-            <label for="editEmailBlocked">Email</label>
-            <input type="email" id="editEmailBlocked" name="email" readonly>
-        </div>
-        <div class="form-group">
-            <label for="editDateBanBlocked">Date de ban</label>
-            <input type="int" id="editDateBanBlocked" name="date_de_ban" readonly>
-        </div>
-        <div class="form-group">
-            <label for="editDureeBanBlocked">Durée de ban</label>
-            <input type="int" id="editDureeBanBlocked" name="duree_de_ban" required>
+            <label for="verifie">Verifie</label>
+            <input type="int" id="verifie" name="nom" readonly>
         </div>
         <button type="submit" class="btn-submit" name="ok">Valider</button>
 
@@ -323,48 +242,22 @@
         console.log("test");
     }
 
-    function setValue(id, v, table) {
-        const el = document.getElementById(id + table);
-        if (el) el.value = v ?? '';
-    }
-
-    function openEditPopup(table, id, nom, prenom, email, verifie, date_de_ban, duree_ban) {
-        switch (table) {
-            case 'V':
-                document.getElementById('editVerifie').style.display = 'block';
-                table = "Verifie";
-                break;
-            case 'P':
-                document.getElementById('editPending').style.display = 'block';
-                table = "Pending";
-                break;
-            case 'B':
-                document.getElementById('editBlocked').style.display = 'block';
-                table = "Blocked";
-                break;
-        }
-        setValue('table', table, table);
-        setValue('verifie', verifie, table);
-        setValue('id', id, table);
-        setValue('editNom', nom, table);
-        setValue('editPrenom', prenom, table);
-        setValue('editEmail', email, table);
-        setValue('editDateBan', date_de_ban, table);
-        setValue('editDureeBan', duree_ban, table);
+    function openEditPopup(verifie, id, nom, prenom, email) {
+        document.getElementById('verifie').value = verifie;
+        document.getElementById('id').value = id;
+        document.getElementById('editNom').value = nom;
+        document.getElementById('editPrenom').value = prenom;
+        document.getElementById('editEmail').value = email;
 
         document.getElementById('editPopupOverlay').style.display = 'block';
-        //document.getElementById('editPopup').style.display = 'block';
+        document.getElementById('editPopup').style.display = 'block';
         console.log("test");
         console.log(nom, prenom, email);
     }
 
     function closeEditPopup() {
         document.getElementById('editPopupOverlay').style.display = 'none';
-        const popups = ['editVerifie', 'editPending', 'editBlocked', 'blockUser'];
-        popups.forEach(id => {
-            const popup = document.getElementById(id);
-            if (popup) popup.style.display = 'none';
-        });
+        document.getElementById('editPopup').style.display = 'none';
     }
 
 </script>
