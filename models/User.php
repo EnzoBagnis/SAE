@@ -46,6 +46,27 @@ class User
      * @param string $email User's email address
      * @return array|false User data or false if not found
      */
+
+    public function createBanUser($mail, $duree_ban)
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO utilisateurs_bloques (mail, duree_ban, date_de_ban)
+            VALUES (:mail, :duree_ban, CURRENT_TIMESTAMP)"
+        );
+        return $stmt->execute([
+            'mail' => $mail,
+            'duree_ban' => $duree_ban
+        ]);
+
+    }
+
+
+
+    /**
+     * READ - Find a user by email
+     * @param string $email User's email address
+     * @return array|false User data or false if not found
+     */
     public function findByEmail($email)
     {
         $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE mail = :mail");
@@ -73,6 +94,18 @@ class User
     public function showPendingUser()
     {
         $stmt = $this->pdo->prepare("SELECT * FROM inscriptions_en_attente");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * READ - Find all blocked user
+     * FOR ADMIN PANEL
+     * @return array User data
+     */
+    public function showBlockedUser()
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs_bloques");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -201,11 +234,34 @@ class User
     {
         $stmt = $this->pdo->prepare(
             "UPDATE inscriptions_en_attente 
-             SET verifie = 2
+             SET verifie = 1
              WHERE id = :id"
         );
 
         return $stmt->execute(['id' => $id]);
+    }
+
+    /**
+     * UPDATE - Update user information
+     * @param int $id User's ID
+     * @param string $lastName User's last name
+     * @param string $firstName User's first name
+     * @param string $email User's email
+     * @return bool Success status
+     */
+    public function updateBan($id, $email, $duree_ban)
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE utilisateurs_bloques
+             SET duree_ban = :duree_ban
+             WHERE id = :id AND mail = :mail"
+        );
+
+        return $stmt->execute([
+            'duree_ban' => $duree_ban,
+            'mail' => $email,
+            'id' => $id
+        ]);
     }
 
     /**
@@ -218,6 +274,7 @@ class User
         $map = [
             'V' => 'utilisateurs',
             'P' => 'inscriptions_en_attente',
+            'B' => 'utilisateurs_bloques'
         ];
 
         if (!isset($map[$tableKey])) {

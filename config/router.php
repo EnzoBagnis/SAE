@@ -109,6 +109,9 @@ class Router
             case 'adminSPU':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showPendingUsers');
                 break;
+            case 'adminSBU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showBlockedUsers');
+                break;
             case 'adminDeleteUser':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'deleteUser');
                 break;
@@ -117,6 +120,9 @@ class Router
                 break;
             case 'adminValidUser':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'validateUser');
+                break;
+            case 'adminBanUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'banUser');
                 break;
 
             // ========== PAGES ==========

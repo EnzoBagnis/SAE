@@ -24,10 +24,12 @@ class AdminDashboardController extends \BaseController
     {
         $verifiedUsers = $this->userModel->showVerifiedUser();
         $pendingUsers = $this->userModel->showPendingUser();
+        $blockedUsers = $this->userModel->showBlockedUser();
 
         $data = [
             'verifiedUsers' => $verifiedUsers,
-            'pendingUsers' => $pendingUsers
+            'pendingUsers' => $pendingUsers,
+            'blockedUsers' => $blockedUsers
         ];
 
 
@@ -55,6 +57,16 @@ class AdminDashboardController extends \BaseController
         $test = "test";
 
         $this->loadView('admin/admin-dashboard', ['pendingUsers' => $pendingUsers]);
+    }
+
+    public function showBlockedUsers()
+    {
+
+
+        $blockedUsers = $this->userModel->showBlockedUser();
+        $test = "test";
+
+        $this->loadView('admin/admin-dashboard', ['blockedUsers' => $blockedUsers]);
     }
 
     public function deleteUser()
@@ -102,6 +114,41 @@ class AdminDashboardController extends \BaseController
         }
 
     }
+
+    public function banUser()
+    {
+        $table = $_GET['table'];
+        $id = $_POST['id'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $duree_de_ban = $_POST['duree_de_ban'] ?? '';
+
+        if ($table == 'B') {$this->updateBanUser($id, $email, $duree_de_ban);}
+        else {$this->firstBanUser($table, $id, $email, $duree_de_ban);}
+    }
+
+    public function updateBanUser($id, $email, $duree_de_ban)
+    {
+
+        $success = $this->userModel->updateBan($id, $email, $duree_de_ban);
+        if ($success) {
+            header('Location: index.php?action=admin');
+            exit;
+        }
+        else {
+            header('Location: /index.php?action=login');
+            exit;
+        }
+
+    }
+
+    public function firstBanUser($table, $id, $mail, $duree_de_ban)
+    {
+        $this->userModel->createBanUser($mail, $duree_de_ban);
+
+        header('Location: index.php?action=adminDeleteUser&table=' . $table . '&id=' . $id);
+
+    }
+
 
     /**
      * Get error message from error code
