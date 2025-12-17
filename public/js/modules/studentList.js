@@ -1,12 +1,14 @@
-// Module de gestion de la liste des étudiants
+// Module de gestion de la liste des étudiants et TP
 
 export class StudentListManager {
     constructor() {
         this.currentPage = 1;
-        this.studentsPerPage = 15;
+        this.studentsPerPage = 50;
         this.isLoading = false;
         this.hasMoreStudents = true;
         this.allStudents = [];
+        this.allExercises = [];
+        this.currentView = 'students'; // 'students' ou 'exercises'
         this.resourceId = this.getResourceIdFromUrl();
     }
 
@@ -16,148 +18,170 @@ export class StudentListManager {
         return urlParams.get('resource_id');
     }
 
+    /**
+     * Switch between students and exercises view
+     * @param {string} view - The view to switch to ('students' or 'exercises')
+     */
+    switchView(view) {
+        this.currentView = view;
+        const btnStudents = document.getElementById('btnStudents');
+        const btnExercises = document.getElementById('btnExercises');
+
+        if (view === 'students') {
+            btnStudents.classList.add('active');
+            btnExercises.classList.remove('active');
+            this.renderStudentsList();
+        } else if (view === 'exercises') {
+            btnStudents.classList.remove('active');
+            btnExercises.classList.add('active');
+            this.loadAndRenderExercises();
+        }
+    }
+
     // Charger les étudiants depuis le serveur
     async loadStudents() {
-        if (this.isLoading || !this.hasMoreStudents) return;
-
+        if (this.isLoading) return;
         this.isLoading = true;
-        const studentList = document.getElementById('student-list');
 
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'loading-message';
-        loadingDiv.style.textAlign = 'center';
-        loadingDiv.style.padding = '1rem';
-        loadingDiv.style.color = '#3498db';
-        loadingDiv.innerHTML = '⏳ Chargement...';
-        studentList.appendChild(loadingDiv);
+        const sidebarList = document.getElementById('sidebar-list');
+        sidebarList.innerHTML = '<div class="sidebar-message">⏳ Chargement...</div>';
 
         try {
-            // Construire l'URL avec le resource_id si disponible
-            let url = `/index.php?action=students&page=${this.currentPage}&perPage=${this.studentsPerPage}`;
+            let url = `/index.php?action=students&page=1&perPage=${this.studentsPerPage}`;
             if (this.resourceId) {
                 url += `&resource_id=${this.resourceId}`;
             }
 
-            console.log('🔍 [StudentList] Chargement des étudiants:', url);
-            console.log('🔍 [StudentList] Resource ID détecté:', this.resourceId);
-
             const response = await fetch(url);
-
-            console.log('📡 [StudentList] Réponse HTTP:', response.status);
-
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement des étudiants');
-            }
+            if (!response.ok) throw new Error('Erreur lors du chargement des étudiants');
 
             const result = await response.json();
 
-            console.log('📦 [StudentList] Données reçues:', result);
-
             if (result.success) {
-                console.log('✅ [StudentList] Nombre d\'étudiants:', result.data.students.length);
-                this.displayStudents(result.data.students);
-                this.hasMoreStudents = result.data.hasMore;
-                this.currentPage++;
-
-                if (!this.hasMoreStudents) {
-                    const endMessage = document.createElement('p');
-                    endMessage.className = 'end-message';
-                    endMessage.style.textAlign = 'center';
-                    endMessage.style.color = '#7f8c8d';
-                    endMessage.style.padding = '1rem';
-                    endMessage.style.fontSize = '0.9rem';
-                    endMessage.textContent = result.data.total + ' étudiants affichés';
-                    studentList.appendChild(endMessage);
-                }
-            } else {
-                console.error('❌ [StudentList] Échec:', result.message);
+                // Trier par ID numérique
+                this.allStudents = result.data.students.sort((a, b) => {
+                    const idA = parseInt(a.id) || 0;
+                    const idB = parseInt(b.id) || 0;
+                    return idA - idB;
+                });
+                this.renderStudentsList();
+                window.dispatchEvent(new CustomEvent('studentsUpdated', { detail: this.allStudents }));
             }
         } catch (error) {
-            console.error('❌ [StudentList] Erreur:', error);
-            studentList.innerHTML += '<p style="text-align: center; color: #e74c3c;">Erreur de chargement</p>';
+            console.error('Erreur:', error);
+            sidebarList.innerHTML = '<div class="sidebar-message" style="color: #e74c3c;">Erreur de chargement</div>';
         } finally {
-            const loadingMsg = studentList.querySelector('.loading-message');
-            if (loadingMsg) {
-                loadingMsg.remove();
-            }
             this.isLoading = false;
         }
     }
 
-    // Afficher les étudiants dans la sidebar
-    displayStudents(students) {
-        const studentList = document.getElementById('student-list');
+    // Afficher la liste des étudiants
+    renderStudentsList() {
+        const sidebarList = document.getElementById('sidebar-list');
+        sidebarList.innerHTML = '';
 
-        if (!studentList) return;
-
-        if (students.length === 0 && this.currentPage === 1) {
-            studentList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Aucun étudiant disponible</p>';
+        if (this.allStudents.length === 0) {
+            sidebarList.innerHTML = '<div class="sidebar-message">Aucun étudiant disponible</div>';
             return;
         }
 
-        students.forEach((student) => {
-            if (!this.allStudents.find(s => s.id === student.id)) {
-                this.allStudents.push(student);
-            }
+        this.allStudents.forEach((student) => {
+            const item = document.createElement('div');
+            item.className = 'sidebar-list-item';
+            item.dataset.studentId = student.id;
+            item.textContent = student.title || `Étudiant #${student.id}`;
 
-            const studentItem = document.createElement('div');
-            studentItem.className = 'student-item';
-            studentItem.dataset.studentId = student.id;
-
-            const title = document.createElement('h3');
-            title.textContent = student.title;
-            studentItem.appendChild(title);
-
-            studentItem.addEventListener('click', () => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.sidebar-list-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
                 window.dispatchEvent(new CustomEvent('studentSelected', { detail: student.id }));
             });
 
-            studentList.appendChild(studentItem);
+            sidebarList.appendChild(item);
         });
-
-        window.dispatchEvent(new CustomEvent('studentsUpdated', { detail: this.allStudents }));
     }
 
-    // Configuration du scroll infini
+    // Charger et afficher les exercices (TP)
+    async loadAndRenderExercises() {
+        if (this.allExercises.length > 0) {
+            this.renderExercisesList();
+            return;
+        }
+
+        const sidebarList = document.getElementById('sidebar-list');
+        sidebarList.innerHTML = '<div class="sidebar-message">⏳ Chargement...</div>';
+
+        try {
+            let url = '/index.php?action=exercises';
+            if (this.resourceId) {
+                url += `&resource_id=${this.resourceId}`;
+            }
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Erreur lors du chargement des exercices');
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Trier par nom alphabétique (funcname prioritaire, sinon exo_name)
+                this.allExercises = (result.data.exercises || []).sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameA.localeCompare(nameB);
+                });
+                this.renderExercisesList();
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            sidebarList.innerHTML = '<div class="sidebar-message" style="color: #e74c3c;">Erreur de chargement</div>';
+        }
+    }
+
+    // Afficher la liste des exercices (TP)
+    renderExercisesList() {
+        const sidebarList = document.getElementById('sidebar-list');
+        sidebarList.innerHTML = '';
+
+        if (this.allExercises.length === 0) {
+            sidebarList.innerHTML = '<div class="sidebar-message">Aucun TP disponible</div>';
+            return;
+        }
+
+        this.allExercises.forEach((exercise) => {
+            const item = document.createElement('div');
+            item.className = 'sidebar-list-item';
+            item.dataset.exerciseId = exercise.exercise_id;
+            // Utiliser funcname si disponible, sinon exo_name
+            item.textContent = exercise.funcname || exercise.exo_name || `Exercice #${exercise.exercise_id}`;
+
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.sidebar-list-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.exercise_id }));
+            });
+
+            sidebarList.appendChild(item);
+        });
+    }
+
+    // Configuration du scroll infini pour la sidebar
     setupInfiniteScroll() {
-        const studentList = document.getElementById('student-list');
+        const sidebarList = document.getElementById('sidebar-list');
+        if (!sidebarList) return;
 
-        if (!studentList) return;
+        sidebarList.addEventListener('scroll', () => {
+            const scrollPosition = sidebarList.scrollTop + sidebarList.clientHeight;
+            const scrollHeight = sidebarList.scrollHeight;
 
-        studentList.addEventListener('scroll', () => {
-            const scrollPosition = studentList.scrollTop + studentList.clientHeight;
-            const scrollHeight = studentList.scrollHeight;
-
-            if (scrollPosition >= scrollHeight * 0.8 && !this.isLoading && this.hasMoreStudents) {
-                this.loadStudents();
+            if (scrollPosition >= scrollHeight * 0.9 && !this.isLoading && this.hasMoreStudents && this.currentView === 'students') {
+                // Charger plus si nécessaire
             }
         });
     }
 
     // Charger tous les étudiants pour le menu burger
     async loadAllStudents() {
-        try {
-            // Construire l'URL avec le resource_id si disponible
-            let url = '/index.php?action=students&page=1&perPage=50';
-            if (this.resourceId) {
-                url += `&resource_id=${this.resourceId}`;
-            }
-
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement des étudiants');
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.allStudents = result.data.students;
-                window.dispatchEvent(new CustomEvent('studentsUpdated', { detail: this.allStudents }));
-            }
-        } catch (error) {
-            console.error('Erreur lors du chargement des étudiants:', error);
-        }
+        await this.loadStudents();
     }
 
     getAllStudents() {
@@ -166,5 +190,10 @@ export class StudentListManager {
 
     getResourceId() {
         return this.resourceId;
+    }
+
+    // Méthode obsolète conservée pour compatibilité
+    toggleAccordion(accordionId) {
+        // Non utilisé dans le nouveau design
     }
 }
