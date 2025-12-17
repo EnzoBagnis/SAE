@@ -98,6 +98,32 @@ class Router
                 $this->loadNamespacedController('Controllers\User\ExercisesController', 'getExercise');
                 break;
 
+            // ========== ADMIN - DASHBOARD ==========
+            case 'admin':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'index');
+                break;
+            case 'adminSVU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showVerifiedUsers');
+                break;
+            case 'adminSPU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showPendingUsers');
+                break;
+            case 'adminSBU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showBlockedUsers');
+                break;
+            case 'adminDeleteUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'deleteUser');
+                break;
+            case 'adminEditUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'editUser');
+                break;
+            case 'adminValidUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'validateUser');
+                break;
+            case 'adminBanUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'banUser');
+                break;
+
             // ========== PAGES ==========
             case 'mentions':
                 $this->loadView('pages/mentions-legales');
