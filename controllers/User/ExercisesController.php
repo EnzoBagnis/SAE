@@ -275,4 +275,3 @@ class ExercisesController extends \BaseController
         return $students;
     }
 }
-
