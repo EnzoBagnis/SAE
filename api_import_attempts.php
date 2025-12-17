@@ -106,9 +106,23 @@ try {
                 throw new Exception("exercise_name manquant");
             }
 
-            $stmt = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? LIMIT 1");
-            $stmt->execute([$exercise_name]);
-            $exercise_id = $stmt->fetchColumn();
+            $exercise_id = null;
+
+            // Si resource_id est fourni (via le payload global ou dans l'objet attempt), essayer de restreindre la recherche
+            $resource_id = $data['resource_id'] ?? $attempt['resource_id'] ?? null;
+
+            if ($resource_id) {
+                $stmt = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? AND resource_id = ? LIMIT 1");
+                $stmt->execute([$exercise_name, $resource_id]);
+                $exercise_id = $stmt->fetchColumn();
+            }
+
+            // Fallback: recherche globale par nom si non trouvé ou pas de resource_id
+            if (!$exercise_id) {
+                $stmt = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? LIMIT 1");
+                $stmt->execute([$exercise_name]);
+                $exercise_id = $stmt->fetchColumn();
+            }
 
             if (!$exercise_id) {
                 throw new Exception("Exercice '$exercise_name' non trouvé en DB");

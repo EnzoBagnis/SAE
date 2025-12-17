@@ -9,13 +9,21 @@ let currentAttemptsData = null;
 
 /**
  * Ouvre le modal d'import
+ * @param {number|string|null} resourceId - ID de la ressource cible (optionnel)
  */
-function openImportModal() {
-    console.log('openImportModal appelée');
+function openImportModal(resourceId = null) {
+    console.log('openImportModal appelée', resourceId);
     const modal = document.getElementById('importModal');
     console.log('Modal trouvé:', modal);
 
     if (modal) {
+        // Stocker l'ID de la ressource si fourni
+        if (resourceId) {
+            modal.dataset.resourceId = resourceId;
+        } else {
+            delete modal.dataset.resourceId;
+        }
+
         console.log('Style avant:', modal.style.display);
         modal.style.display = 'block';
         console.log('Style après:', modal.style.display);
@@ -226,6 +234,18 @@ async function importExercises() {
             throw new Error('Format des données non reconnu');
         }
 
+        // Vérifier si un resourceId est défini dans le modal
+        const modal = document.getElementById('importModal');
+        const resourceId = modal && modal.dataset.resourceId;
+
+        // Si resourceId existe, l'injecter dans chaque exercice
+        if (resourceId && payload.exercises) {
+            payload.exercises = payload.exercises.map(ex => ({
+                ...ex,
+                resource_id: resourceId
+            }));
+        }
+
         // Appel API pour importer les exercices
         const response = await fetch('api_import_exercises.php', {
             method: 'POST',
@@ -305,6 +325,15 @@ async function importAttempts() {
             }
         } else {
             throw new Error('Format des données non reconnu');
+        }
+
+        // Vérifier si un resourceId est défini dans le modal
+        const modal = document.getElementById('importModal');
+        const resourceId = modal && modal.dataset.resourceId;
+
+        // Si resourceId existe, l'ajouter au payload (peut être utile pour lier au dataset ou autre)
+        if (resourceId) {
+            payload.resource_id = resourceId;
         }
 
         // Appel API pour importer les tentatives

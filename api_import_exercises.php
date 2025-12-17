@@ -80,20 +80,39 @@ try {
             error_log("Processing exercise #$index: " . ($exercise['title'] ?? $exercise['name'] ?? 'unnamed'));
 
             // 1. Créer/récupérer la ressource (TP)
-            $tp_id = $exercise['tp_id'] ?? $exercise['tp'] ?? 'TP_Import_' . date('Y-m-d');
-            $tp_description = $exercise['tp_description'] ?? null;
+            $resource_id = null;
 
-            // Chercher ressource existante
-            $stmt = $db->prepare("SELECT resource_id FROM resources WHERE resource_name = ? AND owner_user_id = ?");
-            $stmt->execute([$tp_id, $user_id]);
-            $resource_id = $stmt->fetchColumn();
+            // Option A: ID fourni directement
+            if (!empty($exercise['resource_id'])) {
+                $check_id = $exercise['resource_id'];
+                $stmt = $db->prepare("SELECT resource_id FROM resources WHERE resource_id = ? AND owner_user_id = ?");
+                $stmt->execute([$check_id, $user_id]);
+                $resource_id = $stmt->fetchColumn();
 
+                if ($resource_id) {
+                    error_log("Using provided resource_id: $resource_id");
+                } else {
+                    error_log("Provided resource_id $check_id not found or not owned by user. Falling back to name.");
+                }
+            }
+
+            // Option B: Recherche par nom (tp_id / tp)
             if (!$resource_id) {
-                // Créer nouvelle ressource
-                $stmt = $db->prepare("INSERT INTO resources (owner_user_id, resource_name, description) VALUES (?, ?, ?)");
-                $stmt->execute([$user_id, $tp_id, $tp_description]);
-                $resource_id = $db->lastInsertId();
-                error_log("Created resource: $resource_id ($tp_id)");
+                $tp_id = $exercise['tp_id'] ?? $exercise['tp'] ?? 'TP_Import_' . date('Y-m-d');
+                $tp_description = $exercise['tp_description'] ?? null;
+
+                // Chercher ressource existante
+                $stmt = $db->prepare("SELECT resource_id FROM resources WHERE resource_name = ? AND owner_user_id = ?");
+                $stmt->execute([$tp_id, $user_id]);
+                $resource_id = $stmt->fetchColumn();
+
+                if (!$resource_id) {
+                    // Créer nouvelle ressource
+                    $stmt = $db->prepare("INSERT INTO resources (owner_user_id, resource_name, description) VALUES (?, ?, ?)");
+                    $stmt->execute([$user_id, $tp_id, $tp_description]);
+                    $resource_id = $db->lastInsertId();
+                    error_log("Created resource: $resource_id ($tp_id)");
+                }
             }
 
             // 2. Insérer l'exercice
