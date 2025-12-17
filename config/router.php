@@ -123,7 +123,9 @@ class Router
                 if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
                     $uploadDir = __DIR__ . '/../images/'; // Dossier /images à la racine
                     // Créer le dossier s'il n'existe pas
-                    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
 
                     $extension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
                     $fileName = time() . '_' . uniqid() . '.' . $extension;
@@ -150,11 +152,15 @@ class Router
                     // --- MODIFICATION ---
                     // On vérifie que c'est bien MA ressource (owner_user_id)
                     $sqlInfo = "UPDATE resources SET resource_name = :nom, description = :desc";
-                    if ($imagePath) $sqlInfo .= ", image_path = :img";
+                    if ($imagePath) {
+                        $sqlInfo .= ", image_path = :img";
+                    }
                     $sqlInfo .= " WHERE resource_id = :id AND owner_user_id = :uid";
 
                     $params = [':nom' => $nom, ':desc' => $desc, ':id' => $id, ':uid' => $userId];
-                    if ($imagePath) $params[':img'] = $imagePath;
+                    if ($imagePath) {
+                        $params[':img'] = $imagePath;
+                    }
 
                     $stmt = $db->prepare($sqlInfo);
                     $stmt->execute($params);
@@ -169,7 +175,9 @@ class Router
 
                 // 2. On ajoute les nouveaux
                 if (!empty($sharedUsers)) {
-                    $insStmt = $db->prepare("INSERT INTO resource_professors_access (resource_id, user_id) VALUES (:rid, :uid)");
+                    $insStmt = $db->prepare(
+                        "INSERT INTO resource_professors_access (resource_id, user_id) VALUES (:rid, :uid)"
+                    );
                     foreach ($sharedUsers as $partenaireId) {
                         // On évite de se partager à soi-même
                         if ($partenaireId != $userId) {
@@ -180,7 +188,6 @@ class Router
 
                 header('Location: index.php?action=resources_list');
                 exit;
-                break;
 
 
         // ========== RESOURCE DETAILS ==========

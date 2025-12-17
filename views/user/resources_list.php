@@ -43,27 +43,142 @@ try {
 
     <style>
         /* CSS Dashboard */
-        .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: 20px auto; }
-        .resource-card { background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; display: flex; flex-direction: column; transition: transform 0.2s; }
-        .resource-card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .resource-link-wrapper { text-decoration: none; color: inherit; display: flex; flex-direction: column; flex-grow: 1; }
-        .resource-card-image { width: 100%; height: 180px; object-fit: cover; background-color: #f0f0f0; }
-        .resource-card-content { padding: 15px; }
-        .resource-card-owner { font-size: 0.8em; color: #999; display:block; text-align: right; margin-top:10px; }
-        .btn-edit-resource { position: absolute; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
-        .btn-edit-resource:hover { background-color: #f0f0f0; }
-        .filter-bar { padding: 20px; background: #eef; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .filter-bar input, .filter-bar select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        .resource-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .resource-link-wrapper {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .resource-card-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+        .resource-card-content {
+            padding: 15px;
+        }
+        .resource-card-owner {
+            font-size: 0.8em;
+            color: #999;
+            display: block;
+            text-align: right;
+            margin-top: 10px;
+        }
+        .btn-edit-resource {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .btn-edit-resource:hover {
+            background-color: #f0f0f0;
+        }
+        .filter-bar {
+            padding: 20px;
+            background: #eef;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .filter-bar input, .filter-bar select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
         /* Modal & Formulaire */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input[type="text"], .form-group textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .users-checklist { max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fafafa; }
-        .btn-submit { background-color: #4CAF50; color: white; padding: 12px; border: none; width: 100%; cursor: pointer; border-radius: 4px; font-size: 16px; margin-top: 10px; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input[type="text"], .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .users-checklist {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #fafafa;
+        }
+        .btn-submit {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
     </style>
     <script src="../public/js/dashboard-main.js"></script>
 </head>
@@ -84,7 +199,9 @@ try {
         <h2 style="padding: 20px 20px 0;">Tableau de bord</h2>
 
         <div class="filter-bar">
+            <label for="searchBar" style="display:none;">Rechercher</label>
             <input type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
+            <label for="filterType" style="display:none;">Filtrer par type</label>
             <select id="filterType" onchange="filterResources()">
                 <option value="all">Tout voir</option>
                 <option value="owner">Mes créations</option>
@@ -109,7 +226,9 @@ try {
 
                     // Affichage du nom du proprio
                     $ownerName = ($resource->owner_firstname ?? '') . ' ' . ($resource->owner_lastname ?? '');
-                    if (trim($ownerName) == '') $ownerName = "Utilisateur #$creatorId";
+                    if (trim($ownerName) == '') {
+                        $ownerName = "Utilisateur #$creatorId";
+                    }
                     ?>
 
                     <div class="resource-card"
@@ -121,14 +240,22 @@ try {
                          data-image="<?= htmlspecialchars($resImg) ?>">
 
                         <?php if ($isOwner) : ?>
-                            <button class="btn-edit-resource" onclick="openResourceModal('edit', this)" title="Modifier">✏️</button>
+                            <button class="btn-edit-resource"
+                                    onclick="openResourceModal('edit', this)"
+                                    title="Modifier">✏️</button>
                         <?php endif; ?>
 
                         <a href="/index.php?action=dashboard&resource_id=<?= $resId ?>" class="resource-link-wrapper">
-                            <?php if(!empty($resImg)) : ?>
-                                <img src="/images/<?= htmlspecialchars($resImg) ?>" class="resource-card-image" alt="Image">
+                            <?php if (!empty($resImg)) : ?>
+                                <img src="/images/<?= htmlspecialchars($resImg) ?>"
+                                     class="resource-card-image"
+                                     alt="Image">
                             <?php else : ?>
-                                <div class="resource-card-image" style="background:#eee; display:flex; align-items:center; justify-content:center; color:#777;">Pas d'image</div>
+                                <div class="resource-card-image"
+                                     style="background:#eee; display:flex; align-items:center;
+                                            justify-content:center; color:#777;">
+                                    Pas d'image
+                                </div>
                             <?php endif; ?>
 
                             <div class="resource-card-content">
@@ -156,12 +283,12 @@ try {
             <input type="hidden" name="resource_id" id="formResourceId" value="">
 
             <div class="form-group">
-                <label>Nom :</label>
+                <label for="resourceName">Nom :</label>
                 <input type="text" id="resourceName" name="name" required placeholder="Titre de la ressource">
             </div>
 
             <div class="form-group">
-                <label>Description :</label>
+                <label for="resourceDesc">Description :</label>
                 <textarea id="resourceDesc" name="description" rows="3"></textarea>
             </div>
 
@@ -174,12 +301,13 @@ try {
             <div class="form-group">
                 <label>Partager avec :</label>
                 <div class="users-checklist">
-                    <?php if (empty($all_users)): ?>
+                    <?php if (empty($all_users)) : ?>
                         <p style="color:#999;">Aucun autre utilisateur trouvé.</p>
-                    <?php else: ?>
-                        <?php foreach ($all_users as $u): ?>
+                    <?php else : ?>
+                        <?php foreach ($all_users as $u) : ?>
                             <label style="display:block; margin-bottom:5px; cursor:pointer;">
-                                <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>" class="user-checkbox">
+                                <input type="checkbox" name="shared_users[]"
+                                       value="<?= $u->id ?>" class="user-checkbox">
                                 <?= htmlspecialchars($u->prenom . ' ' . $u->nom) ?>
                             </label>
                         <?php endforeach; ?>
@@ -229,7 +357,9 @@ try {
     }
 
     window.onclick = function(event) {
-        if (event.target == document.getElementById('resourceModal')) closeResourceModal();
+        if (event.target === document.getElementById('resourceModal')) {
+            closeResourceModal();
+        }
     }
 
     function filterResources() {
