@@ -78,11 +78,23 @@
     </nav>
 
     <div class="dashboard-container">
-        <!-- Sidebar gauche pour les Étudiants -->
-        <aside class="sidebar">
-            <h2>Liste des Étudiants</h2>
-            <div class="student-list" id="student-list">
-                <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
+        <!-- Sidebar gauche - Design style mobile -->
+        <aside class="sidebar sidebar-mobile-style">
+            <!-- Sélecteur de vue côte à côte -->
+            <div class="view-selector-header">
+                <button class="view-tab active" id="btnStudents" onclick="switchListView('students')">
+                    Liste des Étudiants
+                    <span class="toggle-arrow">▲</span>
+                </button>
+                <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
+                    Liste des TP
+                    <span class="toggle-arrow">▲</span>
+                </button>
+            </div>
+
+            <!-- Liste unique qui change selon le mode -->
+            <div class="sidebar-list" id="sidebar-list">
+                <!-- Contenu dynamique : étudiants ou exercices -->
             </div>
         </aside>
 

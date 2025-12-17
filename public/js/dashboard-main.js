@@ -42,6 +42,12 @@ function setupEventListeners() {
         studentContentManager.selectStudent(studentId);
         burgerMenuManager.updateActiveStudent(studentId);
     });
+
+    // Écouter la sélection d'un exercice
+    window.addEventListener('exerciseSelected', (e) => {
+        const exerciseId = e.detail;
+        studentContentManager.selectExercise(exerciseId);
+    });
 }
 
 // Exposer les fonctions globales nécessaires
@@ -50,4 +56,7 @@ window.openSiteMap = Utils.openSiteMap;
 window.closeSiteMap = Utils.closeSiteMap;
 window.toggleBurgerMenu = () => burgerMenuManager.toggleMenu();
 window.toggleStudentSubmenu = (event) => burgerMenuManager.toggleStudentSubmenu(event);
+window.switchListView = (view) => studentListManager.switchView(view);
+window.toggleAccordion = (accordionId) => studentListManager.toggleAccordion(accordionId);
+window.selectExercise = (exerciseId) => studentContentManager.selectExercise(exerciseId);
 

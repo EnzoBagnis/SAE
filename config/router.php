@@ -89,6 +89,15 @@ class Router
                 $this->loadNamespacedController('Controllers\User\StudentsController', 'getStudent');
                 break;
 
+            // ========== API - EXERCISES ==========
+            case 'exercises':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getExercises');
+                break;
+
+            case 'exercise':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getExercise');
+                break;
+
             // ========== PAGES ==========
             case 'mentions':
                 $this->loadView('pages/mentions-legales');

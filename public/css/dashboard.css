@@ -98,12 +98,11 @@
     height: 16px;
 }
 
-/* Sidebar */
+/* Sidebar - Design style mobile simplifié */
 .sidebar {
-    width: 300px;
-    background: #ecf0f1;
-    padding: 2rem;
-    border-right: 1px solid #bdc3c7;
+    width: 280px;
+    background: #2c3e50;
+    border-right: 1px solid #1a252f;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -112,51 +111,103 @@
     overflow: hidden;
 }
 
-.sidebar h2 {
-    margin-top: 0;
-    color: #2c3e50;
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    flex-shrink: 0;
+.sidebar-mobile-style {
+    padding: 0;
 }
 
-.student-list {
+/* Header avec les deux boutons côte à côte */
+.view-selector-header {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    overflow-y: auto;
-    overflow-x: hidden;
+    background: #34495e;
+    border-bottom: 1px solid #1a252f;
+}
+
+.view-tab {
     flex: 1;
-    padding-right: 0.5rem;
-    height: 100%;
-}
-
-/* Student Items */
-.student-item {
-    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 1rem 1.25rem;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border-left: 4px solid transparent;
-}
-
-.student-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.student-item.active {
-    border-left: 4px solid #3498db;
-    background: #e8f4f8;
-}
-
-.student-item h3 {
-    margin: 0;
-    color: #2c3e50;
-    font-size: 1.1rem;
+    background: #2c3e50;
+    border: none;
+    color: white;
+    font-size: 0.95rem;
     font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.view-tab:first-child {
+    border-right: 1px solid #1a252f;
+}
+
+.view-tab:hover {
+    background: #34495e;
+}
+
+.view-tab.active {
+    background: #1a252f;
+    border-bottom-color: #3498db;
+}
+
+.view-tab .toggle-arrow {
+    font-size: 0.7rem;
+    color: #7f8c8d;
+}
+
+/* Liste scrollable */
+.sidebar-list {
+    flex: 1;
+    overflow-y: auto;
+    background: #1a252f;
+}
+
+/* Items de la liste (étudiants ou TP) */
+.sidebar-list-item {
+    display: block;
+    padding: 0.9rem 1.5rem;
+    color: #bdc3c7;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #2c3e50;
+    font-size: 0.95rem;
+}
+
+.sidebar-list-item:hover {
+    background: #2c3e50;
+    color: white;
+}
+
+.sidebar-list-item.active {
+    background: #3498db;
+    color: white;
+}
+
+/* Scrollbar pour la sidebar */
+.sidebar-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-list::-webkit-scrollbar-track {
+    background: #1a252f;
+}
+
+.sidebar-list::-webkit-scrollbar-thumb {
+    background: #4a6785;
+    border-radius: 3px;
+}
+
+.sidebar-list::-webkit-scrollbar-thumb:hover {
+    background: #5a7795;
+}
+
+/* Message vide ou chargement */
+.sidebar-message {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
 }
 
 /* Main Content */
@@ -194,28 +245,20 @@
     margin-top: 3rem;
 }
 
-/* Scrollbar styling */
-.student-list::-webkit-scrollbar,
-.sidebar::-webkit-scrollbar,
+/* Scrollbar styling pour main content */
 .main-content::-webkit-scrollbar {
     width: 8px;
 }
 
-.student-list::-webkit-scrollbar-track,
-.sidebar::-webkit-scrollbar-track,
 .main-content::-webkit-scrollbar-track {
     background: #f1f1f1;
 }
 
-.student-list::-webkit-scrollbar-thumb,
-.sidebar::-webkit-scrollbar-thumb,
 .main-content::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 4px;
 }
 
-.student-list::-webkit-scrollbar-thumb:hover,
-.sidebar::-webkit-scrollbar-thumb:hover,
 .main-content::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
