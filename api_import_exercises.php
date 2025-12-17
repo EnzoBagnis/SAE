@@ -4,6 +4,9 @@
  * Endpoint direct sans routeur complexe
  */
 
+// Démarrer la bufferisation de sortie pour éviter que des erreurs PHP ne cassent le JSON
+ob_start();
+
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Pas d'affichage pour ne pas casser le JSON
@@ -183,6 +186,9 @@ try {
 
     error_log("=== Import Completed: Success=$success_count, Errors=$error_count ===");
 
+    // Nettoyer le tampon de sortie avant d'envoyer le JSON
+    ob_end_clean();
+
     echo json_encode([
         'success' => true,
         'message' => "Import terminé !",
@@ -199,6 +205,9 @@ try {
 
     error_log("FATAL ERROR: " . $e->getMessage());
     error_log("Trace: " . $e->getTraceAsString());
+
+    // Nettoyer le tampon de sortie avant d'envoyer l'erreur JSON
+    if (ob_get_length()) ob_end_clean();
 
     http_response_code(400);
     echo json_encode([
