@@ -105,7 +105,7 @@ class AdminDashboardController extends \BaseController
     public function validateUser()
     {
         $id = $_GET['id'];
-        $success = $this->userModel->updateVerifie($id);
+        $success = $this->userModel->switchUser($id);
         if ($success) {
             header('Location: index.php?action=admin');
         }
