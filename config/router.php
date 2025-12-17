@@ -80,7 +80,7 @@ class Router
                 $this->loadNamespacedController('Controllers\User\DashboardController', 'index');
                 break;
 
-            // ========== STUDENTS API ==========
+            // ========== API - STUDENTS ==========
             case 'students':
                 $this->loadNamespacedController('Controllers\User\StudentsController', 'getStudents');
                 break;
@@ -89,14 +89,13 @@ class Router
                 $this->loadNamespacedController('Controllers\User\StudentsController', 'getStudent');
                 break;
 
-            // ========== WORKSHOP API ==========
-            case 'workshops':
-            case 'tplist':
-                $this->loadNamespacedController('Controllers\Workshop\WorkshopController', 'list');
+            // ========== API - EXERCISES ==========
+            case 'exercises':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getExercises');
                 break;
 
-            case 'workshop':
-                $this->loadNamespacedController('Controllers\Workshop\WorkshopController', 'show');
+            case 'exercise':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getExercise');
                 break;
 
             // ========== ADMIN - DASHBOARD ==========
@@ -140,6 +139,32 @@ class Router
         // ========== RESOURCE DETAILS ==========
             case 'resource_details':
                 require_once __DIR__ . '/../views/user/resource_details.php';
+                break;
+
+            // ========== ANALYSIS - VECTOR GENERATION ==========
+            case 'generate-vectors':
+                $this->loadNamespacedController('Controllers\Analysis\VectorController', 'generate');
+                break;
+
+            case 'processing':
+                $this->loadNamespacedController('Controllers\Analysis\VectorController', 'processing');
+                break;
+
+            case 'status':
+                $this->loadNamespacedController('Controllers\Analysis\VectorController', 'status');
+                break;
+
+            case 'vectors':
+                $this->loadNamespacedController('Controllers\Analysis\VectorController', 'getVectors');
+                break;
+
+            // ========== ANALYSIS - VISUALIZATION ==========
+            case 'visualization':
+                $this->loadNamespacedController('Controllers\Analysis\VisualizationController', 'index');
+                break;
+
+            case 'visualization-data':
+                $this->loadNamespacedController('Controllers\Analysis\VisualizationController', 'getData');
                 break;
 
             default:
