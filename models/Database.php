@@ -16,6 +16,7 @@ class Database
         $possiblePaths = [
             __DIR__ . '/../config/.env',       // Standard structure: models/../config/.env (SAE/config/.env)
             __DIR__ . '/../../config/.env',    // Old structure: models/../../config/.env (htdocs/config/.env)
+            __DIR__ . '/../.env',              // Root structure: models/../.env (SAE/.env)
         ];
 
         $envPath = null;
