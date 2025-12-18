@@ -57,7 +57,25 @@ try {
     error_log("Found " . count($attempts) . " attempts to import");
 
     // Créer/récupérer dataset
-    $dataset_name = $dataset_info['nom_dataset'] ?? 'Dataset_' . date('Y-m-d_H-i-s');
+    $dataset_name = !empty($dataset_info['nom_dataset']) ? $dataset_info['nom_dataset'] : null;
+
+    if (!$dataset_name) {
+        // Si pas de nom de dataset, essayer de le baser sur la ressource cible pour regrouper les imports
+        $target_resource_id = $_GET['id'] ?? $data['resource_id'] ?? null;
+        if ($target_resource_id) {
+            $stmt = $db->prepare("SELECT resource_name FROM resources WHERE resource_id = ?");
+            $stmt->execute([$target_resource_id]);
+            $r_name = $stmt->fetchColumn();
+            if ($r_name) {
+                // Nom unique et stable basé sur la ressource
+                $dataset_name = 'Dataset_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $r_name) . '_' . $target_resource_id;
+            }
+        }
+    }
+
+    if (!$dataset_name) {
+        $dataset_name = 'Dataset_' . date('Y-m-d_H-i-s');
+    }
 
     $stmt = $db->prepare("SELECT dataset_id FROM datasets WHERE nom_dataset = ?");
     $stmt->execute([$dataset_name]);

@@ -295,7 +295,25 @@ class ImportController extends \BaseController {
      * Créer ou récupérer un dataset
      */
     private function getOrCreateDataset($dataset_info, $user_id) {
-        $nom_dataset = $dataset_info['nom_dataset'] ?? 'Dataset_' . date('Y-m-d_H-i-s');
+        $nom_dataset = !empty($dataset_info['nom_dataset']) ? $dataset_info['nom_dataset'] : null;
+
+        if (!$nom_dataset) {
+            // Si pas de nom de dataset, essayer de le baser sur la ressource cible pour regrouper les imports
+            $target_resource_id = $_GET['id'] ?? null;
+            if ($target_resource_id) {
+                $stmt = $this->db->prepare("SELECT resource_name FROM resources WHERE resource_id = ?");
+                $stmt->execute([$target_resource_id]);
+                $r_name = $stmt->fetchColumn();
+                if ($r_name) {
+                    // Nom unique et stable basé sur la ressource
+                    $nom_dataset = 'Dataset_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $r_name) . '_' . $target_resource_id;
+                }
+            }
+        }
+
+        if (!$nom_dataset) {
+            $nom_dataset = 'Dataset_' . date('Y-m-d_H-i-s');
+        }
 
         // Chercher si existe
         $stmt = $this->db->prepare("
