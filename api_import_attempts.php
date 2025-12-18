@@ -224,6 +224,10 @@ try {
                 $attempt['eval_set'] ?? null
             ]);
 
+            if ($stmt_insert_attempt->rowCount() === 0) {
+                 throw new Exception("L'insertion de la tentative a échoué sans erreur SQL (0 ligne affectée)");
+            }
+
             $success_count++;
 
         } catch (Exception $e) {
@@ -237,10 +241,29 @@ try {
     }
 
     // Mettre à jour stats dataset
-    $stmt = $db->prepare("CALL update_dataset_stats(?)");
-    $stmt->execute([$dataset_id]);
+    try {
+        $stmt = $db->prepare("CALL update_dataset_stats(?)");
+        $stmt->execute([$dataset_id]);
+    } catch (Exception $e) {
+        error_log("WARNING: Failed to call update_dataset_stats: " . $e->getMessage());
+        // Fallback manual update
+        $stmt = $db->prepare("
+            UPDATE datasets 
+            SET nb_tentatives = (
+                SELECT COUNT(*) FROM attempts a 
+                JOIN students s ON a.student_id = s.student_id 
+                WHERE s.dataset_id = ?
+            ),
+            nb_etudiants = (
+                SELECT COUNT(*) FROM students WHERE dataset_id = ?
+            )
+            WHERE dataset_id = ?
+        ");
+        $stmt->execute([$dataset_id, $dataset_id, $dataset_id]);
+    }
 
     $db->commit();
+    error_log("Transaction committed successfully for dataset $dataset_id");
 
     error_log("=== Import Attempts Completed: Success=$success_count, Errors=$error_count ===");
 
