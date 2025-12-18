@@ -42,31 +42,180 @@ try {
     <link rel="stylesheet" href="../public/css/dashboard.css">
 
     <style>
-        .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: 20px auto; }
-        .resource-card { background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; display: flex; flex-direction: column; transition: transform 0.2s; }
-        .resource-card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .resource-link-wrapper { text-decoration: none; color: inherit; display: flex; flex-direction: column; flex-grow: 1; }
-        .resource-card-image { width: 100%; height: 180px; object-fit: cover; background-color: #f0f0f0; }
-        .resource-card-content { padding: 15px; }
-        .resource-card-owner { font-size: 0.8em; color: #999; display:block; text-align: right; margin-top:10px; }
-        .btn-edit-resource { position: absolute; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
-        .btn-edit-resource:hover { background-color: #f0f0f0; }
-        .filter-bar { padding: 20px; background: #eef; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .filter-bar input, .filter-bar select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px; position: relative; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input[type="text"], .form-group textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .users-checklist { max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fafafa; }
-        .btn-submit { background-color: #4CAF50; color: white; padding: 12px; border: none; width: 100%; cursor: pointer; border-radius: 4px; font-size: 16px; margin-top: 10px; }
-        .btn-submit:hover { background-color: #45a049; }
-        .btn-delete-trigger { background-color: #f44336; color: white; padding: 10px; border: none; width: 100%; cursor: pointer; border-radius: 4px; margin-top: 15px; font-size: 14px; }
-        .btn-delete-trigger:hover { background-color: #d32f2f; }
-        .confirm-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-        .btn-confirm-yes { background-color: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-        .btn-confirm-no { background-color: #ccc; color: black; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        .resource-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .resource-link-wrapper {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .resource-card-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+        .resource-card-content {
+            padding: 15px;
+        }
+        .resource-card-owner {
+            font-size: 0.8em;
+            color: #999;
+            display: block;
+            text-align: right;
+            margin-top: 10px;
+        }
+        .btn-edit-resource {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .btn-edit-resource:hover {
+            background-color: #f0f0f0;
+        }
+        .filter-bar {
+            padding: 20px;
+            background: #eef;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .filter-bar input, .filter-bar select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input[type="text"], .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .users-checklist {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #fafafa;
+        }
+        .btn-submit {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+        .btn-delete-trigger {
+            background-color: #f44336;
+            color: white;
+            padding: 10px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .btn-delete-trigger:hover {
+            background-color: #d32f2f;
+        }
+        .confirm-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-confirm-yes {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-confirm-no {
+            background-color: #ccc;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
     <script src="../public/js/dashboard-main.js"></script>
 </head>
@@ -285,8 +434,12 @@ try {
     window.onclick = function(event) {
         const resModal = document.getElementById('resourceModal');
         const delModal = document.getElementById('deleteConfirmModal');
-        if (event.target == resModal) closeResourceModal();
-        if (event.target == delModal) closeDeleteModal();
+        if (event.target == resModal) {
+            closeResourceModal();
+        }
+        if (event.target == delModal) {
+            closeDeleteModal();
+        }
     }
 
     function filterResources() {
