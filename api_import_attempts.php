@@ -123,7 +123,7 @@ try {
     foreach ($attempts as $index => $attempt) {
         try {
             // 1. Gérer l'étudiant
-            $student_identifier = $attempt['student_identifier'] ?? $attempt['student_id'] ?? $attempt['eleve_id'] ?? 'student_' . $index;
+            $student_identifier = $attempt['student_identifier'] ?? $attempt['student_id'] ?? $attempt['eleve_id'] ?? $attempt['user_id'] ?? 'student_' . $index;
 
             if (isset($student_cache[$student_identifier])) {
                 $student_id = $student_cache[$student_identifier];
@@ -139,7 +139,7 @@ try {
             }
 
             // 2. Gérer l'exercice
-            $exercise_name = $attempt['exercise_name'] ?? $attempt['exo_name'] ?? $attempt['title'] ?? $attempt['name'] ?? $attempt['question_name'] ?? null;
+            $exercise_name = $attempt['exercise_name'] ?? $attempt['exo_name'] ?? $attempt['question_name'] ?? null;
             if (!$exercise_name) {
                 throw new Exception("exercise_name manquant");
             }
@@ -157,11 +157,6 @@ try {
                 }
 
                 if (!$exercise_id) {
-                    // Si on a un resource_id, on devrait peut-être éviter de chercher globalement pour éviter les conflits
-                    // Mais pour la compatibilité, on garde le fallback si l'exercice n'est pas trouvé dans la ressource
-                    // Cependant, si l'utilisateur veut lier à une ressource spécifique, il vaut mieux que l'exercice y soit.
-
-                    // On tente quand même le global au cas où l'exercice a été importé sans lien explicite mais avec le même nom
                     $stmt_find_exo_global->execute([$exercise_name]);
                     $exercise_id = $stmt_find_exo_global->fetchColumn();
                 }
@@ -172,7 +167,7 @@ try {
             }
 
             if (!$exercise_id) {
-                throw new Exception("Exercice '$exercise_name' non trouvé en DB" . ($resource_id ? " pour la ressource $resource_id" : ""));
+                throw new Exception("Exercice '$exercise_name' non trouvé en DB");
             }
 
             // 3. Gérer la tentative
@@ -180,6 +175,14 @@ try {
             if (strpos($submission_date, 'T') !== false) {
                 $ts = strtotime($submission_date);
                 if ($ts) $submission_date = date('Y-m-d H:i:s', $ts);
+            }
+
+            // Fix boolean parsing for 'correct'
+            $is_correct = $attempt['correct'] ?? false;
+            if (is_string($is_correct)) {
+                $is_correct = filter_var($is_correct, FILTER_VALIDATE_BOOLEAN);
+            } else {
+                $is_correct = (bool)$is_correct;
             }
 
             $stmt_check_attempt->execute([$student_id, $exercise_id, $submission_date]);
@@ -193,7 +196,7 @@ try {
                 $exercise_id,
                 $submission_date,
                 $attempt['extension'] ?? 'py',
-                ($attempt['correct'] ?? false) ? 1 : 0,
+                $is_correct ? 1 : 0,
                 $attempt['code'] ?? $attempt['upload'] ?? '',
                 $attempt['eval_set'] ?? null
             ]);
@@ -245,3 +248,4 @@ try {
         'error' => $e->getMessage()
     ]);
 }
+

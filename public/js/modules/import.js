@@ -362,6 +362,8 @@ async function importAttempts() {
             // Fermer le modal après 2 secondes
             setTimeout(() => {
                 closeImportModal();
+                // Recharger la page pour afficher les nouvelles données
+                window.location.reload();
             }, 2000);
         } else {
             const serverMsg = (result && (result.error || (result.errors && result.errors.join('; ')))) || text || 'Erreur lors de l\'import';
