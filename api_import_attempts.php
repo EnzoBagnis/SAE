@@ -164,23 +164,37 @@ try {
                 $exercise_name = trim($exercise_name);
             }
 
-            // Si un ID est fourni, on vérifie s'il existe
+            // Si un ID est fourni, on vérifie s'il existe ET s'il correspond au nom (si fourni)
+            // C'est crucial lors d'imports croisés où les IDs peuvent ne pas correspondre
             if ($exercise_id) {
-                $stmt_check_exo_id = $db->prepare("SELECT exercise_id FROM exercises WHERE exercise_id = ?");
+                $stmt_check_exo_id = $db->prepare("SELECT exercise_id, exo_name FROM exercises WHERE exercise_id = ?");
                 $stmt_check_exo_id->execute([$exercise_id]);
-                if (!$stmt_check_exo_id->fetchColumn()) {
-                    // ID fourni mais inexistant -> on essaie par nom si disponible, sinon erreur
-                    $invalid_id = $exercise_id;
+                $found_exo = $stmt_check_exo_id->fetch(PDO::FETCH_ASSOC);
+
+                if (!$found_exo) {
+                    // ID fourni mais inexistant -> on essaie par nom si disponible
                     $exercise_id = null;
-                    if (!$exercise_name) {
-                         throw new Exception("Exercise ID $invalid_id introuvable et aucun nom fourni pour le rechercher");
+                } elseif ($exercise_name) {
+                    // ID existe, on vérifie si le nom correspond
+                    $db_name = trim(mb_strtolower($found_exo['exo_name']));
+                    $json_name = trim(mb_strtolower($exercise_name));
+
+                    // Si les noms sont différents, l'ID est probablement obsolète (ancien export)
+                    // On ignore l'ID pour forcer la recherche par nom
+                    if ($db_name !== $json_name) {
+                        error_log("ID Mismatch for exercise $exercise_id: DB name '{$found_exo['exo_name']}' != JSON name '$exercise_name'. Ignoring ID to search by name.");
+                        $exercise_id = null;
                     }
                 }
             }
 
-            // Si pas d'ID valide trouvé, on cherche par nom
+            // Si pas d'ID valide trouvé (ou ID invalidé par mismatch de nom), on cherche par nom
             if (!$exercise_id) {
                 if (!$exercise_name) {
+                    // Si on a perdu l'ID et qu'on n'a pas de nom, c'est fatal pour cette tentative
+                    if (isset($invalid_id)) {
+                         throw new Exception("Exercise ID $invalid_id introuvable et aucun nom fourni");
+                    }
                     throw new Exception("Nom de l'exercice ou ID manquant");
                 }
 
@@ -201,11 +215,14 @@ try {
                         }
                     }
 
-                    // Only fallback to global if NO resource_id was specified.
-                    // If resource_id WAS specified, we should not link to a random exercise with same name.
-                    if (!$exercise_id && !$resource_id) {
-                        $stmt_find_exo_global->execute([$exercise_name]);
-                        $exercise_id = $stmt_find_exo_global->fetchColumn();
+                    // Fallback: si on n'a pas trouvé avec l'ID de ressource, ou si aucun ID n'était fourni
+                    // On cherche globalement MAIS on privilégie les exercices créés récemment ou liés à l'utilisateur courant si possible
+                    if (!$exercise_id) {
+                        // Essayer de trouver l'exercice le plus récent avec ce nom
+                        // C'est souvent celui qu'on vient d'importer
+                        $stmt_find_recent = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? ORDER BY exercise_id DESC LIMIT 1");
+                        $stmt_find_recent->execute([$exercise_name]);
+                        $exercise_id = $stmt_find_recent->fetchColumn();
                     }
 
                     if ($exercise_id) {
