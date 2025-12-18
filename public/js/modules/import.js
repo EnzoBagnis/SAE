@@ -336,8 +336,14 @@ async function importAttempts() {
             payload.resource_id = resourceId;
         }
 
+        // Construire l'URL avec l'ID de ressource si présent
+        let url = 'api_import_attempts.php';
+        if (resourceId) {
+            url += `?id=${resourceId}`;
+        }
+
         // Appel API pour importer les tentatives
-        const response = await fetch('api_import_attempts.php', {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

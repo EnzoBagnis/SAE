@@ -108,8 +108,8 @@ try {
 
             $exercise_id = null;
 
-            // Si resource_id est fourni (via le payload global ou dans l'objet attempt), essayer de restreindre la recherche
-            $resource_id = $data['resource_id'] ?? $attempt['resource_id'] ?? null;
+            // Si resource_id est fourni (via URL, payload global ou dans l'objet attempt), essayer de restreindre la recherche
+            $resource_id = $_GET['id'] ?? $data['resource_id'] ?? $attempt['resource_id'] ?? null;
 
             if ($resource_id) {
                 $stmt = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? AND resource_id = ? LIMIT 1");
