@@ -198,6 +198,96 @@ class Router
                 header('Location: index.php?action=resources_list');
                 exit;
 
+            case 'delete_resource':
+                // 1. Vérification sécurité
+                if (!isset($_SESSION['id'])) {
+                    header('Location: index.php?action=login');
+                    exit;
+                }
+
+                require_once __DIR__ . '/../models/Database.php';
+                $db = Database::getConnection();
+
+                // On récupère l'ID via POST pour la sécurité (évite les suppressions accidentelles par lien)
+                $resourceId = $_POST['resource_id'] ?? null;
+                $userId = $_SESSION['id'];
+
+                if (!$resourceId) {
+                    header('Location: index.php?action=resources_list');
+                    exit;
+                }
+
+                try {
+                    // Démarrage de la transaction (tout ou rien)
+                    $db->beginTransaction();
+
+                    // A. Vérifier que l'utilisateur est bien le PROPRIÉTAIRE
+                    $checkStmt = $db->prepare("SELECT resource_id, image_path FROM resources WHERE resource_id = :rid AND owner_user_id = :uid");
+                    $checkStmt->execute([':rid' => $resourceId, ':uid' => $userId]);
+                    $resource = $checkStmt->fetch(PDO::FETCH_OBJ);
+
+                    if (!$resource) {
+                        // Si pas trouvé ou pas propriétaire -> on annule tout
+                        $db->rollBack();
+                        die("Action non autorisée ou ressource introuvable.");
+                    }
+
+                    // B. Supprimer les TENTATIVES (attempts) liées aux exercices de cette ressource
+                    // On doit d'abord trouver les IDs des exercices
+                    $sqlExoIds = "SELECT exercise_id FROM exercises WHERE resource_id = :rid";
+                    $stmtExo = $db->prepare($sqlExoIds);
+                    $stmtExo->execute([':rid' => $resourceId]);
+                    $exerciseIds = $stmtExo->fetchAll(PDO::FETCH_COLUMN);
+
+                    if (!empty($exerciseIds)) {
+                        // Création d'une chaîne pour le IN (ex: "1,2,5")
+                        $placeholders = implode(',', array_fill(0, count($exerciseIds), '?'));
+
+                        // Suppression des attempts
+                        $sqlDelAttempts = "DELETE FROM attempts WHERE exercise_id IN ($placeholders)";
+                        $stmtDelAttempts = $db->prepare($sqlDelAttempts);
+                        $stmtDelAttempts->execute($exerciseIds);
+
+                        // Suppression des test_cases (bonne pratique si la table existe, basé sur votre diagnostic)
+                        $sqlDelTests = "DELETE FROM test_cases WHERE exercise_id IN ($placeholders)";
+                        $stmtDelTests = $db->prepare($sqlDelTests);
+                        $stmtDelTests->execute($exerciseIds);
+                    }
+
+                    // C. Supprimer les EXERCICES
+                    $delExoStmt = $db->prepare("DELETE FROM exercises WHERE resource_id = :rid");
+                    $delExoStmt->execute([':rid' => $resourceId]);
+
+                    // D. Supprimer les PARTAGES (resource_professors_access)
+                    $delShareStmt = $db->prepare("DELETE FROM resource_professors_access WHERE resource_id = :rid");
+                    $delShareStmt->execute([':rid' => $resourceId]);
+
+                    // E. Supprimer la RESSOURCE elle-même
+                    $delResStmt = $db->prepare("DELETE FROM resources WHERE resource_id = :rid");
+                    $delResStmt->execute([':rid' => $resourceId]);
+
+                    // F. Supprimer l'image du serveur si elle existe
+                    if (!empty($resource->image_path)) {
+                        $imageFullPath = __DIR__ . '/../images/' . $resource->image_path;
+                        if (file_exists($imageFullPath)) {
+                            unlink($imageFullPath);
+                        }
+                    }
+
+                    // Validation finale de la transaction
+                    $db->commit();
+
+                } catch (Exception $e) {
+                    // En cas d'erreur, on annule tout ce qui a été fait
+                    $db->rollBack();
+                    error_log("Erreur suppression ressource: " . $e->getMessage());
+                    die("Erreur lors de la suppression : " . $e->getMessage());
+                }
+
+                header('Location: index.php?action=resources_list');
+                exit;
+                break;
+
 
         // ========== RESOURCE DETAILS ==========
             case 'resource_details':
