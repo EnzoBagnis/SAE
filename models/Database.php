@@ -13,7 +13,7 @@ class Database
     public static function getConnection()
     {
         // Load environment variables from .env file
-        $envPath = __DIR__ . '/../config/.env';
+        $envPath = __DIR__ . '/../../config/.env';
 
         if (!file_exists($envPath)) {
             throw new Exception("Configuration file not found at: " . $envPath);
