@@ -139,35 +139,58 @@ try {
             }
 
             // 2. Gérer l'exercice
+            $exercise_id = $attempt['exercise_id'] ?? $attempt['exo_id'] ?? null;
             $exercise_name = $attempt['exercise_name'] ?? $attempt['exo_name'] ?? $attempt['question_name'] ?? null;
-            if (!$exercise_name) {
-                throw new Exception("exercise_name manquant");
+
+            // Nettoyer le nom si présent
+            if ($exercise_name) {
+                $exercise_name = trim($exercise_name);
             }
 
-            $exercise_id = null;
-            $resource_id = $_GET['id'] ?? $data['resource_id'] ?? $attempt['resource_id'] ?? null;
-            $cache_key = $exercise_name . '_' . ($resource_id ?? 'global');
+            // Si un ID est fourni, on vérifie s'il existe
+            if ($exercise_id) {
+                $stmt_check_exo_id = $db->prepare("SELECT exercise_id FROM exercises WHERE exercise_id = ?");
+                $stmt_check_exo_id->execute([$exercise_id]);
+                if (!$stmt_check_exo_id->fetchColumn()) {
+                    // ID fourni mais inexistant -> on essaie par nom si disponible, sinon erreur
+                    $invalid_id = $exercise_id;
+                    $exercise_id = null;
+                    if (!$exercise_name) {
+                         throw new Exception("Exercise ID $invalid_id introuvable et aucun nom fourni pour le rechercher");
+                    }
+                }
+            }
 
-            if (isset($exercise_cache[$cache_key])) {
-                $exercise_id = $exercise_cache[$cache_key];
-            } else {
-                if ($resource_id) {
-                    $stmt_find_exo_resource->execute([$exercise_name, $resource_id]);
-                    $exercise_id = $stmt_find_exo_resource->fetchColumn();
+            // Si pas d'ID valide trouvé, on cherche par nom
+            if (!$exercise_id) {
+                if (!$exercise_name) {
+                    throw new Exception("Nom de l'exercice ou ID manquant");
                 }
 
-                if (!$exercise_id) {
-                    $stmt_find_exo_global->execute([$exercise_name]);
-                    $exercise_id = $stmt_find_exo_global->fetchColumn();
-                }
+                $resource_id = $_GET['id'] ?? $data['resource_id'] ?? $attempt['resource_id'] ?? null;
+                $cache_key = $exercise_name . '_' . ($resource_id ?? 'global');
 
-                if ($exercise_id) {
-                    $exercise_cache[$cache_key] = $exercise_id;
+                if (isset($exercise_cache[$cache_key])) {
+                    $exercise_id = $exercise_cache[$cache_key];
+                } else {
+                    if ($resource_id) {
+                        $stmt_find_exo_resource->execute([$exercise_name, $resource_id]);
+                        $exercise_id = $stmt_find_exo_resource->fetchColumn();
+                    }
+
+                    if (!$exercise_id) {
+                        $stmt_find_exo_global->execute([$exercise_name]);
+                        $exercise_id = $stmt_find_exo_global->fetchColumn();
+                    }
+
+                    if ($exercise_id) {
+                        $exercise_cache[$cache_key] = $exercise_id;
+                    }
                 }
             }
 
             if (!$exercise_id) {
-                throw new Exception("Exercice '$exercise_name' non trouvé en DB");
+                throw new Exception("Exercice '$exercise_name' non trouvé en DB (Resource ID: " . ($resource_id ?? 'None') . ")");
             }
 
             // 3. Gérer la tentative
