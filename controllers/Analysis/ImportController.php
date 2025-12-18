@@ -56,6 +56,9 @@ class ImportController extends \BaseController {
             $exercises = $data['exercises'];
             error_log("Processing " . count($exercises) . " exercises");
 
+            // Récupérer l'ID de la ressource depuis l'URL
+            $url_resource_id = $_GET['id'] ?? null;
+
             $success_count = 0;
             $error_count = 0;
             $errors = [];
@@ -64,12 +67,16 @@ class ImportController extends \BaseController {
 
             foreach ($exercises as $index => $exercise) {
                 try {
-                    // Créer ou récupérer la ressource
-                    $resource_id = $this->getOrCreateResource(
-                        $exercise['tp_id'] ?? 'TP_Unknown',
-                        $user_id,
-                        $exercise['tp_description'] ?? null
-                    );
+                    if ($url_resource_id) {
+                        $resource_id = $url_resource_id;
+                    } else {
+                        // Créer ou récupérer la ressource
+                        $resource_id = $this->getOrCreateResource(
+                            $exercise['tp_id'] ?? 'TP_Unknown',
+                            $user_id,
+                            $exercise['tp_description'] ?? null
+                        );
+                    }
 
                     // Insérer l'exercice
                     $stmt = $this->db->prepare("
