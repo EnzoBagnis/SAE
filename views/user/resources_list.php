@@ -104,19 +104,65 @@ try {
         .btn-edit-resource:hover {
             background-color: #f0f0f0;
         }
+
+        /* --- NOUVEAUX STYLES POUR LA BARRE DE FILTRE ET LE BOUTON --- */
         .filter-bar {
             padding: 20px;
             background: #eef;
             display: flex;
-            gap: 10px;
+            justify-content: space-between; /* Espace entre la recherche et le bouton */
+            align-items: center;
+            gap: 20px;
             flex-wrap: wrap;
             margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
         }
+
+        .filters-left {
+            display: flex;
+            gap: 10px;
+            flex-grow: 1;
+            max-width: 600px;
+        }
+
         .filter-bar input, .filter-bar select {
-            padding: 8px;
+            padding: 10px 15px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-size: 14px;
         }
+
+        .filter-bar input {
+            flex-grow: 1;
+        }
+
+        .btn-create-resource {
+            background-color: #2563eb; /* Bleu moderne */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-create-resource:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-create-resource svg {
+            width: 20px;
+            height: 20px;
+        }
+        /* --------------------------------------------------------- */
+
         .modal {
             display: none;
             position: fixed;
@@ -223,9 +269,7 @@ try {
 <header class="top-menu">
     <div class="logo"><h1>StudTraj</h1></div>
     <div class="user-info">
-        <button onclick="openResourceModal('create')" style="cursor:pointer; padding:5px 10px;">
-            ➕ Créer une ressource
-        </button>
+        <!-- Bouton retiré d'ici -->
         <span style="margin: 0 10px;"><?= htmlspecialchars($user_firstname) ?></span>
         <a href="/index.php?action=logout" style="color:white; text-decoration:none;">Déconnexion</a>
     </div>
@@ -236,12 +280,23 @@ try {
         <h2 style="padding: 20px 20px 0;">Tableau de bord</h2>
 
         <div class="filter-bar">
-            <input type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
-            <select id="filterType" onchange="filterResources()">
-                <option value="all">Tout voir</option>
-                <option value="owner">Mes créations</option>
-                <option value="shared">Partagées avec moi</option>
-            </select>
+            <!-- Groupe gauche : Recherche et Filtre -->
+            <div class="filters-left">
+                <input type="text" id="searchBar" placeholder="Rechercher une ressource..." onkeyup="filterResources()">
+                <select id="filterType" onchange="filterResources()">
+                    <option value="all">Tout voir</option>
+                    <option value="owner">Mes créations</option>
+                    <option value="shared">Partagées avec moi</option>
+                </select>
+            </div>
+
+            <!-- Bouton à droite -->
+            <button onclick="openResourceModal('create')" class="btn-create-resource">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nouvelle Ressource
+            </button>
         </div>
 
         <div class="resources-grid" id="resourcesGrid">
