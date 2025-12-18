@@ -180,6 +180,9 @@ class ImportController extends \BaseController {
                 throw new \Exception('Format JSON invalide - "attempts" array requis');
             }
 
+            // Récupérer l'ID de la ressource depuis l'URL
+            $url_resource_id = $_GET['id'] ?? null;
+
             // Créer ou récupérer le dataset
             $dataset_id = $this->getOrCreateDataset(
                 $data['dataset_info'] ?? [],
@@ -203,7 +206,8 @@ class ImportController extends \BaseController {
 
                     // Trouver l'exercice
                     $exercise_id = $this->findExerciseByName(
-                        $attempt['exercise_name'] ?? $attempt['exo_name'] ?? null
+                        $attempt['exercise_name'] ?? $attempt['exo_name'] ?? null,
+                        $url_resource_id
                     );
 
                     if (!$exercise_id) {
@@ -349,13 +353,22 @@ class ImportController extends \BaseController {
     /**
      * Trouver un exercice par son nom
      */
-    private function findExerciseByName($exo_name) {
+    private function findExerciseByName($exo_name, $resource_id = null) {
         if (!$exo_name) return null;
 
-        $stmt = $this->db->prepare("
-            SELECT exercise_id FROM exercises WHERE exo_name = ? LIMIT 1
-        ");
-        $stmt->execute([$exo_name]);
+        if ($resource_id) {
+            $stmt = $this->db->prepare("
+                SELECT exercise_id FROM exercises 
+                WHERE exo_name = ? AND resource_id = ? 
+                LIMIT 1
+            ");
+            $stmt->execute([$exo_name, $resource_id]);
+        } else {
+            $stmt = $this->db->prepare("
+                SELECT exercise_id FROM exercises WHERE exo_name = ? LIMIT 1
+            ");
+            $stmt->execute([$exo_name]);
+        }
         return $stmt->fetchColumn();
     }
 
@@ -407,3 +420,4 @@ class ImportController extends \BaseController {
         return $map[$difficulty] ?? 'moyen';
     }
 }
+
