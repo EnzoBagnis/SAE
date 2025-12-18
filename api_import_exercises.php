@@ -112,6 +112,10 @@ try {
                     $stmt->execute([$user_id, $tp_id, $tp_description]);
                     $resource_id = $db->lastInsertId();
                     error_log("Created resource: $resource_id ($tp_id)");
+
+                    // Add professor access to the new resource
+                    $stmt_access = $db->prepare("INSERT INTO resource_professors_access (resource_id, user_id) VALUES (?, ?)");
+                    $stmt_access->execute([$resource_id, $user_id]);
                 }
             }
 

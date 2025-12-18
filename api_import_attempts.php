@@ -185,6 +185,8 @@ try {
                 }
 
                 $resource_id = $_GET['id'] ?? $data['resource_id'] ?? $attempt['resource_id'] ?? null;
+                if ($resource_id === 'null' || $resource_id === '') $resource_id = null;
+
                 $cache_key = $exercise_name . '_' . ($resource_id ?? 'global');
 
                 if (isset($exercise_cache[$cache_key])) {
@@ -193,9 +195,15 @@ try {
                     if ($resource_id) {
                         $stmt_find_exo_resource->execute([$exercise_name, $resource_id]);
                         $exercise_id = $stmt_find_exo_resource->fetchColumn();
+
+                        if (!$exercise_id) {
+                            error_log("Warning: Exercise '$exercise_name' not found in resource $resource_id");
+                        }
                     }
 
-                    if (!$exercise_id) {
+                    // Only fallback to global if NO resource_id was specified.
+                    // If resource_id WAS specified, we should not link to a random exercise with same name.
+                    if (!$exercise_id && !$resource_id) {
                         $stmt_find_exo_global->execute([$exercise_name]);
                         $exercise_id = $stmt_find_exo_global->fetchColumn();
                     }
@@ -207,7 +215,8 @@ try {
             }
 
             if (!$exercise_id) {
-                throw new Exception("Exercice '$exercise_name' non trouvé en DB (Resource ID: " . ($resource_id ?? 'None') . ")");
+                $context = $resource_id ? "Resource ID: $resource_id" : "Global Search";
+                throw new Exception("Exercice '$exercise_name' non trouvé en DB ($context)");
             }
 
             // 3. Gérer la tentative
