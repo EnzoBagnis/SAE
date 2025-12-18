@@ -26,7 +26,9 @@ try {
     require_once __DIR__ . '/models/Database.php';
     $db = Database::getConnection();
 
-    error_log("=== Import Attempts Started ===");
+    // DEBUG: Log database name to ensure we are on the right one
+    $current_db = $db->query('SELECT DATABASE()')->fetchColumn();
+    error_log("=== Import Attempts Started on DB: $current_db ===");
 
     $json_data = file_get_contents('php://input');
     error_log("Received data length: " . strlen($json_data));
@@ -73,12 +75,25 @@ try {
     }
 
     if (!$dataset_name) {
-        $dataset_name = !empty($dataset_info['nom_dataset']) ? $dataset_info['nom_dataset'] : 'Dataset_' . date('Y-m-d_H-i-s');
+        // Si pas de nom, on essaie de trouver un dataset récent (moins de 24h) pour éviter d'en créer un nouveau à chaque fois
+        $stmt = $db->prepare("SELECT dataset_id, nom_dataset FROM datasets WHERE date_import > DATE_SUB(NOW(), INTERVAL 24 HOUR) ORDER BY dataset_id DESC LIMIT 1");
+        $stmt->execute();
+        $recent = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($recent) {
+            $dataset_id = $recent['dataset_id'];
+            $dataset_name = $recent['nom_dataset'];
+            error_log("Reusing recent dataset: $dataset_name ($dataset_id)");
+        } else {
+            $dataset_name = !empty($dataset_info['nom_dataset']) ? $dataset_info['nom_dataset'] : 'Dataset_' . date('Y-m-d_H-i-s');
+        }
     }
 
-    $stmt = $db->prepare("SELECT dataset_id FROM datasets WHERE nom_dataset = ?");
-    $stmt->execute([$dataset_name]);
-    $dataset_id = $stmt->fetchColumn();
+    if (!isset($dataset_id)) {
+        $stmt = $db->prepare("SELECT dataset_id FROM datasets WHERE nom_dataset = ?");
+        $stmt->execute([$dataset_name]);
+        $dataset_id = $stmt->fetchColumn();
+    }
 
     if (!$dataset_id) {
         $stmt = $db->prepare("
@@ -93,7 +108,9 @@ try {
             $dataset_info['annee'] ?? date('Y')
         ]);
         $dataset_id = $db->lastInsertId();
-        error_log("Created dataset: $dataset_id");
+        error_log("Created NEW dataset: $dataset_id ($dataset_name)");
+    } else {
+        error_log("Using EXISTING dataset: $dataset_id ($dataset_name)");
     }
 
     $db->beginTransaction();
@@ -214,7 +231,7 @@ try {
                 continue;
             }
 
-            $stmt_insert_attempt->execute([
+            if (!$stmt_insert_attempt->execute([
                 $student_id,
                 $exercise_id,
                 $submission_date,
@@ -222,7 +239,10 @@ try {
                 $is_correct ? 1 : 0,
                 $attempt['code'] ?? $attempt['upload'] ?? '',
                 $attempt['eval_set'] ?? null
-            ]);
+            ])) {
+                $err = $stmt_insert_attempt->errorInfo();
+                throw new Exception("SQL Error on Insert: " . $err[2]);
+            }
 
             if ($stmt_insert_attempt->rowCount() === 0) {
                  throw new Exception("L'insertion de la tentative a échoué sans erreur SQL (0 ligne affectée)");
@@ -262,7 +282,9 @@ try {
         $stmt->execute([$dataset_id, $dataset_id, $dataset_id]);
     }
 
-    $db->commit();
+    if (!$db->commit()) {
+        throw new Exception("Failed to commit transaction");
+    }
     error_log("Transaction committed successfully for dataset $dataset_id");
 
     error_log("=== Import Attempts Completed: Success=$success_count, Errors=$error_count ===");
