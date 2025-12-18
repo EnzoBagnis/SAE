@@ -29,6 +29,8 @@ try {
     error_log("=== Import Attempts Started ===");
 
     $json_data = file_get_contents('php://input');
+    error_log("Received data length: " . strlen($json_data));
+
     $data = json_decode($json_data, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
@@ -146,6 +148,33 @@ try {
                 throw new Exception("Exercice '$exercise_name' non trouvé en DB");
             }
 
+            // Formater la date pour MySQL
+            $submission_date = $attempt['submission_date'] ?? date('Y-m-d H:i:s');
+            // Si format ISO 8601 (avec T et Z), convertir
+            if (strpos($submission_date, 'T') !== false) {
+                $ts = strtotime($submission_date);
+                if ($ts) {
+                    $submission_date = date('Y-m-d H:i:s', $ts);
+                }
+            }
+
+            // Vérifier si la tentative existe déjà pour éviter les doublons
+            $stmt = $db->prepare("
+                SELECT attempt_id FROM attempts 
+                WHERE student_id = ? AND exercise_id = ? AND submission_date = ?
+            ");
+            $stmt->execute([
+                $student_id,
+                $exercise_id,
+                $submission_date
+            ]);
+
+            if ($stmt->fetchColumn()) {
+                // Déjà importé, on ignore silencieusement ou on compte comme succès
+                $success_count++;
+                continue;
+            }
+
             // Insérer tentative
             $stmt = $db->prepare("
                 INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set)
@@ -154,7 +183,7 @@ try {
             $stmt->execute([
                 $student_id,
                 $exercise_id,
-                $attempt['submission_date'] ?? date('Y-m-d H:i:s'),
+                $submission_date,
                 $attempt['extension'] ?? 'py',
                 ($attempt['correct'] ?? false) ? 1 : 0,
                 $attempt['code'] ?? $attempt['upload'] ?? '',
