@@ -170,6 +170,9 @@
                     ($resource->owner_lastname ?? '')
                 ) ?>
             </div>
+            <div style="margin-top: 15px;">
+                <button class="btn" onclick="openImportModal(<?= $resource->resource_id ?>)">Importer des données</button>
+            </div>
         </div>
 
         <div class="tp-list-container">

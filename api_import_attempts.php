@@ -59,24 +59,21 @@ try {
     error_log("Found " . count($attempts) . " attempts to import");
 
     // Créer/récupérer dataset
-    $dataset_name = !empty($dataset_info['nom_dataset']) ? $dataset_info['nom_dataset'] : null;
+    $target_resource_id = $_GET['id'] ?? $data['resource_id'] ?? null;
+    $dataset_name = null;
 
-    if (!$dataset_name) {
-        // Si pas de nom de dataset, essayer de le baser sur la ressource cible pour regrouper les imports
-        $target_resource_id = $_GET['id'] ?? $data['resource_id'] ?? null;
-        if ($target_resource_id) {
-            $stmt = $db->prepare("SELECT resource_name FROM resources WHERE resource_id = ?");
-            $stmt->execute([$target_resource_id]);
-            $r_name = $stmt->fetchColumn();
-            if ($r_name) {
-                // Nom unique et stable basé sur la ressource
-                $dataset_name = 'Dataset_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $r_name) . '_' . $target_resource_id;
-            }
+    if ($target_resource_id) {
+        // Si on a un ID de ressource, on force le nom du dataset pour regrouper les imports
+        $stmt = $db->prepare("SELECT resource_name FROM resources WHERE resource_id = ?");
+        $stmt->execute([$target_resource_id]);
+        $r_name = $stmt->fetchColumn();
+        if ($r_name) {
+            $dataset_name = 'Dataset_Resource_' . $target_resource_id;
         }
     }
 
     if (!$dataset_name) {
-        $dataset_name = 'Dataset_' . date('Y-m-d_H-i-s');
+        $dataset_name = !empty($dataset_info['nom_dataset']) ? $dataset_info['nom_dataset'] : 'Dataset_' . date('Y-m-d_H-i-s');
     }
 
     $stmt = $db->prepare("SELECT dataset_id FROM datasets WHERE nom_dataset = ?");
@@ -105,82 +102,93 @@ try {
     $error_count = 0;
     $errors = [];
 
+    // Préparation des requêtes pour optimiser la boucle
+    $stmt_check_student = $db->prepare("SELECT student_id FROM students WHERE dataset_id = ? AND student_identifier = ?");
+    $stmt_insert_student = $db->prepare("INSERT INTO students (dataset_id, student_identifier) VALUES (?, ?)");
+
+    $stmt_find_exo_resource = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? AND resource_id = ? LIMIT 1");
+    $stmt_find_exo_global = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? LIMIT 1");
+
+    $stmt_check_attempt = $db->prepare("SELECT attempt_id FROM attempts WHERE student_id = ? AND exercise_id = ? AND submission_date = ?");
+
+    $stmt_insert_attempt = $db->prepare("
+        INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+
+    // Cache pour les étudiants et exercices
+    $student_cache = [];
+    $exercise_cache = [];
+
     foreach ($attempts as $index => $attempt) {
         try {
-            // Créer/récupérer étudiant
+            // 1. Gérer l'étudiant
             $student_identifier = $attempt['student_identifier'] ?? $attempt['student_id'] ?? $attempt['eleve_id'] ?? 'student_' . $index;
 
-            $stmt = $db->prepare("SELECT student_id FROM students WHERE dataset_id = ? AND student_identifier = ?");
-            $stmt->execute([$dataset_id, $student_identifier]);
-            $student_id = $stmt->fetchColumn();
+            if (isset($student_cache[$student_identifier])) {
+                $student_id = $student_cache[$student_identifier];
+            } else {
+                $stmt_check_student->execute([$dataset_id, $student_identifier]);
+                $student_id = $stmt_check_student->fetchColumn();
 
-            if (!$student_id) {
-                $stmt = $db->prepare("INSERT INTO students (dataset_id, student_identifier) VALUES (?, ?)");
-                $stmt->execute([$dataset_id, $student_identifier]);
-                $student_id = $db->lastInsertId();
+                if (!$student_id) {
+                    $stmt_insert_student->execute([$dataset_id, $student_identifier]);
+                    $student_id = $db->lastInsertId();
+                }
+                $student_cache[$student_identifier] = $student_id;
             }
 
-            // Trouver exercice
-            $exercise_name = $attempt['exercise_name'] ?? $attempt['exo_name'] ?? null;
+            // 2. Gérer l'exercice
+            $exercise_name = $attempt['exercise_name'] ?? $attempt['exo_name'] ?? $attempt['title'] ?? $attempt['name'] ?? $attempt['question_name'] ?? null;
             if (!$exercise_name) {
                 throw new Exception("exercise_name manquant");
             }
 
             $exercise_id = null;
-
-            // Si resource_id est fourni (via URL, payload global ou dans l'objet attempt), essayer de restreindre la recherche
             $resource_id = $_GET['id'] ?? $data['resource_id'] ?? $attempt['resource_id'] ?? null;
+            $cache_key = $exercise_name . '_' . ($resource_id ?? 'global');
 
-            if ($resource_id) {
-                $stmt = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? AND resource_id = ? LIMIT 1");
-                $stmt->execute([$exercise_name, $resource_id]);
-                $exercise_id = $stmt->fetchColumn();
-            }
+            if (isset($exercise_cache[$cache_key])) {
+                $exercise_id = $exercise_cache[$cache_key];
+            } else {
+                if ($resource_id) {
+                    $stmt_find_exo_resource->execute([$exercise_name, $resource_id]);
+                    $exercise_id = $stmt_find_exo_resource->fetchColumn();
+                }
 
-            // Fallback: recherche globale par nom si non trouvé ou pas de resource_id
-            if (!$exercise_id) {
-                $stmt = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? LIMIT 1");
-                $stmt->execute([$exercise_name]);
-                $exercise_id = $stmt->fetchColumn();
-            }
+                if (!$exercise_id) {
+                    // Si on a un resource_id, on devrait peut-être éviter de chercher globalement pour éviter les conflits
+                    // Mais pour la compatibilité, on garde le fallback si l'exercice n'est pas trouvé dans la ressource
+                    // Cependant, si l'utilisateur veut lier à une ressource spécifique, il vaut mieux que l'exercice y soit.
 
-            if (!$exercise_id) {
-                throw new Exception("Exercice '$exercise_name' non trouvé en DB");
-            }
+                    // On tente quand même le global au cas où l'exercice a été importé sans lien explicite mais avec le même nom
+                    $stmt_find_exo_global->execute([$exercise_name]);
+                    $exercise_id = $stmt_find_exo_global->fetchColumn();
+                }
 
-            // Formater la date pour MySQL
-            $submission_date = $attempt['submission_date'] ?? date('Y-m-d H:i:s');
-            // Si format ISO 8601 (avec T et Z), convertir
-            if (strpos($submission_date, 'T') !== false) {
-                $ts = strtotime($submission_date);
-                if ($ts) {
-                    $submission_date = date('Y-m-d H:i:s', $ts);
+                if ($exercise_id) {
+                    $exercise_cache[$cache_key] = $exercise_id;
                 }
             }
 
-            // Vérifier si la tentative existe déjà pour éviter les doublons
-            $stmt = $db->prepare("
-                SELECT attempt_id FROM attempts 
-                WHERE student_id = ? AND exercise_id = ? AND submission_date = ?
-            ");
-            $stmt->execute([
-                $student_id,
-                $exercise_id,
-                $submission_date
-            ]);
+            if (!$exercise_id) {
+                throw new Exception("Exercice '$exercise_name' non trouvé en DB" . ($resource_id ? " pour la ressource $resource_id" : ""));
+            }
 
-            if ($stmt->fetchColumn()) {
-                // Déjà importé, on ignore silencieusement ou on compte comme succès
+            // 3. Gérer la tentative
+            $submission_date = $attempt['submission_date'] ?? date('Y-m-d H:i:s');
+            if (strpos($submission_date, 'T') !== false) {
+                $ts = strtotime($submission_date);
+                if ($ts) $submission_date = date('Y-m-d H:i:s', $ts);
+            }
+
+            $stmt_check_attempt->execute([$student_id, $exercise_id, $submission_date]);
+            if ($stmt_check_attempt->fetchColumn()) {
                 $success_count++;
                 continue;
             }
 
-            // Insérer tentative
-            $stmt = $db->prepare("
-                INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([
+            $stmt_insert_attempt->execute([
                 $student_id,
                 $exercise_id,
                 $submission_date,
@@ -195,7 +203,10 @@ try {
         } catch (Exception $e) {
             $error_count++;
             $errors[] = "Tentative #$index: " . $e->getMessage();
-            error_log("ERROR: Tentative #$index: " . $e->getMessage());
+            // On ne log pas chaque erreur pour éviter de spammer les logs si gros import
+            if ($error_count <= 10) {
+                error_log("ERROR: Tentative #$index: " . $e->getMessage());
+            }
         }
     }
 
@@ -207,7 +218,6 @@ try {
 
     error_log("=== Import Attempts Completed: Success=$success_count, Errors=$error_count ===");
 
-    // Nettoyer le tampon de sortie avant d'envoyer le JSON
     ob_end_clean();
 
     echo json_encode([
@@ -217,7 +227,7 @@ try {
         'total' => count($attempts),
         'success_count' => $success_count,
         'error_count' => $error_count,
-        'errors' => $errors
+        'errors' => array_slice($errors, 0, 100) // Limiter la taille du retour JSON
     ]);
 
 } catch (Exception $e) {
@@ -227,7 +237,6 @@ try {
 
     error_log("FATAL ERROR: " . $e->getMessage());
 
-    // Nettoyer le tampon de sortie avant d'envoyer l'erreur JSON
     if (ob_get_length()) ob_end_clean();
 
     http_response_code(400);
@@ -236,4 +245,3 @@ try {
         'error' => $e->getMessage()
     ]);
 }
-

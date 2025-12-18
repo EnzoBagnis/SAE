@@ -116,7 +116,7 @@ try {
             }
 
             // 2. Insérer l'exercice
-            $exo_name = $exercise['title'] ?? $exercise['name'] ?? $exercise['exo_name'] ?? 'Exercise_' . ($index + 1);
+            $exo_name = $exercise['title'] ?? $exercise['name'] ?? $exercise['exo_name'] ?? $exercise['question_name'] ?? 'Exercise_' . ($index + 1);
             $funcname = $exercise['funcname'] ?? null;
             $solution = $exercise['solution'] ?? null;
             $description = $exercise['description'] ?? null;
@@ -236,4 +236,3 @@ try {
         'line' => $e->getLine()
     ]);
 }
-
