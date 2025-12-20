@@ -32,10 +32,11 @@
         "lock": false
     },
     "require": {
-        "php": ">=7.0",
+        "php": ">=7.4",
         "ext-ctype": "*",
         "ext-filter": "*",
-        "ext-hash": "*"
+        "ext-hash": "*",
+      "ext-pdo": "*"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",

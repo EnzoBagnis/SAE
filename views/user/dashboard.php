@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="../public/css/style.css">
     <link rel="stylesheet" href="../public/css/dashboard.css">
      <link rel="stylesheet" href="../public/css/footer.css">
-    <script src="/public/js/dashboard-main.js" type="module" defer></script>
+    <script src="../public/js/modules/import.js"></script>
+    <script type="module" src="../public/js/dashboard-main.js"></script>
+
 
     <!-- SEO Meta Tags -->
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
@@ -31,11 +33,17 @@
         </button>
 
         <nav class="nav-menu">
-            <a href="/index.php?action=dashboard" class="active">Tableau de bord</a>
-            <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="/index.php?action=mentions">Mentions légales</a>
+            <a href="/index.php?action=resources_list" class="active">Ressources</a>
         </nav>
         <div class="user-info">
+            <button onclick="openImportModal()" class="btn-import-trigger">
+                <svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Importer
+            </button>
             <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
             <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
         </div>
@@ -68,11 +76,23 @@
     </nav>
 
     <div class="dashboard-container">
-        <!-- Sidebar gauche pour les Étudiants -->
-        <aside class="sidebar">
-            <h2>Liste des Étudiants</h2>
-            <div class="student-list" id="student-list">
-                <!-- La liste des étudiants sera ajoutée ici dynamiquement via JavaScript -->
+        <!-- Sidebar gauche - Design style mobile -->
+        <aside class="sidebar sidebar-mobile-style">
+            <!-- Sélecteur de vue côte à côte -->
+            <div class="view-selector-header">
+                <button class="view-tab active" id="btnStudents" onclick="switchListView('students')">
+                    Liste des Étudiants
+                    <span class="toggle-arrow">▲</span>
+                </button>
+                <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
+                    Liste des TP
+                    <span class="toggle-arrow">▲</span>
+                </button>
+            </div>
+
+            <!-- Liste unique qui change selon le mode -->
+            <div class="sidebar-list" id="sidebar-list">
+                <!-- Contenu dynamique : étudiants ou exercices -->
             </div>
         </aside>
 
@@ -83,6 +103,75 @@
             </div>
         </main>
     </div>
+
+    <div id="importModal" class="modal">
+        <div class="modal-content import-modal">
+            <span class="close" onclick="closeImportModal()">&times;</span>
+            <h2>Importer des données JSON</h2>
+
+            <div class="import-tabs">
+                <button class="import-tab active" onclick="switchImportTab('exercises')" data-tab="exercises">
+                    Exercices de TP
+                </button>
+                <button class="import-tab" onclick="switchImportTab('attempts')" data-tab="attempts">
+                    Tentatives d'élèves
+                </button>
+            </div>
+
+            <!-- Onglet Exercices -->
+            <div id="exercisesTab" class="import-tab-content active">
+                <div class="import-zone" id="exercisesDropZone">
+                    <input type="file" id="exercisesFileInput" accept=".json"
+                           style="display: none;"
+                           onchange="handleFileSelect(event, 'exercises')">
+                    <div class="drop-zone-content"
+                         onclick="document.getElementById('exercisesFileInput').click()">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
+                        <p class="file-info">Format: exercices_tp.json</p>
+                    </div>
+                </div>
+                <div id="exercisesPreview" class="file-preview" style="display: none;">
+                    <h3>Aperçu du fichier</h3>
+                    <div class="preview-content"></div>
+                    <button class="btn-import" onclick="importExercises()">Importer les exercices</button>
+                </div>
+            </div>
+
+            <!-- Onglet Tentatives -->
+            <div id="attemptsTab" class="import-tab-content">
+                <div class="import-zone" id="attemptsDropZone">
+                    <input type="file" id="attemptsFileInput" accept=".json"
+                           style="display: none;"
+                           onchange="handleFileSelect(event, 'attempts')">
+                    <div class="drop-zone-content"
+                         onclick="document.getElementById('attemptsFileInput').click()">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
+                        <p class="file-info">Format: tentatives_eleves.json</p>
+                    </div>
+                </div>
+                <div id="attemptsPreview" class="file-preview" style="display: none;">
+                    <h3>Aperçu du fichier</h3>
+                    <div class="preview-content"></div>
+                    <button class="btn-import" onclick="importAttempts()">Importer les tentatives</button>
+                </div>
+            </div>
+
+            <div id="importStatus" class="import-status" style="display: none;"></div>
+        </div>
+    </div>
+
 
     <!-- Modal Plan du site -->
     <div id="sitemapModal" class="modal">
