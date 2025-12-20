@@ -18,6 +18,9 @@ $user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
 $user_lastname = $_SESSION['nom'] ?? '';
 $title = 'StudTraj - Mes Ressources';
 
+// Calcul des initiales pour l'avatar
+$initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
+
 $resources = Resource::getAllAccessibleResources($db, $user_id);
 
 // Récupération des utilisateurs pour le partage
@@ -42,13 +45,23 @@ try {
     <link rel="stylesheet" href="../public/css/dashboard.css">
 
     <style>
+        /* =========================================
+           CSS DE BASE (Desktop First)
+           ========================================= */
+
+        /* Reset de box-sizing pour mieux gérer les largeurs */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* --- GRILLE DES RESSOURCES (Inchangé ou presque) --- */
         .resources-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
             padding: 20px;
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 0 auto;
         }
         .resource-card {
             background-color: #fff;
@@ -104,19 +117,110 @@ try {
         .btn-edit-resource:hover {
             background-color: #f0f0f0;
         }
+
+        /* --- BARRE DE FILTRES --- */
         .filter-bar {
             padding: 20px;
             background: #eef;
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
             margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire */
         }
+
+        .filter-group-left {
+            display: flex;
+            gap: 10px;
+            flex-grow: 1; /* Prend l'espace disponible */
+            flex-wrap: wrap;
+        }
+
         .filter-bar input, .filter-bar select {
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            min-width: 150px;
         }
+        .filter-bar input {
+            flex-grow: 1; /* La recherche s'agrandit */
+        }
+
+        /* --- BOUTONS & USER INFO --- */
+
+        .btn-create-resource {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+            /* CORRECTION DEMANDEE : Taille adaptée au contenu, pas tout le bloc */
+            width: fit-content;
+            white-space: nowrap; /* Empêche le texte de se couper */
+            flex-shrink: 0; /* Empêche le bouton de s'écraser */
+        }
+        .btn-create-resource:hover {
+            background-color: #2980b9;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background-color: #e67e22;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            border: 2px solid rgba(255,255,255,0.3);
+            flex-shrink: 0;
+        }
+
+        .btn-logout {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 6px 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .btn-logout:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+            color: white;
+        }
+
+        /* --- MODAL (Inchangé) --- */
         .modal {
             display: none;
             position: fixed;
@@ -126,6 +230,7 @@ try {
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            overflow-y: auto; /* Permet le scroll si l'écran est petit */
         }
         .modal-content {
             background-color: #fefefe;
@@ -144,14 +249,8 @@ try {
             font-weight: bold;
             cursor: pointer;
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group input[type="text"], .form-group textarea {
             width: 100%;
             padding: 8px;
@@ -177,9 +276,8 @@ try {
             font-size: 16px;
             margin-top: 10px;
         }
-        .btn-submit:hover {
-            background-color: #45a049;
-        }
+        .btn-submit:hover { background-color: #45a049; }
+
         .btn-delete-trigger {
             background-color: #f44336;
             color: white;
@@ -191,31 +289,67 @@ try {
             margin-top: 15px;
             font-size: 14px;
         }
-        .btn-delete-trigger:hover {
-            background-color: #d32f2f;
+        .btn-delete-trigger:hover { background-color: #d32f2f; }
+
+        .confirm-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .btn-confirm-yes { background-color: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .btn-confirm-no { background-color: #ccc; color: black; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+
+        /* =========================================
+           RESPONSIVE (MOBILE & TABLETTE)
+           ========================================= */
+
+        /* Tablettes et petits écrans (< 900px) */
+        @media (max-width: 900px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch; /* Les éléments prennent toute la largeur dispo */
+            }
+            .filter-group-left {
+                width: 100%;
+            }
+            .btn-create-resource {
+                align-self: flex-end; /* Bouton aligné à droite */
+                width: auto;
+            }
         }
-        .confirm-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
+
+        /* Mobile (< 600px) */
+        @media (max-width: 600px) {
+            /* Header s'empile verticalement */
+            .top-menu {
+                flex-direction: column;
+                height: auto;
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .user-info {
+                width: 100%;
+                justify-content: space-between; /* Espace entre Profil et Déconnexion */
+            }
+
+            /* Filtres en colonne */
+            .filter-group-left {
+                flex-direction: column;
+            }
+
+            .filter-bar input, .filter-bar select {
+                width: 100%;
+            }
+
+            /* Bouton création prend toute la largeur sur très petit écran pour être facile à cliquer */
+            .btn-create-resource {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .resources-grid {
+                grid-template-columns: 1fr; /* Une seule colonne */
+                padding: 10px;
+            }
         }
-        .btn-confirm-yes {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-confirm-no {
-            background-color: #ccc;
-            color: black;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+
     </style>
     <script src="../public/js/dashboard-main.js"></script>
 </head>
@@ -223,11 +357,22 @@ try {
 <header class="top-menu">
     <div class="logo"><h1>StudTraj</h1></div>
     <div class="user-info">
-        <button onclick="openResourceModal('create')" style="cursor:pointer; padding:5px 10px;">
-            ➕ Créer une ressource
-        </button>
-        <span style="margin: 0 10px;"><?= htmlspecialchars($user_firstname) ?></span>
-        <a href="/index.php?action=logout" style="color:white; text-decoration:none;">Déconnexion</a>
+        <!-- Affichage Profil -->
+        <div class="user-profile">
+            <div class="user-avatar">
+                <?= htmlspecialchars($initials) ?>
+            </div>
+            <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
+        </div>
+        <!-- Bouton Déconnexion -->
+        <a href="/index.php?action=logout" class="btn-logout">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span class="logout-text">Déconnexion</span>
+        </a>
     </div>
 </header>
 
@@ -236,12 +381,24 @@ try {
         <h2 style="padding: 20px 20px 0;">Tableau de bord</h2>
 
         <div class="filter-bar">
-            <input type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
-            <select id="filterType" onchange="filterResources()">
-                <option value="all">Tout voir</option>
-                <option value="owner">Mes créations</option>
-                <option value="shared">Partagées avec moi</option>
-            </select>
+            <!-- Groupe de gauche pour recherche et select -->
+            <div class="filter-group-left">
+                <input type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
+                <select id="filterType" onchange="filterResources()">
+                    <option value="all">Tout voir</option>
+                    <option value="owner">Mes créations</option>
+                    <option value="shared">Partagées avec moi</option>
+                </select>
+            </div>
+
+            <!-- Bouton Créer (ne prend pas toute la largeur) -->
+            <button onclick="openResourceModal('create')" class="btn-create-resource">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Nouvelle Ressource
+            </button>
         </div>
 
         <div class="resources-grid" id="resourcesGrid">
@@ -282,7 +439,7 @@ try {
                             <?php else : ?>
                                 <div class="resource-card-image"
                                      style="background:#eee; display:flex; align-items:center;
-                                                justify-content:center; color:#777;">
+                                            justify-content:center; color:#777;">
                                     Pas d'image
                                 </div>
                             <?php endif; ?>
@@ -291,8 +448,8 @@ try {
                                 <h3><?= htmlspecialchars($resName) ?></h3>
                                 <p><?= htmlspecialchars($resDesc) ?></p>
                                 <span class="resource-card-owner">
-                                        Par: <?= htmlspecialchars($ownerName) ?>
-                                    </span>
+                                    Par: <?= htmlspecialchars($ownerName) ?>
+                                </span>
                             </div>
                         </a>
                     </div>
@@ -333,10 +490,10 @@ try {
             <div class="form-group">
                 <label>Partager avec :</label>
                 <div class="users-checklist">
-                    <?php if (empty($all_users)) : ?>
+                    <?php if (empty($all_users)): ?>
                         <p style="color:#999;">Aucun autre utilisateur.</p>
-                    <?php else : ?>
-                        <?php foreach ($all_users as $u) : ?>
+                    <?php else: ?>
+                        <?php foreach ($all_users as $u): ?>
                             <label style="display:block; margin-bottom:5px;">
                                 <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>"
                                        class="user-checkbox">
@@ -379,7 +536,6 @@ try {
         </div>
     </div>
 </div>
-
 <script>
     function openResourceModal(mode, btn = null) {
         const modal = document.getElementById('resourceModal');
