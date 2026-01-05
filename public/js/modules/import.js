@@ -362,15 +362,30 @@ async function importAttempts() {
         try { result = JSON.parse(text); } catch (e) { /* ignore */ }
 
         if (response.ok) {
-            const count = (result && (result.count || result.success_count)) || (payload.attempts ? payload.attempts.length : 0);
-            showImportStatus(`✓ Import réussi ! ${count} tentative(s) importée(s).`, 'success');
+            let msg = `✓ Import réussi !`;
+            if (result) {
+                if (result.added_count !== undefined) {
+                    msg += ` ${result.added_count} ajoutée(s)`;
+                }
+                if (result.skipped_count !== undefined && result.skipped_count > 0) {
+                    msg += `, ${result.skipped_count} ignorée(s) (déjà existantes)`;
+                }
+                if (result.error_count !== undefined && result.error_count > 0) {
+                    msg += `, ${result.error_count} erreur(s)`;
+                }
+            } else {
+                const count = (payload.attempts ? payload.attempts.length : 0);
+                msg += ` ${count} tentative(s) traitée(s).`;
+            }
 
-            // Fermer le modal après 2 secondes
+            showImportStatus(msg, 'success');
+
+            // Fermer le modal après 3 secondes pour laisser le temps de lire
             setTimeout(() => {
                 closeImportModal();
                 // Recharger la page pour afficher les nouvelles données
                 window.location.reload();
-            }, 2000);
+            }, 3000);
         } else {
             const serverMsg = (result && (result.error || (result.errors && result.errors.join('; ')))) || text || 'Erreur lors de l\'import';
             throw new Error(serverMsg);

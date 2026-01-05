@@ -271,6 +271,7 @@ try {
             $stmt_check_attempt->execute([$student_id, $exercise_id, $submission_date]);
             if ($stmt_check_attempt->fetchColumn()) {
                 // Tentative déjà existante, on passe
+                $skipped_count++;
                 $success_count++;
                 continue;
             }
@@ -303,6 +304,7 @@ try {
                  throw new Exception("L'insertion de la tentative a échoué sans erreur SQL (0 ligne affectée)");
             }
 
+            $added_count++;
             $success_count++;
 
         } catch (Exception $e) {
@@ -351,7 +353,8 @@ try {
         'message' => "Import terminé !",
         'dataset_id' => $dataset_id,
         'total' => count($attempts),
-        'success_count' => $success_count,
+        'added_count' => $added_count,
+        'skipped_count' => $skipped_count,
         'error_count' => $error_count,
         'errors' => array_slice($errors, 0, 100) // Limiter la taille du retour JSON
     ]);
