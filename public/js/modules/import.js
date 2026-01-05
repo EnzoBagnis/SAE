@@ -372,6 +372,9 @@ async function importAttempts() {
                 }
                 if (result.error_count !== undefined && result.error_count > 0) {
                     msg += `, ${result.error_count} erreur(s)`;
+                    if (result.errors && result.errors.length > 0) {
+                        msg += `<br><small style="color:red">Erreur (1ère): ${result.errors[0]}</small>`;
+                    }
                 }
             } else {
                 const count = (payload.attempts ? payload.attempts.length : 0);
