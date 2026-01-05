@@ -234,7 +234,6 @@ try {
                     if (!$exercise_id) {
                         // Essayer de trouver l'exercice le plus récent avec ce nom
                         // C'est souvent celui qu'on vient d'importer
-                        $stmt_find_recent = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? ORDER BY exercise_id DESC LIMIT 1");
                         $stmt_find_recent->execute([$exercise_name]);
                         $exercise_id = $stmt_find_recent->fetchColumn();
                     }
@@ -317,26 +316,19 @@ try {
         }
     }
 
-    // Mettre à jour stats dataset
+    // Mettre à jour stats dataset (uniquement nb_etudiants car le trigger s'occupe de nb_tentatives)
     try {
-        $stmt = $db->prepare("CALL update_dataset_stats(?)");
-        $stmt->execute([$dataset_id]);
-    } catch (Exception $e) {
-        error_log("WARNING: Failed to call update_dataset_stats: " . $e->getMessage());
-        // Fallback manual update
+        // On évite d'appeler la procédure lourde update_dataset_stats qui recompte tout
+        // Le trigger after_attempt_insert met déjà à jour nb_tentatives
+        // On met juste à jour nb_etudiants qui n'est pas géré par trigger
         $stmt = $db->prepare("
             UPDATE datasets 
-            SET nb_tentatives = (
-                SELECT COUNT(*) FROM attempts a 
-                JOIN students s ON a.student_id = s.student_id 
-                WHERE s.dataset_id = ?
-            ),
-            nb_etudiants = (
-                SELECT COUNT(*) FROM students WHERE dataset_id = ?
-            )
+            SET nb_etudiants = (SELECT COUNT(*) FROM students WHERE dataset_id = ?)
             WHERE dataset_id = ?
         ");
-        $stmt->execute([$dataset_id, $dataset_id, $dataset_id]);
+        $stmt->execute([$dataset_id, $dataset_id]);
+    } catch (Exception $e) {
+        error_log("WARNING: Failed to update dataset stats: " . $e->getMessage());
     }
 
     if (!$db->commit()) {
