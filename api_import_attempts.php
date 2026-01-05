@@ -270,6 +270,7 @@ try {
             // Vérifier si la tentative existe déjà pour éviter les doublons
             // On utilise une vérification plus stricte incluant le code uploadé si possible
             // Mais pour la performance, on reste sur student + exo + date
+            /* Désactivé à la demande de l'utilisateur pour autoriser les doublons
             $stmt_check_attempt->execute([$student_id, $exercise_id, $submission_date]);
             if ($stmt_check_attempt->fetchColumn()) {
                 // Tentative déjà existante, on passe
@@ -277,6 +278,7 @@ try {
                 $success_count++;
                 continue;
             }
+            */
 
             // Préparer les données JSON pour les champs AES
             $aes0 = isset($attempt['aes0']) ? (is_string($attempt['aes0']) ? $attempt['aes0'] : json_encode($attempt['aes0'])) : null;
