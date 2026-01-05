@@ -181,7 +181,13 @@
                 <?php foreach ($exercises as $exercise) : ?>
                     <div class="tp-item">
                         <div class="tp-item-info">
-                            <h3><?= htmlspecialchars($exercise->exo_name ?? '') ?></h3>
+                            <h3><?= htmlspecialchars($exercise->exo_name ?? $exercise->title ?? 'Exercice sans titre') ?></h3>
+                            <p>
+                                <?= htmlspecialchars($exercise->description ?? 'Aucune description') ?>
+                                <?php if (!empty($exercise->funcname)): ?>
+                                    <br><small>Fonction : <code><?= htmlspecialchars($exercise->funcname) ?></code></small>
+                                <?php endif; ?>
+                            </p>
                             <p>
                                 Difficulté: <?= htmlspecialchars($exercise->difficulte ?? 'Non spécifiée') ?>
                             </p>

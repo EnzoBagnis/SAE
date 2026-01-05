@@ -6,6 +6,10 @@
 // Démarrer la bufferisation de sortie pour éviter que des erreurs PHP ne cassent le JSON
 ob_start();
 
+// Augmenter le temps d'exécution et la mémoire pour les gros imports
+set_time_limit(300); // 5 minutes
+ini_set('memory_limit', '512M');
+
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
