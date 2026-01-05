@@ -283,9 +283,9 @@ try {
             */
 
             // Préparer les données JSON pour les champs AES
-            $aes0 = isset($attempt['aes0']) ? (is_string($attempt['aes0']) ? $attempt['aes0'] : json_encode($attempt['aes0'])) : null;
-            $aes1 = isset($attempt['aes1']) ? (is_string($attempt['aes1']) ? $attempt['aes1'] : json_encode($attempt['aes1'])) : null;
-            $aes2 = isset($attempt['aes2']) ? (is_string($attempt['aes2']) ? $attempt['aes2'] : json_encode($attempt['aes2'])) : null;
+            $aes0 = $formatJsonField($attempt['aes0'] ?? null);
+            $aes1 = $formatJsonField($attempt['aes1'] ?? null);
+            $aes2 = $formatJsonField($attempt['aes2'] ?? null);
 
             // Utiliser une requête préparée qui inclut les champs AES si nécessaire
             // Pour l'instant on reste sur la structure de base, mais on s'assure que les données sont propres
