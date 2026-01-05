@@ -143,6 +143,40 @@ try {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
+    // Helper pour formater les champs JSON (AES)
+    $formatJsonField = function($value) {
+        if (!isset($value) || $value === null) return null;
+
+        // Si c'est un tableau ou objet (déjà décodé par json_decode du payload), on le ré-encode
+        if (!is_string($value)) {
+            return json_encode($value);
+        }
+
+        // Si c'est une chaîne
+        $value = trim($value);
+        if ($value === '') return null;
+
+        // Tentative de détection si c'est déjà du JSON valide (objet ou tableau uniquement)
+        // On force l'encodage pour les chaînes simples pour éviter les ambiguïtés
+        if ((isset($value[0]) && $value[0] === '{' && substr($value, -1) === '}') ||
+            (isset($value[0]) && $value[0] === '[' && substr($value, -1) === ']')) {
+
+            json_decode($value);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $value;
+            }
+        }
+
+        // Sinon, on encode la chaîne pour qu'elle soit une chaîne JSON valide
+        $encoded = json_encode($value);
+        if ($encoded === false) {
+            // Tentative de réparation UTF-8 si l'encodage échoue
+            $encoded = json_encode(mb_convert_encoding($value, 'UTF-8', 'UTF-8'));
+        }
+
+        return $encoded;
+    };
+
     // Cache pour les étudiants et exercices
     $student_cache = [];
     $exercise_cache = [];
