@@ -329,7 +329,13 @@ async function importAttempts() {
 
         // Vérifier si un resourceId est défini dans le modal
         const modal = document.getElementById('importModal');
-        const resourceId = modal && modal.dataset.resourceId;
+        let resourceId = modal && modal.dataset.resourceId;
+
+        // Si pas dans le modal, vérifier l'URL
+        if (!resourceId) {
+            const urlParams = new URLSearchParams(window.location.search);
+            resourceId = urlParams.get('resource_id') || urlParams.get('id');
+        }
 
         // Si resourceId existe, l'ajouter au payload (peut être utile pour lier au dataset ou autre)
         if (resourceId) {

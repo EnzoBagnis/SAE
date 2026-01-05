@@ -163,15 +163,33 @@ try {
             }
 
             // 3. Insérer les test cases
-            if (isset($exercise['test_cases']) && is_array($exercise['test_cases'])) {
+            $test_cases = $exercise['test_cases'] ?? $exercise['entries'] ?? [];
+            if (!empty($test_cases) && is_array($test_cases)) {
                 // Supprimer anciens test cases
                 $stmt = $db->prepare("DELETE FROM test_cases WHERE exercise_id = ?");
                 $stmt->execute([$exercise_id]);
 
-                foreach ($exercise['test_cases'] as $tc_index => $test) {
-                    $input = isset($test['input']) ? json_encode($test['input']) : '[]';
-                    $expected = isset($test['expected']) ? json_encode($test['expected']) :
-                                (isset($test['expected_output']) ? json_encode($test['expected_output']) : null);
+                foreach ($test_cases as $tc_index => $test) {
+                    // Déterminer si c'est un objet de test structuré (avec clés input/expected) ou une donnée brute
+                    $is_structured_test = is_array($test) && (
+                        array_key_exists('input', $test) ||
+                        array_key_exists('input_data', $test) ||
+                        array_key_exists('expected', $test) ||
+                        array_key_exists('expected_output', $test)
+                    );
+
+                    if ($is_structured_test) {
+                        // Format standard test_cases
+                        $input = isset($test['input']) ? json_encode($test['input']) : (isset($test['input_data']) ? $test['input_data'] : '[]');
+                        $expected = isset($test['expected']) ? json_encode($test['expected']) :
+                                    (isset($test['expected_output']) ? $test['expected_output'] : null);
+                    } else {
+                        // C'est un input direct (valeur simple, tableau d'arguments, ou tuple encodé)
+                        // Ex: "entries": [[5, 15], [-6, -4]] -> chaque élément est un input
+                        $input = json_encode($test);
+                        $expected = null;
+                    }
+
                     $order = $test['order'] ?? $test['test_order'] ?? ($tc_index + 1);
 
                     $stmt = $db->prepare("
@@ -180,7 +198,7 @@ try {
                     ");
                     $stmt->execute([$exercise_id, $input, $expected, $order]);
                 }
-                error_log("Inserted " . count($exercise['test_cases']) . " test cases");
+                error_log("Inserted " . count($test_cases) . " test cases");
             }
 
             $success_count++;

@@ -129,8 +129,8 @@ try {
     $stmt_check_attempt = $db->prepare("SELECT attempt_id FROM attempts WHERE student_id = ? AND exercise_id = ? AND submission_date = ?");
 
     $stmt_insert_attempt = $db->prepare("
-        INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set, aes0, aes1, aes2)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     // Cache pour les étudiants et exercices
@@ -237,7 +237,7 @@ try {
             }
 
             // 3. Gérer la tentative
-            $submission_date = $attempt['submission_date'] ?? date('Y-m-d H:i:s');
+            $submission_date = $attempt['submission_date'] ?? $attempt['date'] ?? date('Y-m-d H:i:s');
             if (strpos($submission_date, 'T') !== false) {
                 $ts = strtotime($submission_date);
                 if ($ts) $submission_date = date('Y-m-d H:i:s', $ts);
@@ -276,7 +276,10 @@ try {
                 $attempt['extension'] ?? 'py',
                 $is_correct ? 1 : 0,
                 $attempt['code'] ?? $attempt['upload'] ?? '',
-                $attempt['eval_set'] ?? null
+                $attempt['eval_set'] ?? null,
+                $aes0,
+                $aes1,
+                $aes2
             ])) {
                 $err = $stmt_insert_attempt->errorInfo();
                 throw new Exception("SQL Error on Insert: " . $err[2]);
