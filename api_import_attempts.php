@@ -120,6 +120,8 @@ try {
     $db->beginTransaction();
 
     $success_count = 0;
+    $added_count = 0;
+    $skipped_count = 0;
     $error_count = 0;
     $errors = [];
 
