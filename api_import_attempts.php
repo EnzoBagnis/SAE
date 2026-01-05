@@ -181,6 +181,8 @@ try {
     $student_cache = [];
     $exercise_cache = [];
 
+    $debug_info = [];
+
     foreach ($attempts as $index => $attempt) {
         // Commit intermédiaire tous les 1000 enregistrements pour éviter de saturer la transaction
         if ($index > 0 && $index % 1000 === 0) {
@@ -194,7 +196,7 @@ try {
 
         try {
             // 1. Gérer l'étudiant
-            $student_identifier = $attempt['student_identifier'] ?? $attempt['student_id'] ?? $attempt['eleve_id'] ?? $attempt['user_id'] ?? 'student_' . $index;
+            $student_identifier = $attempt['student_identifier'] ?? $attempt['student_id'] ?? $attempt['eleve_id'] ?? $attempt['user_id'] ?? $attempt['user'] ?? 'student_' . $index;
 
             if (isset($student_cache[$student_identifier])) {
                 $student_id = $student_cache[$student_identifier];
@@ -245,9 +247,6 @@ try {
             if (!$exercise_id) {
                 if (!$exercise_name) {
                     // Si on a perdu l'ID et qu'on n'a pas de nom, c'est fatal pour cette tentative
-                    if (isset($invalid_id)) {
-                         throw new Exception("Exercise ID $invalid_id introuvable et aucun nom fourni");
-                    }
                     throw new Exception("Nom de l'exercice ou ID manquant");
                 }
 
@@ -389,6 +388,7 @@ try {
         'added_count' => $added_count,
         'skipped_count' => $skipped_count,
         'error_count' => $error_count,
+        'debug_info' => $debug_info,
         'errors' => array_slice($errors, 0, 100) // Limiter la taille du retour JSON
     ]);
 

@@ -383,6 +383,16 @@ async function importAttempts() {
 
             showImportStatus(msg, 'success');
 
+            // Afficher debug info si disponible
+            if (result.debug_info) {
+                console.log('Debug Import:', result.debug_info);
+                if (result.debug_info.resolved_identifier && result.debug_info.resolved_identifier.startsWith('student_')) {
+                    alert("Attention : L'import n'a pas trouvé d'identifiant utilisateur dans le fichier JSON.\n" +
+                          "Clés trouvées dans la 1ère tentative : " + result.debug_info.first_attempt_keys.join(', ') + "\n" +
+                          "Identifiant généré : " + result.debug_info.resolved_identifier);
+                }
+            }
+
             // Fermer le modal après 3 secondes pour laisser le temps de lire
             setTimeout(() => {
                 closeImportModal();
