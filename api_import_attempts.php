@@ -142,6 +142,16 @@ try {
     $exercise_cache = [];
 
     foreach ($attempts as $index => $attempt) {
+        // Commit intermédiaire tous les 1000 enregistrements pour éviter de saturer la transaction
+        if ($index > 0 && $index % 1000 === 0) {
+            $db->commit();
+            $db->beginTransaction();
+            // Réinitialiser les caches pour libérer de la mémoire si nécessaire (optionnel, ici on garde pour perf)
+            // $student_cache = [];
+            // $exercise_cache = [];
+            error_log("Intermediate commit at index $index");
+        }
+
         try {
             // 1. Gérer l'étudiant
             $student_identifier = $attempt['student_identifier'] ?? $attempt['student_id'] ?? $attempt['eleve_id'] ?? $attempt['user_id'] ?? 'student_' . $index;
