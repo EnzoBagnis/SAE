@@ -130,7 +130,11 @@ try {
     $stmt_find_exo_resource = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? AND resource_id = ? LIMIT 1");
     $stmt_find_exo_global = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? LIMIT 1");
 
-    $stmt_check_attempt = $db->prepare("SELECT attempt_id FROM attempts WHERE student_id = ? AND exercise_id = ? AND submission_date = ?");
+    $stmt_check_attempt = $db->prepare("SELECT attempt_id FROM attempts WHERE student_id = ? AND exercise_id = ? AND submission_date = ? LIMIT 1");
+
+    // Optimisation : Préparation des requêtes utilisées conditionnellement dans la boucle
+    $stmt_check_exo_id = $db->prepare("SELECT exercise_id, exo_name FROM exercises WHERE exercise_id = ?");
+    $stmt_find_recent = $db->prepare("SELECT exercise_id FROM exercises WHERE exo_name = ? ORDER BY exercise_id DESC LIMIT 1");
 
     $stmt_insert_attempt = $db->prepare("
         INSERT INTO attempts (student_id, exercise_id, submission_date, extension, correct, upload, eval_set, aes0, aes1, aes2)
@@ -181,7 +185,6 @@ try {
             // Si un ID est fourni, on vérifie s'il existe ET s'il correspond au nom (si fourni)
             // C'est crucial lors d'imports croisés où les IDs peuvent ne pas correspondre
             if ($exercise_id) {
-                $stmt_check_exo_id = $db->prepare("SELECT exercise_id, exo_name FROM exercises WHERE exercise_id = ?");
                 $stmt_check_exo_id->execute([$exercise_id]);
                 $found_exo = $stmt_check_exo_id->fetch(PDO::FETCH_ASSOC);
 
