@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\Analysis;
 
 require_once __DIR__ . '/../BaseController.php';
@@ -8,11 +9,12 @@ require_once __DIR__ . '/../../models/Database.php';
  * ImportController - Gère l'import de données JSON
  * Exercices et tentatives d'élèves
  */
-class ImportController extends \BaseController {
-
+class ImportController extends \BaseController
+{
     private $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         // Connexion à la base de données
         $this->db = Database::getConnection();
     }
@@ -21,7 +23,8 @@ class ImportController extends \BaseController {
      * Import d'exercices depuis JSON
      * POST /api/exercises/import
      */
-    public function importExercises() {
+    public function importExercises()
+    {
         header('Content-Type: application/json');
 
         // Vérifier la session
@@ -116,7 +119,6 @@ class ImportController extends \BaseController {
                     }
 
                     $success_count++;
-
                 } catch (\Exception $e) {
                     $error_count++;
                     $errors[] = "Exercice #$index: " . $e->getMessage();
@@ -139,7 +141,6 @@ class ImportController extends \BaseController {
                 'error_count' => $error_count,
                 'errors' => $errors
             ]);
-
         } catch (\Exception $e) {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
@@ -154,7 +155,8 @@ class ImportController extends \BaseController {
      * Import de tentatives depuis JSON
      * POST /api/attempts/import
      */
-    public function importAttempts() {
+    public function importAttempts()
+    {
         header('Content-Type: application/json');
 
         // Vérifier la session
@@ -233,7 +235,6 @@ class ImportController extends \BaseController {
                     ]);
 
                     $success_count++;
-
                 } catch (\Exception $e) {
                     $error_count++;
                     $errors[] = "Tentative #$index: " . $e->getMessage();
@@ -253,7 +254,6 @@ class ImportController extends \BaseController {
                 'error_count' => $error_count,
                 'errors' => $errors
             ]);
-
         } catch (\Exception $e) {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
@@ -268,7 +268,8 @@ class ImportController extends \BaseController {
     /**
      * Créer ou récupérer une ressource
      */
-    private function getOrCreateResource($resource_name, $user_id, $description = null) {
+    private function getOrCreateResource($resource_name, $user_id, $description = null)
+    {
         // Chercher si existe
         $stmt = $this->db->prepare("
             SELECT resource_id FROM resources 
@@ -294,7 +295,8 @@ class ImportController extends \BaseController {
     /**
      * Créer ou récupérer un dataset
      */
-    private function getOrCreateDataset($dataset_info, $user_id) {
+    private function getOrCreateDataset($dataset_info, $user_id)
+    {
         $nom_dataset = !empty($dataset_info['nom_dataset']) ? $dataset_info['nom_dataset'] : null;
 
         if (!$nom_dataset) {
@@ -306,7 +308,8 @@ class ImportController extends \BaseController {
                 $r_name = $stmt->fetchColumn();
                 if ($r_name) {
                     // Nom unique et stable basé sur la ressource
-                    $nom_dataset = 'Dataset_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $r_name) . '_' . $target_resource_id;
+                    $nom_dataset = 'Dataset_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $r_name) .
+                        '_' . $target_resource_id;
                 }
             }
         }
@@ -345,7 +348,8 @@ class ImportController extends \BaseController {
     /**
      * Créer ou récupérer un étudiant
      */
-    private function getOrCreateStudent($dataset_id, $student_identifier) {
+    private function getOrCreateStudent($dataset_id, $student_identifier)
+    {
         // Chercher si existe
         $stmt = $this->db->prepare("
             SELECT student_id FROM students 
@@ -371,8 +375,11 @@ class ImportController extends \BaseController {
     /**
      * Trouver un exercice par son nom
      */
-    private function findExerciseByName($exo_name, $resource_id = null) {
-        if (!$exo_name) return null;
+    private function findExerciseByName($exo_name, $resource_id = null)
+    {
+        if (!$exo_name) {
+            return null;
+        }
 
         if ($resource_id) {
             $stmt = $this->db->prepare("
@@ -393,7 +400,8 @@ class ImportController extends \BaseController {
     /**
      * Insérer les test cases
      */
-    private function insertTestCases($exercise_id, $test_cases) {
+    private function insertTestCases($exercise_id, $test_cases)
+    {
         // Supprimer les anciens test cases
         $stmt = $this->db->prepare("DELETE FROM test_cases WHERE exercise_id = ?");
         $stmt->execute([$exercise_id]);
@@ -417,7 +425,8 @@ class ImportController extends \BaseController {
     /**
      * Mettre à jour les statistiques d'un dataset
      */
-    private function updateDatasetStats($dataset_id) {
+    private function updateDatasetStats($dataset_id)
+    {
         $stmt = $this->db->prepare("CALL update_dataset_stats(?)");
         $stmt->execute([$dataset_id]);
     }
@@ -425,7 +434,8 @@ class ImportController extends \BaseController {
     /**
      * Mapper la difficulté
      */
-    private function mapDifficulty($difficulty) {
+    private function mapDifficulty($difficulty)
+    {
         $difficulty = strtolower($difficulty);
         $map = [
             'easy' => 'facile',
@@ -438,4 +448,3 @@ class ImportController extends \BaseController {
         return $map[$difficulty] ?? 'moyen';
     }
 }
-
