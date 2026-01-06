@@ -150,7 +150,8 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
     </nav>
     <div class="user-info">
         <button onclick="openImportModal()" class="btn-import-trigger">
-            <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -231,12 +232,12 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
                        data-name="<?= htmlspecialchars($resource->resource_name) ?>"
                        data-owner="<?= htmlspecialchars($ownerFullName) ?>"
                        data-access-type="<?=
-                       htmlspecialchars($resource->access_type) ?>">
+                        htmlspecialchars($resource->access_type) ?>">
                         <?php if (!empty($resource->image_path)) : ?>
                             <img src="/images/<?=
                             htmlspecialchars($resource->image_path) ?>"
                                  alt="Image de <?=
-                                 htmlspecialchars($resource->resource_name) ?>"
+                                    htmlspecialchars($resource->resource_name) ?>"
                                  class="resource-card-image">
                         <?php else : ?>
                             <div class="resource-card-image placeholder"></div>
