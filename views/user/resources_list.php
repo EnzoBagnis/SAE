@@ -118,7 +118,10 @@ try {
                          data-description="<?= htmlspecialchars($resDesc) ?>"
                          data-image="<?= htmlspecialchars($resImg) ?>">
 
-
+                        <?php if ($isOwner) : ?>
+                            <button class="btn-edit-resource" onclick="openResourceModal('edit', this)"
+                                    title="Modifier">✏️</button>
+                        <?php endif; ?>
 
                         <a href="/index.php?action=dashboard&resource_id=<?= $resId ?>"
                            class="resource-link-wrapper">
@@ -136,11 +139,6 @@ try {
                             <div class="resource-card-content">
                                 <h3><?= htmlspecialchars($resName) ?></h3>
                                 <p><?= htmlspecialchars($resDesc) ?></p>
-                                <?php if ($isOwner) : ?>
-                                    <button class="btn-edit-resource" onclick="openResourceModal('edit', this)" title="Modifier">
-                                        ✏️ Modifier
-                                    </button>
-                                <?php endif; ?>
                                 <span class="resource-card-owner">
                                     Par: <?= htmlspecialchars($ownerName) ?>
                                 </span>

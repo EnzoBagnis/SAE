@@ -1145,44 +1145,4 @@
     }
 }
 
-.resource-card-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    background-color: #f0f0f0;
-    border-bottom: 1px solid #eee; /* La ligne de séparation */
-}
 
-/* 2. Préparation de la carte pour le bouton en bas */
-.resource-card {
-    position: relative; /* Important pour le placement du bouton */
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 50px; /* Espace pour ne pas que le texte touche le bouton */
-    /* ... tes autres styles ... */
-}
-
-/* 3. Nouveau style pour le bouton Modifier (Bas Gauche) */
-.btn-edit-resource {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    right: auto; /* Annule le right: 10px précédent */
-    top: auto;   /* Annule le top: 10px précédent */
-    background: #f8f9fa;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 5px 10px;
-    width: auto;  /* Pour qu'il soit rectangulaire et non rond */
-    height: auto;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    z-index: 10;
-}
-
-.btn-edit-resource:hover {
-    background-color: #e9ecef;
-}
