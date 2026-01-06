@@ -90,6 +90,7 @@
 
 .btn-import-trigger:hover {
     background: #229954;
+    border-color: #1fa558;
 }
 
 .btn-import-trigger svg {
