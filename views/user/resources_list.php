@@ -40,14 +40,9 @@ try {
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
-    <link rel="stylesheet" href="/public/css/style.css">
-    <link rel="stylesheet" href="/public/css/dashboard.css">
-    <link rel="stylesheet" href="/public/css/footer.css">
-    <script src="/public/js/modules/import.js"></script>
-    <script src="/public/js/dashboard-main.js"></script>
+    <title><?= htmlspecialchars($title) ?></title>
+    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="../public/css/dashboard.css">
 
     <style>
         /* =========================================
@@ -296,28 +291,9 @@ try {
         }
         .btn-delete-trigger:hover { background-color: #d32f2f; }
 
-        .confirm-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-        .btn-confirm-yes {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-confirm-no {
-            background-color: #ccc;
-            color: black;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+        .confirm-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .btn-confirm-yes { background-color: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .btn-confirm-no { background-color: #ccc; color: black; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
 
         /* =========================================
            RESPONSIVE (MOBILE & TABLETTE)
@@ -378,47 +354,13 @@ try {
     <script src="../public/js/dashboard-main.js"></script>
 </head>
 <body>
-    <!-- Menu du haut -->
-    <header class="top-menu">
-        <div class="logo">
-            <h1>StudTraj</h1>
-        </div>
-
-        <!-- Bouton burger pour mobile -->
-        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-
-        <nav class="nav-menu">
-            <a href="/index.php?action=resources_list" class="active">Tableau de bord</a>
-            <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="/index.php?action=mentions">Mentions légales</a>
-        </nav>
-        <div class="user-info">
-            <button onclick="openImportModal()" class="btn-import-trigger">
-                <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                Importer
-            </button>
-            <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
-            <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
-        </div>
-    </header>
-
-    <!-- Menu burger mobile -->
-    <nav class="burger-nav" id="burgerNav">
-        <div class="burger-nav-content">
-            <div class="burger-user-info">
-                <span>
-                    <?= htmlspecialchars($user_firstname) ?>
-                    <?= htmlspecialchars($user_lastname) ?>
-                </span>
+<header class="top-menu">
+    <div class="logo"><h1>StudTraj</h1></div>
+    <div class="user-info">
+        <!-- Affichage Profil -->
+        <div class="user-profile">
+            <div class="user-avatar">
+                <?= htmlspecialchars($initials) ?>
             </div>
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
@@ -431,7 +373,7 @@ try {
             </svg>
             <span class="logout-text">Déconnexion</span>
         </a>
-    </nav>
+    </div>
 </header>
 
 <div class="dashboard-container">
@@ -534,92 +476,9 @@ try {
                 <input type="text" id="resourceName" name="name" required>
             </div>
 
-    <!-- Modal Import -->
-    <div id="importModal" class="modal">
-        <div class="modal-content import-modal">
-            <span class="close" onclick="closeImportModal()">&times;</span>
-            <h2>Importer des données JSON</h2>
-
-            <div class="import-tabs">
-                <button class="import-tab active" onclick="switchImportTab('exercises')" data-tab="exercises">
-                    Exercices de TP
-                </button>
-                <button class="import-tab" onclick="switchImportTab('attempts')" data-tab="attempts">
-                    Tentatives d'élèves
-                </button>
-            </div>
-
-            <!-- Onglet Exercices -->
-            <div id="exercisesTab" class="import-tab-content active">
-                <div class="import-zone" id="exercisesDropZone">
-                    <input type="file" id="exercisesFileInput" accept=".json"
-                           style="display: none;"
-                           onchange="handleFileSelect(event, 'exercises')">
-                    <div class="drop-zone-content"
-                         onclick="document.getElementById('exercisesFileInput').click()">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
-                        <p class="file-info">Format: exercices_tp.json</p>
-                    </div>
-                </div>
-                <div id="exercisesPreview" class="file-preview" style="display: none;">
-                    <h3>Aperçu du fichier</h3>
-                    <div class="preview-content"></div>
-                    <button class="btn-import" onclick="importExercises()">Importer les exercices</button>
-                </div>
-            </div>
-
-            <!-- Onglet Tentatives -->
-            <div id="attemptsTab" class="import-tab-content">
-                <div class="import-zone" id="attemptsDropZone">
-                    <input type="file" id="attemptsFileInput" accept=".json"
-                           style="display: none;"
-                           onchange="handleFileSelect(event, 'attempts')">
-                    <div class="drop-zone-content"
-                         onclick="document.getElementById('attemptsFileInput').click()">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
-                        <p class="file-info">Format: tentatives_eleves.json</p>
-                    </div>
-                </div>
-                <div id="attemptsPreview" class="file-preview" style="display: none;">
-                    <h3>Aperçu du fichier</h3>
-                    <div class="preview-content"></div>
-                    <button class="btn-import" onclick="importAttempts()">Importer les tentatives</button>
-                </div>
-            </div>
-
-            <div id="importStatus" class="import-status" style="display: none;"></div>
-        </div>
-    </div>
-
-    <!-- Modal Plan du site -->
-    <div id="sitemapModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeSiteMap()">&times;</span>
-            <h2>Plan du site</h2>
-            <div class="sitemap-list">
-                <ul>
-                    <li><a href="/index.php?action=resources_list">Tableau de bord</a></li>
-                    <li><a href="/index.php?action=login">Connexion</a></li>
-                    <li><a href="/index.php?action=signup">Inscription</a></li>
-                    <li>
-                        <a href="/index.php?action=forgotpassword">
-                            Mot de passe oublié
-                        </a>
-                    </li>
-                    <li><a href="/index.php?action=mentions">Mentions légales</a></li>
-                </ul>
+            <div class="form-group">
+                <label>Description :</label>
+                <textarea id="resourceDesc" name="description" rows="3"></textarea>
             </div>
 
             <div class="form-group">
@@ -631,10 +490,10 @@ try {
             <div class="form-group">
                 <label>Partager avec :</label>
                 <div class="users-checklist">
-                    <?php if (empty($all_users)) : ?>
+                    <?php if (empty($all_users)): ?>
                         <p style="color:#999;">Aucun autre utilisateur.</p>
-                    <?php else : ?>
-                        <?php foreach ($all_users as $u) : ?>
+                    <?php else: ?>
+                        <?php foreach ($all_users as $u): ?>
                             <label style="display:block; margin-bottom:5px;">
                                 <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>"
                                        class="user-checkbox">
@@ -760,4 +619,3 @@ try {
 </script>
 </body>
 </html>
-
