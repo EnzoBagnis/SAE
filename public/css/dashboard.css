@@ -1098,3 +1098,49 @@
         padding: 10px;
     }
 }
+/* Conteneur regroupant les éléments de droite */
+.header-right {
+    display: flex;
+    align-items: center; /* Centre verticalement tous les enfants */
+    gap: 1.5rem; /* Espace entre Importer, Profil et Déconnexion */
+}
+
+/* On s'assure que le profil ne crée pas de décalage */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: white;
+}
+
+/* Ajustement du bouton import pour qu'il soit bien aligné avec les autres boutons */
+.btn-import-trigger {
+    background: #27ae60; /* Un vert plus standard si besoin */
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    height: 38px; /* Hauteur fixe pour matcher les autres éléments si nécessaire */
+    transition: background 0.3s;
+}
+
+/* Le bouton logout doit aussi avoir une hauteur cohérente */
+.btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0.5rem 1rem;
+}
+
+/* Ajustement Responsive : cacher le bloc header-right sur mobile car il y a le menu burger */
+@media (max-width: 768px) {
+    .header-right {
+        display: none;
+    }
+}
