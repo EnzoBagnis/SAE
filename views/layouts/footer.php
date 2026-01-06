@@ -43,10 +43,10 @@
         <div class="footer-bottom-content">
             <p>&copy; <?php echo date('Y'); ?> StudTraj - Tous droits réservés</p>
             <p class="footer-legal">
-                <a href="mentions-legales.php">Mentions légales</a> |
+                <a href="index.php?action=mentions">Mentions légales</a> |
                 <a href="#" onclick="showCGU()">CGU</a> |
                 <a href="#" onclick="showPrivacy()">Confidentialité</a> |
-                <a href="../sitemap.php">Sitemap XML</a>
+                <a href="sitemap.php">Sitemap XML</a>
             </p>
             <p class="footer-compliance">
                 Conformité RGPD | Accessibilité : Conforme |

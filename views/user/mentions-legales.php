@@ -1,5 +1,4 @@
 <?php
-session_start();
 // Vérifier si l'utilisateur est connecté
 $isLoggedIn = isset($_SESSION['id']);
 ?>
@@ -9,12 +8,12 @@ $isLoggedIn = isset($_SESSION['id']);
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
     <title>StudTraj - Mentions légales</title>
-    <link rel="stylesheet" href="../public/css/style.css">
-    <link rel="stylesheet" href="../public/css/dashboard.css">
-    <link rel="stylesheet" href="../public/css/mentions-legales.css">
-    <link rel="stylesheet" href="../public/css/footer.css">
+    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="public/css/dashboard.css">
+    <link rel="stylesheet" href="public/css/mentions-legales.css">
+    <link rel="stylesheet" href="public/css/footer.css">
     <!-- SEO Meta Tags -->
     <meta name="mentions-legales" content="Je vous assure qu'on est ici en toute légalité.">
     <meta name="robots" content="noindex, nofollow">
@@ -36,9 +35,9 @@ $isLoggedIn = isset($_SESSION['id']);
         </button>
 
         <nav class="nav-menu">
-            <a href="dashboard.php">Tableau de bord</a>
+            <a href="index.php?action=dashboard">Tableau de bord</a>
             <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="mentions-legales.php" class="active">Mentions légales</a>
+            <a href="index.php?action=mentions" class="active">Mentions légales</a>
         </nav>
         <div class="user-info">
             <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
@@ -53,16 +52,16 @@ $isLoggedIn = isset($_SESSION['id']);
                 <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="dashboard.php" class="burger-link">Tableau de bord</a></li>
+                <li><a href="index.php?action=dashboard" class="burger-link">Tableau de bord</a></li>
                 <li><a href="#" onclick="openSiteMap()" class="burger-link">Plan du site</a></li>
-                <li><a href="mentions-legales.php" class="burger-link active">Mentions légales</a></li>
+                <li><a href="index.php?action=mentions" class="burger-link active">Mentions légales</a></li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
     </nav>
 <?php else: ?>
     <!-- Bouton retour simple pour utilisateurs non connectés -->
-    <a href="../index.php" class="back-arrow">←</a>
+    <a href="index.php" class="back-arrow">←</a>
 <?php endif; ?>
 
 <div class="legal-container">
@@ -132,18 +131,18 @@ $isLoggedIn = isset($_SESSION['id']);
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="dashboard.php">Tableau de bord</a></li>
-                    <li><a href="connexion.php">Connexion</a></li>
-                    <li><a href="formulaire.php">Inscription</a></li>
-                    <li><a href="forgotPassword.php">Mot de passe oublié</a></li>
-                    <li><a href="mentions-legales.php">Mentions légales</a></li>
+                    <li><a href="index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="index.php?action=login">Connexion</a></li>
+                    <li><a href="index.php?action=signup">Inscription</a></li>
+                    <li><a href="index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>
     </div>
 <?php endif; ?>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/../layouts/footer.php'; ?>
 
 <script>
     // Fonctions pour le menu burger
