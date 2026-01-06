@@ -27,7 +27,7 @@ $resources = Resource::getAllAccessibleResources($db, $user_id);
 $all_users = [];
 try {
     $stmt_users = $db->prepare(
-        "SELECT id, prenom, nom FROM utilisateurs WHERE id != :id ORDER BY nom ASC"
+            "SELECT id, prenom, nom FROM utilisateurs WHERE id != :id ORDER BY nom ASC"
     );
     $stmt_users->execute([':id' => $user_id]);
     $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
