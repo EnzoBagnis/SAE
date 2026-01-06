@@ -50,11 +50,10 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
         $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
         ?>
         <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
-            <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
             Importer
         </button>
@@ -110,11 +109,9 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
             <div class="view-selector-header">
                 <button class="view-tab active" id="btnStudents" onclick="switchListView('students')">
                     Liste des Étudiants
-                    <span class="toggle-arrow">▲</span>
                 </button>
                 <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
                     Liste des TP
-                    <span class="toggle-arrow">▲</span>
                 </button>
             </div>
 
