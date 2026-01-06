@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
-    <link rel="stylesheet" href="../public/css/dashboard.css">
-    <link rel="stylesheet" href="../public/css/footer.css">
-    <script src="../public/js/modules/import.js"></script>
-    <script src="../public/js/dashboard-main.js"></script>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/dashboard.css">
+    <link rel="stylesheet" href="/public/css/footer.css">
+    <script src="/public/js/modules/import.js"></script>
+    <script src="/public/js/dashboard-main.js"></script>
 
     <meta name="description"
           content="Liste des Travaux Pratiques pour la ressource
@@ -103,6 +103,15 @@
             <a href="/index.php?action=resources_list" class="active">Ressources</a>
         </nav>
         <div class="user-info">
+            <button onclick="openImportModal(<?= $resource->resource_id ?>)" class="btn-import-trigger">
+                <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Importer
+            </button>
             <span>
                 <?= htmlspecialchars($user_firstname ?? '') ?>
                 <?= htmlspecialchars($user_lastname ?? '') ?>
@@ -159,6 +168,11 @@
                     ($resource->owner_lastname ?? '')
                 ) ?>
             </div>
+            <div style="margin-top: 15px;">
+                <button class="btn" onclick="openImportModal(<?= $resource->resource_id ?>)">
+                    Importer des données
+                </button>
+            </div>
         </div>
 
         <div class="tp-list-container">
@@ -167,9 +181,22 @@
                 <?php foreach ($exercises as $exercise) : ?>
                     <div class="tp-item">
                         <div class="tp-item-info">
-                            <h3><?= htmlspecialchars($exercise->exo_name ?? '') ?></h3>
+                            <h3>
+                                <?= htmlspecialchars(
+                                    $exercise->exo_name ?? $exercise->title ?? 'Exercice sans titre'
+                                ) ?>
+                            </h3>
                             <p>
-                                Difficulté: <?= htmlspecialchars($exercise->difficulte ?? 'Non spécifiée') ?>
+                                <?= htmlspecialchars($exercise->description ?? 'Aucune description') ?>
+                                <?php if (!empty($exercise->funcname)) : ?>
+                                    <br><small>Fonction :
+                                        <code><?= htmlspecialchars($exercise->funcname) ?></code>
+                                    </small>
+                                <?php endif; ?>
+                            </p>
+                            <p>
+                                Difficulté:
+                                <?= htmlspecialchars($exercise->difficulte ?? 'Non spécifiée') ?>
                             </p>
                         </div>
                         <div class="tp-item-actions">
@@ -181,6 +208,75 @@
             <?php else : ?>
                 <p>Aucun travail pratique disponible pour cette ressource.</p>
             <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Modal Import -->
+    <div id="importModal" class="modal">
+        <div class="modal-content import-modal">
+            <span class="close" onclick="closeImportModal()">&times;</span>
+            <h2>Importer des données JSON</h2>
+
+            <div class="import-tabs">
+                <button class="import-tab active" onclick="switchImportTab('exercises')" data-tab="exercises">
+                    Exercices de TP
+                </button>
+                <button class="import-tab" onclick="switchImportTab('attempts')" data-tab="attempts">
+                    Tentatives d'élèves
+                </button>
+            </div>
+
+            <!-- Onglet Exercices -->
+            <div id="exercisesTab" class="import-tab-content active">
+                <div class="import-zone" id="exercisesDropZone">
+                    <input type="file" id="exercisesFileInput" accept=".json"
+                           style="display: none;"
+                           onchange="handleFileSelect(event, 'exercises')">
+                    <div class="drop-zone-content"
+                         onclick="document.getElementById('exercisesFileInput').click()">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
+                        <p class="file-info">Format: exercices_tp.json</p>
+                    </div>
+                </div>
+                <div id="exercisesPreview" class="file-preview" style="display: none;">
+                    <h3>Aperçu du fichier</h3>
+                    <div class="preview-content"></div>
+                    <button class="btn-import" onclick="importExercises()">Importer les exercices</button>
+                </div>
+            </div>
+
+            <!-- Onglet Tentatives -->
+            <div id="attemptsTab" class="import-tab-content">
+                <div class="import-zone" id="attemptsDropZone">
+                    <input type="file" id="attemptsFileInput" accept=".json"
+                           style="display: none;"
+                           onchange="handleFileSelect(event, 'attempts')">
+                    <div class="drop-zone-content"
+                         onclick="document.getElementById('attemptsFileInput').click()">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
+                        <p class="file-info">Format: tentatives_eleves.json</p>
+                    </div>
+                </div>
+                <div id="attemptsPreview" class="file-preview" style="display: none;">
+                    <h3>Aperçu du fichier</h3>
+                    <div class="preview-content"></div>
+                    <button class="btn-import" onclick="importAttempts()">Importer les tentatives</button>
+                </div>
+            </div>
+
+            <div id="importStatus" class="import-status" style="display: none;"></div>
         </div>
     </div>
 
