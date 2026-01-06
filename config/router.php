@@ -314,6 +314,27 @@ class Router
                 $this->loadNamespacedController('Controllers\Analysis\VisualizationController', 'getData');
                 break;
 
+            // ========== IMPORT - API ==========
+            case 'api/exercises/import':
+            case 'import-exercises':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Import\ImportController', 'importExercises');
+                } else {
+                    http_response_code(405);
+                    echo json_encode(['error' => 'Méthode non autorisée']);
+                }
+                break;
+
+            case 'api/attempts/import':
+            case 'import-attempts':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Import\ImportController', 'importAttempts');
+                } else {
+                    http_response_code(405);
+                    echo json_encode(['error' => 'Méthode non autorisée']);
+                }
+                break;
+
             default:
                 $this->loadController('HomeController', 'index');
                 break;

@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
-    <link rel="stylesheet" href="../public/css/dashboard.css">
-     <link rel="stylesheet" href="../public/css/footer.css">
-    <script src="../public/js/modules/import.js"></script>
-    <script type="module" src="../public/js/dashboard-main.js"></script>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/dashboard.css">
+     <link rel="stylesheet" href="/public/css/footer.css">
+    <script src="/public/js/modules/import.js"></script>
+    <script type="module" src="/public/js/dashboard-main.js"></script>
 
 
     <!-- SEO Meta Tags -->
@@ -36,8 +36,13 @@
             <a href="/index.php?action=resources_list" class="active">Ressources</a>
         </nav>
         <div class="user-info">
-            <button onclick="openImportModal()" class="btn-import-trigger">
-                <svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <?php
+            // Récupérer l'ID de la ressource depuis l'URL si présent
+            $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
+            ?>
+            <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
+                <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="17 8 12 3 7 8"></polyline>
                     <line x1="12" y1="3" x2="12" y2="15"></line>
