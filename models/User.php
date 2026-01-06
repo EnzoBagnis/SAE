@@ -87,7 +87,6 @@ class User
             'mail' => $mail,
             'duree_ban' => $duree_ban
         ]);
-
     }
 
 
@@ -328,7 +327,7 @@ class User
         // Construction de la requête avec nom de table validé
         $sql = "DELETE FROM {$table} WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute( ['id' => $id]);
+        return $stmt->execute(['id' => $id]);
     }
 
     /**
