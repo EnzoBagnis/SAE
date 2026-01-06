@@ -74,19 +74,18 @@
 
 /* Bouton d'import */
 .btn-import-trigger {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
     background: #27ae60;
+    border-color: #14bc58;
     color: white;
-    border: none;
-    padding: 0.4rem 0.75rem;
+    border: 1px solid;
     border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    transition: background 0.3s;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 500;
-    height: fit-content;
+    align-content: center;
+    cursor: pointer;
+    transition: background 0.3s;
 }
 
 .btn-import-trigger:hover {
