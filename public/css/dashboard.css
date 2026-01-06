@@ -78,18 +78,18 @@
     padding: 0.75rem 1.5rem;
     background: #27ae60;
     color: white;
-    border: 1px solid #14bc58;
+    border: 1px solid #40d310;
     border-radius: 4px;
     font-size: 1rem;
     font-weight: 500;
-    align-content: center;
+    align-items: center;
     cursor: pointer;
     transition: background 0.3s;
 }
 
 .btn-import-trigger:hover {
     background: #229954;
-    border-color: #a51f9a;
+    border-color: #4ca51f;
 }
 
 .btn-import-trigger svg {
