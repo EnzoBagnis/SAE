@@ -59,12 +59,10 @@ $isLoggedIn = isset($_SESSION['id']);
             </ul>
         </div>
     </nav>
-<?php else: ?>
-    <!-- Bouton retour simple pour utilisateurs non connectés -->
-    <a href="index.php" class="back-arrow">←</a>
 <?php endif; ?>
 
 <div class="legal-container">
+    <a href="javascript:void(0)" onclick="if(window.history.length > 1){window.history.back();}else{window.location.href='index.php';}" class="back-link" style="display: inline-block; margin-bottom: 20px; text-decoration: none; color: inherit; font-weight: bold; font-size: 1.2em;">← Retour</a>
     <h1>Mentions légales</h1>
 
     <section class="legal-section">
