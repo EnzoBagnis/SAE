@@ -31,10 +31,6 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 <body>
 <header class="top-menu">
     <div class="logo"><h1>StudTraj</h1></div>
-
-    <nav class="nav-menu">
-        <a href="/index.php?action=resources_list" class="active">Ressources</a>
-    </nav>
     <div class="user-info">
         <!-- Affichage Profil -->
         <div class="user-profile">
@@ -54,6 +50,9 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
         </a>
     </div>
 </header>
+<nav class="nav-menu">
+    <a href="/index.php?action=resources_list" class="active">Ressources</a>
+</nav>
     <!-- Menu burger mobile -->
     <nav class="burger-nav" id="burgerNav">
         <div class="burger-nav-content">
