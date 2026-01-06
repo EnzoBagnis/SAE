@@ -44,7 +44,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     <nav class="nav-menu">
         <a href="/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
-    <div class="user-info">
+    <div class="nav-menu">
         <?php
         // Récupérer l'ID de la ressource depuis l'URL si présent
         $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
