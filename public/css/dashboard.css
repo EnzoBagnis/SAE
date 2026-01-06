@@ -455,12 +455,13 @@
     width: 100%;
     padding: 0.75rem 1.5rem;
     background: #27ae60;
-    border-color: #229954;
+    border-color: #00fc6c;
     color: white;
     border: 1px solid;
     border-radius: 4px;
     font-size: 1rem;
     font-weight: 500;
+    align-content: center;
     cursor: pointer;
     transition: background 0.3s;
 }
