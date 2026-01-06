@@ -98,6 +98,32 @@ class Router
                 $this->loadNamespacedController('Controllers\User\ExercisesController', 'getExercise');
                 break;
 
+            // ========== ADMIN - DASHBOARD ==========
+            case 'admin':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'index');
+                break;
+            case 'adminSVU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showVerifiedUsers');
+                break;
+            case 'adminSPU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showPendingUsers');
+                break;
+            case 'adminSBU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showBlockedUsers');
+                break;
+            case 'adminDeleteUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'deleteUser');
+                break;
+            case 'adminEditUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'editUser');
+                break;
+            case 'adminValidUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'validateUser');
+                break;
+            case 'adminBanUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'banUser');
+                break;
+
             // ========== PAGES ==========
             case 'mentions':
                 $this->loadView('pages/mentions-legales');
@@ -109,12 +135,12 @@ class Router
                 require_once __DIR__ . '/../views/user/resources_list.php';
                 break;
 
+            // --- save_resource ---
             case 'save_resource':
                 if (!isset($_SESSION['id'])) {
                     header('Location: index.php?action=login');
                     exit;
                 }
-
                 require_once __DIR__ . '/../models/Database.php';
                 $db = Database::getConnection();
 
@@ -122,81 +148,139 @@ class Router
                 $nom = $_POST['name'] ?? 'Sans nom';
                 $desc = $_POST['description'] ?? '';
                 $userId = $_SESSION['id'];
-                $sharedUsers = $_POST['shared_users'] ?? []; // Liste des IDs des partenaires
+                $sharedUsers = $_POST['shared_users'] ?? [];
 
-                // 1. Upload Image
                 $imagePath = null;
-                // Si on est en modification, on peut vouloir récupérer l'ancienne image si pas de nouvelle
-                // Mais ici on fait simple : si pas d'image envoyée, on laisse null (insert) ou on touche pas (update)
-
                 if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-                    $uploadDir = __DIR__ . '/../images/'; // Dossier /images à la racine
-                    // Créer le dossier s'il n'existe pas
+                    $uploadDir = __DIR__ . '/../images/';
                     if (!is_dir($uploadDir)) {
                         mkdir($uploadDir, 0755, true);
                     }
-
                     $extension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
                     $fileName = time() . '_' . uniqid() . '.' . $extension;
-
                     if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $fileName)) {
                         $imagePath = $fileName;
                     }
                 }
 
                 if (empty($id)) {
-                    // --- CREATION ---
-                    // Table: resources / Colonnes: resource_name, description, image_path, owner_user_id
+                    // Création
                     $sql = "INSERT INTO resources (resource_name, description, image_path, owner_user_id) 
                             VALUES (:nom, :desc, :img, :uid)";
                     $stmt = $db->prepare($sql);
                     $stmt->execute([
                         ':nom' => $nom,
                         ':desc' => $desc,
-                        ':img' => $imagePath, // Peut être null
+                        ':img' => $imagePath,
                         ':uid' => $userId
                     ]);
                     $resourceId = $db->lastInsertId();
                 } else {
-                    // --- MODIFICATION ---
-                    // On vérifie que c'est bien MA ressource (owner_user_id)
+                    // Modification
                     $sqlInfo = "UPDATE resources SET resource_name = :nom, description = :desc";
                     if ($imagePath) {
                         $sqlInfo .= ", image_path = :img";
                     }
                     $sqlInfo .= " WHERE resource_id = :id AND owner_user_id = :uid";
-
                     $params = [':nom' => $nom, ':desc' => $desc, ':id' => $id, ':uid' => $userId];
                     if ($imagePath) {
                         $params[':img'] = $imagePath;
                     }
-
                     $stmt = $db->prepare($sqlInfo);
                     $stmt->execute($params);
                     $resourceId = $id;
                 }
 
-                // --- GESTION DES PARTENAIRES (Table 'resource_professors_access') ---
-
-                // 1. On supprime les anciens partages pour cette ressource
+                // Gestion des partages
                 $delStmt = $db->prepare("DELETE FROM resource_professors_access WHERE resource_id = :rid");
                 $delStmt->execute([':rid' => $resourceId]);
 
-                // 2. On ajoute les nouveaux
                 if (!empty($sharedUsers)) {
-                    $insStmt = $db->prepare(
-                        "INSERT INTO resource_professors_access (resource_id, user_id) VALUES (:rid, :uid)"
-                    );
+                    $sqlInsert = "INSERT INTO resource_professors_access (resource_id, user_id) 
+                                  VALUES (:rid, :uid)";
+                    $insStmt = $db->prepare($sqlInsert);
                     foreach ($sharedUsers as $partenaireId) {
-                        // On évite de se partager à soi-même
                         if ($partenaireId != $userId) {
                             $insStmt->execute([':rid' => $resourceId, ':uid' => $partenaireId]);
                         }
                     }
                 }
-
                 header('Location: index.php?action=resources_list');
                 exit;
+                break;
+
+            // --- delete_resource ---
+            case 'delete_resource':
+                if (!isset($_SESSION['id'])) {
+                    header('Location: index.php?action=login');
+                    exit;
+                }
+                require_once __DIR__ . '/../models/Database.php';
+                $db = Database::getConnection();
+
+                $resourceId = $_POST['resource_id'] ?? null;
+                $userId = $_SESSION['id'];
+
+                if (!$resourceId) {
+                    header('Location: index.php?action=resources_list');
+                    exit;
+                }
+
+                try {
+                    $db->beginTransaction();
+
+                    $checkStmt = $db->prepare(
+                        "SELECT resource_id, image_path FROM resources 
+                         WHERE resource_id = :rid AND owner_user_id = :uid"
+                    );
+                    $checkStmt->execute([':rid' => $resourceId, ':uid' => $userId]);
+                    $resource = $checkStmt->fetch(PDO::FETCH_OBJ);
+
+                    if (!$resource) {
+                        $db->rollBack();
+                        die("Action non autorisée.");
+                    }
+
+                    // Suppression des attempts via les exercices
+                    $sqlExoIds = "SELECT exercise_id FROM exercises WHERE resource_id = :rid";
+                    $stmtExo = $db->prepare($sqlExoIds);
+                    $stmtExo->execute([':rid' => $resourceId]);
+                    $exerciseIds = $stmtExo->fetchAll(PDO::FETCH_COLUMN);
+
+                    if (!empty($exerciseIds)) {
+                        $placeholders = implode(',', array_fill(0, count($exerciseIds), '?'));
+                        $stmtDelAttempts = $db->prepare("DELETE FROM attempts WHERE exercise_id IN ($placeholders)");
+                        $stmtDelAttempts->execute($exerciseIds);
+
+                        $stmtDelTests = $db->prepare("DELETE FROM test_cases WHERE exercise_id IN ($placeholders)");
+                        $stmtDelTests->execute($exerciseIds);
+                    }
+
+                    $delExoStmt = $db->prepare("DELETE FROM exercises WHERE resource_id = :rid");
+                    $delExoStmt->execute([':rid' => $resourceId]);
+
+                    $delShareStmt = $db->prepare("DELETE FROM resource_professors_access WHERE resource_id = :rid");
+                    $delShareStmt->execute([':rid' => $resourceId]);
+
+                    $delResStmt = $db->prepare("DELETE FROM resources WHERE resource_id = :rid");
+                    $delResStmt->execute([':rid' => $resourceId]);
+
+                    if (!empty($resource->image_path)) {
+                        $imageFullPath = __DIR__ . '/../images/' . $resource->image_path;
+                        if (file_exists($imageFullPath)) {
+                            unlink($imageFullPath);
+                        }
+                    }
+
+                    $db->commit();
+                } catch (Exception $e) {
+                    $db->rollBack();
+                    error_log("Erreur suppression: " . $e->getMessage());
+                    die("Erreur lors de la suppression.");
+                }
+                header('Location: index.php?action=resources_list');
+                exit;
+                break;
 
 
         // ========== RESOURCE DETAILS ==========
