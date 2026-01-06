@@ -30,8 +30,34 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 
 <body>
 <header class="top-menu">
-    <div class="logo"><h1>StudTraj</h1></div>
+    <div class="logo">
+        <h1>StudTraj</h1>
+    </div>
+
+    <!-- Bouton burger pour mobile -->
+    <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <nav class="nav-menu">
+        <a href="/index.php?action=resources_list" class="active">Ressources</a>
+    </nav>
     <div class="user-info">
+        <?php
+        // Récupérer l'ID de la ressource depuis l'URL si présent
+        $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
+        ?>
+        <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
+            <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Importer
+        </button>
         <!-- Affichage Profil -->
         <div class="user-profile">
             <div class="user-avatar">
@@ -49,10 +75,8 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
             <span class="logout-text">Déconnexion</span>
         </a>
     </div>
+    </div>
 </header>
-<nav class="nav-menu">
-    <a href="/index.php?action=resources_list" class="active">Ressources</a>
-</nav>
     <!-- Menu burger mobile -->
     <nav class="burger-nav" id="burgerNav">
         <div class="burger-nav-content">
