@@ -40,7 +40,10 @@ class DashboardController extends \BaseController
                     $hasAccess = ($ownerId === $currentUserId);
 
                     if (!$hasAccess) {
-                        $stmt = $db->prepare("SELECT 1 FROM resource_professors_access WHERE resource_id = :resourceId AND user_id = :userId");
+                        $stmt = $db->prepare(
+                            "SELECT 1 FROM resource_professors_access " .
+                            "WHERE resource_id = :resourceId AND user_id = :userId"
+                        );
                         $stmt->execute(['resourceId' => $resourceId, 'userId' => $currentUserId]);
                         if ($stmt->fetch()) {
                             $hasAccess = true;
@@ -52,8 +55,10 @@ class DashboardController extends \BaseController
                         // Redirect to previous valid resource if available, otherwise to dashboard root
                         $redirectUrl = '/index.php?action=dashboard';
 
-                        if (isset($_SESSION['last_valid_resource_id']) &&
-                            $_SESSION['last_valid_resource_id'] != $resourceId) {
+                        if (
+                            isset($_SESSION['last_valid_resource_id']) &&
+                            $_SESSION['last_valid_resource_id'] != $resourceId
+                        ) {
                             // Verify if we still have access to the last valid resource to avoid loops
                             // (Simplified check: just redirect, if distinct)
                             $redirectUrl .= '&resource_id=' . (int)$_SESSION['last_valid_resource_id'];

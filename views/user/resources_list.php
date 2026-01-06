@@ -292,8 +292,23 @@ try {
         .btn-delete-trigger:hover { background-color: #d32f2f; }
 
         .confirm-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-        .btn-confirm-yes { background-color: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-        .btn-confirm-no { background-color: #ccc; color: black; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .btn-confirm-yes {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-confirm-no {
+            background-color: #ccc;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
         /* =========================================
            RESPONSIVE (MOBILE & TABLETTE)
@@ -490,10 +505,10 @@ try {
             <div class="form-group">
                 <label>Partager avec :</label>
                 <div class="users-checklist">
-                    <?php if (empty($all_users)): ?>
+                    <?php if (empty($all_users)) : ?>
                         <p style="color:#999;">Aucun autre utilisateur.</p>
-                    <?php else: ?>
-                        <?php foreach ($all_users as $u): ?>
+                    <?php else : ?>
+                        <?php foreach ($all_users as $u) : ?>
                             <label style="display:block; margin-bottom:5px;">
                                 <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>"
                                        class="user-checkbox">
