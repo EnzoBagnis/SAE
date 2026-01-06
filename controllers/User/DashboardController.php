@@ -17,10 +17,10 @@ class DashboardController extends \BaseController
     public function index()
     {
         // Check if user is authenticated
-        if (!isset($_SESSION['id'])) {
-            header('Location: /index.php?action=login');
-            exit;
-        }
+//        if (!isset($_SESSION['id'])) {
+//            header('Location: /index.php?action=login');
+//            exit;
+//        }
 
         // Get resource_id from URL if provided
         $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;

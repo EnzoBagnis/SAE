@@ -100,10 +100,7 @@
             <span></span><span></span><span></span>
         </button>
         <nav class="nav-menu">
-            <a href="/index.php?action=dashboard">Tableau de bord</a>
-            <a href="/index.php?action=resources_list" class="active">Mes Ressources</a>
-            <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="/index.php?action=mentions">Mentions légales</a>
+            <a href="/index.php?action=resources_list" class="active">Ressources</a>
         </nav>
         <div class="user-info">
             <button onclick="openImportModal(<?= $resource->resource_id ?>)" class="btn-import-trigger">
