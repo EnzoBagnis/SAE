@@ -327,6 +327,11 @@ class User
         $table = $map[$tableKey];
 
         // Construction de la requête avec nom de table validé
+        if ($tableKey === 'B') {
+            $sql = "DELETE FROM {$table} WHERE mail = :id";
+        } else {
+            $sql = "DELETE FROM {$table} WHERE id = :id";
+        }
         $sql = "DELETE FROM {$table} WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute( ['id' => $id]);
