@@ -274,4 +274,45 @@ class ExercisesController extends \BaseController
 
         return $students;
     }
+
+    /**
+     * Get statistics for all exercises in a resource (for charts)
+     */
+    public function getStats()
+    {
+        // Set JSON header
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Check if DB is initialized (handled in parent or constructor)
+        if (!$this->db) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Service error']);
+            exit;
+        }
+
+        // Check auth
+        if (!isset($_SESSION['id'])) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit;
+        }
+
+        $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
+
+        if (!$resourceId) {
+             http_response_code(400);
+             echo json_encode(['success' => false, 'message' => 'Missing resource_id']);
+             exit;
+        }
+
+        try {
+            $stats = \Exercise::getExerciseStatistics($this->db, $resourceId);
+            echo json_encode(['success' => true, 'data' => $stats]);
+        } catch (\Exception $e) {
+            error_log("Error in ExercisesController::getStats: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Server error']);
+        }
+        exit;
+    }
 }

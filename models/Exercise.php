@@ -97,4 +97,39 @@ class Exercise
         $stmt->execute([$exerciseId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Récupère les statistiques de réussite par exercice pour une ressource donnée
+    public static function getExerciseStatistics(PDO $db, int $resourceId): array
+    {
+        // Adjust this query based on your actual schema if needed.
+        // Assuming table 'attempts' tracks submissions, 'correct' is boolean/int.
+        // We calculate success rate = (total correct / total attempts) * 100
+
+        $sql = "SELECT 
+                    e.exercise_id, 
+                    e.exo_name, 
+                    COUNT(a.attempt_id) as total_attempts, 
+                    SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) as successful_attempts
+                FROM exercises e
+                LEFT JOIN attempts a ON e.exercise_id = a.exercise_id
+                WHERE e.resource_id = :resourceId
+                GROUP BY e.exercise_id, e.exo_name
+                ORDER BY e.exo_name ASC";
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute(['resourceId' => $resourceId]);
+
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Calculate percentage
+        foreach ($results as &$row) {
+            if ($row['total_attempts'] > 0) {
+                $row['success_rate'] = round(($row['successful_attempts'] / $row['total_attempts']) * 100, 2);
+            } else {
+                $row['success_rate'] = 0;
+            }
+        }
+
+        return $results;
+    }
 }

@@ -322,4 +322,69 @@ class Student
             return null;
         }
     }
+
+    /**
+     * Get statistics for all students in a resource
+     * This method calculates the success rate (or average score) for each student.
+     * @param int|null $resourceId The resource ID
+     * @return array
+     */
+    public function getStudentStatistics($resourceId = null)
+    {
+        if (!$this->isInitialized()) {
+            return [];
+        }
+
+        try {
+            // This query calculates the average success rate for each student.
+            // Assuming 'tentatives' table has a 'reussi' column (boolean or int 0/1)
+            // and links to 'utilisateurs' (students).
+            // We join users and attempts.
+
+            // Adjust table names and column names based on your schema.
+            // Assuming:
+            // - utilisateurs (id, nom, prenom, role)
+            // - tentatives (id, user_id, exercise_id, reussi)
+            // - exercises (exercise_id, resource_id)
+
+            $sql = "SELECT 
+                        s.student_id as id, 
+                        s.nom_fictif as nom, 
+                        s.prenom_fictif as prenom, 
+                        COUNT(a.attempt_id) as total_attempts, 
+                        SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) as successful_attempts
+                    FROM students s
+                    LEFT JOIN attempts a ON s.student_id = a.student_id
+                    LEFT JOIN exercises e ON a.exercise_id = e.exercise_id
+                    WHERE 1=1";
+
+            $params = [];
+            if ($resourceId !== null) {
+                $sql .= " AND e.resource_id = :resource_id";
+                $params[':resource_id'] = $resourceId;
+            }
+
+            $sql .= " GROUP BY s.student_id, s.nom_fictif, s.prenom_fictif ORDER BY s.nom_fictif";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Calculate percentage
+            foreach ($results as &$row) {
+                if ($row['total_attempts'] > 0) {
+                    $row['success_rate'] = round(($row['successful_attempts'] / $row['total_attempts']) * 100, 2);
+                } else {
+                    $row['success_rate'] = 0;
+                }
+            }
+
+            return $results;
+
+        } catch (PDOException $e) {
+            error_log("Error getting student stats: " . $e->getMessage());
+            return [];
+        }
+    }
 }
