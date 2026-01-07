@@ -76,7 +76,7 @@ try {
         <div class="filter-bar">
             <!-- Groupe de gauche pour recherche et select -->
             <div class="filter-group-left">
-                <input class="searchBar" type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
+                <input class="searchBar"type="text"id="searchBar"placeholder="Rechercher..."onkeyup="filterResources()">
                 <select id="filterType" onchange="filterResources()">
                     <option value="all">Tout voir</option>
                     <option value="owner">Mes créations</option>
