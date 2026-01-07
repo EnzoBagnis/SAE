@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Panel Admin - StudTraj') ?></title>
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <link rel="stylesheet" href="/SAE/public/css/admin.css">
+    <link rel="stylesheet" href="../public/css/admin.css">
 </head>
 <body>
 
