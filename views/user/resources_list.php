@@ -84,6 +84,13 @@ try {
 
 <!-- Menu burger mobile -->
 <nav class="burger-nav" id="burgerNav">
+    <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
+    <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()" aria-label="Fermer le menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
     <div class="burger-nav-content">
         <div class="burger-user-info">
             <span>
