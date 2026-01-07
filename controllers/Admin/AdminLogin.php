@@ -29,10 +29,6 @@ class AdminLogin extends \BaseController
                 $env = parse_ini_file($envPath);
                 $ADMIN_ID = $env['ADMIN_ID'] ?? 'admin'; // Valeur par défaut de secours
                 $ADMIN_PASS = $env['ADMIN_PASS'] ?? 'admin';
-            } else {
-                // Valeurs par défaut si le .env n'est pas trouvé (à éviter en prod)
-                $ADMIN_ID = 'admin';
-                $ADMIN_PASS = 'admin';
             }
 
             // Vérification des identifiants
