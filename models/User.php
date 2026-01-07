@@ -332,7 +332,6 @@ class User
         } else {
             $sql = "DELETE FROM {$table} WHERE id = :id";
         }
-        $sql = "DELETE FROM {$table} WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute( ['id' => $id]);
     }
