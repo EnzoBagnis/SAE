@@ -30,45 +30,35 @@ class Resource
 
     // Récupère toutes les ressources accessibles par un utilisateur donné (propriétaire ou avec accès)
     // Ajout d'une colonne 'access_type' pour savoir si l'utilisateur est propriétaire ou a un accès partagé
-    public static function getAllAccessibleResources(PDO $db, int $userId): array
-    {
-        $stmt = $db->prepare("
-                
-        
-SELECT 
-    r.*, 
-    u.prenom AS owner_firstname, 
-    u.nom AS owner_lastname,
-    CASE 
-        WHEN r.owner_user_id = :userId THEN 'owner'
-        ELSE 'shared'
-    END AS access_type,
-    -- Ajout de la liste des IDs partagés séparés par des virgules
-    (SELECT GROUP_CONCAT(user_id) 
-     FROM resource_professors_access rpa2 
-     WHERE rpa2.resource_id = r.resource_id) AS shared_user_ids
-FROM resources r
-JOIN utilisateurs u ON r.owner_user_id = u.id
-WHERE r.owner_user_id = :userId 
-   OR EXISTS (
-       SELECT 1 
-       FROM resource_professors_access rpa 
-       WHERE rpa.resource_id = r.resource_id 
-       AND rpa.user_id = :userId
-   )
-ORDER BY r.resource_name ASC
+    public static function getAllAccessibleResources($db, $userId) {
+        $sql = "SELECT 
+        r.*, 
+        u.prenom AS owner_firstname, 
+        u.nom AS owner_lastname,
+        -- AJOUTEZ CETTE SOUS-REQUÊTE CI-DESSOUS :
+        (SELECT GROUP_CONCAT(user_id) 
+         FROM resource_professors_access rpa2 
+         WHERE rpa2.resource_id = r.resource_id) AS shared_user_ids,
+        CASE 
+            WHEN r.owner_user_id = :userId THEN 'owner'
+            ELSE 'shared'
+        END AS access_type
+    FROM resources r
+    JOIN utilisateurs u ON r.owner_user_id = u.id
+    WHERE r.owner_user_id = :userId 
+       OR EXISTS (
+           SELECT 1 
+           FROM resource_professors_access rpa 
+           WHERE rpa.resource_id = r.resource_id 
+           AND rpa.user_id = :userId
+       )
+    ORDER BY r.resource_name ASC";
 
-  
-        ");
-        $stmt->execute(['userId' => $userId]);
-        $resourcesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':userId' => $userId]);
 
-        $resources = [];
-        foreach ($resourcesData as $data) {
-            $resource = new Resource();
-            $resources[] = $resource->hydrate($data);
-        }
-        return $resources;
+        // Assurez-vous d'utiliser FETCH_OBJ pour correspondre à votre vue
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     // Récupère une ressource par son ID
