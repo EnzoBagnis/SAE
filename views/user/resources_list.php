@@ -144,6 +144,7 @@ try {
                     $resImg = $resource->image_path ?? '';
                     $isOwner = ($creatorId == $user_id);
 
+
                     $ownerName = ($resource->owner_firstname ?? '') . ' ' . ($resource->owner_lastname ?? '');
                     if (trim($ownerName) == '') {
                         $ownerName = "Utilisateur #$creatorId";
@@ -156,7 +157,8 @@ try {
                          data-access-type="<?= $isOwner ? 'owner' : 'shared' ?>"
                          data-id="<?= $resId ?>"
                          data-description="<?= htmlspecialchars($resDesc) ?>"
-                         data-image="<?= htmlspecialchars($resImg) ?>">
+                         data-image="<?= htmlspecialchars($resImg) ?>"
+                         data-shared-users="<?= htmlspecialchars($resource->shared_user_ids ?? '') ?>">
 
                         <?php if ($isOwner) : ?>
                             <button class="btn-edit-resource" onclick="openResourceModal('edit', this)"
@@ -219,22 +221,31 @@ try {
                 <p id="currentImageName" style="font-size:0.8em; color:#666; display:none;"></p>
             </div>
 
+
             <div class="form-group">
                 <label>Partager avec :</label>
-                <div class="users-checklist">
+
+                <input type="text" id="userSearch" placeholder="Filtrer les noms..."
+                       style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;"
+                       onkeyup="filterUsersInModal()">
+
+                <div class="users-checklist" id="usersChecklist" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px;">
                     <?php if (empty($all_users)) : ?>
                         <p style="color:#999;">Aucun autre utilisateur.</p>
                     <?php else : ?>
                         <?php foreach ($all_users as $u) : ?>
-                            <label style="display:block; margin-bottom:5px;">
+                            <!-- On ajoute une classe 'user-item' pour faciliter le filtrage JS -->
+                            <label class="user-item" style="display:block; margin-bottom:5px;">
                                 <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>"
                                        class="user-checkbox">
-                                <?= htmlspecialchars($u->prenom . ' ' . $u->nom) ?>
+                                <span class="user-name"><?= htmlspecialchars($u->prenom . ' ' . $u->nom) ?></span>
                             </label>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
             </div>
+
+
 
             <button type="submit" class="btn-submit" id="modalSubmitBtn">Enregistrer</button>
 
@@ -275,10 +286,16 @@ try {
         const hiddenId = document.getElementById('formResourceId');
         const deleteBtn = document.getElementById('btnDeleteResource');
 
+
         form.reset();
+        document.getElementById('userSearch').value = ''; // Vide le texte
+        filterUsersInModal();
         hiddenId.value = '';
         document.getElementById('currentImageName').style.display = 'none';
-        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+
+        // 1. On décoche tout par défaut
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        checkboxes.forEach(cb => cb.checked = false);
 
         if (mode === 'edit' && btn) {
             document.getElementById('modalTitle').textContent = "Modifier la ressource";
@@ -286,9 +303,23 @@ try {
             deleteBtn.style.display = 'block';
 
             const card = btn.closest('.resource-card');
+            console.log("ID de la ressource cliquée :", card.dataset.id);
+            console.log("Liste des utilisateurs partagés reçue :", card.dataset.sharedUsers);
             hiddenId.value = card.dataset.id;
             document.getElementById('resourceName').value = card.dataset.name;
             document.getElementById('resourceDesc').value = card.dataset.description;
+
+            // 2. ON COCHE LES UTILISATEURS DÉJÀ PARTAGÉS
+            if (card.dataset.sharedUsers) {
+                // On transforme la chaîne "1,5,8" en tableau ["1", "5", "8"]
+                const sharedIds = card.dataset.sharedUsers.split(',');
+
+                checkboxes.forEach(cb => {
+                    if (sharedIds.includes(cb.value)) {
+                        cb.checked = true;
+                    }
+                });
+            }
 
             if (card.dataset.image) {
                 const p = document.getElementById('currentImageName');
@@ -346,6 +377,25 @@ try {
             }
             card.style.display = show ? "flex" : "none";
         }
+    }
+    function filterUsersInModal() {
+        // 1. On récupère la valeur saisie
+        let input = document.getElementById('userSearch').value.toLowerCase();
+
+        // 2. On récupère tous les labels (lignes d'utilisateurs)
+        let userItems = document.querySelectorAll('.user-item');
+
+        userItems.forEach(item => {
+            // 3. On récupère le nom de l'utilisateur à l'intérieur
+            let name = item.querySelector('.user-name').textContent.toLowerCase();
+
+            // 4. On affiche ou on cache selon la correspondance
+            if (name.includes(input)) {
+                item.style.display = "block";
+            } else {
+                item.style.display = "none";
+            }
+        });
     }
 </script>
 <?php include __DIR__ . '/../layouts/footer.php'; ?>
