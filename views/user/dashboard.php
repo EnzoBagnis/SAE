@@ -85,7 +85,8 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     <nav class="burger-nav" id="burgerNav">
 
         <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
-        <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()" aria-label="Fermer le menu">
+        <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()"
+                aria-label="Fermer le menu">
             <span></span>
             <span></span>
             <span></span>
@@ -123,7 +124,8 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                     </ul>
                 </li>
                 <li>
-                    <a href="#" class="burger-link burger-import" onclick="openImportModal(<?= $current_resource_id ?>); toggleBurgerMenu(); return false;">
+                    <a href="#" class="burger-link burger-import"
+                       onclick="openImportModal(<?= $current_resource_id ?>); toggleBurgerMenu(); return false;">
                         Importer
                     </a>
                 </li>

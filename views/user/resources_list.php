@@ -72,7 +72,8 @@ try {
         </div>
         <!-- Bouton Déconnexion -->
         <a href="/index.php?action=logout" class="btn-logout">
-            <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -112,7 +113,8 @@ try {
         <div class="filter-bar">
             <!-- Groupe de gauche pour recherche et select -->
             <div class="filter-group-left">
-                <input class="searchBar" type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()" aria-label="Rechercher une ressource">
+                <input class="searchBar" type="text" id="searchBar" placeholder="Rechercher..."
+                       onkeyup="filterResources()" aria-label="Rechercher une ressource">
                 <select id="filterType" onchange="filterResources()" aria-label="Filtrer les ressources">
                     <option value="all">Tout voir</option>
                     <option value="owner">Mes créations</option>
@@ -122,7 +124,8 @@ try {
 
             <!-- Bouton Créer (ne prend pas toute la largeur) -->
             <button onclick="openResourceModal('create')" class="btn-create-resource">
-                <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
