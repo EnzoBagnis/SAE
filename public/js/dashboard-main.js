@@ -25,6 +25,13 @@ function initializeDashboard() {
     // Configurer les écouteurs d'événements
     setupEventListeners();
 
+    // Exposer les fonctions globales pour le HTML
+    window.toggleBurgerMenu = () => burgerMenuManager.toggleMenu();
+    window.toggleStudentSubmenu = (e) => burgerMenuManager.toggleStudentSubmenu(e);
+    window.toggleExerciseSubmenu = (e) => burgerMenuManager.toggleExerciseSubmenu(e);
+    window.switchListView = (view) => studentListManager.switchView(view);
+    window.closeBurgerMenu = () => burgerMenuManager.closeMenu();
+
     // Charger les données initiales
     studentListManager.loadStudents();
     studentListManager.setupInfiniteScroll();
@@ -59,4 +66,3 @@ window.toggleStudentSubmenu = (event) => burgerMenuManager.toggleStudentSubmenu(
 window.switchListView = (view) => studentListManager.switchView(view);
 window.toggleAccordion = (accordionId) => studentListManager.toggleAccordion(accordionId);
 window.selectExercise = (exerciseId) => studentContentManager.selectExercise(exerciseId);
-
