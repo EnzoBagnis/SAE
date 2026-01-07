@@ -118,7 +118,7 @@ try {
                          data-access-type="<?= $isOwner ? 'owner' : 'shared' ?>"
                          data-id="<?= $resId ?>"
                          data-description="<?= htmlspecialchars($resDesc) ?>"
-                         data-image="<?= htmlspecialchars($resImg) ?>">
+                         data-image="<?= htmlspecialchars($resImg) ?>"
                          data-shared-users="<?= htmlspecialchars($resource->shared_user_ids ?? '') ?>">
 
                         <?php if ($isOwner) : ?>
