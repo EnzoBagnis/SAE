@@ -27,8 +27,8 @@ class User
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt = $this->pdo->prepare(
-            "INSERT INTO utilisateurs (nom, prenom, mdp, mail, code_verif, verifie) 
-             VALUES (:nom, :prenom, :mdp, :mail, :code_verif, :verifie)"
+            "INSERT INTO utilisateurs (nom, prenom, mdp, mail, code_verif) 
+             VALUES (:nom, :prenom, :mdp, :mail, :code_verif)"
         );
 
         return $stmt->execute([
@@ -36,8 +36,7 @@ class User
             'prenom' => $firstName,
             'mdp' => $hashedPassword,
             'mail' => $email,
-            'code_verif' => $verificationCode,
-            'verifie' => $isVerified
+            'code_verif' => $verificationCode
         ]);
     }
 
