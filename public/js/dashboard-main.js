@@ -79,18 +79,24 @@ function setupEventListeners() {
                     .then(r => r.json())
                     .then(resp => {
                         if(resp.success) {
-                            // Find or create a container for the chart in the main content area
-                            // Or better, inject it into the top of the data-zone
+                            // Find the data-zone and clear specific content to avoid overlap
                             const dataZone = document.querySelector('.data-zone');
-                            let chartContainer = document.getElementById('global-student-chart');
-                            if (!chartContainer) {
-                                chartContainer = document.createElement('div');
-                                chartContainer.id = 'global-student-chart';
-                                chartContainer.className = 'chart-container';
-                                dataZone.prepend(chartContainer);
-                            }
-                            // Important: Clear previous chart if switching back and forth
-                            chartContainer.innerHTML = '';
+
+                            // Clear content but keep structure if needed, or fully reset
+                            dataZone.innerHTML = '';
+
+                            let chartContainer = document.createElement('div');
+                            chartContainer.id = 'global-student-chart';
+                            chartContainer.className = 'chart-container';
+
+                            // Add a placeholder message or title if desired
+                            const title = document.createElement('h2');
+                            title.textContent = 'Statistiques Globales des Étudiants';
+                            title.style.marginBottom = '1rem';
+                            dataZone.appendChild(title);
+
+                            dataZone.appendChild(chartContainer);
+
                             ChartModule.renderStudentChart(resp.data, 'global-student-chart');
                         }
                     });
@@ -103,18 +109,21 @@ function setupEventListeners() {
                     .then(resp => {
                         if(resp.success) {
                              const dataZone = document.querySelector('.data-zone');
-                             let chartContainer = document.getElementById('global-exercise-chart');
-                             if (!chartContainer) {
-                                chartContainer = document.createElement('div');
-                                chartContainer.id = 'global-exercise-chart';
-                                chartContainer.className = 'chart-container';
-                                // Remove student chart if exists
-                                const studentChart = document.getElementById('global-student-chart');
-                                if(studentChart) studentChart.remove();
 
-                                dataZone.prepend(chartContainer);
-                             }
-                             chartContainer.innerHTML = '';
+                             // Clear content to avoid overlap
+                             dataZone.innerHTML = '';
+
+                             let chartContainer = document.createElement('div');
+                             chartContainer.id = 'global-exercise-chart';
+                             chartContainer.className = 'chart-container';
+
+                             const title = document.createElement('h2');
+                             title.textContent = 'Statistiques Globales des Exercices';
+                             title.style.marginBottom = '1rem';
+                             dataZone.appendChild(title);
+
+                             dataZone.appendChild(chartContainer);
+
                              ChartModule.renderExerciseChart(resp.data, 'global-exercise-chart');
                         }
                     });
