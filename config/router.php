@@ -126,7 +126,7 @@ class Router
 
             // ========== PAGES ==========
             case 'mentions':
-                $this->loadView('pages/mentions-legales');
+                $this->loadView('user/mentions-legales');
                 break;
 
 
