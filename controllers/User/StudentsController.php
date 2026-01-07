@@ -208,4 +208,37 @@ class StudentsController extends \BaseController
             restore_error_handler();
         }
     }
+
+    /**
+     * Get statistics for all students in a resource (for charts)
+     */
+    public function getStats()
+    {
+        // Set JSON header
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Check if model is initialized
+        if (!$this->studentModel->isInitialized()) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Service error']);
+            exit;
+        }
+
+        // Check auth
+        if (!isset($_SESSION['id'])) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit;
+        }
+
+        $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
+
+        $stats = $this->studentModel->getStudentStatistics($resourceId);
+
+        echo json_encode([
+            'success' => true,
+            'data' => $stats
+        ]);
+        exit;
+    }
 }
