@@ -99,7 +99,6 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                 </span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>
                 <li class="has-submenu">
                     <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
                         Liste des Étudiants
@@ -109,7 +108,6 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                         <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
-                <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>

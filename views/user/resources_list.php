@@ -99,9 +99,7 @@ try {
             </span>
         </div>
         <ul class="burger-menu-list">
-            <li><a href="/index.php?action=dashboard" class="burger-link">Tableau de bord</a></li>
             <li><a href="/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
-            <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
             <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>
