@@ -183,10 +183,10 @@ try {
             <div class="form-group">
                 <label>Partager avec :</label>
                 <div class="users-checklist">
-                    <?php if (empty($all_users)): ?>
+                    <?php if (empty($all_users)) : ?>
                         <p style="color:#999;">Aucun autre utilisateur.</p>
-                    <?php else: ?>
-                        <?php foreach ($all_users as $u): ?>
+                    <?php else : ?>
+                        <?php foreach ($all_users as $u) : ?>
                             <label style="display:block; margin-bottom:5px;">
                                 <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>"
                                        class="user-checkbox">
