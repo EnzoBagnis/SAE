@@ -151,8 +151,17 @@ export class StudentListManager {
             const item = document.createElement('div');
             item.className = 'sidebar-list-item';
             item.dataset.exerciseId = exercise.exercise_id;
-            // Utiliser funcname si disponible, sinon exo_name
-            item.textContent = exercise.funcname || exercise.exo_name || `Exercice #${exercise.exercise_id}`;
+
+            // Safe name resolution
+            let displayName = exercise.funcname ? exercise.funcname.trim() : '';
+            if (!displayName) {
+                displayName = exercise.exo_name ? exercise.exo_name.trim() : '';
+            }
+            if (!displayName) {
+                displayName = `Exercice #${exercise.exercise_id}`;
+            }
+
+            item.textContent = displayName;
 
             item.addEventListener('click', () => {
                 document.querySelectorAll('.sidebar-list-item').forEach(el => el.classList.remove('active'));
