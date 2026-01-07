@@ -336,17 +336,6 @@ class Student
         }
 
         try {
-            // This query calculates the average success rate for each student.
-            // Assuming 'tentatives' table has a 'reussi' column (boolean or int 0/1)
-            // and links to 'utilisateurs' (students).
-            // We join users and attempts.
-
-            // Adjust table names and column names based on your schema.
-            // Assuming:
-            // - utilisateurs (id, nom, prenom, role)
-            // - tentatives (id, user_id, exercise_id, reussi)
-            // - exercises (exercise_id, resource_id)
-
             $sql = "SELECT 
                         s.student_id as id, 
                         s.student_identifier,
@@ -365,7 +354,8 @@ class Student
                 $params[':resource_id'] = $resourceId;
             }
 
-            $sql .= " GROUP BY s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif ORDER BY s.student_identifier";
+            $sql .= " GROUP BY s.student_id, s.student_identifier, s.nom_fictif, 
+            s.prenom_fictif ORDER BY s.student_identifier";
 
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
@@ -382,7 +372,6 @@ class Student
             }
 
             return $results;
-
         } catch (PDOException $e) {
             error_log("Error getting student stats: " . $e->getMessage());
             return [];
