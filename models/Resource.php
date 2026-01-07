@@ -30,7 +30,8 @@ class Resource
 
     // Récupère toutes les ressources accessibles par un utilisateur donné (propriétaire ou avec accès)
     // Ajout d'une colonne 'access_type' pour savoir si l'utilisateur est propriétaire ou a un accès partagé
-    public static function getAllAccessibleResources($db, $userId) {
+    public static function getAllAccessibleResources($db, $userId)
+    {
         $sql = "SELECT 
         r.*, 
         u.prenom AS owner_firstname, 

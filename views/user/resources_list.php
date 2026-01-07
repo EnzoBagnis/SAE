@@ -187,10 +187,13 @@ try {
                 <label>Partager avec :</label>
 
                 <input type="text" id="userSearch" placeholder="Filtrer les noms..."
-                       style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;"
+                       style="width: 100%; padding: 8px; margin-bottom: 10px;
+                              border: 1px solid #ddd; border-radius: 4px;"
                        onkeyup="filterUsersInModal()">
 
-                <div class="users-checklist" id="usersChecklist" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px;">
+                <div class="users-checklist" id="usersChecklist"
+                     style="max-height: 150px; overflow-y: auto; border: 1px solid #eee;
+                            padding: 10px; border-radius: 4px;">
                     <?php if (empty($all_users)) : ?>
                         <p style="color:#999;">Aucun autre utilisateur.</p>
                     <?php else : ?>
