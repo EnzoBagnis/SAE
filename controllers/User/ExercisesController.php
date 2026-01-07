@@ -98,6 +98,7 @@ class ExercisesController extends \BaseController
      * Fetch exercises from database
      *
      * Retrieves exercises with optional resource filtering.
+     * Only includes exercises that have at least one attempt.
      * Results are sorted by exercise name in ascending order.
      *
      * @param int|null $resourceId Optional resource ID to filter exercises
@@ -111,10 +112,11 @@ class ExercisesController extends \BaseController
      */
     private function fetchExercises(?int $resourceId): array
     {
-        $sql = "SELECT e.exercise_id, e.exo_name, e.funcname, e.description, e.difficulte, 
+        $sql = "SELECT DISTINCT e.exercise_id, e.exo_name, e.funcname, e.description, e.difficulte, 
                        r.resource_name
                 FROM exercises e
-                LEFT JOIN resources r ON e.resource_id = r.resource_id";
+                LEFT JOIN resources r ON e.resource_id = r.resource_id
+                INNER JOIN attempts a ON e.exercise_id = a.exercise_id";
 
         $params = [];
 
