@@ -37,7 +37,10 @@ $isLoggedIn = isset($_SESSION['id']);
         <nav class="nav-menu">
         </nav>
         <div class="user-info">
-            <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
+            <span>
+                <?php echo htmlspecialchars($_SESSION['prenom']); ?>
+                <?php echo htmlspecialchars($_SESSION['nom']); ?>
+            </span>
             <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
         </div>
     </header>
@@ -46,7 +49,10 @@ $isLoggedIn = isset($_SESSION['id']);
     <nav class="burger-nav" id="burgerNav">
         <div class="burger-nav-content">
             <div class="burger-user-info">
-                <span><?php echo htmlspecialchars($_SESSION['prenom']); ?> <?php echo htmlspecialchars($_SESSION['nom']); ?></span>
+                <span>
+                    <?php echo htmlspecialchars($_SESSION['prenom']); ?>
+                    <?php echo htmlspecialchars($_SESSION['nom']); ?>
+                </span>
             </div>
             <ul class="burger-menu-list">
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
@@ -59,7 +65,8 @@ $isLoggedIn = isset($_SESSION['id']);
     <a href="javascript:void(0)"
        onclick="if(window.history.length > 1){window.history.back();}else{window.location.href='index.php';}"
        class="back-link"
-       style="display: inline-block; margin-bottom: 20px; text-decoration: none; color: inherit; font-weight: bold; font-size: 1.2em;">
+       style="display: inline-block; margin-bottom: 20px; text-decoration: none;
+              color: inherit; font-weight: bold; font-size: 1.2em;">
         ← Retour
     </a>
     <h1>Mentions légales</h1>
@@ -103,7 +110,8 @@ $isLoggedIn = isset($_SESSION['id']);
         <h2>5. Cookies</h2>
         <p>Ce site utilise des cookies techniques nécessaires à son bon fonctionnement, notamment pour la gestion
         des sessions utilisateur.</p>
-        <p>Ces cookies ne collectent aucune information personnelle et ne sont pas utilisés à des fins publicitaires.</p>
+        <p>Ces cookies ne collectent aucune information personnelle et ne sont pas utilisés à des fins
+        publicitaires.</p>
     </section>
 
     <section class="legal-section">
