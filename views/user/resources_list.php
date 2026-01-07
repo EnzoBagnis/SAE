@@ -252,6 +252,8 @@ try {
             deleteBtn.style.display = 'block';
 
             const card = btn.closest('.resource-card');
+            console.log("ID de la ressource cliquée :", card.dataset.id);
+            console.log("Liste des utilisateurs partagés reçue :", card.dataset.sharedUsers);
             hiddenId.value = card.dataset.id;
             document.getElementById('resourceName').value = card.dataset.name;
             document.getElementById('resourceDesc').value = card.dataset.description;
