@@ -84,6 +84,7 @@ export class BurgerMenuManager {
     }
 
     toggleExerciseSubmenu(event) {
+        event.preventDefault(); // Empêcher le saut de page
         const submenu = document.getElementById('burgerExerciseList');
         const arrow = event.currentTarget.querySelector('.submenu-arrow');
 
@@ -125,6 +126,15 @@ export class BurgerMenuManager {
         if (!burgerExerciseList) return;
 
         burgerExerciseList.innerHTML = '';
+
+        if (this.allExercises.length === 0) {
+            const li = document.createElement('li');
+            li.style.padding = '10px 15px';
+            li.style.color = '#7f8c8d';
+            li.textContent = 'Aucun TP disponible';
+            burgerExerciseList.appendChild(li);
+            return;
+        }
 
         this.allExercises.forEach((exercise) => {
             const li = document.createElement('li');
