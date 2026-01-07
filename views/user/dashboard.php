@@ -108,6 +108,16 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                         <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
+                <li>
+                    <a href="#" class="burger-link" onclick="switchListView('exercises'); toggleBurgerMenu(); return false;">
+                        Liste des TP
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="burger-link" onclick="openImportModal(<?= $current_resource_id ?>); toggleBurgerMenu(); return false;">
+                        Importer
+                    </a>
+                </li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
