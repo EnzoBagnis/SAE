@@ -1,3 +1,12 @@
+<?php
+        $user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
+$user_lastname = $_SESSION['nom'] ?? '';
+$title = 'StudTraj - Mes Ressources';
+
+// Calcul des initiales pour l'avatar
+$initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -18,42 +27,60 @@
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/dashboard.php">
 </head>
-<body>
-    <!-- Menu du haut -->
-    <header class="top-menu">
-        <div class="logo">
-            <h1>StudTraj</h1>
-        </div>
 
-        <!-- Bouton burger pour mobile -->
-        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
+<body>
+<header class="top-menu">
+    <div class="logo">
+        <h1>StudTraj</h1>
+    </div>
+
+    <!-- Bouton burger pour mobile -->
+    <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <nav class="nav-menu">
+        <a href="/index.php?action=resources_list" class="active">Ressources</a>
+    </nav>
+
+    <!-- Nouveau conteneur pour regrouper Import + Profil + Déconnexion -->
+    <div class="header-right">
+        <?php
+        $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
+        ?>
+
+        <!-- Bouton Importer (placé à gauche du profil) -->
+        <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
+            <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Importer
         </button>
 
-        <nav class="nav-menu">
-            <a href="/index.php?action=resources_list" class="active">Ressources</a>
-        </nav>
-        <div class="user-info">
-            <?php
-            // Récupérer l'ID de la ressource depuis l'URL si présent
-            $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
-            ?>
-            <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
-                <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                Importer
-            </button>
-            <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
-            <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
+        <!-- Affichage Profil -->
+        <div class="user-profile">
+            <div class="user-avatar">
+                <?= htmlspecialchars($initials) ?>
+            </div>
+            <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
-    </header>
 
+        <!-- Bouton Déconnexion -->
+        <a href="/index.php?action=logout" class="btn-logout">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span class="logout-text">Déconnexion</span>
+        </a>
+    </div>
+</header>
     <!-- Menu burger mobile -->
     <nav class="burger-nav" id="burgerNav">
         <div class="burger-nav-content">
@@ -87,11 +114,9 @@
             <div class="view-selector-header">
                 <button class="view-tab active" id="btnStudents" onclick="switchListView('students')">
                     Liste des Étudiants
-                    <span class="toggle-arrow">▲</span>
                 </button>
                 <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
                     Liste des TP
-                    <span class="toggle-arrow">▲</span>
                 </button>
             </div>
 
