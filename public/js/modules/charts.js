@@ -37,7 +37,7 @@ const ChartModule = (function() {
         // X Axis
         const x = d3.scaleBand()
             .range([0, width])
-            .domain(data.map(d => d.nom + ' ' + d.prenom))
+            .domain(data.map(d => (d.nom && d.prenom) ? `${d.nom} ${d.prenom}` : d.student_identifier))
             .padding(0.2);
 
         svg.append("g")
@@ -55,23 +55,49 @@ const ChartModule = (function() {
         svg.append("g")
             .call(d3.axisLeft(y));
 
+        // Color scale
+        const colorScale = d3.scaleThreshold()
+            .domain([50, 80])
+            .range(["#ef5350", "#ffca28", "#66bb6a"]);
+
+        // Tooltip
+        const tooltip = d3.select("#" + containerId)
+            .append("div")
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("background-color", "rgba(0,0,0,0.8)")
+            .style("color", "#fff")
+            .style("padding", "8px")
+            .style("border-radius", "4px")
+            .style("font-size", "12px")
+            .style("pointer-events", "none");
+
         // Bars
         svg.selectAll("rect")
             .data(data)
             .enter()
             .append("rect")
-            .attr("x", d => x(d.nom + ' ' + d.prenom))
+            .attr("x", d => x((d.nom && d.prenom) ? `${d.nom} ${d.prenom}` : d.student_identifier))
             .attr("y", d => y(d.success_rate))
             .attr("width", x.bandwidth())
             .attr("height", d => height - y(d.success_rate))
-            .attr("fill", "#69b3a2")
+            .attr("fill", d => colorScale(d.success_rate))
             // Interaction
             .style("cursor", "pointer")
             .on("mouseover", function(event, d) {
-                d3.select(this).attr("fill", "#4e8a7c");
+                d3.select(this).attr("opacity", 0.8);
+                tooltip.style("visibility", "visible")
+                       .html(`<strong>${(d.nom && d.prenom) ? `${d.nom} ${d.prenom}` : d.student_identifier}</strong><br>` +
+                             `Réussite: ${d.success_rate}%<br>` +
+                             `Tentatives: ${d.total_attempts}`);
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("top", (event.pageY - 10) + "px")
+                       .style("left", (event.pageX + 10) + "px");
             })
             .on("mouseout", function(event, d) {
-                d3.select(this).attr("fill", "#69b3a2");
+                d3.select(this).attr("opacity", 1);
+                tooltip.style("visibility", "hidden");
             })
             .on("click", function(event, d) {
                 // Trigger event or navigate
@@ -142,6 +168,27 @@ const ChartModule = (function() {
         svg.append("g")
             .call(d3.axisLeft(y));
 
+        // Color scale (Reverse for exercises? No, high success is still green usually,
+        // though low success indicates a hard exercise which might be interesting)
+        const colorScale = d3.scaleThreshold()
+            .domain([50, 80])
+            .range(["#ef5350", "#ffca28", "#66bb6a"]);
+
+        // Tooltip (reuse logic or create new div if needed, but simple append works locally)
+        // Note: ID must be unique if we have multiple charts, but usually one at a time.
+        // We can scope it to container.
+        const tooltip = d3.select("#" + containerId)
+            .append("div")
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("background-color", "rgba(0,0,0,0.8)")
+            .style("color", "#fff")
+            .style("padding", "8px")
+            .style("border-radius", "4px")
+            .style("font-size", "12px")
+            .style("pointer-events", "none");
+
+
         // Bars
         svg.selectAll("rect")
             .data(data)
@@ -151,14 +198,23 @@ const ChartModule = (function() {
             .attr("y", d => y(d.success_rate))
             .attr("width", x.bandwidth())
             .attr("height", d => height - y(d.success_rate))
-            .attr("fill", "#ffab00")
+            .attr("fill", d => colorScale(d.success_rate))
             // Interaction
             .style("cursor", "pointer")
             .on("mouseover", function(event, d) {
-                d3.select(this).attr("fill", "#e69c00");
+                d3.select(this).attr("opacity", 0.8);
+                tooltip.style("visibility", "visible")
+                       .html(`<strong>${d.exo_name}</strong><br>` +
+                             `Réussite: ${d.success_rate}%<br>` +
+                             `Essais totaux: ${d.total_attempts}`);
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("top", (event.pageY - 10) + "px")
+                       .style("left", (event.pageX + 10) + "px");
             })
             .on("mouseout", function(event, d) {
-                d3.select(this).attr("fill", "#ffab00");
+                d3.select(this).attr("opacity", 1);
+                tooltip.style("visibility", "hidden");
             })
             .on("click", function(event, d) {
                 const customEvent = new CustomEvent('exercise-chart-click', {

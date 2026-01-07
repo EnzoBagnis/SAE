@@ -349,6 +349,7 @@ class Student
 
             $sql = "SELECT 
                         s.student_id as id, 
+                        s.student_identifier,
                         s.nom_fictif as nom, 
                         s.prenom_fictif as prenom, 
                         COUNT(a.attempt_id) as total_attempts, 
@@ -364,7 +365,7 @@ class Student
                 $params[':resource_id'] = $resourceId;
             }
 
-            $sql .= " GROUP BY s.student_id, s.nom_fictif, s.prenom_fictif ORDER BY s.nom_fictif";
+            $sql .= " GROUP BY s.student_id, s.student_identifier, s.nom_fictif, s.prenom_fictif ORDER BY s.student_identifier";
 
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
