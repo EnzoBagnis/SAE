@@ -89,6 +89,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                     <?= htmlspecialchars($user_firstname ?? '') ?>
                     <?= htmlspecialchars($user_lastname ?? '') ?>
                 </span>
+                <button class="burger-close-btn" onclick="toggleBurgerMenu()" aria-label="Fermer le menu">&times;</button>
             </div>
             <ul class="burger-menu-list">
                 <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>

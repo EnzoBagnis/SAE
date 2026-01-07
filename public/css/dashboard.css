@@ -75,16 +75,11 @@
 /* Bouton d'import */
 .btn-import-trigger {
     background: #42e73c;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.2);
     cursor: pointer;
-    transition: background 0.3s;
     color: #ecf0f1;
     text-decoration: none;
     padding: 6px 12px;
-    border: 1px solid rgba(255,255,255,0.2);
     border-radius: 4px;
     font-size: 0.9em;
     transition: all 0.2s;
@@ -608,6 +603,19 @@
     font-weight: 500;
     border-bottom: 2px solid #3498db;
     margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.burger-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
 }
 
 .burger-menu-list {
@@ -837,6 +845,7 @@
     height: 180px;
     object-fit: cover;
     background-color: #f0f0f0;
+    border-bottom: 1px solid #eee; /* La ligne de séparation */
 }
 .resource-card-content {
     padding: 15px;
@@ -1162,5 +1171,3 @@
         width: 100%; /* Repasse en pleine largeur sur mobile */
     }
 }
-
-
