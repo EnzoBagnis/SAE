@@ -66,11 +66,13 @@ function setupEventListeners() {
 
         // Expose switchListView to global for HTML onclick attributes
         window.switchListView = function(viewType) {
+            // Update the sidebar list content using the manager
+            studentListManager.switchView(viewType);
+
             // Update active state of buttons
             document.querySelectorAll('.view-tab').forEach(btn => btn.classList.remove('active'));
             if (viewType === 'students') {
                 document.getElementById('btnStudents').classList.add('active');
-                studentListManager.loadStudents();
 
                 // Load global student stats
                 fetch(`/index.php?action=students_stats&resource_id=${resourceId || ''}`)
@@ -94,12 +96,6 @@ function setupEventListeners() {
                     });
             } else {
                 document.getElementById('btnExercises').classList.add('active');
-                // Assume logic to load exercise list exists or add it
-                // For now just load chart
-
-                 // Reuse student list container or switch to exercise list?
-                 // The user asked to switch lists. Assuming an ExerciseListManager exists or reusing container.
-                 // If ExerciseList doesn't exist, we might need to implement basic list rendering here or in a module.
 
                  // Load global exercise stats
                 fetch(`/index.php?action=exercises_stats&resource_id=${resourceId || ''}`)
