@@ -33,22 +33,25 @@ class Resource
     public static function getAllAccessibleResources(PDO $db, int $userId): array
     {
         $stmt = $db->prepare("
-            SELECT
-                r.*,
-                u.prenom AS owner_firstname,
-                u.nom AS owner_lastname,
-                CASE
-                    WHEN r.owner_user_id = :userId THEN 'owner'
-                    WHEN rpa.user_id = :userId THEN 'shared'
-                    ELSE 'none' -- Ne devrait pas arriver avec la clause WHERE
-                END AS access_type
-            FROM resources r
-            JOIN utilisateurs u ON r.owner_user_id = u.id
-            LEFT JOIN resource_professors_access rpa ON r.resource_id = rpa.resource_id
-            WHERE r.owner_user_id = :userId OR rpa.user_id = :userId
-            GROUP BY r.resource_id, r.owner_user_id, r.resource_name, r.description, 
-                r.image_path, r.date_creation, u.prenom, u.nom, rpa.user_id
-            ORDER BY r.resource_name ASC
+                
+    SELECT 
+        r.*, 
+        u.prenom AS owner_firstname, 
+        u.nom AS owner_lastname,
+        CASE 
+            WHEN r.owner_user_id = :userId THEN 'owner'
+            ELSE 'shared'
+        END AS access_type
+    FROM resources r
+    JOIN utilisateurs u ON r.owner_user_id = u.id
+    WHERE r.owner_user_id = :userId 
+       OR EXISTS (
+           SELECT 1 
+           FROM resource_professors_access rpa 
+           WHERE rpa.resource_id = r.resource_id 
+           AND rpa.user_id = :userId
+       )
+    ORDER BY r.resource_name ASC
         ");
         $stmt->execute(['userId' => $userId]);
         $resourcesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
