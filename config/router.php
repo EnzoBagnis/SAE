@@ -126,7 +126,7 @@ class Router
 
             // ========== PAGES ==========
             case 'mentions':
-                $this->loadView('pages/mentions-legales');
+                $this->loadView('user/mentions-legales');
                 break;
 
 
@@ -333,6 +333,16 @@ class Router
                     http_response_code(405);
                     echo json_encode(['error' => 'Méthode non autorisée']);
                 }
+                break;
+
+            // ========== STATS - STUDENTS ==========
+            case 'students_stats':
+                $this->loadNamespacedController('Controllers\User\StudentsController', 'getStats');
+                break;
+
+            // ========== STATS - EXERCISES ==========
+            case 'exercises_stats':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getStats');
                 break;
 
             default:
