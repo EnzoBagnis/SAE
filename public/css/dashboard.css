@@ -1152,4 +1152,8 @@
     border-bottom: 1px solid #eee; /* La ligne de séparation */
 }
 
+.searchBar{
+    width: 20%;
+}
+
 

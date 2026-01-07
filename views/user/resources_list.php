@@ -43,6 +43,7 @@ try {
     <title><?= htmlspecialchars($title) ?></title>
     <link rel="stylesheet" href="../public/css/style.css">
     <link rel="stylesheet" href="../public/css/dashboard.css">
+    <link rel="stylesheet" href="/public/css/footer.css">
     <script src="../public/js/dashboard-main.js"></script>
 </head>
 <body>
@@ -75,7 +76,7 @@ try {
         <div class="filter-bar">
             <!-- Groupe de gauche pour recherche et select -->
             <div class="filter-group-left">
-                <input type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
+                <input class="searchBar" type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
                 <select id="filterType" onchange="filterResources()">
                     <option value="all">Tout voir</option>
                     <option value="owner">Mes créations</option>
@@ -309,5 +310,6 @@ try {
         }
     }
 </script>
+<?php include __DIR__ . '/../layouts/footer.php'; ?>
 </body>
 </html>
