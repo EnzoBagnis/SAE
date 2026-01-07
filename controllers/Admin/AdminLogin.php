@@ -24,7 +24,7 @@ class AdminLogin extends \BaseController
 
             // TODO: Récupérer les identifiants depuis le .env (ex: ADMIN_EMAIL, ADMIN_PASSWORD)
             // Pour l'instant, logique fictive ou simplifiée :
-            $envPath = __DIR__ . '/../../config/.env';
+            $envPath = __DIR__ . '/../../../config/.env';
             if (file_exists($envPath)) {
                 $env = parse_ini_file($envPath);
                 $ADMIN_ID = $env['ADMIN_ID'] ?? 'admin'; // Valeur par défaut de secours
