@@ -105,6 +105,7 @@ try {
                     $resImg = $resource->image_path ?? '';
                     $isOwner = ($creatorId == $user_id);
 
+
                     $ownerName = ($resource->owner_firstname ?? '') . ' ' . ($resource->owner_lastname ?? '');
                     if (trim($ownerName) == '') {
                         $ownerName = "Utilisateur #$creatorId";
@@ -118,6 +119,7 @@ try {
                          data-id="<?= $resId ?>"
                          data-description="<?= htmlspecialchars($resDesc) ?>"
                          data-image="<?= htmlspecialchars($resImg) ?>">
+                        data-shared-users="<?= htmlspecialchars($resource->shared_user_ids ?? '') ?>">
 
                         <?php if ($isOwner) : ?>
                             <button class="btn-edit-resource" onclick="openResourceModal('edit', this)"
@@ -239,7 +241,10 @@ try {
         form.reset();
         hiddenId.value = '';
         document.getElementById('currentImageName').style.display = 'none';
-        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+
+        // 1. On décoche tout par défaut
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        checkboxes.forEach(cb => cb.checked = false);
 
         if (mode === 'edit' && btn) {
             document.getElementById('modalTitle').textContent = "Modifier la ressource";
@@ -250,6 +255,18 @@ try {
             hiddenId.value = card.dataset.id;
             document.getElementById('resourceName').value = card.dataset.name;
             document.getElementById('resourceDesc').value = card.dataset.description;
+
+            // 2. ON COCHE LES UTILISATEURS DÉJÀ PARTAGÉS
+            if (card.dataset.sharedUsers) {
+                // On transforme la chaîne "1,5,8" en tableau ["1", "5", "8"]
+                const sharedIds = card.dataset.sharedUsers.split(',');
+
+                checkboxes.forEach(cb => {
+                    if (sharedIds.includes(cb.value)) {
+                        cb.checked = true;
+                    }
+                });
+            }
 
             if (card.dataset.image) {
                 const p = document.getElementById('currentImageName');
