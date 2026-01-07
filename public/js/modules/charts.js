@@ -48,12 +48,23 @@ const ChartModule = (function() {
             .style("text-anchor", "end");
 
         // Y Axis
+        const maxAttempts = d3.max(data, d => +d.total_attempts) || 10;
         const y = d3.scaleLinear()
-            .domain([0, 100])
+            .domain([0, maxAttempts + (maxAttempts * 0.1)]) // Add some padding
             .range([height, 0]);
 
         svg.append("g")
-            .call(d3.axisLeft(y));
+            .call(d3.axisLeft(y).ticks(Math.min(maxAttempts, 10))); // Avoid too many ticks for small numbers
+
+        // Add Y axis label
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left)
+            .attr("x", 0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .style("font-size", "12px")
+            .text("Nombre de tentatives");
 
         // Color scale
         const colorScale = d3.scaleThreshold()
@@ -78,9 +89,9 @@ const ChartModule = (function() {
             .enter()
             .append("rect")
             .attr("x", d => x((d.nom && d.prenom) ? `${d.nom} ${d.prenom}` : d.student_identifier))
-            .attr("y", d => y(d.success_rate))
+            .attr("y", d => y(d.total_attempts))
             .attr("width", x.bandwidth())
-            .attr("height", d => height - y(d.success_rate))
+            .attr("height", d => height - y(d.total_attempts))
             .attr("fill", d => colorScale(d.success_rate))
             // Interaction
             .style("cursor", "pointer")
@@ -114,7 +125,7 @@ const ChartModule = (function() {
             .attr("y", -5)
             .attr("text-anchor", "middle")
             .style("font-size", "14px")
-            .text("Taux de réussite par étudiant (%)");
+            .text("Tentatives (Hauteur) et Taux de réussite (Couleur)");
     }
 
     /**
