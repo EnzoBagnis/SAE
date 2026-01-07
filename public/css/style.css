@@ -362,21 +362,24 @@ a:hover {
     right: 12px;
     transform: translateY(-50%);
     cursor: pointer;
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    width: auto;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+    height: auto !important;
     color: #666;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: none !important;
+    z-index: 10;
 }
 
 .password-toggle:hover {
     color: #333;
-    background: none;
-    transform: translateY(-50%);
+    background: none !important;
+    transform: translateY(-50%) scale(1.1);
 }
 
 .password-toggle svg {
