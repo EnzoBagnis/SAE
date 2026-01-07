@@ -35,7 +35,6 @@ class Resource
         r.*, 
         u.prenom AS owner_firstname, 
         u.nom AS owner_lastname,
-        -- AJOUTEZ CETTE SOUS-REQUÊTE CI-DESSOUS :
         (SELECT GROUP_CONCAT(user_id) 
          FROM resource_professors_access rpa2 
          WHERE rpa2.resource_id = r.resource_id) AS shared_user_ids,
