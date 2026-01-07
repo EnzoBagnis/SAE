@@ -335,6 +335,16 @@ class Router
                 }
                 break;
 
+            // ========== STATS - STUDENTS ==========
+            case 'students_stats':
+                $this->loadNamespacedController('Controllers\User\StudentsController', 'getStats');
+                break;
+
+            // ========== STATS - EXERCISES ==========
+            case 'exercises_stats':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getStats');
+                break;
+
             default:
                 $this->loadController('HomeController', 'index');
                 break;

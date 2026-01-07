@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="/public/css/style.css">
     <link rel="stylesheet" href="/public/css/dashboard.css">
     <link rel="stylesheet" href="/public/css/footer.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="/public/js/modules/import.js"></script>
+    <script src="/public/js/modules/charts.js"></script>
     <script src="/public/js/dashboard-main.js"></script>
 
     <meta name="description"
