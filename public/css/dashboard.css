@@ -1153,7 +1153,7 @@
 }
 
 .searchBar {
-    width: 180px; /* Définit une largeur fixe plus petite */
+    width: 25%; /* Définit une largeur fixe plus petite */
     flex-grow: 0 !important; /* Empêche la barre de s'étirer pour remplir l'espace */
     min-width: 150px; /* Sécurité pour ne pas qu'elle devienne trop minuscule */
 }
