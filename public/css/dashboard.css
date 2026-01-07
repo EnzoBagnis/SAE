@@ -554,6 +554,37 @@
     z-index: 1001;
 }
 
+/* Menu Burger Container */
+.burger-nav {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Caché par défaut */
+    width: 80%;
+    /* max-width: 350px; Pas utile si on veut 80% */
+    height: 100vh;
+    background: #2c3e50;
+    z-index: 1002;
+    transition: right 0.3s ease;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    border-left: 1px solid #1a252f;
+    display: flex;
+    flex-direction: column;
+}
+
+.burger-nav.active {
+    right: 0; /* Visible quand actif */
+}
+
+/* Infos utilisateur dans le menu burger */
+.burger-user-info {
+    padding: 1.5rem;
+    background: #1a252f;
+    color: white;
+    font-weight: 500;
+    border-bottom: 2px solid #3498db;
+    margin-bottom: 0;
+}
+
 /* Styles spécifiques pour que le bouton interne soit visible mais non cliquable sous l'overlay s'il y a un overlay transparent qui gêne, mais ici le z-index est 1005 donc ça ira */
 /* S'assurer que le bouton croix est bien blanc sur fond sombre */
 .burger-menu.burger-close-internal span {
