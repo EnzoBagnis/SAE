@@ -1152,8 +1152,15 @@
     border-bottom: 1px solid #eee; /* La ligne de séparation */
 }
 
-.searchBar{
-    width: 20%;
+.searchBar {
+    width: 180px; /* Définit une largeur fixe plus petite */
+    flex-grow: 0 !important; /* Empêche la barre de s'étirer pour remplir l'espace */
+    min-width: 150px; /* Sécurité pour ne pas qu'elle devienne trop minuscule */
+}
+@media (max-width: 600px) {
+    .filter-bar input, .filter-bar select {
+        width: 100%; /* Repasse en pleine largeur sur mobile */
+    }
 }
 
 
