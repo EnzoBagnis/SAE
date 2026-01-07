@@ -99,6 +99,11 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                 </span>
             </div>
             <ul class="burger-menu-list">
+                <li>
+                    <a href="/index.php?action=resources_list" class="burger-link">
+                        Ressources
+                    </a>
+                </li>
                 <li class="has-submenu">
                     <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
                         Liste des Étudiants
