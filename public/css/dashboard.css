@@ -554,58 +554,12 @@
     z-index: 1001;
 }
 
-.burger-menu span {
-    width: 100%;
-    height: 3px;
+/* Styles spécifiques pour que le bouton interne soit visible mais non cliquable sous l'overlay s'il y a un overlay transparent qui gêne, mais ici le z-index est 1005 donc ça ira */
+/* S'assurer que le bouton croix est bien blanc sur fond sombre */
+.burger-menu.burger-close-internal span {
     background: white;
-    border-radius: 2px;
-    transition: all 0.3s ease;
 }
 
-.burger-menu.active span:nth-child(1) {
-    transform: rotate(45deg) translate(8px, 8px);
-}
-
-.burger-menu.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.burger-menu.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -7px);
-}
-
-.burger-nav {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 80%;
-    max-width: 350px;
-    height: 100vh;
-    background: #2c3e50;
-    z-index: 1000;
-    transition: right 0.3s ease;
-    overflow-y: auto;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-}
-
-.burger-nav.active {
-    right: 0;
-}
-
-.burger-nav-content {
-    padding: 2rem 0;
-}
-
-.burger-user-info {
-    padding: 1.5rem 1.5rem;
-    background: #34495e;
-    color: white;
-    font-weight: 500;
-    border-bottom: 2px solid #3498db;
-    margin-bottom: 1rem;
-}
-
-/* Bouton de fermeture interne au menu */
 .burger-menu.burger-close-internal {
     position: absolute;
     top: 15px;      /* En haut */
