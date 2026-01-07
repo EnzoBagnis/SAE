@@ -9,10 +9,8 @@
     <link rel="stylesheet" href="/public/css/style.css">
     <link rel="stylesheet" href="/public/css/dashboard.css">
     <link rel="stylesheet" href="/public/css/footer.css">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="/public/js/modules/import.js"></script>
-    <script src="/public/js/modules/charts.js"></script>
-    <script src="/public/js/dashboard-main.js"></script>
+    <script type="module" src="/public/js/modules/import.js"></script>
+    <script type="module" src="/public/js/dashboard-main.js"></script>
 
     <meta name="description"
           content="Liste des Travaux Pratiques pour la ressource
@@ -101,10 +99,12 @@
         <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
+
         <nav class="nav-menu">
+            <a href="/index.php?action=dashboard">Tableau de Bord</a>
             <a href="/index.php?action=resources_list" class="active">Ressources</a>
         </nav>
-        <div class="user-info">
+        <div class="header-right">
             <button onclick="openImportModal(<?= $resource->resource_id ?>)" class="btn-import-trigger">
                 <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2">
@@ -114,16 +114,26 @@
                 </svg>
                 Importer
             </button>
-            <span>
-                <?= htmlspecialchars($user_firstname ?? '') ?>
-                <?= htmlspecialchars($user_lastname ?? '') ?>
-            </span>
-            <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
+            <div class="user-profile">
+                <span>
+                    <?= htmlspecialchars($user_firstname ?? '') ?>
+                    <?= htmlspecialchars($user_lastname ?? '') ?>
+                </span>
+            </div>
+            <a href="/index.php?action=logout" class="btn-logout">Déconnexion</a>
         </div>
     </header>
 
     <!-- Menu burger mobile -->
     <nav class="burger-nav" id="burgerNav">
+        <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
+        <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()"
+                aria-label="Fermer le menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
         <div class="burger-nav-content">
             <div class="burger-user-info">
                 <span>
@@ -133,24 +143,12 @@
             </div>
             <ul class="burger-menu-list">
                 <li>
-                    <a href="/index.php?action=dashboard" class="burger-link">
-                        Tableau de bord
-                    </a>
-                </li>
-                <li>
                     <a href="/index.php?action=resources_list" class="burger-link active">
                         Mes Ressources
                     </a>
                 </li>
                 <li>
-                    <a href="/index.php?action=mentions" class="burger-link">
-                        Mentions légales
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="confirmLogout()" class="burger-link burger-logout">
-                        Déconnexion
-                    </a>
+                    <a href="/index.php?action=logout" class="burger-link burger-logout">Déconnexion</a>
                 </li>
             </ul>
         </div>
