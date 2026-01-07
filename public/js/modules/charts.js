@@ -160,7 +160,7 @@ const ChartModule = (function() {
         // X Axis
         const x = d3.scaleBand()
             .range([0, width])
-            .domain(data.map(d => d.exo_name))
+            .domain(data.map(d => d.funcname || d.exo_name))
             .padding(0.2);
 
         svg.append("g")
@@ -205,7 +205,7 @@ const ChartModule = (function() {
             .data(data)
             .enter()
             .append("rect")
-            .attr("x", d => x(d.exo_name))
+            .attr("x", d => x(d.funcname || d.exo_name))
             .attr("y", d => y(d.success_rate))
             .attr("width", x.bandwidth())
             .attr("height", d => height - y(d.success_rate))
@@ -248,4 +248,3 @@ const ChartModule = (function() {
         renderExerciseChart: renderExerciseChart
     };
 })();
-

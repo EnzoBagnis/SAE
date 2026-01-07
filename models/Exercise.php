@@ -108,12 +108,14 @@ class Exercise
         $sql = "SELECT 
                     e.exercise_id, 
                     e.exo_name, 
+                    e.funcname,
                     COUNT(a.attempt_id) as total_attempts, 
                     SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) as successful_attempts
                 FROM exercises e
                 LEFT JOIN attempts a ON e.exercise_id = a.exercise_id
                 WHERE e.resource_id = :resourceId
-                GROUP BY e.exercise_id, e.exo_name
+                GROUP BY e.exercise_id, e.exo_name, e.funcname
+                HAVING total_attempts > 0
                 ORDER BY e.exo_name ASC";
 
         $stmt = $db->prepare($sql);
