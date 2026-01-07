@@ -77,15 +77,16 @@ class User
      * @return array|false User data or false if not found
      */
 
-    public function createBanUser($mail, $duree_ban)
+    public function createBanUser($mail, $duree_ban, $ban_def)
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO utilisateurs_bloques (mail, duree_ban, date_de_ban)
-            VALUES (:mail, :duree_ban, CURRENT_TIMESTAMP)"
+            "INSERT INTO utilisateurs_bloques (mail, duree_ban, date_de_ban, ban_def)
+            VALUES (:mail, :duree_ban, CURRENT_TIMESTAMP, :ban_def)"
         );
         return $stmt->execute([
             'mail' => $mail,
-            'duree_ban' => $duree_ban
+            'duree_ban' => $duree_ban,
+            'ban_def' => $ban_def
         ]);
 
     }
@@ -291,16 +292,17 @@ class User
      * @param string $email User's email
      * @return bool Success status
      */
-    public function updateBan($id, $email, $duree_ban)
+    public function updateBan($id, $email, $duree_ban, $ban_def)
     {
         $stmt = $this->pdo->prepare(
             "UPDATE utilisateurs_bloques
-             SET duree_ban = :duree_ban
+             SET duree_ban = :duree_ban AND ban_def = :ban_def
              WHERE id = :id AND mail = :mail"
         );
 
         return $stmt->execute([
             'duree_ban' => $duree_ban,
+            'ban_def' => $ban_def,
             'mail' => $email,
             'id' => $id
         ]);

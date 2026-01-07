@@ -102,6 +102,15 @@ class Router
             case 'admin':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'index');
                 break;
+
+            case 'adminLogin':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'login');
+                } else {
+                    $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'index');
+                }
+                break;
+
             case 'adminSVU':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showVerifiedUsers');
                 break;

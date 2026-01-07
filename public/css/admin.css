@@ -200,6 +200,25 @@ body {
     transition: all 0.3s;
     display: inline-block;
 }
+.btn-edit,
+.btn-validate {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.btn-edit,
+.btn-ban {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    display: inline-block;
+}
 
 .btn-edit {
     background: #3498db;
@@ -215,8 +234,65 @@ body {
     color: white;
 }
 
+.btn-validate {
+    background: #339312;
+    color: white;
+}
+
+.btn-ban {
+    background: #000000;
+    color: white;
+}
+
 .btn-delete:hover {
     background: #c0392b;
+}.search-container {
+     width: 100%;
+     max-width: 600px;
+     padding: 20px;
+ }
+
+.search-bar {
+    display: flex;
+    background: #fff;
+    padding: 5px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.search-bar:focus-within {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 15px 25px;
+    font-size: 1.1rem;
+    background: transparent;
+}
+
+.search-bar button {
+    background: #3498db;
+    border: none;
+    outline: none;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.search-bar button:hover {
+    background: #2980b9;
+}
+
+.search-bar button i {
+    font-size: 1.2rem;
 }
 
 /* Formulaire d'édition */

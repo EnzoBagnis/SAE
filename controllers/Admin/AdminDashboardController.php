@@ -121,15 +121,16 @@ class AdminDashboardController extends \BaseController
         $id = $_POST['id'] ?? '';
         $email = $_POST['email'] ?? '';
         $duree_de_ban = $_POST['duree_de_ban'] ?? '';
+        $ban_def = $_POST['ban_def'] ?? '';
 
-        if ($table == 'B') {$this->updateBanUser($id, $email, $duree_de_ban);}
-        else {$this->firstBanUser($table, $id, $email, $duree_de_ban);}
+        if ($table == 'B') {$this->updateBanUser($id, $email, $duree_de_ban, $ban_def);}
+        else {$this->firstBanUser($table, $id, $email, $duree_de_ban, $ban_def);}
     }
 
-    public function updateBanUser($id, $email, $duree_de_ban)
+    public function updateBanUser($id, $email, $duree_de_ban, $ban_def)
     {
 
-        $success = $this->userModel->updateBan($id, $email, $duree_de_ban);
+        $success = $this->userModel->updateBan($id, $email, $duree_de_ban, $ban_def);
         if ($success) {
             header('Location: index.php?action=admin');
             exit;
@@ -141,9 +142,9 @@ class AdminDashboardController extends \BaseController
 
     }
 
-    public function firstBanUser($table, $id, $mail, $duree_de_ban)
+    public function firstBanUser($table, $id, $mail, $duree_de_ban, $ban_def)
     {
-        $this->userModel->createBanUser($mail, $duree_de_ban);
+        $this->userModel->createBanUser($mail, $duree_de_ban, $ban_def);
 
         header('Location: index.php?action=adminDeleteUser&table=' . $table . '&id=' . $id);
 

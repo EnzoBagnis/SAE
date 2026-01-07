@@ -70,6 +70,25 @@
             </button>
         </div>
 
+
+
+
+
+
+        <div class="search-container">
+            <form action="search.php" method="GET" class="search-bar">
+                <input type="text" name="query" placeholder="Rechercher quelque chose..." id="searchInput">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+        </div>
+
+
+
+
+
+
+
+
         <!-- Tableau des utilisateurs vérifiés -->
         <div id="verified-tab" class="tab-content <?= ($currentTab ?? 'verified') === 'verified' ? 'active' : '' ?>">
             <table class="user-table">
@@ -81,7 +100,6 @@
                     <th>Email</th>
                     <th>Actions</th>
                 </tr>
-                <script>console.log("rr");</script>
                 </thead>
                 <tbody>
 
@@ -102,10 +120,10 @@
 
                                 <a href="index.php?action=adminDeleteUser&table=V&id=<?= urlencode($user['id']) ?>"
                                    class="btn-delete"
-                                   <!-- onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"> -->
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
-                                <button class="btn-edit" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '', '')">Bannir</button>
+                                <button class="btn-ban" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?php echo date('Y-m-d'); ?>', '')">Bannir</button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -135,30 +153,36 @@
                 <?php else: ?>
                     <?php foreach ($pendingUsers as $user): ?>
                         <tr>
-                            <td><?= htmlspecialchars($user['verifie']) ?></td>
+                            <td><?php switch ( $user['verifie']) {
+                                case 0:
+                                    echo "Demande envoyée";
+                                    break;
+                                case 1:
+                                    echo "Email vérifié";
+                                    break;
+                            } ?></td>
                             <td><?= htmlspecialchars($user['id']) ?></td>
                             <td><?= htmlspecialchars($user['nom']) ?></td>
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('P', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>', '<?= htmlspecialchars($user['verifie']) ?>', '', '')">Modifier</button>
-
+                                <button class="btn-edit" onclick="openEditPopup('P', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>', '<?= htmlspecialchars($user['verifie']) ?>', '', '')">
+                                    Modifier
+                                </button>
+                                <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
+                                   class="btn-delete"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                    Supprimer
+                                </a>
+                                <button class="btn-ban" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?php echo date('Y-m-d'); ?>', '')">
+                                    Bannir
+                                </button>
                                 <?php if ($user['verifie'] == 1): ?>
-                                <a href="index.php?action=adminValidUser&id=<?= urlencode($user['id']) ?>"
-                                   class="btn-validate"
-                                   onclick="return confirm('Êtes-vous sûr de vouloir valider cet utilisateur ?')">
-                                    Valider
-                                </a>
-                                <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
-                                   class="btn-delete"
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
-                                    Supprimer
-                                </a>
-                                <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
-                                   class="btn-delete"
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
-                                    Supprimer
-                                </a>
+                                    <a href="index.php?action=adminValidUser&id=<?= urlencode($user['id']) ?>"
+                                       class="btn-validate"
+                                       onclick="return confirm('Êtes-vous sûr de vouloir valider cet utilisateur ?')">
+                                        Valider
+                                    </a>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -176,7 +200,7 @@
                     <th>ID</th>
                     <th>Email</th>
                     <th>Date de ban</th>
-                    <th>Durée de bannissement</th>
+                    <!--<th>Durée de bannissement</th>-->
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -193,14 +217,19 @@
                             <td><?= htmlspecialchars($user['id']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td><?= htmlspecialchars($user['date_de_ban']) ?></td>
-                            <td><?= htmlspecialchars($user['duree_ban']) ?></td>
+                            <!--<td><?php if ($user['ban_def'] == 1): ?>
+                                Permanent
+                            <?php else: ?>
+                                <?= htmlspecialchars($user['duree_ban']) ?>
+                            <?php endif; ?>
+                            </td>-->
                             <td class="actions">
                                 <button class="btn-edit" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?= htmlspecialchars($user['date_de_ban']) ?>', '<?= htmlspecialchars($user['duree_ban']) ?>')">Modifier</button>
 
                                 <a href="index.php?action=adminDeleteUser&table=B&id=<?= urlencode($user['mail']) ?>"
                                    class="btn-delete"
-                                <!-- onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"> -->
-                                Supprimer
+                                onclick="return confirm('Êtes-vous sûr débloquer cet utilisateur ?')">
+                                Débloquer
                                 </a>
                             </td>
                         </tr>
@@ -235,8 +264,8 @@
             <label for="editEmailVerifie">Email</label>
             <input type="email" id="editEmailVerifie" name="email" required>
         </div>
-        <button type="submit" class="btn-submit" name="ok">Valider</button>
         <div class="form-actions">
+            <button type="submit" class="btn-submit" name="ok">Valider</button>
             <button type="button" class="btn-cancel" onclick="closeEditPopup()">Annuler</button>
         </div>
     </form>
@@ -265,9 +294,8 @@
             <label for="verifiePending">Verifie</label>
             <input type="int" id="verifiePending" name="nom" readonly>
         </div>
-        <button type="submit" class="btn-submit" name="ok">Valider</button>
-
         <div class="form-actions">
+            <button type="submit" class="btn-submit" name="ok">Valider</button>
             <button type="button" class="btn-cancel" onclick="closeEditPopup()">Annuler</button>
         </div>
     </form>
@@ -288,13 +316,18 @@
             <label for="editDateBanBlocked">Date de ban</label>
             <input type="int" id="editDateBanBlocked" name="date_de_ban" readonly>
         </div>
+        <!-- Possibilité de modifier la durée de ban dans le futur
         <div class="form-group">
             <label for="editDureeBanBlocked">Durée de ban</label>
             <input type="int" id="editDureeBanBlocked" name="duree_de_ban" required>
         </div>
-        <button type="submit" class="btn-submit" name="ok">Valider</button>
-
+        -->
+        <div class="form-group">
+            <label for="ban_def">Bloquage définitif</label>
+            <input type="checkbox" id="ban_def" name="ban_def" value="1" checked disabled>
+        </div>
         <div class="form-actions">
+            <button type="submit" class="btn-submit" name="ok">Valider</button>
             <button type="button" class="btn-cancel" onclick="closeEditPopup()">Annuler</button>
         </div>
     </form>
@@ -343,6 +376,14 @@
                 table = "Blocked";
                 break;
         }
+        switch (verifie) {
+            case '0':
+                verifie = "Demande envoyée";
+                break;
+            case '1':
+                verifie = "Email vérifié";
+                break;
+        }
         setValue('table', table, table);
         setValue('verifie', verifie, table);
         setValue('id', id, table);
@@ -367,7 +408,11 @@
         });
     }
 
-</script>
+    // Récupère la date locale au format ISO (AAAA-MM-JJTHH:mm:ss...)
+    // Puis on ne garde que les 10 premiers caractères (AAAA-MM-JJ)
+    const dateDuJour = new Date().toISOString().split('T')[0];
 
+    document.getElementById('date_fixe').textContent = dateDuJour;
+</script>
 </body>
 </html>
