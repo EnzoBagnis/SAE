@@ -85,6 +85,15 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 </header>
     <!-- Menu burger mobile -->
     <nav class="burger-nav" id="burgerNav">
+
+        <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
+        <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()"
+                aria-label="Fermer le menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
         <div class="burger-nav-content">
             <div class="burger-user-info">
                 <span>
@@ -93,7 +102,11 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                 </span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>
+                <li>
+                    <a href="/index.php?action=resources_list" class="burger-link">
+                        Ressources
+                    </a>
+                </li>
                 <li class="has-submenu">
                     <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
                         Liste des Étudiants
@@ -103,7 +116,21 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                         <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
-                <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
+                <li class="has-submenu">
+                    <a href="#" class="burger-link" onclick="toggleExerciseSubmenu(event)">
+                        Liste des TP
+                        <span class="submenu-arrow">▼</span>
+                    </a>
+                    <ul class="burger-submenu" id="burgerExerciseList">
+                        <!-- Les TP seront chargés ici dynamiquement -->
+                    </ul>
+                </li>
+                <li>
+                    <a href="#" class="burger-link burger-import"
+                       onclick="openImportModal(<?= $current_resource_id ?>); toggleBurgerMenu(); return false;">
+                        Importer
+                    </a>
+                </li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
