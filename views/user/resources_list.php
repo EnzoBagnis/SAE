@@ -119,7 +119,7 @@ try {
                          data-id="<?= $resId ?>"
                          data-description="<?= htmlspecialchars($resDesc) ?>"
                          data-image="<?= htmlspecialchars($resImg) ?>">
-                        data-shared-users="<?= htmlspecialchars($resource->shared_user_ids ?? '') ?>">
+                         data-shared-users="<?= htmlspecialchars($resource->shared_user_ids ?? '') ?>">
 
                         <?php if ($isOwner) : ?>
                             <button class="btn-edit-resource" onclick="openResourceModal('edit', this)"
