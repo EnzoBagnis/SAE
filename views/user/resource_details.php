@@ -132,7 +132,6 @@
                     <?= htmlspecialchars($user_firstname ?? '') ?>
                     <?= htmlspecialchars($user_lastname ?? '') ?>
                 </span>
-                <button class="burger-close-btn" onclick="toggleBurgerMenu()" aria-label="Fermer le menu">&times;</button>
             </div>
             <ul class="burger-menu-list">
                 <li>
