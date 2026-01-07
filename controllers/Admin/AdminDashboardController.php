@@ -14,6 +14,12 @@ class AdminDashboardController extends \BaseController
 
     public function __construct()
     {
+        // Vérifier si l'utilisateur est connecté en tant qu'admin
+        if (!isset($_SESSION['admin']) || $_SESSION['admin'] !== true) {
+            header('Location: index.php?action=adminLogin');
+            exit;
+        }
+
         $this->userModel = new \User();
     }
 

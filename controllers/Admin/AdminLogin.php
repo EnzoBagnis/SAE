@@ -8,6 +8,11 @@ class AdminLogin extends \BaseController
 {
     public function index()
     {
+        // Si déjà connecté, redirection vers le dashboard
+        if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+            header('Location: index.php?action=admin');
+            exit;
+        }
         $this->loadView('admin/admin-login', ['title' => 'Connexion Admin']);
     }
 
@@ -19,12 +24,18 @@ class AdminLogin extends \BaseController
 
             // TODO: Récupérer les identifiants depuis le .env (ex: ADMIN_EMAIL, ADMIN_PASSWORD)
             // Pour l'instant, logique fictive ou simplifiée :
-            $env = parse_ini_file(__DIR__ . '/../../config/.env');
+            $envPath = __DIR__ . '/../../config/.env';
+            if (file_exists($envPath)) {
+                $env = parse_ini_file($envPath);
+                $ADMIN_ID = $env['ADMIN_ID'] ?? 'admin'; // Valeur par défaut de secours
+                $ADMIN_PASS = $env['ADMIN_PASS'] ?? 'admin';
+            } else {
+                // Valeurs par défaut si le .env n'est pas trouvé (à éviter en prod)
+                $ADMIN_ID = 'admin';
+                $ADMIN_PASS = 'admin';
+            }
 
-            $ADMIN_ID= $env['ADMIN_ID'];
-            $ADMIN_PASS = $env['ADMIN_PASS'];
-
-            // Simulation de succès pour le développement
+            // Vérification des identifiants
             if ($ID === $ADMIN_ID && $mdp === $ADMIN_PASS) {
 
                  $_SESSION['admin'] = true;
@@ -37,16 +48,26 @@ class AdminLogin extends \BaseController
                      'title' => 'Connexion Admin',
                      'error_message' => 'Identifiants incorrects.'
                  ]);
+                 return;
              }
-
-            // Pour l'instant, on recharge juste la vue avec un message
-             $this->loadView('admin/admin-login', [
-                'title' => 'Connexion Admin',
-                'error_message' => 'Logique de connexion à implémenter via .env'
-            ]);
 
         } else {
             $this->index();
         }
+    }
+
+    public function logout()
+    {
+        // Démarrer la session si nécessaire
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Détruire la session
+        session_destroy();
+
+        // Rediriger vers la page de connexion admin
+        header('Location: index.php?action=adminLogin');
+        exit;
     }
 }

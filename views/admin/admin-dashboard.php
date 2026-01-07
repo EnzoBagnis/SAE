@@ -22,7 +22,7 @@
     </nav>
     <div class="user-info">
         <span><?= htmlspecialchars($_SESSION['prenom'] ?? 'Admin') ?> <?= htmlspecialchars($_SESSION['nom'] ?? '') ?></span>
-        <a href="/index.php?action=logout" class="btn-logout">Déconnexion</a>
+        <a href="/index.php?action=adminLogout" class="btn-logout">Déconnexion</a>
     </div>
 </header>
 

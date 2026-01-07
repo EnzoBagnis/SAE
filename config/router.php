@@ -111,6 +111,10 @@ class Router
                 }
                 break;
 
+            case 'adminLogout':
+                $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'logout');
+                break;
+
             case 'adminSVU':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showVerifiedUsers');
                 break;
