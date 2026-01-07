@@ -696,6 +696,17 @@
     color: white;
 }
 
+.burger-link.burger-import {
+    background: #42e73c;
+    color: white;
+    font-weight: 500;
+}
+
+.burger-link.burger-import:hover {
+    background: #2ecc71;
+    color: white;
+}
+
 .burger-submenu {
     list-style: none;
     padding: 0;

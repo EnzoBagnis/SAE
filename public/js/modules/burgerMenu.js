@@ -3,6 +3,7 @@
 export class BurgerMenuManager {
     constructor() {
         this.allStudents = [];
+        this.allExercises = [];
         this.setupEventListeners();
     }
 
@@ -10,6 +11,11 @@ export class BurgerMenuManager {
         window.addEventListener('studentsUpdated', (e) => {
             this.allStudents = e.detail;
             this.updateStudentList();
+        });
+
+        window.addEventListener('exercisesUpdated', (e) => {
+            this.allExercises = e.detail;
+            this.updateExerciseList();
         });
     }
 
@@ -77,6 +83,16 @@ export class BurgerMenuManager {
         arrow.classList.toggle('rotated');
     }
 
+    toggleExerciseSubmenu(event) {
+        const submenu = document.getElementById('burgerExerciseList');
+        const arrow = event.currentTarget.querySelector('.submenu-arrow');
+
+        if (submenu && arrow) {
+            submenu.classList.toggle('active');
+            arrow.classList.toggle('rotated');
+        }
+    }
+
     updateStudentList() {
         const burgerStudentList = document.getElementById('burgerStudentList');
 
@@ -100,6 +116,34 @@ export class BurgerMenuManager {
 
             li.appendChild(link);
             burgerStudentList.appendChild(li);
+        });
+    }
+
+    updateExerciseList() {
+        const burgerExerciseList = document.getElementById('burgerExerciseList');
+
+        if (!burgerExerciseList) return;
+
+        burgerExerciseList.innerHTML = '';
+
+        this.allExercises.forEach((exercise) => {
+            const li = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = '#';
+            link.textContent = exercise.funcname || exercise.exo_name || 'Exercice sans nom';
+            link.dataset.exerciseId = exercise.id;
+            link.className = 'burger-submenu-link';
+
+            link.onclick = (e) => {
+                e.preventDefault();
+                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.id }));
+                this.closeMenu();
+                // Also switch view to exercises if not already
+                window.switchListView('exercises');
+            };
+
+            li.appendChild(link);
+            burgerExerciseList.appendChild(li);
         });
     }
 
