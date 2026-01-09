@@ -343,7 +343,7 @@ const DetailedCharts = (function() {
         title.style.cssText = 'margin: 0 0 1rem 0; color: #2c3e50; font-size: 1.1rem;';
         chartDiv.appendChild(title);
 
-        if (!stats) {
+        if (!stats || !stats.total_attempts || stats.total_attempts === 0) {
             chartDiv.innerHTML += '<p style="color: #7f8c8d; text-align: center;">Aucune donnée disponible</p>';
             return;
         }
@@ -352,6 +352,8 @@ const DetailedCharts = (function() {
             { label: 'Réussies', value: stats.success_count || 0, color: '#27ae60' },
             { label: 'Échouées', value: (stats.total_attempts || 0) - (stats.success_count || 0), color: '#e74c3c' }
         ];
+
+        // ...existing code for rendering pie chart...
 
         const viewBoxSize = 300;
         const radius = Math.min(viewBoxSize, viewBoxSize) / 2 - 40;
