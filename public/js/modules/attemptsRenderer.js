@@ -105,10 +105,9 @@ export class AttemptsRenderer {
         // Extraire les exercices uniques des tentatives avec leurs informations
         const uniqueExercises = new Map();
         attempts.forEach(attempt => {
-            if (attempt.exercise_id && attempt.exo_name) {
+            if (attempt.exercise_id && attempt.funcname) {
                 uniqueExercises.set(attempt.exercise_id, {
-                    name: attempt.exo_name,
-                    funcname: attempt.funcname || null
+                    funcname: attempt.funcname
                 });
             }
         });
@@ -116,9 +115,7 @@ export class AttemptsRenderer {
         // Créer les options du select
         let exerciseOptions = '<option value="all">Tous les exercices</option>';
         uniqueExercises.forEach((exerciseInfo, id) => {
-            const displayText = exerciseInfo.funcname
-                ? `${exerciseInfo.name} (${exerciseInfo.funcname})`
-                : exerciseInfo.name;
+            const displayText = exerciseInfo.funcname;
             exerciseOptions += `<option value="${id}">${displayText}</option>`;
         });
         exerciseSelect.innerHTML = exerciseOptions;
