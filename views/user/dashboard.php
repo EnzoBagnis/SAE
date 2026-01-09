@@ -1,3 +1,12 @@
+<?php
+        $user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
+$user_lastname = $_SESSION['nom'] ?? '';
+$title = 'StudTraj - Mes Ressources';
+
+// Calcul des initiales pour l'avatar
+$initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,11 +15,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
-    <link rel="stylesheet" href="../public/css/dashboard.css">
-     <link rel="stylesheet" href="../public/css/footer.css">
-    <script src="../public/js/modules/import.js"></script>
-    <script type="module" src="../public/js/dashboard-main.js"></script>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/dashboard.css">
+    <link rel="stylesheet" href="/public/css/charts.css">
+    <link rel="stylesheet" href="/public/css/footer.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="/public/js/modules/import.js"></script>
+    <script src="/public/js/modules/charts.js"></script>
+    <script src="/public/js/modules/detailedCharts.js"></script>
+    <script type="module" src="/public/js/dashboard-main.js"></script>
 
 
     <!-- SEO Meta Tags -->
@@ -18,41 +31,71 @@
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/dashboard.php">
 </head>
+
 <body>
-    <!-- Menu du haut -->
-    <header class="top-menu">
-        <div class="logo">
-            <h1>StudTraj</h1>
+<header class="top-menu">
+    <div class="logo">
+        <h1>StudTraj</h1>
+    </div>
+
+    <!-- Bouton burger pour mobile -->
+    <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <nav class="nav-menu">
+        <a href="/index.php?action=resources_list" class="active">Ressources</a>
+    </nav>
+
+    <!-- Nouveau conteneur pour regrouper Import + Profil + Déconnexion -->
+    <div class="header-right">
+        <?php
+        $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
+        ?>
+
+        <!-- Bouton Importer (placé à gauche du profil) -->
+        <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
+            <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Importer
+        </button>
+
+        <!-- Affichage Profil -->
+        <div class="user-profile">
+            <div class="user-avatar">
+                <?= htmlspecialchars($initials) ?>
+            </div>
+            <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
 
-        <!-- Bouton burger pour mobile -->
-        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+        <!-- Bouton Déconnexion -->
+        <a href="/index.php?action=logout" class="btn-logout">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span class="logout-text">Déconnexion</span>
+        </a>
+    </div>
+</header>
+    <!-- Menu burger mobile -->
+    <nav class="burger-nav" id="burgerNav">
+
+        <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
+        <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()"
+                aria-label="Fermer le menu">
             <span></span>
             <span></span>
             <span></span>
         </button>
 
-        <nav class="nav-menu">
-            <a href="/index.php?action=resources_list" class="active">Tableau de bord</a>
-            <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="/index.php?action=mentions">Mentions légales</a>
-        </nav>
-        <div class="user-info">
-            <button onclick="openImportModal()" class="btn-import-trigger">
-                <svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                Importer
-            </button>
-            <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
-            <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
-        </div>
-    </header>
-
-    <!-- Menu burger mobile -->
-    <nav class="burger-nav" id="burgerNav">
         <div class="burger-nav-content">
             <div class="burger-user-info">
                 <span>
@@ -61,7 +104,11 @@
                 </span>
             </div>
             <ul class="burger-menu-list">
-                <li><a href="/index.php?action=dashboard" class="burger-link active">Tableau de bord</a></li>
+                <li>
+                    <a href="/index.php?action=resources_list" class="burger-link">
+                        Ressources
+                    </a>
+                </li>
                 <li class="has-submenu">
                     <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
                         Liste des Étudiants
@@ -71,7 +118,21 @@
                         <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
-                <li><a href="/index.php?action=mentions" class="burger-link">Mentions légales</a></li>
+                <li class="has-submenu">
+                    <a href="#" class="burger-link" onclick="toggleExerciseSubmenu(event)">
+                        Liste des TP
+                        <span class="submenu-arrow">▼</span>
+                    </a>
+                    <ul class="burger-submenu" id="burgerExerciseList">
+                        <!-- Les TP seront chargés ici dynamiquement -->
+                    </ul>
+                </li>
+                <li>
+                    <a href="#" class="burger-link burger-import"
+                       onclick="openImportModal(<?= $current_resource_id ?>); toggleBurgerMenu(); return false;">
+                        Importer
+                    </a>
+                </li>
                 <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
@@ -84,11 +145,9 @@
             <div class="view-selector-header">
                 <button class="view-tab active" id="btnStudents" onclick="switchListView('students')">
                     Liste des Étudiants
-                    <span class="toggle-arrow">▲</span>
                 </button>
                 <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
                     Liste des TP
-                    <span class="toggle-arrow">▲</span>
                 </button>
             </div>
 

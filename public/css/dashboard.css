@@ -74,23 +74,24 @@
 
 /* Bouton d'import */
 .btn-import-trigger {
-    background: #27ae60;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.75rem;
-    border-radius: 4px;
+    background: #42e73c;
+    border: 1px solid rgba(255,255,255,0.2);
     cursor: pointer;
+    color: #ecf0f1;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    transition: background 0.3s;
-    font-size: 0.85rem;
-    font-weight: 500;
-    height: fit-content;
+    gap: 5px;
+    white-space: nowrap;
 }
 
 .btn-import-trigger:hover {
     background: #229954;
+    border-color: #4ca51f;
 }
 
 .btn-import-trigger svg {
@@ -241,8 +242,50 @@
 .placeholder-message {
     text-align: center;
     color: #7f8c8d;
-    font-size: 1.2rem;
-    margin-top: 3rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none; /* Hide sidebar on mobile, use burger menu */
+    }
+
+    .dashboard-container {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        padding: 10px;
+        width: 100%;
+        overflow-x: hidden;
+        height: auto;
+        min-height: calc(100vh - 80px);
+    }
+
+    .data-zone {
+        flex-direction: column;
+        display: block;
+        padding: 1rem;
+    }
+
+    .chart-container {
+        width: 100%;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+
+    .data-zone h2 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    /* Adjust tooltip position safety if needed */
+    .d3-tooltip {
+        max-width: 200px;
+        white-space: normal;
+    }
 }
 
 /* Scrollbar styling pour main content */
@@ -455,11 +498,13 @@
     width: 100%;
     padding: 0.75rem 1.5rem;
     background: #27ae60;
+    border-color: #00fc6c;
     color: white;
-    border: none;
+    border: 1px solid;
     border-radius: 4px;
     font-size: 1rem;
     font-weight: 500;
+    align-content: center;
     cursor: pointer;
     transition: background 0.3s;
 }
@@ -571,35 +616,87 @@
     transform: rotate(-45deg) translate(7px, -7px);
 }
 
+/* Menu Burger Container */
 .burger-nav {
     position: fixed;
     top: 0;
-    right: -100%;
+    right: -100%; /* Caché par défaut */
     width: 80%;
-    max-width: 350px;
+    /* max-width: 350px; Pas utile si on veut 80% */
     height: 100vh;
     background: #2c3e50;
-    z-index: 1000;
+    z-index: 1002;
     transition: right 0.3s ease;
-    overflow-y: auto;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    border-left: 1px solid #1a252f;
+    display: flex;
+    flex-direction: column;
 }
 
 .burger-nav.active {
-    right: 0;
+    right: 0; /* Visible quand actif */
 }
 
-.burger-nav-content {
-    padding: 2rem 0;
-}
-
+/* Infos utilisateur dans le menu burger */
 .burger-user-info {
-    padding: 1.5rem 1.5rem;
-    background: #34495e;
+    padding: 1.5rem;
+    background: #1a252f;
     color: white;
     font-weight: 500;
     border-bottom: 2px solid #3498db;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+}
+
+/* Bouton de fermeture interne positionné en absolu */
+.burger-menu.burger-close-internal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 2005; /* Z-index très élevé pour être sûr d'être au-dessus */
+    display: flex !important; /* Force l'affichage */
+    width: 30px;
+    height: 30px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; /* Important pour garder la structure */
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Force les barres en blanc */
+.burger-menu.burger-close-internal span {
+    position: absolute; /* Position absolue pour les superposer et les tourner */
+    width: 100%;
+    height: 3px;
+    background-color: white !important;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    left: 0;
+    transform-origin: center;
+}
+
+/* Barre 1 : Croix (diagonale) */
+.burger-menu.burger-close-internal span:nth-child(1) {
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg) !important;
+}
+
+/* Barre 2 : Cachée */
+.burger-menu.burger-close-internal span:nth-child(2) {
+    opacity: 0 !important;
+}
+
+/* Barre 3 : Croix (diagonale inverse) */
+.burger-menu.burger-close-internal span:nth-child(3) {
+    top: 50%;
+    transform: translateY(-50%) rotate(-45deg) !important;
+}
+
+/* Surcharge pour s'assurer qu'il est visible quand le menu est ouvert */
+.burger-nav .burger-menu {
+    display: flex;
 }
 
 .burger-menu-list {
@@ -638,6 +735,16 @@
 
 .burger-link.burger-logout:hover {
     background: #c0392b;
+    color: white;
+}
+
+.burger-link.burger-import {
+    color: #42e73c;
+    font-weight: 500;
+}
+
+.burger-link.burger-import:hover {
+    background: #2ecc71;
     color: white;
 }
 
@@ -770,6 +877,43 @@
         background: #e8f4f8;
         border-left: 4px solid #3498db;
     }
+
+    .dashboard-container {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        padding: 10px;
+        width: 100%;
+        overflow-x: hidden;
+        height: auto;
+        min-height: calc(100vh - 80px);
+    }
+
+    .data-zone {
+        flex-direction: column;
+        display: block;
+        padding: 1rem;
+    }
+
+    .chart-container {
+        width: 100%;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+
+    .data-zone h2 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    /* Adjust tooltip position safety if needed */
+    .d3-tooltip {
+        max-width: 200px;
+        white-space: normal;
+    }
 }
 
 @media (max-width: 480px) {
@@ -783,5 +927,375 @@
 
     .data-zone h2 {
         font-size: 1.3rem;
+    }
+}
+
+/* =========================================
+           CSS DE BASE (Desktop First)
+           ========================================= */
+
+/* Reset de box-sizing pour mieux gérer les largeurs */
+* {
+    box-sizing: border-box;
+}
+
+/* --- GRILLE DES RESSOURCES (Inchangé ou presque) --- */
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.resource-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+}
+.resource-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.resource-link-wrapper {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.resource-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #eee; /* La ligne de séparation */
+}
+.resource-card-content {
+    padding: 15px;
+}
+.resource-card-owner {
+    font-size: 0.8em;
+    color: #999;
+    display: block;
+    text-align: right;
+    margin-top: 10px;
+}
+.btn-edit-resource {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+.btn-edit-resource:hover {
+    background-color: #f0f0f0;
+}
+
+/* --- BARRE DE FILTRES --- */
+.filter-bar {
+    padding: 20px;
+    background: #eef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire */
+}
+
+.filter-group-left {
+    display: flex;
+    gap: 10px;
+    flex-grow: 1; /* Prend l'espace disponible */
+    flex-wrap: wrap;
+}
+
+.filter-bar input, .filter-bar select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 150px;
+}
+.filter-bar input {
+    flex-grow: 1; /* La recherche s'agrandit */
+}
+
+/* --- BOUTONS & USER INFO --- */
+
+.btn-create-resource {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    /* CORRECTION DEMANDEE : Taille adaptée au contenu, pas tout le bloc */
+    width: fit-content;
+    white-space: nowrap; /* Empêche le texte de se couper */
+    flex-shrink: 0; /* Empêche le bouton de s'écraser */
+}
+.btn-create-resource:hover {
+    background-color: #2980b9;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    background-color: #e67e22;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    border: 2px solid rgba(255,255,255,0.3);
+    flex-shrink: 0;
+}
+
+.btn-logout {
+    color: #ecf0f1;
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    font-size: 0.9em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+.btn-logout:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+    color: white;
+}
+
+/* --- MODAL (Inchangé) --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow-y: auto; /* Permet le scroll si l'écran est petit */
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 8px;
+    position: relative;
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+.form-group input[type="text"], .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.users-checklist {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: #fafafa;
+}
+.btn-submit {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-top: 10px;
+}
+.btn-submit:hover { background-color: #45a049; }
+
+.btn-delete-trigger {
+    background-color: #f44336;
+    color: white;
+    padding: 10px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 15px;
+    font-size: 14px;
+}
+.btn-delete-trigger:hover { background-color: #d32f2f; }
+
+.confirm-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.btn-confirm-yes { background-color: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+.btn-confirm-no { background-color: #ccc; color: black; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+
+/* =========================================
+   RESPONSIVE (MOBILE & TABLETTE)
+   ========================================= */
+
+/* Tablettes et petits écrans (< 900px) */
+@media (max-width: 900px) {
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch; /* Les éléments prennent toute la largeur dispo */
+    }
+    .filter-group-left {
+        width: 100%;
+    }
+    .btn-create-resource {
+        align-self: flex-end; /* Bouton aligné à droite */
+        width: auto;
+    }
+}
+
+/* Mobile (< 600px) */
+@media (max-width: 600px) {
+    /* Header s'empile verticalement */
+    .top-menu {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .user-info {
+        width: 100%;
+        justify-content: space-between; /* Espace entre Profil et Déconnexion */
+    }
+
+    /* Filtres en colonne */
+    .filter-group-left {
+        flex-direction: column;
+    }
+
+    .filter-bar input, .filter-bar select {
+        width: 100%;
+    }
+
+    /* Bouton création prend toute la largeur sur très petit écran pour être facile à cliquer */
+    .btn-create-resource {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .resources-grid {
+        grid-template-columns: 1fr; /* Une seule colonne */
+        padding: 10px;
+    }
+}
+/* Conteneur regroupant les éléments de droite */
+.header-right {
+    display: flex;
+    align-items: center; /* Centre verticalement tous les enfants */
+    gap: 1.5rem; /* Espace entre Importer, Profil et Déconnexion */
+}
+
+/* On s'assure que le profil ne crée pas de décalage */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: white;
+}
+
+/* Ajustement du bouton import pour qu'il soit bien aligné avec les autres boutons */
+.btn-import-trigger {
+    background: #27ae60; /* Un vert plus standard si besoin */
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    height: 38px; /* Hauteur fixe pour matcher les autres éléments si nécessaire */
+    transition: background 0.3s;
+}
+
+/* Le bouton logout doit aussi avoir une hauteur cohérente */
+.btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0.5rem 1rem;
+}
+
+/* Ajustement Responsive : cacher le bloc header-right sur mobile car il y a le menu burger */
+@media (max-width: 768px) {
+    .header-right {
+        display: none;
+    }
+}
+.resource-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #eee; /* La ligne de séparation */
+}
+
+.searchBar {
+    width: 25%; /* Définit une largeur fixe plus petite */
+    flex-grow: 0 !important; /* Empêche la barre de s'étirer pour remplir l'espace */
+    min-width: 150px; /* Sécurité pour ne pas qu'elle devienne trop minuscule */
+}
+@media (max-width: 600px) {
+    .filter-bar input, .filter-bar select {
+        width: 100%; /* Repasse en pleine largeur sur mobile */
     }
 }

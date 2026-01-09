@@ -93,6 +93,7 @@ class User
 
 
 
+
     /**
      * READ - Find a user by email
      * @param string $email User's email address

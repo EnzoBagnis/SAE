@@ -47,11 +47,7 @@ body {
     background: #34495e;
 }
 
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
+
 
 .btn-logout {
     background: #e74c3c;
@@ -445,9 +441,7 @@ body {
         gap: 1rem;
     }
 
-    .user-info {
-        margin-top: 1rem;
-    }
+
 
     .main-content {
         padding: 1rem;
