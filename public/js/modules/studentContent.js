@@ -126,19 +126,11 @@ export class StudentContentManager {
         chartsContainer.id = 'student-charts-container';
         visualizationContent.appendChild(chartsContainer);
 
-        // Render charts when tab is activated
-        setTimeout(() => {
-            if (typeof window.DetailedCharts !== 'undefined') {
-                window.DetailedCharts.renderStudentDetailedCharts(
-                    student,
-                    attempts,
-                    stats,
-                    'student-charts-container'
-                );
-            } else {
-                chartsContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur: Module de graphiques non chargé</p>';
-            }
-        }, 100);
+        // Store data in the container for lazy rendering
+        chartsContainer.dataset.student = JSON.stringify(student);
+        chartsContainer.dataset.attempts = JSON.stringify(attempts);
+        chartsContainer.dataset.stats = JSON.stringify(stats);
+        chartsContainer.dataset.rendered = 'false';
 
         return visualizationContent;
     }

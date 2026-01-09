@@ -5,6 +5,28 @@
 const DetailedCharts = (function() {
 
     /**
+     * Helper function to check if an attempt is successful
+     * Handles multiple property name variations
+     */
+    function isAttemptSuccessful(attempt) {
+        if (!attempt) return false;
+
+        // Check various possible property names
+        return !!(
+            attempt.is_correct === true ||
+            attempt.is_correct === 1 ||
+            attempt.is_correct === '1' ||
+            attempt.success === true ||
+            attempt.success === 1 ||
+            attempt.success === '1' ||
+            attempt.correct === true ||
+            attempt.correct === 1 ||
+            attempt.passed === true ||
+            attempt.passed === 1
+        );
+    }
+
+    /**
      * Render detailed student performance charts
      * @param {Object} student - Student data
      * @param {Array} attempts - Student's attempts
@@ -14,6 +36,9 @@ const DetailedCharts = (function() {
     function renderStudentDetailedCharts(student, attempts, stats, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
+
+        // Debug logs
+        console.log('📊 Rendering student charts:', { student, attempts, stats });
 
         container.innerHTML = '';
         container.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 1rem;';
@@ -59,12 +84,12 @@ const DetailedCharts = (function() {
         // Calculate cumulative success rate
         let successCount = 0;
         const dataPoints = sortedAttempts.map((attempt, index) => {
-            if (attempt.is_correct || attempt.success) successCount++;
+            if (isAttemptSuccessful(attempt)) successCount++;
             return {
                 index: index + 1,
                 successRate: (successCount / (index + 1)) * 100,
                 date: attempt.timestamp || attempt.date_tentative,
-                isCorrect: attempt.is_correct || attempt.success
+                isCorrect: isAttemptSuccessful(attempt)
             };
         });
 
@@ -196,7 +221,7 @@ const DetailedCharts = (function() {
                 exerciseStats[exName] = { total: 0, success: 0 };
             }
             exerciseStats[exName].total++;
-            if (attempt.is_correct || attempt.success) {
+            if (isAttemptSuccessful(attempt)) {
                 exerciseStats[exName].success++;
             }
         });
@@ -510,7 +535,7 @@ const DetailedCharts = (function() {
         };
 
         students.forEach(student => {
-            const successAttempts = (student.attempts || []).filter(a => a.is_correct || a.success).length;
+            const successAttempts = (student.attempts || []).filter(a => isAttemptSuccessful(a)).length;
             if (successAttempts === 0) {
                 distribution['Aucune réussite']++;
             } else if (successAttempts <= 3) {
@@ -598,7 +623,7 @@ const DetailedCharts = (function() {
         const data = students.slice(0, 10).map(student => ({
             student: student.student_identifier || `Étudiant ${student.student_id}`,
             attempts: (student.attempts || []).length,
-            success: (student.attempts || []).filter(a => a.is_correct || a.success).length
+            success: (student.attempts || []).filter(a => isAttemptSuccessful(a)).length
         }));
 
         const margin = {top: 20, right: 30, bottom: 80, left: 50};
@@ -686,7 +711,7 @@ const DetailedCharts = (function() {
             (student.attempts || []).forEach(attempt => {
                 allAttempts.push({
                     date: new Date(attempt.timestamp || attempt.date_tentative),
-                    success: attempt.is_correct || attempt.success,
+                    success: isAttemptSuccessful(attempt),
                     student: student.student_identifier || `Étudiant ${student.student_id}`
                 });
             });
@@ -823,7 +848,7 @@ const DetailedCharts = (function() {
         // Calculate metrics
         const totalStudents = students.length;
         const studentsWithSuccess = students.filter(s =>
-            (s.attempts || []).some(a => a.is_correct || a.success)
+            (s.attempts || []).some(a => isAttemptSuccessful(a))
         ).length;
         const avgAttempts = students.reduce((sum, s) => sum + (s.attempts || []).length, 0) / totalStudents;
         const successRate = (studentsWithSuccess / totalStudents) * 100;
