@@ -59,61 +59,49 @@ function handleFileSelect(event, type) {
  * IMPORT DES EXERCICES (CORRIGÉ)
  */
 async function importExercises() {
-    console.log("Démarrage importExercises...");
-    if (!currentExercisesData) {
-        showImportStatus('Aucune donnée chargée.', 'error');
-        return;
-    }
+    console.log("Données brutes avant import:", currentExercisesData);
+    if (!currentExercisesData) return;
 
-    // Extraction sécurisée du tableau
-    let list = [];
-    if (Array.isArray(currentExercisesData)) list = currentExercisesData;
-    else if (currentExercisesData.exercises) list = currentExercisesData.exercises;
-    else if (currentExercisesData.data) list = currentExercisesData.data;
+    let list = Array.isArray(currentExercisesData) ? currentExercisesData : (currentExercisesData.exercises || currentExercisesData.data || []);
+    const modal = document.getElementById('importModal');
+    const resourceId = modal?.dataset.resourceId;
 
-    if (list.length === 0) {
-        showImportStatus('Le fichier ne contient aucun exercice valide.', 'error');
-        return;
-    }
-
-    const resourceId = document.getElementById('importModal')?.dataset.resourceId;
     const CHUNK_SIZE = 50;
-    let successCount = 0;
+    for (let i = 0; i < list.length; i += CHUNK_SIZE) {
+        const chunk = list.slice(i, i + CHUNK_SIZE);
 
-    try {
-        for (let i = 0; i < list.length; i += CHUNK_SIZE) {
-            const chunk = list.slice(i, i + CHUNK_SIZE);
-            const progress = Math.min(i + CHUNK_SIZE, list.length);
+        // On s'assure que chaque exercice possède les champs minimums attendus par le PHP
+        const formattedChunk = chunk.map(ex => ({
+            ...ex,
+            resource_id: resourceId || ex.resource_id,
+            // On double les clés au cas où le PHP attend l'un ou l'autre
+            nom: ex.nom || ex.title || "Sans titre",
+            title: ex.title || ex.nom || "Sans titre"
+        }));
 
-            showImportStatus(`Importation : ${progress} / ${list.length} ... <span class="loading-spinner"></span>`, 'warning');
+        const payload = { exercises: formattedChunk };
+        console.log("Envoi du paquet à l'API:", payload);
 
-            const payload = {
-                exercises: chunk.map(ex => ({ ...ex, resource_id: resourceId || ex.resource_id }))
-            };
-
-            console.log(`Envoi du paquet ${i}...`, payload);
-
+        try {
             const response = await fetch('api_import_exercises.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
-            const resultText = await response.text();
-            console.log("Réponse serveur:", resultText);
+            const result = await response.json();
+            console.log("Réponse du serveur pour ce paquet:", result);
 
-            if (!response.ok) throw new Error(`Erreur serveur (${response.status}) : ${resultText}`);
-
-            successCount += chunk.length;
+            if (result.error) {
+                showImportStatus(`Erreur : ${result.error}`, 'error');
+                return;
+            }
+        } catch (e) {
+            console.error("Erreur lors de l'appel API:", e);
         }
-
-        showImportStatus(`✓ Succès ! ${successCount} exercices importés.`, 'success');
-        setTimeout(() => { window.location.reload(); }, 1500);
-
-    } catch (error) {
-        console.error("Erreur fatale:", error);
-        showImportStatus(`Erreur : ${error.message}`, 'error');
     }
+    showImportStatus(`Import terminé. Vérifiez la page.`, 'success');
+    setTimeout(() => window.location.reload(), 2000);
 }
 
 /**
