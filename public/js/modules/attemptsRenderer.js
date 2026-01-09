@@ -4,6 +4,7 @@ export class AttemptsRenderer {
     constructor() {
         this.currentFilter = 'all'; // 'all', 'success', 'failed'
         this.currentSort = 'recent'; // 'recent', 'oldest'
+        this.currentExerciseFilter = 'all'; // 'all' ou exercise_id spécifique
     }
 
     renderAttempts(attempts) {
@@ -89,6 +90,41 @@ export class AttemptsRenderer {
             cursor: 'pointer'
         });
 
+        // Filtre par exercice
+        const exerciseLabel = document.createElement('label');
+        exerciseLabel.textContent = 'Exercice : ';
+        Object.assign(exerciseLabel.style, {
+            fontWeight: 'bold',
+            color: '#2c3e50',
+            marginLeft: '1rem'
+        });
+
+        const exerciseSelect = document.createElement('select');
+        exerciseSelect.id = 'exercise-filter';
+
+        // Extraire les exercices uniques des tentatives
+        const uniqueExercises = new Map();
+        attempts.forEach(attempt => {
+            if (attempt.exercise_id && attempt.exo_name) {
+                uniqueExercises.set(attempt.exercise_id, attempt.exo_name);
+            }
+        });
+
+        // Créer les options du select
+        let exerciseOptions = '<option value="all">Tous les exercices</option>';
+        uniqueExercises.forEach((name, id) => {
+            exerciseOptions += `<option value="${id}">${name}</option>`;
+        });
+        exerciseSelect.innerHTML = exerciseOptions;
+
+        Object.assign(exerciseSelect.style, {
+            padding: '0.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            cursor: 'pointer',
+            minWidth: '150px'
+        });
+
         // Compteur de résultats
         const resultCount = document.createElement('span');
         resultCount.id = 'result-count';
@@ -111,10 +147,18 @@ export class AttemptsRenderer {
             this.displayFilteredAttempts(attempts, container);
         });
 
+        exerciseSelect.addEventListener('change', (e) => {
+            this.currentExerciseFilter = e.target.value;
+            const container = document.getElementById('attempts-list');
+            this.displayFilteredAttempts(attempts, container);
+        });
+
         controlsBar.appendChild(filterLabel);
         controlsBar.appendChild(filterSelect);
         controlsBar.appendChild(sortLabel);
         controlsBar.appendChild(sortSelect);
+        controlsBar.appendChild(exerciseLabel);
+        controlsBar.appendChild(exerciseSelect);
         controlsBar.appendChild(resultCount);
 
         return controlsBar;
@@ -125,10 +169,20 @@ export class AttemptsRenderer {
 
         // Filtrer les tentatives
         let filteredAttempts = attempts.filter(attempt => {
-            if (this.currentFilter === 'all') return true;
-            const isCorrect = attempt.correct === 1 || attempt.correct === '1';
-            if (this.currentFilter === 'success') return isCorrect;
-            if (this.currentFilter === 'failed') return !isCorrect;
+            // Filtre par statut
+            if (this.currentFilter !== 'all') {
+                const isCorrect = attempt.correct === 1 || attempt.correct === '1';
+                if (this.currentFilter === 'success' && !isCorrect) return false;
+                if (this.currentFilter === 'failed' && isCorrect) return false;
+            }
+
+            // Filtre par exercice
+            if (this.currentExerciseFilter !== 'all') {
+                if (String(attempt.exercise_id) !== String(this.currentExerciseFilter)) {
+                    return false;
+                }
+            }
+
             return true;
         });
 
