@@ -75,7 +75,7 @@ function setupEventListeners() {
         const resourceId = Utils.getUrlParameter('resource_id');
 
         // Expose switchListView to global for HTML onclick attributes
-        window.switchListView = function(viewType) {
+        window.switchListView = function(viewType, loadContent = true) {
             // Update the sidebar list content using the manager
             studentListManager.switchView(viewType);
 
@@ -84,59 +84,63 @@ function setupEventListeners() {
             if (viewType === 'students') {
                 document.getElementById('btnStudents').classList.add('active');
 
-                // Load global student stats
-                fetch(`/index.php?action=students_stats&resource_id=${resourceId || ''}`)
-                    .then(r => r.json())
-                    .then(resp => {
-                        if(resp.success) {
-                            // Find the data-zone and clear specific content to avoid overlap
-                            const dataZone = document.querySelector('.data-zone');
+                if (loadContent) {
+                    // Load global student stats
+                    fetch(`/index.php?action=students_stats&resource_id=${resourceId || ''}`)
+                        .then(r => r.json())
+                        .then(resp => {
+                            if(resp.success) {
+                                // Find the data-zone and clear specific content to avoid overlap
+                                const dataZone = document.querySelector('.data-zone');
 
-                            // Clear content but keep structure if needed, or fully reset
-                            dataZone.innerHTML = '';
+                                // Clear content but keep structure if needed, or fully reset
+                                dataZone.innerHTML = '';
 
-                            let chartContainer = document.createElement('div');
-                            chartContainer.id = 'global-student-chart';
-                            chartContainer.className = 'chart-container';
+                                let chartContainer = document.createElement('div');
+                                chartContainer.id = 'global-student-chart';
+                                chartContainer.className = 'chart-container';
 
-                            // Add a placeholder message or title if desired
-                            const title = document.createElement('h2');
-                            title.textContent = 'Statistiques Globales des Étudiants';
-                            title.style.marginBottom = '1rem';
-                            dataZone.appendChild(title);
+                                // Add a placeholder message or title if desired
+                                const title = document.createElement('h2');
+                                title.textContent = 'Statistiques Globales des Étudiants';
+                                title.style.marginBottom = '1rem';
+                                dataZone.appendChild(title);
 
-                            dataZone.appendChild(chartContainer);
+                                dataZone.appendChild(chartContainer);
 
-                            ChartModule.renderStudentChart(resp.data, 'global-student-chart');
-                        }
-                    });
+                                ChartModule.renderStudentChart(resp.data, 'global-student-chart');
+                            }
+                        });
+                }
             } else {
                 document.getElementById('btnExercises').classList.add('active');
 
-                 // Load global exercise stats
-                fetch(`/index.php?action=exercises_stats&resource_id=${resourceId || ''}`)
-                    .then(r => r.json())
-                    .then(resp => {
-                        if(resp.success) {
-                             const dataZone = document.querySelector('.data-zone');
+                 if (loadContent) {
+                     // Load global exercise stats
+                    fetch(`/index.php?action=exercises_stats&resource_id=${resourceId || ''}`)
+                        .then(r => r.json())
+                        .then(resp => {
+                            if(resp.success) {
+                                 const dataZone = document.querySelector('.data-zone');
 
-                             // Clear content to avoid overlap
-                             dataZone.innerHTML = '';
+                                 // Clear content to avoid overlap
+                                 dataZone.innerHTML = '';
 
-                             let chartContainer = document.createElement('div');
-                             chartContainer.id = 'global-exercise-chart';
-                             chartContainer.className = 'chart-container';
+                                 let chartContainer = document.createElement('div');
+                                 chartContainer.id = 'global-exercise-chart';
+                                 chartContainer.className = 'chart-container';
 
-                             const title = document.createElement('h2');
-                             title.textContent = 'Statistiques Globales des Exercices';
-                             title.style.marginBottom = '1rem';
-                             dataZone.appendChild(title);
+                                 const title = document.createElement('h2');
+                                 title.textContent = 'Statistiques Globales des Exercices';
+                                 title.style.marginBottom = '1rem';
+                                 dataZone.appendChild(title);
 
-                             dataZone.appendChild(chartContainer);
+                                 dataZone.appendChild(chartContainer);
 
-                             ChartModule.renderExerciseChart(resp.data, 'global-exercise-chart');
-                        }
-                    });
+                                 ChartModule.renderExerciseChart(resp.data, 'global-exercise-chart');
+                            }
+                        });
+                 }
             }
         };
 

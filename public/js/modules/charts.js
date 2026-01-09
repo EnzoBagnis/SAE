@@ -146,14 +146,19 @@ const ChartModule = (function() {
 
         // Setup margins and dimensions
         const margin = {top: 20, right: 20, bottom: 100, left: 50}; // Larger bottom margin for long names
-        const width = container.offsetWidth - margin.left - margin.right;
-        const height = 300 - margin.top - margin.bottom;
+        const viewBoxWidth = 800;
+        const viewBoxHeight = 400;
+        const width = viewBoxWidth - margin.left - margin.right;
+        const height = viewBoxHeight - margin.top - margin.bottom;
 
-        // Append SVG
+        // Append SVG with viewBox for responsiveness
         const svg = d3.select("#" + containerId)
             .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
+            .attr("viewBox", `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
+            .attr("preserveAspectRatio", "xMidYMid meet")
+            .style("width", "100%")
+            .style("height", "auto")
+            .style("max-height", "400px")
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

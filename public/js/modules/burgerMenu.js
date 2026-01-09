@@ -150,12 +150,12 @@ export class BurgerMenuManager {
 
             link.onclick = (e) => {
                 e.preventDefault();
-                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.id }));
                 this.closeMenu();
-                // Ensure the view is switched to exercises if not already
+                // Ensure the view is switched to exercises if not already, but don't reload content
                 if (window.switchListView) {
-                    window.switchListView('exercises');
+                    window.switchListView('exercises', false);
                 }
+                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.id }));
             };
 
             li.appendChild(link);
