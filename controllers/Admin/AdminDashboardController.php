@@ -130,7 +130,10 @@ class AdminDashboardController extends \BaseController
         $ban_def = $_POST['ban_def'] ?? '';
 
         if ($table == 'B') {$this->updateBanUser($id, $email, $duree_de_ban, $ban_def);}
-        else {$this->firstBanUser($table, $id, $email, $duree_de_ban, $ban_def);}
+        else {
+            $this->userModel->delete($id, $email);
+            $this->firstBanUser($table, $id, $email, $duree_de_ban, $ban_def);
+        }
     }
 
     public function updateBanUser($id, $email, $duree_de_ban, $ban_def)
