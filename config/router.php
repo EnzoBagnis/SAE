@@ -102,6 +102,19 @@ class Router
             case 'admin':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'index');
                 break;
+
+            case 'adminLogin':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'login');
+                } else {
+                    $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'index');
+                }
+                break;
+
+            case 'adminLogout':
+                $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'logout');
+                break;
+
             case 'adminSVU':
                 $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showVerifiedUsers');
                 break;
@@ -343,6 +356,10 @@ class Router
             // ========== STATS - EXERCISES ==========
             case 'exercises_stats':
                 $this->loadNamespacedController('Controllers\User\ExercisesController', 'getStats');
+                break;
+
+            case 'exercise_completion_stats':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getCompletionStats');
                 break;
 
             default:

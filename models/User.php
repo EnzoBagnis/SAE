@@ -19,10 +19,9 @@ class User
      * @param string $email User's email address
      * @param string $password User's password (will be hashed)
      * @param string|null $verificationCode Verification code for email
-     * @param int $isVerified Whether email is verified (0 or 1)
      * @return bool Success status
      */
-    public function create($lastName, $firstName, $email, $password, $verificationCode = null, $isVerified = 0)
+    public function create($lastName, $firstName, $email, $password, $verificationCode = null)
     {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
@@ -36,8 +35,7 @@ class User
             'prenom' => $firstName,
             'mdp' => $hashedPassword,
             'mail' => $email,
-            'code_verif' => $verificationCode,
-            'verifie' => $isVerified
+            'code_verif' => $verificationCode
         ]);
     }
 
@@ -77,15 +75,18 @@ class User
      * @return array|false User data or false if not found
      */
 
-    public function createBanUser($mail, $duree_ban)
+    public function createBanUser($mail, $duree_ban, $ban_def, $table, $id)
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO utilisateurs_bloques (mail, duree_ban, date_de_ban)
-            VALUES (:mail, :duree_ban, CURRENT_TIMESTAMP)"
+            "INSERT INTO utilisateurs_bloques (mail, duree_ban, date_de_ban, ban_def, old_id, old_table)
+            VALUES (:mail, :duree_ban, CURRENT_TIMESTAMP, :ban_def, :id, :table)"
         );
         return $stmt->execute([
             'mail' => $mail,
-            'duree_ban' => $duree_ban
+            'duree_ban' => $duree_ban,
+            'ban_def' => $ban_def,
+            'id' => $id,
+            'table' => $table
         ]);
     }
 
@@ -172,6 +173,18 @@ class User
     public function emailExists($email)
     {
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM utilisateurs WHERE mail = :mail");
+        $stmt->execute(['mail' => $email]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * READ - Check if an email exists
+     * @param string $email Email to check
+     * @return bool True if email exists, false otherwise
+     */
+    public function banExists($email)
+    {
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM utilisateurs_bloques WHERE mail = :mail");
         $stmt->execute(['mail' => $email]);
         return $stmt->fetchColumn() > 0;
     }
@@ -291,16 +304,17 @@ class User
      * @param string $email User's email
      * @return bool Success status
      */
-    public function updateBan($id, $email, $duree_ban)
+    public function updateBan($id, $email, $duree_ban, $ban_def)
     {
         $stmt = $this->pdo->prepare(
             "UPDATE utilisateurs_bloques
-             SET duree_ban = :duree_ban
+             SET duree_ban = :duree_ban AND ban_def = :ban_def
              WHERE id = :id AND mail = :mail"
         );
 
         return $stmt->execute([
             'duree_ban' => $duree_ban,
+            'ban_def' => $ban_def,
             'mail' => $email,
             'id' => $id
         ]);
@@ -326,7 +340,11 @@ class User
         $table = $map[$tableKey];
 
         // Construction de la requête avec nom de table validé
-        $sql = "DELETE FROM {$table} WHERE id = :id";
+        if ($tableKey === 'B') {
+            $sql = "DELETE FROM {$table} WHERE mail = :id";
+        } else {
+            $sql = "DELETE FROM {$table} WHERE id = :id";
+        }
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute(['id' => $id]);
     }
