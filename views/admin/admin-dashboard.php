@@ -116,14 +116,18 @@
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('V', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>', '', '', '')">Modifier</button>
+                                <button class="btn-edit" onclick="openEditPopup('V', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>', '', '', '')">
+                                    Modifier
+                                </button>
 
                                 <a href="index.php?action=adminDeleteUser&table=V&id=<?= urlencode($user['id']) ?>"
                                    class="btn-delete"
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
-                                <button class="btn-ban" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?php echo date('Y-m-d'); ?>', '')">Bannir</button>
+                                <button class="btn-ban" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?php echo date('Y-m-d'); ?>', '')">
+                                    Bloquer
+                                </button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -175,7 +179,7 @@
                                     Supprimer
                                 </a>
                                 <button class="btn-ban" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?php echo date('Y-m-d'); ?>', '')">
-                                    Bannir
+                                    Bloquer
                                 </button>
                                 <?php if ($user['verifie'] == 1): ?>
                                     <a href="index.php?action=adminValidUser&id=<?= urlencode($user['id']) ?>"

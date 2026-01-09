@@ -153,7 +153,7 @@ class AdminDashboardController extends \BaseController
 
     public function firstBanUser($table, $id, $mail, $duree_de_ban, $ban_def)
     {
-        $this->userModel->createBanUser($mail, $duree_de_ban, $ban_def);
+        $this->userModel->createBanUser($mail, $duree_de_ban, $ban_def, $table, $id);
 
         header('Location: index.php?action=adminDeleteUser&table=' . $table . '&id=' . $id);
 

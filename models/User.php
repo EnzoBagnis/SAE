@@ -76,16 +76,18 @@ class User
      * @return array|false User data or false if not found
      */
 
-    public function createBanUser($mail, $duree_ban, $ban_def)
+    public function createBanUser($mail, $duree_ban, $ban_def, $table, $id)
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO utilisateurs_bloques (mail, duree_ban, date_de_ban, ban_def)
-            VALUES (:mail, :duree_ban, CURRENT_TIMESTAMP, :ban_def)"
+            "INSERT INTO utilisateurs_bloques (mail, duree_ban, date_de_ban, ban_def, old_id, old_table)
+            VALUES (:mail, :duree_ban, CURRENT_TIMESTAMP, :ban_def, :id, :table)"
         );
         return $stmt->execute([
             'mail' => $mail,
             'duree_ban' => $duree_ban,
-            'ban_def' => $ban_def
+            'ban_def' => $ban_def,
+            'id' => $id,
+            'table' => $table
         ]);
 
     }
