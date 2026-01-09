@@ -79,7 +79,8 @@ class RegisterController extends \BaseController
             'pending_exists' => 'Un code de vérification a déjà été envoyé à cet email',
             'creation_failed' => 'Erreur lors de l\'inscription',
             'email_send_failed' => 'Erreur lors de l\'envoi de l\'email',
-            'empty_fields' => 'Tous les champs sont requis'
+            'empty_fields' => 'Tous les champs sont requis',
+            'email_ban' => 'Cet email est bloqué',
         ];
 
         return $messages[$errorCode] ?? 'Une erreur est survenue';
