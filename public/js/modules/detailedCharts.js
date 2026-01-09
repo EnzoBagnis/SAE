@@ -446,8 +446,9 @@ const DetailedCharts = (function() {
             return;
         }
 
-        const correctAttempts = stats.correct_attempts || stats.success_count || 0;
-        const totalAttempts = stats.total_attempts || 0;
+        // Convert to numbers to avoid string concatenation
+        const correctAttempts = parseInt(stats.correct_attempts || stats.success_count || 0);
+        const totalAttempts = parseInt(stats.total_attempts || 0);
         const failedAttempts = totalAttempts - correctAttempts;
 
         const data = [
@@ -460,7 +461,11 @@ const DetailedCharts = (function() {
             correctAttempts,
             failedAttempts,
             totalAttempts,
-            sum: correctAttempts + failedAttempts
+            sum: correctAttempts + failedAttempts,
+            types: {
+                correctAttempts: typeof correctAttempts,
+                failedAttempts: typeof failedAttempts
+            }
         });
 
         const viewBoxSize = 300;
