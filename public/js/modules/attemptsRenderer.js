@@ -8,6 +8,9 @@ export class AttemptsRenderer {
     }
 
     renderAttempts(attempts) {
+        // Réinitialiser le filtre d'exercices pour chaque nouvel étudiant
+        this.currentExerciseFilter = 'all';
+
         const attemptsTitle = document.createElement('h3');
         attemptsTitle.textContent = `Historique des tentatives (${attempts.length})`;
         attemptsTitle.style.marginTop = '2rem';
@@ -119,6 +122,9 @@ export class AttemptsRenderer {
             exerciseOptions += `<option value="${id}">${displayText}</option>`;
         });
         exerciseSelect.innerHTML = exerciseOptions;
+
+        // S'assurer que la valeur sélectionnée correspond au filtre actuel (réinitialisé à 'all')
+        exerciseSelect.value = this.currentExerciseFilter;
 
         Object.assign(exerciseSelect.style, {
             padding: '0.5rem',
