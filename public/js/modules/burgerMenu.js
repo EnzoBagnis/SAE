@@ -81,6 +81,14 @@ export class BurgerMenuManager {
 
         submenu.classList.toggle('active');
         arrow.classList.toggle('rotated');
+
+        // Si le sous-menu s'ouvre, afficher les graphes globaux des étudiants
+        // tout en GARDANT le menu burger ouvert
+        if (submenu.classList.contains('active')) {
+            if (window.switchListView) {
+                window.switchListView('students', true);
+            }
+        }
     }
 
     toggleExerciseSubmenu(event) {
@@ -91,6 +99,14 @@ export class BurgerMenuManager {
         if (submenu && arrow) {
             submenu.classList.toggle('active');
             arrow.classList.toggle('rotated');
+
+            // Si le sous-menu s'ouvre, afficher les graphes globaux des exercices
+            // tout en GARDANT le menu burger ouvert
+            if (submenu.classList.contains('active')) {
+                if (window.switchListView) {
+                    window.switchListView('exercises', true);
+                }
+            }
         }
     }
 
@@ -111,8 +127,13 @@ export class BurgerMenuManager {
 
             link.onclick = (e) => {
                 e.preventDefault();
-                window.dispatchEvent(new CustomEvent('studentSelected', { detail: student.id }));
                 this.closeMenu();
+                // Ensure the view is switched to students if not already, but don't reload content
+                // as we are about to load a specific student
+                if (window.switchListView) {
+                    window.switchListView('students', false);
+                }
+                window.dispatchEvent(new CustomEvent('studentSelected', { detail: student.id }));
             };
 
             li.appendChild(link);
@@ -141,15 +162,17 @@ export class BurgerMenuManager {
             const link = document.createElement('a');
             link.href = '#';
             link.textContent = exercise.funcname || exercise.exo_name || 'Exercice sans nom';
-            link.dataset.exerciseId = exercise.id;
+            link.dataset.exerciseId = exercise.exercise_id;
             link.className = 'burger-submenu-link';
 
             link.onclick = (e) => {
                 e.preventDefault();
-                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.id }));
                 this.closeMenu();
-                // Also switch view to exercises if not already
-                window.switchListView('exercises');
+                // Ensure the view is switched to exercises if not already, but don't reload content
+                if (window.switchListView) {
+                    window.switchListView('exercises', false);
+                }
+                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.exercise_id }));
             };
 
             li.appendChild(link);

@@ -106,7 +106,7 @@ export class StudentContentManager {
         rawDataContent.appendChild(attemptsTitle);
         rawDataContent.appendChild(attemptsContainer);
 
-        const visualizationContent = this.createVisualizationContent();
+        const visualizationContent = this.createVisualizationContent(student, attempts, stats);
 
         dataZone.appendChild(rawDataContent);
         dataZone.appendChild(visualizationContent);
@@ -115,24 +115,36 @@ export class StudentContentManager {
         if (mainContent) mainContent.scrollTop = 0;
     }
 
-    createVisualizationContent() {
+    createVisualizationContent(student, attempts, stats) {
         const visualizationContent = document.createElement('div');
         visualizationContent.id = 'visualization-content';
         visualizationContent.className = 'tab-content';
         visualizationContent.style.display = 'none';
 
-        const placeholder = document.createElement('div');
-        placeholder.style.textAlign = 'center';
-        placeholder.style.padding = '3rem 1rem';
-        placeholder.style.color = '#7f8c8d';
-        placeholder.style.fontSize = '1.1rem';
-        placeholder.innerHTML = `
-            <div style="margin-bottom: 1rem; font-size: 3rem;">📈</div>
-            <div style="font-weight: 600; margin-bottom: 0.5rem; color: #2c3e50;">Visualisation des données</div>
-            <div>Cet espace est prêt pour votre visualisation personnalisée.</div>
-            <div style="margin-top: 1rem; font-size: 0.9rem;">Les données sont disponibles et peuvent être affichées sous forme de graphiques.</div>
-        `;
-        visualizationContent.appendChild(placeholder);
+        // Create container for charts
+        const chartsContainer = document.createElement('div');
+        chartsContainer.id = 'student-charts-container';
+        visualizationContent.appendChild(chartsContainer);
+
+        // Store data in the container for lazy rendering
+        try {
+            console.log('📊 Storing data for charts:', { student, attempts, stats });
+
+            // Ensure data is valid before stringifying
+            const safeStudent = student || {};
+            const safeAttempts = Array.isArray(attempts) ? attempts : [];
+            const safeStats = stats || { total_attempts: 0, correct_attempts: 0, success_rate: 0 };
+
+            chartsContainer.dataset.student = JSON.stringify(safeStudent);
+            chartsContainer.dataset.attempts = JSON.stringify(safeAttempts);
+            chartsContainer.dataset.stats = JSON.stringify(safeStats);
+            chartsContainer.dataset.rendered = 'false';
+
+            console.log('✅ Data stored successfully');
+        } catch (error) {
+            console.error('❌ Erreur de sérialisation des données:', error);
+            chartsContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur: Impossible de sérialiser les données</p>';
+        }
 
         return visualizationContent;
     }
@@ -209,31 +221,108 @@ export class StudentContentManager {
         exerciseInfo.innerHTML = infoHtml || 'Aucune description disponible';
         dataZone.appendChild(exerciseInfo);
 
+        // Create tabs for exercise view
+        const exerciseTabsContainer = document.createElement('div');
+        exerciseTabsContainer.className = 'tabs-container';
+        exerciseTabsContainer.innerHTML = `
+            <div class="tabs-header" style="display: flex; gap: 0.5rem; border-bottom: 2px solid #ecf0f1; margin-bottom: 1.5rem;">
+                <button class="tab-button active" data-tab="exercise-raw-data" style="padding: 0.75rem 1.5rem; background: transparent; border: none; border-bottom: 3px solid #3498db; color: #3498db; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                    Données brutes
+                </button>
+                <button class="tab-button" data-tab="exercise-visualization" style="padding: 0.75rem 1.5rem; background: transparent; border: none; border-bottom: 3px solid transparent; color: #7f8c8d; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                    📊 Visualisation
+                </button>
+            </div>
+        `;
+        dataZone.appendChild(exerciseTabsContainer);
+
+        // Raw data tab content
+        const rawDataTab = document.createElement('div');
+        rawDataTab.id = 'exercise-raw-data';
+        rawDataTab.className = 'tab-content active';
+
         // Titre section étudiants
         const studentsHeader = document.createElement('h3');
         studentsHeader.style.marginBottom = '1rem';
         studentsHeader.style.color = '#2c3e50';
         studentsHeader.textContent = `Étudiants ayant tenté cet exercice (${students ? students.length : 0})`;
-        dataZone.appendChild(studentsHeader);
+        rawDataTab.appendChild(studentsHeader);
 
         if (!students || students.length === 0) {
             const noStudents = document.createElement('p');
             noStudents.className = 'placeholder-message';
             noStudents.textContent = 'Aucune tentative pour cet exercice';
-            dataZone.appendChild(noStudents);
-            return;
+            rawDataTab.appendChild(noStudents);
+        } else {
+            // Container des étudiants
+            const studentsContainer = document.createElement('div');
+            studentsContainer.className = 'students-attempts-list';
+
+            students.forEach((student) => {
+                const studentCard = this.createStudentAttemptCard(student, exercise);
+                studentsContainer.appendChild(studentCard);
+            });
+
+            rawDataTab.appendChild(studentsContainer);
         }
 
-        // Container des étudiants
-        const studentsContainer = document.createElement('div');
-        studentsContainer.className = 'students-attempts-list';
+        dataZone.appendChild(rawDataTab);
 
-        students.forEach((student) => {
-            const studentCard = this.createStudentAttemptCard(student, exercise);
-            studentsContainer.appendChild(studentCard);
+        // Visualization tab content
+        const visualizationTab = document.createElement('div');
+        visualizationTab.id = 'exercise-visualization';
+        visualizationTab.className = 'tab-content';
+        visualizationTab.style.display = 'none';
+
+        const chartsContainer = document.createElement('div');
+        chartsContainer.id = 'exercise-charts-container';
+        visualizationTab.appendChild(chartsContainer);
+
+        dataZone.appendChild(visualizationTab);
+
+        // Add tab switching logic
+        const tabButtons = exerciseTabsContainer.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.getAttribute('data-tab');
+
+                // Update button states
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.style.borderBottomColor = 'transparent';
+                    btn.style.color = '#7f8c8d';
+                });
+                button.classList.add('active');
+                button.style.borderBottomColor = '#3498db';
+                button.style.color = '#3498db';
+
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.style.display = 'none';
+                    tab.classList.remove('active');
+                });
+
+                const targetContent = document.getElementById(targetTab);
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    targetContent.classList.add('active');
+
+                    // Render charts when visualization tab is opened
+                    if (targetTab === 'exercise-visualization' && !chartsContainer.hasAttribute('data-rendered')) {
+                        chartsContainer.setAttribute('data-rendered', 'true');
+                        if (typeof window.DetailedCharts !== 'undefined') {
+                            window.DetailedCharts.renderExerciseDetailedCharts(
+                                exercise,
+                                students,
+                                'exercise-charts-container'
+                            );
+                        } else {
+                            chartsContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur: Module de graphiques non chargé</p>';
+                        }
+                    }
+                }
+            });
         });
-
-        dataZone.appendChild(studentsContainer);
 
         const mainContent = document.querySelector('.main-content');
         if (mainContent) mainContent.scrollTop = 0;
