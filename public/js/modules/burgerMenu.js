@@ -127,12 +127,13 @@ export class BurgerMenuManager {
 
             link.onclick = (e) => {
                 e.preventDefault();
-                window.dispatchEvent(new CustomEvent('studentSelected', { detail: student.id }));
                 this.closeMenu();
-                // Ensure the view is switched to students if not already
+                // Ensure the view is switched to students if not already, but don't reload content
+                // as we are about to load a specific student
                 if (window.switchListView) {
-                    window.switchListView('students');
+                    window.switchListView('students', false);
                 }
+                window.dispatchEvent(new CustomEvent('studentSelected', { detail: student.id }));
             };
 
             li.appendChild(link);
