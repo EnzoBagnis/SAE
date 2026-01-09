@@ -310,8 +310,208 @@ const ChartModule = (function() {
         });
     }
 
+    /**
+     * Render exercise completion chart (done vs not done)
+     * @param {Object} data - Object with completed and total counts
+     * @param {string} containerId - ID of the container element
+     */
+    function renderExerciseCompletionChart(data, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.innerHTML = '<h3>Progression des exercices</h3>';
+
+        if (!data || typeof data.total === 'undefined') {
+            container.innerHTML += '<p>Aucune donnée disponible.</p>';
+            return;
+        }
+
+        const completed = data.completed || 0;
+        const notCompleted = data.total - completed;
+        const total = data.total || 0;
+
+        if (total === 0) {
+            container.innerHTML += '<p>Aucun exercice disponible.</p>';
+            return;
+        }
+
+        // Setup dimensions
+        const margin = {top: 40, right: 20, bottom: 60, left: 60};
+        const viewBoxWidth = 600;
+        const viewBoxHeight = 400;
+        const width = viewBoxWidth - margin.left - margin.right;
+        const height = viewBoxHeight - margin.top - margin.bottom;
+
+        // Append SVG with viewBox for responsiveness
+        const svg = d3.select("#" + containerId)
+            .append("svg")
+            .attr("viewBox", `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
+            .attr("preserveAspectRatio", "xMidYMid meet")
+            .style("width", "100%")
+            .style("height", "auto")
+            .style("max-height", "400px")
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        // Prepare data for stacked bar chart
+        const chartData = [
+            { category: 'Exercices', completed: completed, notCompleted: notCompleted }
+        ];
+
+        // X Axis
+        const x = d3.scaleBand()
+            .range([0, width])
+            .domain(['Exercices'])
+            .padding(0.3);
+
+        svg.append("g")
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .style("font-size", "14px")
+            .style("font-weight", "bold");
+
+        // Y Axis
+        const y = d3.scaleLinear()
+            .domain([0, total])
+            .range([height, 0]);
+
+        svg.append("g")
+            .call(d3.axisLeft(y).ticks(Math.min(total, 10)));
+
+        // Add Y axis label
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left + 10)
+            .attr("x", 0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .style("font-size", "12px")
+            .text("Nombre d'exercices");
+
+        // Tooltip
+        const tooltip = d3.select("#" + containerId)
+            .append("div")
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("background-color", "rgba(0,0,0,0.8)")
+            .style("color", "#fff")
+            .style("padding", "8px")
+            .style("border-radius", "4px")
+            .style("font-size", "12px")
+            .style("pointer-events", "none");
+
+        // Stack the data
+        const stack = d3.stack()
+            .keys(['completed', 'notCompleted']);
+
+        const stackedData = stack(chartData);
+
+        // Color scale
+        const colors = {
+            completed: '#66bb6a',
+            notCompleted: '#ef5350'
+        };
+
+        // Draw stacked bars
+        svg.selectAll("g.layer")
+            .data(stackedData)
+            .enter()
+            .append("g")
+            .attr("class", "layer")
+            .attr("fill", d => colors[d.key])
+            .selectAll("rect")
+            .data(d => d)
+            .enter()
+            .append("rect")
+            .attr("x", d => x('Exercices'))
+            .attr("y", d => y(d[1]))
+            .attr("height", d => y(d[0]) - y(d[1]))
+            .attr("width", x.bandwidth())
+            .style("cursor", "pointer")
+            .on("mouseover", function(event, d) {
+                const key = d3.select(this.parentNode).datum().key;
+                const value = d[1] - d[0];
+                const label = key === 'completed' ? 'Exercices faits' : 'Exercices non faits';
+                const percentage = ((value / total) * 100).toFixed(1);
+
+                d3.select(this).attr("opacity", 0.8);
+                tooltip.style("visibility", "visible")
+                       .html(`<strong>${label}</strong><br>` +
+                             `Nombre: ${value}<br>` +
+                             `Pourcentage: ${percentage}%`);
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("top", (event.pageY - 10) + "px")
+                       .style("left", (event.pageX + 10) + "px");
+            })
+            .on("mouseout", function() {
+                d3.select(this).attr("opacity", 1);
+                tooltip.style("visibility", "hidden");
+            });
+
+        // Add value labels on bars
+        svg.selectAll("g.layer")
+            .selectAll("text")
+            .data(d => d)
+            .enter()
+            .append("text")
+            .attr("x", d => x('Exercices') + x.bandwidth() / 2)
+            .attr("y", d => y(d[1]) + (y(d[0]) - y(d[1])) / 2)
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .style("fill", "#fff")
+            .style("font-weight", "bold")
+            .style("font-size", "16px")
+            .style("text-shadow", "1px 1px 2px rgba(0,0,0,0.8)")
+            .text(d => {
+                const value = d[1] - d[0];
+                return value > 0 ? value : '';
+            });
+
+        // Add title
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", -20)
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("font-weight", "bold")
+            .text(`Total: ${completed} / ${total} exercices`);
+
+        // Add legend
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(${width - 180}, -25)`);
+
+        const legendData = [
+            { color: '#66bb6a', label: 'Exercices faits', key: 'completed' },
+            { color: '#ef5350', label: 'Exercices non faits', key: 'notCompleted' }
+        ];
+
+        legendData.forEach((item, i) => {
+            const legendRow = legend.append("g")
+                .attr("transform", `translate(0, ${i * 20})`);
+
+            legendRow.append("rect")
+                .attr("width", 14)
+                .attr("height", 14)
+                .attr("fill", item.color)
+                .attr("rx", 2);
+
+            legendRow.append("text")
+                .attr("x", 20)
+                .attr("y", 7)
+                .attr("dy", ".35em")
+                .style("font-size", "11px")
+                .style("fill", "#2c3e50")
+                .style("font-weight", "500")
+                .text(item.label);
+        });
+    }
+
     return {
         renderStudentChart: renderStudentChart,
-        renderExerciseChart: renderExerciseChart
+        renderExerciseChart: renderExerciseChart,
+        renderExerciseCompletionChart: renderExerciseCompletionChart
     };
 })();
