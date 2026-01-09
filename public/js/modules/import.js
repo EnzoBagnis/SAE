@@ -206,89 +206,66 @@ async function importExercises() {
         return;
     }
 
-    showImportStatus('Import en cours... <span class="loading-spinner"></span>', 'warning');
+    // Extraction de la liste des exercices
+    let exercisesList = [];
+    if (Array.isArray(currentExercisesData)) {
+        exercisesList = currentExercisesData;
+    } else if (currentExercisesData.exercises && Array.isArray(currentExercisesData.exercises)) {
+        exercisesList = currentExercisesData.exercises;
+    } else {
+        showImportStatus('Format de données non supporté.', 'error');
+        return;
+    }
+
+    const modal = document.getElementById('importModal');
+    const resourceId = modal && modal.dataset.resourceId;
+
+    // Paramètres du découpage
+    const CHUNK_SIZE = 50; // On envoie 50 exercices à la fois
+    const total = exercisesList.length;
+    let successCount = 0;
+
+    showImportStatus(`Préparation de l'import (${total} exercices)...`, 'warning');
 
     try {
-        // Préparer le payload attendu par le serveur
-        let payload;
-        if (Array.isArray(currentExercisesData)) {
-            payload = { exercises: currentExercisesData };
-        } else if (typeof currentExercisesData === 'object' && currentExercisesData !== null) {
-            // Si l'objet contient déjà la clé exercises, l'utiliser sinon tenter de l'envelopper
-            if (Array.isArray(currentExercisesData.exercises)) {
-                payload = currentExercisesData;
-            } else {
-                // Tentative : s'il s'agit d'un tableau sous une autre clé commune, essayer de le détecter
-                const possibleKeys = ['data', 'exos', 'exercises_list'];
-                let found = false;
-                for (const k of possibleKeys) {
-                    if (Array.isArray(currentExercisesData[k])) {
-                        payload = { exercises: currentExercisesData[k] };
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) payload = { exercises: [currentExercisesData] };
-            }
-        } else {
-            throw new Error('Format des données non reconnu');
-        }
+        for (let i = 0; i < total; i += CHUNK_SIZE) {
+            const chunk = exercisesList.slice(i, i + CHUNK_SIZE);
 
-        // Vérifier si un resourceId est défini dans le modal
-        const modal = document.getElementById('importModal');
-        const resourceId = modal && modal.dataset.resourceId;
-
-        // Si resourceId existe, l'injecter dans chaque exercice
-        if (resourceId && payload.exercises) {
-            payload.exercises = payload.exercises.map(ex => ({
+            // Injecter resource_id dans chaque exercice du paquet
+            const processedChunk = chunk.map(ex => ({
                 ...ex,
-                resource_id: resourceId
+                resource_id: resourceId || ex.resource_id
             }));
+
+            showImportStatus(`Import en cours : ${i} à ${Math.min(i + CHUNK_SIZE, total)} / ${total} <span class="loading-spinner"></span>`, 'warning');
+
+            const response = await fetch('api_import_exercises.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exercises: processedChunk })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erreur au paquet ${i}: ${errorText}`);
+            }
+
+            successCount += processedChunk.length;
         }
 
-        // Appel API pour importer les exercices
-        const response = await fetch('api_import_exercises.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const text = await response.text();
-        let result = null;
-        try { result = JSON.parse(text); } catch (e) { /* ignore, will handle below */ }
-
-        if (response.ok) {
-            const count = (result && (result.count || result.success_count)) || (payload.exercises ? payload.exercises.length : 0);
-            showImportStatus(`✓ Import réussi ! ${count} exercice(s) importé(s).`, 'success');
-
-            // Rafraîchir la liste des TPs après 2 secondes
-            setTimeout(() => {
-                closeImportModal();
-                if (typeof loadTPList === 'function') {
-                    loadTPList();
-                }
-                window.location.reload();
-            }, 2000);
-        } else {
-            // essayer de récupérer le message d'erreur du serveur
-            const serverMsg = (result && (result.error || (result.errors && result.errors.join('; ')))) || text || 'Erreur lors de l\'import';
-            throw new Error(serverMsg);
-        }
-    } catch (error) {
-        console.error('Erreur import exercices:', error);
-
-        // Mode démo: stocker localement
-        console.log('Mode démo activé - Données stockées localement');
-        localStorage.setItem('exercises_import', JSON.stringify(currentExercisesData));
-        showImportStatus(`Erreur serveur ou réseau: ${error.message}. Données sauvegardées localement.`, 'error');
+        showImportStatus(`✓ Import réussi ! ${successCount} exercice(s) importé(s).`, 'success');
 
         setTimeout(() => {
             closeImportModal();
+            window.location.reload();
         }, 2000);
+
+    } catch (error) {
+        console.error('Erreur import exercices:', error);
+        showImportStatus(`Erreur lors de l'importation : ${error.message}`, 'error');
     }
 }
+
 
 /**
  * Importe les tentatives
@@ -299,124 +276,71 @@ async function importAttempts() {
         return;
     }
 
-    showImportStatus('Import en cours... <span class="loading-spinner"></span>', 'warning');
+    let attemptsList = [];
+    let datasetInfo = null;
+
+    // Extraction des données
+    if (Array.isArray(currentAttemptsData)) {
+        attemptsList = currentAttemptsData;
+    } else if (typeof currentAttemptsData === 'object') {
+        attemptsList = currentAttemptsData.attempts || currentAttemptsData.data || [];
+        datasetInfo = currentAttemptsData.dataset_info || null;
+    }
+
+    const modal = document.getElementById('importModal');
+    let resourceId = modal && modal.dataset.resourceId;
+    if (!resourceId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        resourceId = urlParams.get('resource_id') || urlParams.get('id');
+    }
+
+    const CHUNK_SIZE = 100; // Les tentatives sont plus légères, on peut en envoyer 100
+    const total = attemptsList.length;
+    let addedTotal = 0;
 
     try {
-        // Préparer le payload attendu par le serveur
-        let payload;
-        if (Array.isArray(currentAttemptsData)) {
-            payload = { attempts: currentAttemptsData };
-        } else if (typeof currentAttemptsData === 'object' && currentAttemptsData !== null) {
-            if (Array.isArray(currentAttemptsData.attempts)) {
-                payload = currentAttemptsData;
-            } else {
-                // Si l'objet contient dataset_info + attempts sous d'autres clés
-                const possibleKeys = ['data', 'attempts_list'];
-                let found = false;
-                for (const k of possibleKeys) {
-                    if (Array.isArray(currentAttemptsData[k])) {
-                        payload = { attempts: currentAttemptsData[k] };
-                        if (currentAttemptsData.dataset_info) payload.dataset_info = currentAttemptsData.dataset_info;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) payload = { attempts: [currentAttemptsData] };
-            }
-        } else {
-            throw new Error('Format des données non reconnu');
-        }
+        for (let i = 0; i < total; i += CHUNK_SIZE) {
+            const chunk = attemptsList.slice(i, i + CHUNK_SIZE);
 
-        // Vérifier si un resourceId est défini dans le modal
-        const modal = document.getElementById('importModal');
-        let resourceId = modal && modal.dataset.resourceId;
+            const payload = {
+                attempts: chunk,
+                resource_id: resourceId,
+                is_chunk: true // Optionnel : pour informer le PHP que c'est un envoi partiel
+            };
 
-        // Si pas dans le modal, vérifier l'URL
-        if (!resourceId) {
-            const urlParams = new URLSearchParams(window.location.search);
-            resourceId = urlParams.get('resource_id') || urlParams.get('id');
-        }
-
-        // Si resourceId existe, l'ajouter au payload (peut être utile pour lier au dataset ou autre)
-        if (resourceId) {
-            payload.resource_id = resourceId;
-        }
-
-        // Construire l'URL avec l'ID de ressource si présent
-        let url = 'api_import_attempts.php';
-        if (resourceId) {
-            url += `?id=${resourceId}`;
-        }
-
-        // Appel API pour importer les tentatives
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const text = await response.text();
-        let result = null;
-        try { result = JSON.parse(text); } catch (e) { /* ignore */ }
-
-        if (response.ok) {
-            let msg = `✓ Import réussi !`;
-            if (result) {
-                if (result.added_count !== undefined) {
-                    msg += ` ${result.added_count} ajoutée(s)`;
-                }
-                if (result.skipped_count !== undefined && result.skipped_count > 0) {
-                    msg += `, ${result.skipped_count} ignorée(s) (déjà existantes)`;
-                }
-                if (result.error_count !== undefined && result.error_count > 0) {
-                    msg += `, ${result.error_count} erreur(s)`;
-                    if (result.errors && result.errors.length > 0) {
-                        msg += `<br><small style="color:red">Erreur (1ère): ${result.errors[0]}</small>`;
-                    }
-                }
-            } else {
-                const count = (payload.attempts ? payload.attempts.length : 0);
-                msg += ` ${count} tentative(s) traitée(s).`;
+            // On envoie les infos de dataset uniquement avec le premier paquet
+            if (i === 0 && datasetInfo) {
+                payload.dataset_info = datasetInfo;
             }
 
-            showImportStatus(msg, 'success');
+            showImportStatus(`Import des tentatives : ${i} / ${total} <span class="loading-spinner"></span>`, 'warning');
 
-            // Afficher debug info si disponible
-            if (result.debug_info) {
-                console.log('Debug Import:', result.debug_info);
-                if (result.debug_info.resolved_identifier && result.debug_info.resolved_identifier.startsWith('student_')) {
-                    alert("Attention : L'import n'a pas trouvé d'identifiant utilisateur dans le fichier JSON.\n" +
-                          "Clés trouvées dans la 1ère tentative : " + result.debug_info.first_attempt_keys.join(', ') + "\n" +
-                          "Identifiant généré : " + result.debug_info.resolved_identifier);
-                }
+            const response = await fetch(`api_import_attempts.php${resourceId ? '?id='+resourceId : ''}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur serveur au paquet débutant à ${i}`);
             }
 
-            // Fermer le modal après 3 secondes pour laisser le temps de lire
-            setTimeout(() => {
-                closeImportModal();
-                // Recharger la page pour afficher les nouvelles données
-                window.location.reload();
-            }, 3000);
-        } else {
-            const serverMsg = (result && (result.error || (result.errors && result.errors.join('; ')))) || text || 'Erreur lors de l\'import';
-            throw new Error(serverMsg);
+            const result = await response.json();
+            addedTotal += (result.added_count || 0);
         }
-    } catch (error) {
-        console.error('Erreur import tentatives:', error);
 
-        // Mode démo: stocker localement
-        console.log('Mode démo activé - Données stockées localement');
-        localStorage.setItem('attempts_import', JSON.stringify(currentAttemptsData));
-        showImportStatus(`Erreur serveur ou réseau: ${error.message}. Données sauvegardées localement.`, 'error');
+        showImportStatus(`✓ Import terminé ! ${addedTotal} nouvelles tentatives ajoutées.`, 'success');
 
         setTimeout(() => {
             closeImportModal();
-        }, 2000);
+            window.location.reload();
+        }, 2500);
+
+    } catch (error) {
+        console.error('Erreur import tentatives:', error);
+        showImportStatus(`Erreur : ${error.message}`, 'error');
     }
 }
-
 /**
  * Affiche un message de statut
  */
