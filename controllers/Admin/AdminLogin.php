@@ -22,8 +22,7 @@ class AdminLogin extends \BaseController
             $ID = $_POST['ID'];
             $mdp = $_POST['mdp'];
 
-            // TODO: Récupérer les identifiants depuis le .env (ex: ADMIN_EMAIL, ADMIN_PASSWORD)
-            // Pour l'instant, logique fictive ou simplifiée :
+            // Récupération des identifiants depuis le .env
             $envPath = __DIR__ . '/../../../config/.env';
             if (file_exists($envPath)) {
                 $env = parse_ini_file($envPath);

@@ -21,7 +21,10 @@
         <a href="#">Mentions légales</a>
     </nav>
     <div class="user-info">
-        <span><?= htmlspecialchars($_SESSION['prenom'] ?? 'Admin') ?> <?= htmlspecialchars($_SESSION['nom'] ?? '') ?></span>
+        <span>
+            <?= htmlspecialchars($_SESSION['prenom'] ?? 'Admin') ?>
+            <?= htmlspecialchars($_SESSION['nom'] ?? '') ?>
+        </span>
         <a href="/index.php?action=adminLogout" class="btn-logout">Déconnexion</a>
     </div>
 </header>
@@ -112,7 +115,13 @@
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('V', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>', '', '', '')">
+                                <button class="btn-edit"
+                                    onclick="openEditPopup('V',
+                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '<?= htmlspecialchars($user['nom']) ?>',
+                                        '<?= htmlspecialchars($user['prenom']) ?>',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
+                                        '', '', '')">
                                     Modifier
                                 </button>
 
@@ -121,7 +130,14 @@
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
-                                <button class="btn-ban" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?php echo date('Y-m-d'); ?>', '')">
+                                <button class="btn-ban"
+                                    onclick="openEditPopup('B',
+                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '', '',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
+                                        '',
+                                        '<?php echo date('Y-m-d'); ?>',
+                                        '')">
                                     Bloquer
                                 </button>
                             </td>
@@ -166,7 +182,14 @@
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('P', '<?= htmlspecialchars($user['id']) ?>', '<?= htmlspecialchars($user['nom']) ?>', '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['mail']) ?>', '<?= htmlspecialchars($user['verifie']) ?>', '', '')">
+                                <button class="btn-edit"
+                                    onclick="openEditPopup('P',
+                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '<?= htmlspecialchars($user['nom']) ?>',
+                                        '<?= htmlspecialchars($user['prenom']) ?>',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
+                                        '<?= htmlspecialchars($user['verifie']) ?>',
+                                        '', '')">
                                     Modifier
                                 </button>
                                 <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
@@ -174,7 +197,14 @@
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
-                                <button class="btn-ban" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?php echo date('Y-m-d'); ?>', '')">
+                                <button class="btn-ban"
+                                    onclick="openEditPopup('B',
+                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '', '',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
+                                        '',
+                                        '<?php echo date('Y-m-d'); ?>',
+                                        '')">
                                     Bloquer
                                 </button>
                                 <?php if ($user['verifie'] == 1) : ?>
@@ -224,7 +254,16 @@
                                     <?php endif; ?>
                             </td>-->
                             <td class="actions">
-                                <button class="btn-edit" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?= htmlspecialchars($user['date_de_ban']) ?>', '<?= htmlspecialchars($user['duree_ban']) ?>')">Modifier</button>
+                                <button class="btn-edit"
+                                    onclick="openEditPopup('B',
+                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '', '',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
+                                        '',
+                                        '<?= htmlspecialchars($user['date_de_ban']) ?>',
+                                        '<?= htmlspecialchars($user['duree_ban']) ?>')">
+                                    Modifier
+                                </button>
 
                                 <a href="index.php?action=adminDeleteUser&table=B&id=<?= urlencode($user['mail']) ?>"
                                    class="btn-delete"
