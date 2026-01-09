@@ -97,7 +97,7 @@ class User
      * @param string $email User's email address
      * @return array|false User data or false if not found
      */
-    public function  findByEmail($email)
+    public function findByEmail($email)
     {
         $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE mail = :mail");
         $stmt->execute(['mail' => $email]);
