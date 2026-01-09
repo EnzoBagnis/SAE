@@ -502,14 +502,14 @@ const DetailedCharts = (function() {
             .style('fill', 'white')
             .text(d => d.data.value > 0 ? d.data.value : '');
 
-        // Legend with percentages
+        // Legend with percentages - positioned bottom left
         const total = data.reduce((sum, d) => sum + d.value, 0);
         const legend = svg.selectAll('.legend')
             .data(data)
             .enter()
             .append('g')
             .attr('class', 'legend')
-            .attr('transform', (d, i) => `translate(${radius + 20},${-radius + i * 30})`);
+            .attr('transform', (d, i) => `translate(${-radius + 10},${radius - 60 + i * 30})`);
 
         legend.append('rect')
             .attr('width', 18)
@@ -702,9 +702,6 @@ const DetailedCharts = (function() {
 
         // Chart 3: Success Timeline
         renderExerciseSuccessTimeline(students, container);
-
-        // Chart 4: Difficulty Analysis
-        renderDifficultyAnalysis(students, container);
     }
 
     /**
