@@ -57,14 +57,13 @@ class Student
                 $stmt = $this->db->prepare($query);
                 $stmt->execute();
             } else {
-                // Récupérer TOUS les étudiants, même ceux sans tentatives pour cette ressource
-                // Utilisation de LEFT JOIN pour inclure tous les étudiants
+                // Récupérer les étudiants du dataset lié à la ressource
+                // Inclut TOUS les étudiants du dataset, même ceux sans tentatives
                 $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
                          "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
                          "FROM students s " .
                          "JOIN datasets d ON s.dataset_id = d.dataset_id " .
-                         "LEFT JOIN attempts a ON s.student_id = a.student_id " .
-                         "LEFT JOIN exercises e ON a.exercise_id = e.exercise_id AND e.resource_id = :resource_id " .
+                         "WHERE s.dataset_id = (SELECT dataset_id FROM resources WHERE resource_id = :resource_id) " .
                          "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
                 $stmt = $this->db->prepare($query);
                 $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
