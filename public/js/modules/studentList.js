@@ -63,16 +63,20 @@ export class StudentListManager {
             const result = await response.json();
 
             if (result.success) {
-                // Trier par ID numérique
+                // Fonction pour extraire le numéro d'un identifiant
+                const extractNumber = (student) => {
+                    const match = (student.title || student.identifier || '').match(/\d+/);
+                    return match ? parseInt(match[0]) : 0;
+                };
+
+                // Trier par numéro extrait de l'identifiant
                 this.allStudents = result.data.students.sort((a, b) => {
-                    const idA = parseInt(a.id) || 0;
-                    const idB = parseInt(b.id) || 0;
-                    return idA - idB;
+                    return extractNumber(a) - extractNumber(b);
                 });
                 this.filteredStudents = [...this.allStudents];
                 this.renderStudentsList();
                 window.dispatchEvent(new CustomEvent('studentsUpdated', { detail: this.allStudents }));
-                console.log(`Chargé ${this.allStudents.length} étudiants`);
+                console.log(`Chargé ${this.allStudents.length} étudiants sur ${result.data.total} total`);
             }
         } catch (error) {
             console.error('Erreur:', error);
@@ -438,12 +442,26 @@ export class StudentListManager {
         const sorted = [...items];
 
         if (type === 'students') {
+            // Fonction pour extraire le numéro d'un identifiant (ex: "Etudiant 5" -> 5)
+            const extractNumber = (title) => {
+                const match = (title || '').match(/\d+/);
+                return match ? parseInt(match[0]) : 0;
+            };
+
             if (sortValue === 'name-asc') {
-                sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+                sorted.sort((a, b) => {
+                    const numA = extractNumber(a.title);
+                    const numB = extractNumber(b.title);
+                    return numA - numB;
+                });
             } else if (sortValue === 'name-desc') {
-                sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+                sorted.sort((a, b) => {
+                    const numA = extractNumber(a.title);
+                    const numB = extractNumber(b.title);
+                    return numB - numA;
+                });
             } else {
-                // default: par ID
+                // default: par ID de base de données
                 sorted.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
             }
         } else {
