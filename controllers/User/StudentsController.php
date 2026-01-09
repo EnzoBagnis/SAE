@@ -54,12 +54,19 @@ class StudentsController extends \BaseController
         if ($page < 1) {
             $page = 1;
         }
-        if ($perPage < 1 || $perPage > 100) {
+        // Augmenter la limite pour permettre de charger tous les étudiants
+        if ($perPage < 1 || $perPage > 10000) {
             $perPage = 15;
         }
 
         try {
             $result = $this->studentModel->getPaginatedStudents($page, $perPage, $resourceId);
+
+            // Log pour debug
+            error_log(
+                "StudentsController: Chargement de " . count($result['students']) .
+                " étudiants (total: " . $result['total'] . ", perPage: $perPage)"
+            );
 
             // Format students for display
             $formattedStudents = [];

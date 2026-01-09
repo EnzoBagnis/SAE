@@ -142,6 +142,15 @@ export class StudentListManager {
             return;
         }
 
+        // Ajouter un compteur d'étudiants
+        const counter = document.createElement('div');
+        counter.className = 'sidebar-message';
+        counter.style.fontSize = '0.85rem';
+        counter.style.color = '#95a5a6';
+        counter.style.padding = '0.5rem 1rem';
+        counter.textContent = `${studentsToDisplay.length} étudiant${studentsToDisplay.length > 1 ? 's' : ''}`;
+        sidebarList.appendChild(counter);
+
         studentsToDisplay.forEach((student) => {
             const item = document.createElement('div');
             item.className = 'sidebar-list-item';
@@ -221,6 +230,15 @@ export class StudentListManager {
             sidebarList.innerHTML += '<div class="sidebar-message">Aucun TP trouvé</div>';
             return;
         }
+
+        // Ajouter un compteur de TPs
+        const counter = document.createElement('div');
+        counter.className = 'sidebar-message';
+        counter.style.fontSize = '0.85rem';
+        counter.style.color = '#95a5a6';
+        counter.style.padding = '0.5rem 1rem';
+        counter.textContent = `${exercisesToDisplay.length} TP${exercisesToDisplay.length > 1 ? 's' : ''}`;
+        sidebarList.appendChild(counter);
 
         exercisesToDisplay.forEach((exercise) => {
             const item = document.createElement('div');
