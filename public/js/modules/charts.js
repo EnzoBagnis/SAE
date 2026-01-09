@@ -1,14 +1,7 @@
 // public/js/modules/charts.js
 
-/**
- * Module to handle D3.js charts for StudTraj dashboard
- */
 const ChartModule = (function() {
 
-    /**
-     * Échelle de couleur haute performance :
-     * Extrêmes foncés pour une différenciation maximale.
-     */
     const getHighGranularityScale = () => {
         return d3.scaleLinear()
             .domain([0, 25, 50, 75, 100])
@@ -17,10 +10,13 @@ const ChartModule = (function() {
     };
 
     /**
-     * Helper pour créer et gérer l'infobulle
+     * CORRECTION : On attache le tooltip au body pour éviter les décalages de conteneur
      */
-    function createTooltip(containerId) {
-        return d3.select("#" + containerId)
+    function createTooltip() {
+        // Supprimer l'ancien tooltip s'il existe pour éviter les doublons
+        d3.select(".chart-tooltip").remove();
+
+        return d3.select("body")
             .append("div")
             .attr("class", "chart-tooltip")
             .style("position", "absolute")
@@ -31,8 +27,8 @@ const ChartModule = (function() {
             .style("border-radius", "4px")
             .style("font-size", "12px")
             .style("pointer-events", "none")
-            .style("z-index", "1000")
-            .style("box-shadow", "0 2px 5px rgba(0,0,0,0.3)");
+            .style("z-index", "9999") // Très haut pour passer devant tout
+            .style("box-shadow", "0 4px 8px rgba(0,0,0,0.5)");
     }
 
     function renderStudentChart(data, containerId) {
@@ -64,12 +60,7 @@ const ChartModule = (function() {
         const maxAttempts = d3.max(data, d => +d.total_attempts) || 10;
         const y = d3.scaleLinear().domain([0, maxAttempts * 1.1]).range([height, 0]);
         const colorScale = getHighGranularityScale();
-        const tooltip = createTooltip(containerId);
-
-        // Axes
-        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x))
-            .selectAll("text").attr("transform", "translate(-10,5)rotate(-35)").style("text-anchor", "end");
-        svg.append("g").call(d3.axisLeft(y));
+        const tooltip = createTooltip();
 
         // Bars
         svg.selectAll("rect").data(data).enter().append("rect")
@@ -88,8 +79,9 @@ const ChartModule = (function() {
                         `Tentatives: ${d.total_attempts}`);
             })
             .on("mousemove", function(event) {
-                tooltip.style("top", (event.pageY - 10) + "px")
-                    .style("left", (event.pageX + 10) + "px");
+                // CORRECTION POSITION : Utilisation des coordonnées page avec un petit offset
+                tooltip.style("top", (event.pageY - 40) + "px") // Un peu plus haut que le curseur
+                    .style("left", (event.pageX + 15) + "px"); // Un peu à droite
             })
             .on("mouseout", function() {
                 d3.select(this).attr("opacity", 1);
@@ -99,6 +91,10 @@ const ChartModule = (function() {
                 document.dispatchEvent(new CustomEvent('student-chart-click', { detail: { studentId: d.id } }));
             });
 
+        // Axes & Legend
+        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x))
+            .selectAll("text").attr("transform", "translate(-10,5)rotate(-35)").style("text-anchor", "end");
+        svg.append("g").call(d3.axisLeft(y));
         renderLegend(svg, width + 30, 0);
     }
 
@@ -127,11 +123,7 @@ const ChartModule = (function() {
         const x = d3.scaleBand().range([0, width]).domain(data.map(d => d.funcname || d.exo_name)).padding(0.3);
         const y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
         const colorScale = getHighGranularityScale();
-        const tooltip = createTooltip(containerId);
-
-        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x))
-            .selectAll("text").attr("transform", "translate(-10,5)rotate(-45)").style("text-anchor", "end");
-        svg.append("g").call(d3.axisLeft(y).tickFormat(d => d + "%"));
+        const tooltip = createTooltip();
 
         svg.selectAll("rect").data(data).enter().append("rect")
             .attr("x", d => x(d.funcname || d.exo_name))
@@ -149,8 +141,9 @@ const ChartModule = (function() {
                         `Essais totaux: ${d.total_attempts}`);
             })
             .on("mousemove", function(event) {
-                tooltip.style("top", (event.pageY - 10) + "px")
-                    .style("left", (event.pageX + 10) + "px");
+                // CORRECTION POSITION : Coordonnées page
+                tooltip.style("top", (event.pageY - 40) + "px")
+                    .style("left", (event.pageX + 15) + "px");
             })
             .on("mouseout", function() {
                 d3.select(this).attr("opacity", 1);
@@ -160,6 +153,10 @@ const ChartModule = (function() {
                 document.dispatchEvent(new CustomEvent('exercise-chart-click', { detail: { exerciseId: d.exercise_id } }));
             });
 
+        // Axes & Legend
+        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x))
+            .selectAll("text").attr("transform", "translate(-10,5)rotate(-45)").style("text-anchor", "end");
+        svg.append("g").call(d3.axisLeft(y).tickFormat(d => d + "%"));
         renderLegend(svg, width + 30, 0);
     }
 
