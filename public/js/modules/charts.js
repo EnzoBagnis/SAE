@@ -278,10 +278,10 @@ const ChartModule = (function() {
             .style("font-size", "14px")
             .text("Taux de réussite (%)");
 
-        // Add legend
+        // Add legend (same style as student chart - vertical top right)
         const legend = svg.append("g")
             .attr("class", "legend")
-            .attr("transform", `translate(10, 10)`);
+            .attr("transform", `translate(${width - 180}, 10)`);
 
         const legendData = [
             { color: '#66bb6a', label: 'Facile (≥80%)', range: '≥80%' },
@@ -291,7 +291,7 @@ const ChartModule = (function() {
 
         legendData.forEach((item, i) => {
             const legendRow = legend.append("g")
-                .attr("transform", `translate(${i * 150}, 0)`);
+                .attr("transform", `translate(0, ${i * 20})`);
 
             legendRow.append("rect")
                 .attr("width", 14)
