@@ -507,7 +507,7 @@ const DetailedCharts = (function() {
             .enter()
             .append('g')
             .attr('class', 'legend')
-            .attr('transform', (d, i) => `translate(${-viewBoxSize/2 + 20},${viewBoxSize/2 - 70 + i * 30})`); // Absolute positioning in bottom left
+            .attr('transform', (d, i) => `translate(${-viewBoxSize/2 + 20},${viewBoxSize/2 - 50 + i * 30})`); // Moved down by 20px
 
         legend.append('rect')
             .attr('width', 18)
