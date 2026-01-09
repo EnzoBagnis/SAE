@@ -82,11 +82,11 @@ export class BurgerMenuManager {
         submenu.classList.toggle('active');
         arrow.classList.toggle('rotated');
 
-        // Si le sous-menu s'ouvre, basculer vers la vue étudiants SANS charger le contenu
-        // (on ne charge que la liste dans la sidebar, pas les graphes)
+        // Si le sous-menu s'ouvre, afficher les graphes globaux des étudiants
+        // tout en GARDANT le menu burger ouvert
         if (submenu.classList.contains('active')) {
             if (window.switchListView) {
-                window.switchListView('students', false);
+                window.switchListView('students', true);
             }
         }
     }
@@ -100,11 +100,11 @@ export class BurgerMenuManager {
             submenu.classList.toggle('active');
             arrow.classList.toggle('rotated');
 
-            // Si le sous-menu s'ouvre, basculer vers la vue exercices SANS charger le contenu
-            // (on ne charge que la liste dans la sidebar, pas les graphes)
+            // Si le sous-menu s'ouvre, afficher les graphes globaux des exercices
+            // tout en GARDANT le menu burger ouvert
             if (submenu.classList.contains('active')) {
                 if (window.switchListView) {
-                    window.switchListView('exercises', false);
+                    window.switchListView('exercises', true);
                 }
             }
         }
