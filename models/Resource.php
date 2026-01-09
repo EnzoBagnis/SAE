@@ -30,14 +30,15 @@ class Resource
 
     // Récupère toutes les ressources accessibles par un utilisateur donné (propriétaire ou avec accès)
     // Ajout d'une colonne 'access_type' pour savoir si l'utilisateur est propriétaire ou a un accès partagé
-    public static function getAllAccessibleResources(PDO $db, int $userId): array
+    public static function getAllAccessibleResources($db, $userId)
     {
-        $stmt = $db->prepare("
-                
-    SELECT 
+        $sql = "SELECT 
         r.*, 
         u.prenom AS owner_firstname, 
         u.nom AS owner_lastname,
+        (SELECT GROUP_CONCAT(user_id) 
+         FROM resource_professors_access rpa2 
+         WHERE rpa2.resource_id = r.resource_id) AS shared_user_ids,
         CASE 
             WHEN r.owner_user_id = :userId THEN 'owner'
             ELSE 'shared'
@@ -51,17 +52,13 @@ class Resource
            WHERE rpa.resource_id = r.resource_id 
            AND rpa.user_id = :userId
        )
-    ORDER BY r.resource_name ASC
-        ");
-        $stmt->execute(['userId' => $userId]);
-        $resourcesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    ORDER BY r.resource_name ASC";
 
-        $resources = [];
-        foreach ($resourcesData as $data) {
-            $resource = new Resource();
-            $resources[] = $resource->hydrate($data);
-        }
-        return $resources;
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':userId' => $userId]);
+
+        // Assurez-vous d'utiliser FETCH_OBJ pour correspondre à votre vue
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     // Récupère une ressource par son ID
