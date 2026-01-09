@@ -478,10 +478,10 @@ const ChartModule = (function() {
             .style("font-weight", "bold")
             .text(`Total: ${completed} / ${total} exercices`);
 
-        // Add legend
+        // Add legend (top left)
         const legend = svg.append("g")
             .attr("class", "legend")
-            .attr("transform", `translate(${width - 180}, -25)`);
+            .attr("transform", `translate(0, -25)`);
 
         const legendData = [
             { color: '#66bb6a', label: 'Exercices faits', key: 'completed' },
