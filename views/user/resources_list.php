@@ -113,9 +113,9 @@ try {
         <div class="filter-bar">
             <!-- Groupe de gauche pour recherche et select -->
             <div class="filter-group-left">
-                <input class="searchBar" type="text" id="searchBar" placeholder="Rechercher..."
-                       onkeyup="filterResources()" aria-label="Rechercher une ressource">
-                <select id="filterType" onchange="filterResources()" aria-label="Filtrer les ressources">
+                <input class="searchBar" type="text" id="searchBar"
+                       placeholder="Rechercher..." onkeyup="filterResources()">
+                <select id="filterType" onchange="filterResources()">
                     <option value="all">Tout voir</option>
                     <option value="owner">Mes créations</option>
                     <option value="shared">Partagées avec moi</option>
@@ -226,10 +226,13 @@ try {
                 <label>Partager avec :</label>
 
                 <input type="text" id="userSearch" placeholder="Filtrer les noms..."
-                       style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;"
+                       style="width: 100%; padding: 8px; margin-bottom: 10px;
+                              border: 1px solid #ddd; border-radius: 4px;"
                        onkeyup="filterUsersInModal()">
 
-                <div class="users-checklist" id="usersChecklist" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px;">
+                <div class="users-checklist" id="usersChecklist"
+                     style="max-height: 150px; overflow-y: auto; border: 1px solid #eee;
+                            padding: 10px; border-radius: 4px;">
                     <?php if (empty($all_users)) : ?>
                         <p style="color:#999;">Aucun autre utilisateur.</p>
                     <?php else : ?>
