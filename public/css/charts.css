@@ -77,9 +77,36 @@
 }
 
 /* Légendes */
+.chart-container .legend {
+    pointer-events: none; /* Éviter les interactions accidentelles */
+}
+
 .chart-container .legend text {
     font-size: 12px;
     fill: #2c3e50;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.chart-container .legend rect {
+    stroke: rgba(0,0,0,0.1);
+    stroke-width: 0.5;
+}
+
+/* S'assurer que les légendes ne débordent pas */
+.chart-container svg {
+    overflow: visible; /* Permettre aux légendes de s'afficher en dehors du viewBox si nécessaire */
+}
+
+/* Style pour les légendes horizontales */
+.chart-container .legend.horizontal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* Style pour les légendes compactes */
+.chart-container .legend-compact text {
+    font-size: 10px;
 }
 
 /* Cartes métriques (dashboard) */
@@ -113,6 +140,17 @@
         font-size: 9px;
     }
 
+    /* Ajuster la taille des légendes sur mobile */
+    .chart-container .legend text {
+        font-size: 10px !important;
+    }
+
+    .chart-container .legend rect,
+    .chart-container .legend circle {
+        width: 10px;
+        height: 10px;
+    }
+
     /* Full width pour le graphique de timeline */
     .chart-container[style*="grid-column"] {
         grid-column: 1 !important;
@@ -133,6 +171,17 @@
     .chart-container h3 {
         font-size: 0.9rem !important;
         margin-bottom: 0.75rem !important;
+    }
+
+    /* Réduire encore plus les légendes sur très petits écrans */
+    .chart-container .legend text {
+        font-size: 9px !important;
+    }
+
+    .chart-container .legend rect,
+    .chart-container .legend circle {
+        width: 8px;
+        height: 8px;
     }
 }
 

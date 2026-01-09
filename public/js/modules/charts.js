@@ -126,6 +126,37 @@ const ChartModule = (function() {
             .attr("text-anchor", "middle")
             .style("font-size", "14px")
             .text("Tentatives (Hauteur) et Taux de réussite (Couleur)");
+
+        // Add legend
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(${width - 180}, 10)`);
+
+        const legendData = [
+            { color: '#66bb6a', label: 'Excellent (≥80%)', range: '≥80%' },
+            { color: '#ffca28', label: 'Bien (50-80%)', range: '50-80%' },
+            { color: '#ef5350', label: 'À améliorer (<50%)', range: '<50%' }
+        ];
+
+        legendData.forEach((item, i) => {
+            const legendRow = legend.append("g")
+                .attr("transform", `translate(0, ${i * 20})`);
+
+            legendRow.append("rect")
+                .attr("width", 14)
+                .attr("height", 14)
+                .attr("fill", item.color)
+                .attr("rx", 2);
+
+            legendRow.append("text")
+                .attr("x", 20)
+                .attr("y", 7)
+                .attr("dy", ".35em")
+                .style("font-size", "11px")
+                .style("fill", "#2c3e50")
+                .style("font-weight", "500")
+                .text(item.label);
+        });
     }
 
     /**
@@ -246,6 +277,37 @@ const ChartModule = (function() {
             .attr("text-anchor", "middle")
             .style("font-size", "14px")
             .text("Taux de réussite (%)");
+
+        // Add legend
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(10, 10)`);
+
+        const legendData = [
+            { color: '#66bb6a', label: 'Facile (≥80%)', range: '≥80%' },
+            { color: '#ffca28', label: 'Moyen (50-80%)', range: '50-80%' },
+            { color: '#ef5350', label: 'Difficile (<50%)', range: '<50%' }
+        ];
+
+        legendData.forEach((item, i) => {
+            const legendRow = legend.append("g")
+                .attr("transform", `translate(${i * 150}, 0)`);
+
+            legendRow.append("rect")
+                .attr("width", 14)
+                .attr("height", 14)
+                .attr("fill", item.color)
+                .attr("rx", 2);
+
+            legendRow.append("text")
+                .attr("x", 20)
+                .attr("y", 7)
+                .attr("dy", ".35em")
+                .style("font-size", "11px")
+                .style("fill", "#2c3e50")
+                .style("font-weight", "500")
+                .text(item.label);
+        });
     }
 
     return {

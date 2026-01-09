@@ -210,10 +210,10 @@ const DetailedCharts = (function() {
                 d3.select(chartDiv).selectAll('.chart-tooltip').remove();
             });
 
-        // Legend
+        // Legend - positioned above the chart to avoid overlap
         const legend = svg.append('g')
             .attr('class', 'legend')
-            .attr('transform', `translate(${width - 120}, 10)`);
+            .attr('transform', `translate(10, -10)`);
 
         // Success legend
         legend.append('circle')
@@ -233,32 +233,32 @@ const DetailedCharts = (function() {
 
         // Failure legend
         legend.append('circle')
-            .attr('cx', 0)
-            .attr('cy', 20)
+            .attr('cx', 70)
+            .attr('cy', 0)
             .attr('r', 5)
             .attr('fill', '#e74c3c')
             .attr('stroke', 'white')
             .attr('stroke-width', 2);
 
         legend.append('text')
-            .attr('x', 12)
-            .attr('y', 24)
+            .attr('x', 82)
+            .attr('y', 4)
             .style('font-size', '11px')
             .style('fill', '#2c3e50')
             .text('Échoué');
 
         // Trend line legend
         legend.append('line')
-            .attr('x1', -5)
-            .attr('y1', 40)
-            .attr('x2', 5)
-            .attr('y2', 40)
+            .attr('x1', 140)
+            .attr('y1', 0)
+            .attr('x2', 160)
+            .attr('y2', 0)
             .attr('stroke', '#3498db')
             .attr('stroke-width', 2);
 
         legend.append('text')
-            .attr('x', 12)
-            .attr('y', 44)
+            .attr('x', 165)
+            .attr('y', 4)
             .style('font-size', '11px')
             .style('fill', '#2c3e50')
             .text('Tendance');
@@ -378,28 +378,31 @@ const DetailedCharts = (function() {
                 d3.select(this).attr('opacity', 1);
             });
 
-        // Legend
+        // Legend - positioned above the chart area in horizontal layout
         const legend = svg.append('g')
             .attr('class', 'legend')
-            .attr('transform', `translate(${width - 100}, 10)`);
+            .attr('transform', `translate(10, -10)`);
 
         const legendData = [
-            { color: '#27ae60', label: 'Bon (>70%)', rate: '>70%' },
-            { color: '#f39c12', label: 'Moyen (30-70%)', rate: '30-70%' },
-            { color: '#e74c3c', label: 'Faible (<30%)', rate: '<30%' }
+            { color: '#27ae60', label: 'Bon (>70%)' },
+            { color: '#f39c12', label: 'Moyen (30-70%)' },
+            { color: '#e74c3c', label: 'Faible (<30%)' }
         ];
 
         legendData.forEach((item, i) => {
+            const xOffset = i * 120;
+
             legend.append('rect')
-                .attr('x', 0)
-                .attr('y', i * 20)
+                .attr('x', xOffset)
+                .attr('y', 0)
                 .attr('width', 12)
                 .attr('height', 12)
-                .attr('fill', item.color);
+                .attr('fill', item.color)
+                .attr('rx', 2);
 
             legend.append('text')
-                .attr('x', 18)
-                .attr('y', i * 20 + 10)
+                .attr('x', xOffset + 18)
+                .attr('y', 10)
                 .style('font-size', '10px')
                 .style('fill', '#2c3e50')
                 .text(item.label);
@@ -626,52 +629,38 @@ const DetailedCharts = (function() {
                 d3.select(this).attr('fill', '#3498db');
             });
 
-        // Summary statistics
+        // Summary statistics with compact layout
         const totalAttempts = data.reduce((sum, d) => sum + d.count, 0);
         const avgPerDay = (totalAttempts / data.length).toFixed(1);
         const maxDay = data.reduce((max, d) => d.count > max.count ? d : max, data[0]);
 
-        // Legend with statistics
+        // Legend with statistics - positioned above chart area
         const legend = svg.append('g')
             .attr('class', 'legend')
-            .attr('transform', `translate(${width - 150}, 10)`);
+            .attr('transform', `translate(10, -10)`);
 
         legend.append('rect')
             .attr('x', 0)
             .attr('y', 0)
             .attr('width', 12)
             .attr('height', 12)
-            .attr('fill', '#3498db');
+            .attr('fill', '#3498db')
+            .attr('rx', 2);
 
         legend.append('text')
             .attr('x', 18)
             .attr('y', 10)
             .style('font-size', '11px')
             .style('fill', '#2c3e50')
+            .style('font-weight', '500')
             .text('Tentatives');
 
         legend.append('text')
-            .attr('x', 0)
-            .attr('y', 30)
+            .attr('x', 100)
+            .attr('y', 10)
             .style('font-size', '10px')
             .style('fill', '#7f8c8d')
-            .text(`Total: ${totalAttempts}`);
-
-        legend.append('text')
-            .attr('x', 0)
-            .attr('y', 45)
-            .style('font-size', '10px')
-            .style('fill', '#7f8c8d')
-            .text(`Moy/jour: ${avgPerDay}`);
-
-        if (maxDay) {
-            legend.append('text')
-                .attr('x', 0)
-                .attr('y', 60)
-                .style('font-size', '10px')
-                .style('fill', '#7f8c8d')
-                .text(`Max: ${maxDay.count}`);
-        }
+            .text(`Total: ${totalAttempts} | Moy/jour: ${avgPerDay} | Max: ${maxDay ? maxDay.count : 0}`);
 
         // Axis labels
         svg.append('text')
@@ -811,10 +800,10 @@ const DetailedCharts = (function() {
             .attr('fill', (d, i) => colors[i])
             .style('cursor', 'pointer');
 
-        // Legend
+        // Legend - positioned horizontally above the chart
         const legend = svg.append('g')
             .attr('class', 'legend')
-            .attr('transform', `translate(10, 10)`);
+            .attr('transform', `translate(10, -10)`);
 
         const legendItems = [
             { color: '#e74c3c', label: 'Aucune' },
@@ -824,8 +813,10 @@ const DetailedCharts = (function() {
         ];
 
         legendItems.forEach((item, i) => {
+            const xOffset = i * 80;
+
             legend.append('rect')
-                .attr('x', i * 60)
+                .attr('x', xOffset)
                 .attr('y', 0)
                 .attr('width', 12)
                 .attr('height', 12)
@@ -833,7 +824,7 @@ const DetailedCharts = (function() {
                 .attr('rx', 2);
 
             legend.append('text')
-                .attr('x', i * 60 + 16)
+                .attr('x', xOffset + 16)
                 .attr('y', 10)
                 .style('font-size', '10px')
                 .style('fill', '#2c3e50')
@@ -943,10 +934,10 @@ const DetailedCharts = (function() {
             .attr('fill', '#27ae60')
             .style('cursor', 'pointer');
 
-        // Legend
+        // Legend - positioned horizontally above the chart
         const legend = svg.append('g')
             .attr('class', 'legend')
-            .attr('transform', `translate(${width - 120}, 10)`);
+            .attr('transform', `translate(10, -10)`);
 
         legend.append('rect')
             .attr('x', 0)
@@ -964,16 +955,16 @@ const DetailedCharts = (function() {
             .text('Total tentatives');
 
         legend.append('rect')
-            .attr('x', 0)
-            .attr('y', 20)
+            .attr('x', 120)
+            .attr('y', 0)
             .attr('width', 12)
             .attr('height', 12)
             .attr('fill', '#27ae60')
             .attr('rx', 2);
 
         legend.append('text')
-            .attr('x', 18)
-            .attr('y', 30)
+            .attr('x', 138)
+            .attr('y', 10)
             .style('font-size', '10px')
             .style('fill', '#2c3e50')
             .text('Réussites');
