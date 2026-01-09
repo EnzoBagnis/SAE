@@ -188,7 +188,8 @@ try {
                 <label>Partager avec :</label>
 
                 <input type="text" id="userSearch" placeholder="Filtrer les noms..."
-                       style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;"
+                       style="width: 100%; padding: 8px; margin-bottom: 10px;
+                              border: 1px solid #ddd; border-radius: 4px;"
                        onkeyup="filterUsersInModal()">
 
                 <div class="users-checklist" id="usersChecklist"
