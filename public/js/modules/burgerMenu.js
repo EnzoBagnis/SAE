@@ -83,9 +83,8 @@ export class BurgerMenuManager {
         arrow.classList.toggle('rotated');
 
         // Si le sous-menu s'ouvre (devient actif), afficher les graphes globaux des étudiants
+        // SANS fermer le menu burger pour permettre la sélection d'un étudiant spécifique
         if (submenu.classList.contains('active')) {
-            // Fermer le menu burger
-            this.closeMenu();
             // Basculer vers la vue étudiants avec chargement du contenu
             if (window.switchListView) {
                 window.switchListView('students', true);
@@ -103,9 +102,8 @@ export class BurgerMenuManager {
             arrow.classList.toggle('rotated');
 
             // Si le sous-menu s'ouvre (devient actif), afficher les graphes globaux des exercices
+            // SANS fermer le menu burger pour permettre la sélection d'un TP spécifique
             if (submenu.classList.contains('active')) {
-                // Fermer le menu burger
-                this.closeMenu();
                 // Basculer vers la vue exercices avec chargement du contenu
                 if (window.switchListView) {
                     window.switchListView('exercises', true);
