@@ -358,6 +358,10 @@ class Router
                 $this->loadNamespacedController('Controllers\User\ExercisesController', 'getStats');
                 break;
 
+            case 'exercise_completion_stats':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getCompletionStats');
+                break;
+
             default:
                 $this->loadController('HomeController', 'index');
                 break;

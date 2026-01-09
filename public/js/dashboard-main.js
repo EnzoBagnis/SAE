@@ -116,30 +116,62 @@ function setupEventListeners() {
                 document.getElementById('btnExercises').classList.add('active');
 
                  if (loadContent) {
-                     // Load global exercise stats
-                    fetch(`/index.php?action=exercises_stats&resource_id=${resourceId || ''}`)
-                        .then(r => r.json())
-                        .then(resp => {
-                            if(resp.success) {
-                                 const dataZone = document.querySelector('.data-zone');
+                     // Load both exercise stats charts
+                     const dataZone = document.querySelector('.data-zone');
+                     dataZone.innerHTML = '';
 
-                                 // Clear content to avoid overlap
-                                 dataZone.innerHTML = '';
+                     // Create title
+                     const title = document.createElement('h2');
+                     title.textContent = 'Statistiques Globales des Exercices';
+                     title.style.marginBottom = '1rem';
+                     dataZone.appendChild(title);
 
-                                 let chartContainer = document.createElement('div');
-                                 chartContainer.id = 'global-exercise-chart';
-                                 chartContainer.className = 'chart-container';
+                     // Create container for two charts side by side
+                     const chartsWrapper = document.createElement('div');
+                     chartsWrapper.style.display = 'grid';
+                     chartsWrapper.style.gridTemplateColumns = 'repeat(auto-fit, minmax(400px, 1fr))';
+                     chartsWrapper.style.gap = '2rem';
+                     chartsWrapper.style.marginBottom = '2rem';
 
-                                 const title = document.createElement('h2');
-                                 title.textContent = 'Statistiques Globales des Exercices';
-                                 title.style.marginBottom = '1rem';
-                                 dataZone.appendChild(title);
+                     // Create container for success rate chart
+                     const successRateContainer = document.createElement('div');
+                     successRateContainer.id = 'global-exercise-chart';
+                     successRateContainer.className = 'chart-container';
+                     chartsWrapper.appendChild(successRateContainer);
 
-                                 dataZone.appendChild(chartContainer);
+                     // Create container for completion chart
+                     const completionContainer = document.createElement('div');
+                     completionContainer.id = 'exercise-completion-chart';
+                     completionContainer.className = 'chart-container';
+                     chartsWrapper.appendChild(completionContainer);
 
+                     dataZone.appendChild(chartsWrapper);
+
+                     // Fetch and render success rate chart
+                     fetch(`/index.php?action=exercises_stats&resource_id=${resourceId || ''}`)
+                         .then(r => r.json())
+                         .then(resp => {
+                             if(resp.success) {
                                  ChartModule.renderExerciseChart(resp.data, 'global-exercise-chart');
-                            }
-                        });
+                             }
+                         })
+                         .catch(err => {
+                             console.error('Error loading exercise stats:', err);
+                             successRateContainer.innerHTML = '<p>Erreur lors du chargement des statistiques</p>';
+                         });
+
+                     // Fetch and render completion chart
+                     fetch(`/index.php?action=exercise_completion_stats&resource_id=${resourceId || ''}`)
+                         .then(r => r.json())
+                         .then(resp => {
+                             if(resp.success) {
+                                 ChartModule.renderExerciseCompletionChart(resp.data, 'exercise-completion-chart');
+                             }
+                         })
+                         .catch(err => {
+                             console.error('Error loading completion stats:', err);
+                             completionContainer.innerHTML = '<p>Erreur lors du chargement des statistiques</p>';
+                         });
                  }
             }
         };
