@@ -113,6 +113,10 @@ export class BurgerMenuManager {
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('studentSelected', { detail: student.id }));
                 this.closeMenu();
+                // Ensure the view is switched to students if not already
+                if (window.switchListView) {
+                    window.switchListView('students');
+                }
             };
 
             li.appendChild(link);
@@ -148,8 +152,10 @@ export class BurgerMenuManager {
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.id }));
                 this.closeMenu();
-                // Also switch view to exercises if not already
-                window.switchListView('exercises');
+                // Ensure the view is switched to exercises if not already
+                if (window.switchListView) {
+                    window.switchListView('exercises');
+                }
             };
 
             li.appendChild(link);
