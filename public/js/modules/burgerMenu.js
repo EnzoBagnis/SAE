@@ -145,7 +145,7 @@ export class BurgerMenuManager {
             const link = document.createElement('a');
             link.href = '#';
             link.textContent = exercise.funcname || exercise.exo_name || 'Exercice sans nom';
-            link.dataset.exerciseId = exercise.id;
+            link.dataset.exerciseId = exercise.exercise_id;
             link.className = 'burger-submenu-link';
 
             link.onclick = (e) => {
@@ -155,7 +155,7 @@ export class BurgerMenuManager {
                 if (window.switchListView) {
                     window.switchListView('exercises', false);
                 }
-                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.id }));
+                window.dispatchEvent(new CustomEvent('exerciseSelected', { detail: exercise.exercise_id }));
             };
 
             li.appendChild(link);
