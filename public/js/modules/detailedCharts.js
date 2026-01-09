@@ -451,10 +451,8 @@ const DetailedCharts = (function() {
             { label: 'Échouées', value: (stats.total_attempts || 0) - (stats.correct_attempts || stats.success_count || 0), color: '#e74c3c' }
         ];
 
-        // ...existing code for rendering pie chart...
-
         const viewBoxSize = 300;
-        const radius = Math.min(viewBoxSize, viewBoxSize) / 2 - 40;
+        const radius = Math.min(viewBoxSize, viewBoxSize) / 2 - 70; // Reduced from 40 to 70 to leave more space for legend
 
         const svg = d3.select(chartDiv)
             .append('svg')
@@ -463,7 +461,7 @@ const DetailedCharts = (function() {
             .style('width', '100%')
             .style('height', 'auto')
             .append('g')
-            .attr('transform', `translate(${viewBoxSize/2},${viewBoxSize/2})`);
+            .attr('transform', `translate(${viewBoxSize/2},${viewBoxSize/2 - 10})`); // Shifted up slightly
 
         const pie = d3.pie()
             .value(d => d.value)
