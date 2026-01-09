@@ -210,12 +210,66 @@ const DetailedCharts = (function() {
                 d3.select(chartDiv).selectAll('.chart-tooltip').remove();
             });
 
-        // Labels
+        // Legend
+        const legend = svg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(${width - 120}, 10)`);
+
+        // Success legend
+        legend.append('circle')
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('r', 5)
+            .attr('fill', '#27ae60')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2);
+
+        legend.append('text')
+            .attr('x', 12)
+            .attr('y', 4)
+            .style('font-size', '11px')
+            .style('fill', '#2c3e50')
+            .text('Réussi');
+
+        // Failure legend
+        legend.append('circle')
+            .attr('cx', 0)
+            .attr('cy', 20)
+            .attr('r', 5)
+            .attr('fill', '#e74c3c')
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2);
+
+        legend.append('text')
+            .attr('x', 12)
+            .attr('y', 24)
+            .style('font-size', '11px')
+            .style('fill', '#2c3e50')
+            .text('Échoué');
+
+        // Trend line legend
+        legend.append('line')
+            .attr('x1', -5)
+            .attr('y1', 40)
+            .attr('x2', 5)
+            .attr('y2', 40)
+            .attr('stroke', '#3498db')
+            .attr('stroke-width', 2);
+
+        legend.append('text')
+            .attr('x', 12)
+            .attr('y', 44)
+            .style('font-size', '11px')
+            .style('fill', '#2c3e50')
+            .text('Tendance');
+
+        // Axis Labels
         svg.append('text')
             .attr('x', width / 2)
             .attr('y', height + 35)
             .attr('text-anchor', 'middle')
             .style('font-size', '12px')
+            .style('fill', '#7f8c8d')
             .text('Numéro de tentative');
 
         svg.append('text')
@@ -224,6 +278,7 @@ const DetailedCharts = (function() {
             .attr('y', -35)
             .attr('text-anchor', 'middle')
             .style('font-size', '12px')
+            .style('fill', '#7f8c8d')
             .text('Taux de réussite (%)');
     }
 
@@ -323,12 +378,50 @@ const DetailedCharts = (function() {
                 d3.select(this).attr('opacity', 1);
             });
 
+        // Legend
+        const legend = svg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(${width - 100}, 10)`);
+
+        const legendData = [
+            { color: '#27ae60', label: 'Bon (>70%)', rate: '>70%' },
+            { color: '#f39c12', label: 'Moyen (30-70%)', rate: '30-70%' },
+            { color: '#e74c3c', label: 'Faible (<30%)', rate: '<30%' }
+        ];
+
+        legendData.forEach((item, i) => {
+            legend.append('rect')
+                .attr('x', 0)
+                .attr('y', i * 20)
+                .attr('width', 12)
+                .attr('height', 12)
+                .attr('fill', item.color);
+
+            legend.append('text')
+                .attr('x', 18)
+                .attr('y', i * 20 + 10)
+                .style('font-size', '10px')
+                .style('fill', '#2c3e50')
+                .text(item.label);
+        });
+
+        // Axis labels
         svg.append('text')
             .attr('x', width / 2)
-            .attr('y', -5)
+            .attr('y', height + margin.bottom - 5)
             .attr('text-anchor', 'middle')
-            .style('font-size', '12px')
-            .text('Taux de réussite par exercice');
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Exercices');
+
+        svg.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -height / 2)
+            .attr('y', -35)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Taux de réussite (%)');
     }
 
     /**
@@ -406,25 +499,39 @@ const DetailedCharts = (function() {
             .style('fill', 'white')
             .text(d => d.data.value > 0 ? d.data.value : '');
 
-        // Legend
+        // Legend with percentages
+        const total = data.reduce((sum, d) => sum + d.value, 0);
         const legend = svg.selectAll('.legend')
             .data(data)
             .enter()
             .append('g')
             .attr('class', 'legend')
-            .attr('transform', (d, i) => `translate(${radius + 20},${-radius + i * 25})`);
+            .attr('transform', (d, i) => `translate(${radius + 20},${-radius + i * 30})`);
 
         legend.append('rect')
             .attr('width', 18)
             .attr('height', 18)
-            .attr('fill', d => d.color);
+            .attr('fill', d => d.color)
+            .attr('rx', 2);
 
         legend.append('text')
             .attr('x', 24)
             .attr('y', 9)
             .attr('dy', '.35em')
             .style('font-size', '12px')
-            .text(d => `${d.label}: ${d.value}`);
+            .style('font-weight', '600')
+            .style('fill', '#2c3e50')
+            .text(d => d.label);
+
+        legend.append('text')
+            .attr('x', 24)
+            .attr('y', 22)
+            .style('font-size', '10px')
+            .style('fill', '#7f8c8d')
+            .text(d => {
+                const percentage = total > 0 ? ((d.value / total) * 100).toFixed(1) : 0;
+                return `${d.value} (${percentage}%)`;
+            });
     }
 
     /**
@@ -511,14 +618,78 @@ const DetailedCharts = (function() {
             .attr('width', x.bandwidth())
             .attr('height', d => height - y(d.count))
             .attr('fill', '#3498db')
-            .style('cursor', 'pointer');
+            .style('cursor', 'pointer')
+            .on('mouseover', function(event, d) {
+                d3.select(this).attr('fill', '#2980b9');
+            })
+            .on('mouseout', function() {
+                d3.select(this).attr('fill', '#3498db');
+            });
 
+        // Summary statistics
+        const totalAttempts = data.reduce((sum, d) => sum + d.count, 0);
+        const avgPerDay = (totalAttempts / data.length).toFixed(1);
+        const maxDay = data.reduce((max, d) => d.count > max.count ? d : max, data[0]);
+
+        // Legend with statistics
+        const legend = svg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(${width - 150}, 10)`);
+
+        legend.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', 12)
+            .attr('height', 12)
+            .attr('fill', '#3498db');
+
+        legend.append('text')
+            .attr('x', 18)
+            .attr('y', 10)
+            .style('font-size', '11px')
+            .style('fill', '#2c3e50')
+            .text('Tentatives');
+
+        legend.append('text')
+            .attr('x', 0)
+            .attr('y', 30)
+            .style('font-size', '10px')
+            .style('fill', '#7f8c8d')
+            .text(`Total: ${totalAttempts}`);
+
+        legend.append('text')
+            .attr('x', 0)
+            .attr('y', 45)
+            .style('font-size', '10px')
+            .style('fill', '#7f8c8d')
+            .text(`Moy/jour: ${avgPerDay}`);
+
+        if (maxDay) {
+            legend.append('text')
+                .attr('x', 0)
+                .attr('y', 60)
+                .style('font-size', '10px')
+                .style('fill', '#7f8c8d')
+                .text(`Max: ${maxDay.count}`);
+        }
+
+        // Axis labels
         svg.append('text')
             .attr('x', width / 2)
-            .attr('y', -5)
+            .attr('y', height + margin.bottom - 5)
             .attr('text-anchor', 'middle')
-            .style('font-size', '12px')
-            .text('Nombre de tentatives par jour');
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Date');
+
+        svg.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -height / 2)
+            .attr('y', -35)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Nombre de tentatives');
     }
 
     /**
@@ -639,6 +810,53 @@ const DetailedCharts = (function() {
             .attr('height', d => height - y(d.count))
             .attr('fill', (d, i) => colors[i])
             .style('cursor', 'pointer');
+
+        // Legend
+        const legend = svg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(10, 10)`);
+
+        const legendItems = [
+            { color: '#e74c3c', label: 'Aucune' },
+            { color: '#f39c12', label: '1-3' },
+            { color: '#3498db', label: '4-6' },
+            { color: '#27ae60', label: '7+' }
+        ];
+
+        legendItems.forEach((item, i) => {
+            legend.append('rect')
+                .attr('x', i * 60)
+                .attr('y', 0)
+                .attr('width', 12)
+                .attr('height', 12)
+                .attr('fill', item.color)
+                .attr('rx', 2);
+
+            legend.append('text')
+                .attr('x', i * 60 + 16)
+                .attr('y', 10)
+                .style('font-size', '10px')
+                .style('fill', '#2c3e50')
+                .text(item.label);
+        });
+
+        // Axis labels
+        svg.append('text')
+            .attr('x', width / 2)
+            .attr('y', height + margin.bottom - 5)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Catégories de réussite');
+
+        svg.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -height / 2)
+            .attr('y', -35)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Nombre d\'étudiants');
     }
 
     /**
@@ -724,6 +942,59 @@ const DetailedCharts = (function() {
             .attr('height', d => height - y(d.success))
             .attr('fill', '#27ae60')
             .style('cursor', 'pointer');
+
+        // Legend
+        const legend = svg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(${width - 120}, 10)`);
+
+        legend.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', 12)
+            .attr('height', 12)
+            .attr('fill', '#bdc3c7')
+            .attr('rx', 2);
+
+        legend.append('text')
+            .attr('x', 18)
+            .attr('y', 10)
+            .style('font-size', '10px')
+            .style('fill', '#2c3e50')
+            .text('Total tentatives');
+
+        legend.append('rect')
+            .attr('x', 0)
+            .attr('y', 20)
+            .attr('width', 12)
+            .attr('height', 12)
+            .attr('fill', '#27ae60')
+            .attr('rx', 2);
+
+        legend.append('text')
+            .attr('x', 18)
+            .attr('y', 30)
+            .style('font-size', '10px')
+            .style('fill', '#2c3e50')
+            .text('Réussites');
+
+        // Axis labels
+        svg.append('text')
+            .attr('x', width / 2)
+            .attr('y', height + margin.bottom - 5)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Étudiants (Top 10)');
+
+        svg.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -height / 2)
+            .attr('y', -35)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Nombre de tentatives');
     }
 
     /**
@@ -845,13 +1116,13 @@ const DetailedCharts = (function() {
             .attr('width', x.bandwidth())
             .style('cursor', 'pointer');
 
-        // Legend
+        // Legend with improved styling
         const legend = svg.append('g')
-            .attr('transform', `translate(${width + 20}, 0)`);
+            .attr('transform', `translate(${width + 20}, 10)`);
 
         const legendData = [
-            { label: 'Réussi', color: '#27ae60' },
-            { label: 'Échoué', color: '#e74c3c' }
+            { label: 'Réussites', color: '#27ae60' },
+            { label: 'Échecs', color: '#e74c3c' }
         ];
 
         legendData.forEach((item, i) => {
@@ -859,17 +1130,72 @@ const DetailedCharts = (function() {
                 .attr('transform', `translate(0, ${i * 25})`);
 
             g.append('rect')
-                .attr('width', 18)
-                .attr('height', 18)
-                .attr('fill', item.color);
+                .attr('width', 14)
+                .attr('height', 14)
+                .attr('fill', item.color)
+                .attr('rx', 2);
 
             g.append('text')
-                .attr('x', 24)
-                .attr('y', 9)
+                .attr('x', 20)
+                .attr('y', 7)
                 .attr('dy', '.35em')
-                .style('font-size', '12px')
+                .style('font-size', '11px')
+                .style('fill', '#2c3e50')
+                .style('font-weight', '600')
                 .text(item.label);
         });
+
+        // Total statistics
+        const totalSuccess = data.reduce((sum, d) => sum + d.success, 0);
+        const totalFail = data.reduce((sum, d) => sum + d.fail, 0);
+        const total = totalSuccess + totalFail;
+
+        legend.append('line')
+            .attr('x1', 0)
+            .attr('y1', 60)
+            .attr('x2', 60)
+            .attr('y2', 60)
+            .attr('stroke', '#bdc3c7')
+            .attr('stroke-width', 1);
+
+        legend.append('text')
+            .attr('x', 0)
+            .attr('y', 75)
+            .style('font-size', '10px')
+            .style('fill', '#7f8c8d')
+            .text(`Total: ${total}`);
+
+        legend.append('text')
+            .attr('x', 0)
+            .attr('y', 90)
+            .style('font-size', '10px')
+            .style('fill', '#27ae60')
+            .text(`✓ ${totalSuccess}`);
+
+        legend.append('text')
+            .attr('x', 0)
+            .attr('y', 105)
+            .style('font-size', '10px')
+            .style('fill', '#e74c3c')
+            .text(`✗ ${totalFail}`);
+
+        // Axis labels
+        svg.append('text')
+            .attr('x', width / 2)
+            .attr('y', height + margin.bottom - 5)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Date');
+
+        svg.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -height / 2)
+            .attr('y', -35)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+            .style('fill', '#7f8c8d')
+            .text('Nombre de tentatives');
     }
 
     /**
