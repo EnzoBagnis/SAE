@@ -57,13 +57,17 @@ class Student
                 $stmt = $this->db->prepare($query);
                 $stmt->execute();
             } else {
-                // Récupérer les étudiants du dataset lié à la ressource
-                // Inclut TOUS les étudiants du dataset, même ceux sans tentatives
+                // Récupérer les étudiants qui ont au moins une tentative pour cette ressource
+                // OU qui appartiennent au même dataset que les exercices de cette ressource
                 $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
                          "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
                          "FROM students s " .
                          "JOIN datasets d ON s.dataset_id = d.dataset_id " .
-                         "WHERE s.dataset_id = (SELECT dataset_id FROM resources WHERE resource_id = :resource_id) " .
+                         "WHERE s.dataset_id IN (" .
+                         "    SELECT DISTINCT e.dataset_id " .
+                         "    FROM exercises e " .
+                         "    WHERE e.resource_id = :resource_id" .
+                         ") " .
                          "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
                 $stmt = $this->db->prepare($query);
                 $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
