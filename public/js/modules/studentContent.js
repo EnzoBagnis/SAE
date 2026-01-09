@@ -127,10 +127,16 @@ export class StudentContentManager {
         visualizationContent.appendChild(chartsContainer);
 
         // Store data in the container for lazy rendering
-        chartsContainer.dataset.student = JSON.stringify(student);
-        chartsContainer.dataset.attempts = JSON.stringify(attempts);
-        chartsContainer.dataset.stats = JSON.stringify(stats);
-        chartsContainer.dataset.rendered = 'false';
+        try {
+            console.log('📊 Storing data for charts:', { student, attempts, stats });
+            chartsContainer.dataset.student = JSON.stringify(student);
+            chartsContainer.dataset.attempts = JSON.stringify(attempts);
+            chartsContainer.dataset.stats = JSON.stringify(stats);
+            chartsContainer.dataset.rendered = 'false';
+        } catch (error) {
+            console.error('❌ Erreur de sérialisation des données:', error);
+            chartsContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur: Impossible de sérialiser les données</p>';
+        }
 
         return visualizationContent;
     }

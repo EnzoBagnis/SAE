@@ -35,25 +35,56 @@ const DetailedCharts = (function() {
      */
     function renderStudentDetailedCharts(student, attempts, stats, containerId) {
         const container = document.getElementById(containerId);
-        if (!container) return;
+        if (!container) {
+            console.error('❌ Container not found:', containerId);
+            return;
+        }
 
         // Debug logs
-        console.log('📊 Rendering student charts:', { student, attempts, stats });
+        console.log('📊 Rendering student charts:', {
+            student,
+            attemptsCount: attempts ? attempts.length : 0,
+            stats
+        });
+
+        // Validate data
+        if (!student) {
+            console.error('❌ Student data is missing');
+            container.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur: Données étudiant manquantes</p>';
+            return;
+        }
+
+        if (!attempts || !Array.isArray(attempts)) {
+            console.warn('⚠️ Attempts data is missing or invalid, using empty array');
+            attempts = [];
+        }
+
+        if (!stats || typeof stats !== 'object') {
+            console.warn('⚠️ Stats data is missing or invalid, using default');
+            stats = { total_attempts: 0, success_count: 0 };
+        }
 
         container.innerHTML = '';
         container.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 1rem;';
 
-        // Chart 1: Progress Over Time (Line Chart)
-        renderProgressOverTime(attempts, container);
+        try {
+            // Chart 1: Progress Over Time (Line Chart)
+            renderProgressOverTime(attempts, container);
 
-        // Chart 2: Success Rate by Exercise (Bar Chart)
-        renderSuccessRateByExercise(attempts, container);
+            // Chart 2: Success Rate by Exercise (Bar Chart)
+            renderSuccessRateByExercise(attempts, container);
 
-        // Chart 3: Attempts Distribution (Pie Chart)
-        renderAttemptsDistribution(stats, container);
+            // Chart 3: Attempts Distribution (Pie Chart)
+            renderAttemptsDistribution(stats, container);
 
-        // Chart 4: Time Spent Analysis (Bar Chart)
-        renderTimeSpentAnalysis(attempts, container);
+            // Chart 4: Time Spent Analysis (Bar Chart)
+            renderTimeSpentAnalysis(attempts, container);
+
+            console.log('✅ All charts rendered successfully');
+        } catch (error) {
+            console.error('❌ Error rendering charts:', error);
+            container.innerHTML = `<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur lors du rendu: ${error.message}</p>`;
+        }
     }
 
     /**
