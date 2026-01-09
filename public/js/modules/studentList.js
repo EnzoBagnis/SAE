@@ -8,8 +8,12 @@ export class StudentListManager {
         this.hasMoreStudents = true;
         this.allStudents = [];
         this.allExercises = [];
+        this.filteredStudents = [];
+        this.filteredExercises = [];
         this.currentView = 'students'; // 'students' ou 'exercises'
         this.resourceId = this.getResourceIdFromUrl();
+        this.currentSort = 'default'; // 'default', 'name-asc', 'name-desc'
+        this.searchTerm = '';
     }
 
     // Récupérer l'ID de la ressource depuis l'URL
@@ -47,7 +51,8 @@ export class StudentListManager {
         sidebarList.innerHTML = '<div class="sidebar-message">⏳ Chargement...</div>';
 
         try {
-            let url = `/index.php?action=students&page=1&perPage=${this.studentsPerPage}`;
+            // Charger TOUS les étudiants en une seule requête (pas de pagination)
+            let url = `/index.php?action=students&page=1&perPage=10000`;
             if (this.resourceId) {
                 url += `&resource_id=${this.resourceId}`;
             }
@@ -64,8 +69,10 @@ export class StudentListManager {
                     const idB = parseInt(b.id) || 0;
                     return idA - idB;
                 });
+                this.filteredStudents = [...this.allStudents];
                 this.renderStudentsList();
                 window.dispatchEvent(new CustomEvent('studentsUpdated', { detail: this.allStudents }));
+                console.log(`Chargé ${this.allStudents.length} étudiants`);
             }
         } catch (error) {
             console.error('Erreur:', error);
@@ -101,6 +108,16 @@ export class StudentListManager {
                     const nameB = b.funcname || b.exo_name || '';
                     return nameA.localeCompare(nameB);
                 });
+                this.filteredExercises = [...this.allExercises];
+                window.dispatchEvent(new CustomEvent('exercisesUpdated', { detail: this.allExercises }));
+                console.log(`Chargé ${this.allExercises.length} exercices`);
+            }
+        } catch (error) {
+            console.error('Erreur chargement background exercices:', error);
+        }
+    }
+                    return nameA.localeCompare(nameB);
+                });
                 window.dispatchEvent(new CustomEvent('exercisesUpdated', { detail: this.allExercises }));
             }
         } catch (error) {
@@ -113,12 +130,27 @@ export class StudentListManager {
         const sidebarList = document.getElementById('sidebar-list');
         sidebarList.innerHTML = '';
 
-        if (this.allStudents.length === 0) {
-            sidebarList.innerHTML = '<div class="sidebar-message">Aucun étudiant disponible</div>';
+        // Ajouter le bouton de filtre/recherche
+        const filterButton = document.createElement('button');
+        filterButton.className = 'filter-search-btn';
+        filterButton.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Filtrer / Rechercher
+        `;
+        filterButton.addEventListener('click', () => this.openFilterModal('students'));
+        sidebarList.appendChild(filterButton);
+
+        const studentsToDisplay = this.filteredStudents.length > 0 ? this.filteredStudents : this.allStudents;
+
+        if (studentsToDisplay.length === 0) {
+            sidebarList.innerHTML += '<div class="sidebar-message">Aucun étudiant trouvé</div>';
             return;
         }
 
-        this.allStudents.forEach((student) => {
+        studentsToDisplay.forEach((student) => {
             const item = document.createElement('div');
             item.className = 'sidebar-list-item';
             item.dataset.studentId = student.id;
@@ -162,8 +194,10 @@ export class StudentListManager {
                     const nameB = b.funcname || b.exo_name || '';
                     return nameA.localeCompare(nameB);
                 });
+                this.filteredExercises = [...this.allExercises];
                 this.renderExercisesList();
                 window.dispatchEvent(new CustomEvent('exercisesUpdated', { detail: this.allExercises }));
+                console.log(`Chargé ${this.allExercises.length} exercices`);
             }
         } catch (error) {
             console.error('Erreur:', error);
@@ -176,12 +210,27 @@ export class StudentListManager {
         const sidebarList = document.getElementById('sidebar-list');
         sidebarList.innerHTML = '';
 
-        if (this.allExercises.length === 0) {
-            sidebarList.innerHTML = '<div class="sidebar-message">Aucun TP disponible</div>';
+        // Ajouter le bouton de filtre/recherche
+        const filterButton = document.createElement('button');
+        filterButton.className = 'filter-search-btn';
+        filterButton.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Filtrer / Rechercher
+        `;
+        filterButton.addEventListener('click', () => this.openFilterModal('exercises'));
+        sidebarList.appendChild(filterButton);
+
+        const exercisesToDisplay = this.filteredExercises.length > 0 ? this.filteredExercises : this.allExercises;
+
+        if (exercisesToDisplay.length === 0) {
+            sidebarList.innerHTML += '<div class="sidebar-message">Aucun TP trouvé</div>';
             return;
         }
 
-        this.allExercises.forEach((exercise) => {
+        exercisesToDisplay.forEach((exercise) => {
             const item = document.createElement('div');
             item.className = 'sidebar-list-item';
             item.dataset.exerciseId = exercise.exercise_id;
@@ -207,19 +256,217 @@ export class StudentListManager {
         });
     }
 
-    // Configuration du scroll infini pour la sidebar
+    // Configuration du scroll infini pour la sidebar (désactivé car on charge tout)
     setupInfiniteScroll() {
-        const sidebarList = document.getElementById('sidebar-list');
-        if (!sidebarList) return;
+        // Scroll infini désactivé - tous les éléments sont chargés d'un coup
+    }
 
-        sidebarList.addEventListener('scroll', () => {
-            const scrollPosition = sidebarList.scrollTop + sidebarList.clientHeight;
-            const scrollHeight = sidebarList.scrollHeight;
+    // Ouvrir le modal de filtre/recherche
+    openFilterModal(type) {
+        // Vérifier si le modal existe déjà
+        let modal = document.getElementById('filterSearchModal');
+        if (!modal) {
+            modal = this.createFilterModal();
+            document.body.appendChild(modal);
+        }
 
-            if (scrollPosition >= scrollHeight * 0.9 && !this.isLoading && this.hasMoreStudents && this.currentView === 'students') {
-                // Charger plus si nécessaire
+        const modalTitle = modal.querySelector('.filter-modal-title');
+        const searchInput = modal.querySelector('#filterSearchInput');
+        const sortOptions = modal.querySelector('.sort-options');
+
+        if (type === 'students') {
+            modalTitle.textContent = 'Filtrer / Rechercher des étudiants';
+            searchInput.placeholder = 'Rechercher un étudiant...';
+            searchInput.value = this.searchTerm;
+
+            // Mettre à jour les options de tri
+            sortOptions.innerHTML = `
+                <label>
+                    <input type="radio" name="sort" value="default" ${this.currentSort === 'default' ? 'checked' : ''}>
+                    Tri par défaut (ID)
+                </label>
+                <label>
+                    <input type="radio" name="sort" value="name-asc" ${this.currentSort === 'name-asc' ? 'checked' : ''}>
+                    Nom (A → Z)
+                </label>
+                <label>
+                    <input type="radio" name="sort" value="name-desc" ${this.currentSort === 'name-desc' ? 'checked' : ''}>
+                    Nom (Z → A)
+                </label>
+            `;
+        } else {
+            modalTitle.textContent = 'Filtrer / Rechercher des TPs';
+            searchInput.placeholder = 'Rechercher un TP...';
+            searchInput.value = this.searchTerm;
+
+            sortOptions.innerHTML = `
+                <label>
+                    <input type="radio" name="sort" value="default" ${this.currentSort === 'default' ? 'checked' : ''}>
+                    Tri par défaut (Alphabétique)
+                </label>
+                <label>
+                    <input type="radio" name="sort" value="name-asc" ${this.currentSort === 'name-asc' ? 'checked' : ''}>
+                    Nom (A → Z)
+                </label>
+                <label>
+                    <input type="radio" name="sort" value="name-desc" ${this.currentSort === 'name-desc' ? 'checked' : ''}>
+                    Nom (Z → A)
+                </label>
+            `;
+        }
+
+        modal.dataset.type = type;
+        modal.style.display = 'flex';
+
+        // Focus sur l'input de recherche
+        setTimeout(() => searchInput.focus(), 100);
+    }
+
+    // Créer le modal de filtre/recherche
+    createFilterModal() {
+        const modal = document.createElement('div');
+        modal.id = 'filterSearchModal';
+        modal.className = 'filter-search-modal';
+        modal.innerHTML = `
+            <div class="filter-modal-content">
+                <div class="filter-modal-header">
+                    <h3 class="filter-modal-title">Filtrer / Rechercher</h3>
+                    <button class="filter-modal-close" onclick="this.closest('.filter-search-modal').style.display='none'">&times;</button>
+                </div>
+                <div class="filter-modal-body">
+                    <div class="search-section">
+                        <label for="filterSearchInput">Recherche</label>
+                        <input type="text" id="filterSearchInput" placeholder="Rechercher..." />
+                    </div>
+                    <div class="sort-section">
+                        <label>Tri</label>
+                        <div class="sort-options">
+                            <!-- Options de tri dynamiques -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-modal-footer">
+                    <button class="btn-reset">Réinitialiser</button>
+                    <button class="btn-apply">Appliquer</button>
+                </div>
+            </div>
+        `;
+
+        // Événements
+        modal.querySelector('.btn-apply').addEventListener('click', () => {
+            this.applyFilters(modal);
+        });
+
+        modal.querySelector('.btn-reset').addEventListener('click', () => {
+            this.resetFilters(modal);
+        });
+
+        modal.querySelector('#filterSearchInput').addEventListener('input', (e) => {
+            this.searchTerm = e.target.value;
+        });
+
+        // Fermer en cliquant à l'extérieur
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
             }
         });
+
+        return modal;
+    }
+
+    // Appliquer les filtres
+    applyFilters(modal) {
+        const type = modal.dataset.type;
+        const searchTerm = modal.querySelector('#filterSearchInput').value.toLowerCase();
+        const sortValue = modal.querySelector('input[name="sort"]:checked').value;
+
+        this.searchTerm = searchTerm;
+        this.currentSort = sortValue;
+
+        if (type === 'students') {
+            // Filtrer les étudiants
+            this.filteredStudents = this.allStudents.filter(student => {
+                const title = (student.title || '').toLowerCase();
+                return title.includes(searchTerm);
+            });
+
+            // Trier
+            this.filteredStudents = this.sortItems(this.filteredStudents, sortValue, 'students');
+            this.renderStudentsList();
+        } else {
+            // Filtrer les exercices
+            this.filteredExercises = this.allExercises.filter(exercise => {
+                const name = (exercise.funcname || exercise.exo_name || '').toLowerCase();
+                return name.includes(searchTerm);
+            });
+
+            // Trier
+            this.filteredExercises = this.sortItems(this.filteredExercises, sortValue, 'exercises');
+            this.renderExercisesList();
+        }
+
+        modal.style.display = 'none';
+    }
+
+    // Réinitialiser les filtres
+    resetFilters(modal) {
+        const type = modal.dataset.type;
+
+        this.searchTerm = '';
+        this.currentSort = 'default';
+
+        modal.querySelector('#filterSearchInput').value = '';
+        modal.querySelector('input[name="sort"][value="default"]').checked = true;
+
+        if (type === 'students') {
+            this.filteredStudents = [...this.allStudents];
+            this.renderStudentsList();
+        } else {
+            this.filteredExercises = [...this.allExercises];
+            this.renderExercisesList();
+        }
+
+        modal.style.display = 'none';
+    }
+
+    // Trier les éléments
+    sortItems(items, sortValue, type) {
+        const sorted = [...items];
+
+        if (type === 'students') {
+            if (sortValue === 'name-asc') {
+                sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+            } else if (sortValue === 'name-desc') {
+                sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+            } else {
+                // default: par ID
+                sorted.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+            }
+        } else {
+            if (sortValue === 'name-asc') {
+                sorted.sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameA.localeCompare(nameB);
+                });
+            } else if (sortValue === 'name-desc') {
+                sorted.sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameB.localeCompare(nameA);
+                });
+            } else {
+                // default: alphabétique
+                sorted.sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameA.localeCompare(nameB);
+                });
+            }
+        }
+
+        return sorted;
     }
 
     // Charger tous les étudiants pour le menu burger
@@ -238,5 +485,65 @@ export class StudentListManager {
     // Méthode obsolète conservée pour compatibilité
     toggleAccordion(accordionId) {
         // Non utilisé dans le nouveau design
+    }
+}
+        if (type === 'students') {
+            this.filteredStudents = [...this.allStudents];
+            this.renderStudentsList();
+        } else {
+            this.filteredExercises = [...this.allExercises];
+            this.renderExercisesList();
+        }
+        modal.style.display = 'none';
+    }
+    // Trier les �l�ments
+    sortItems(items, sortValue, type) {
+        const sorted = [...items];
+        if (type === 'students') {
+            if (sortValue === 'name-asc') {
+                sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+            } else if (sortValue === 'name-desc') {
+                sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+            } else {
+                // default: par ID
+                sorted.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+            }
+        } else {
+            if (sortValue === 'name-asc') {
+                sorted.sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameA.localeCompare(nameB);
+                });
+            } else if (sortValue === 'name-desc') {
+                sorted.sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameB.localeCompare(nameA);
+                });
+            } else {
+                // default: alphab�tique
+                sorted.sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameA.localeCompare(nameB);
+                });
+            }
+        }
+        return sorted;
+    }
+    // Charger tous les �tudiants pour le menu burger
+    async loadAllStudents() {
+        await this.loadStudents();
+    }
+    getAllStudents() {
+        return this.allStudents;
+    }
+    getResourceId() {
+        return this.resourceId;
+    }
+    // M�thode obsol�te conserv�e pour compatibilit�
+    toggleAccordion(accordionId) {
+        // Non utilis� dans le nouveau design
     }
 }
