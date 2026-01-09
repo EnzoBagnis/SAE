@@ -381,5 +381,3 @@ class ExercisesController extends \BaseController
         exit;
     }
 }
-
-

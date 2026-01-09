@@ -80,7 +80,10 @@ class Student
                     $stmt->execute();
                 } else {
                     // Méthode 2: Via les tentatives (seulement les étudiants avec tentatives)
-                    error_log("Student.php: exercises.dataset_id n'existe pas, utilisation des tentatives pour resource_id=$resourceId");
+                    error_log(
+                        "Student.php: exercises.dataset_id n'existe pas, " .
+                        "utilisation des tentatives pour resource_id=$resourceId"
+                    );
                     $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
                              "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
                              "FROM students s " .
@@ -96,7 +99,10 @@ class Student
             }
 
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            error_log("Student.php getAllStudents: Retour de " . count($results) . " étudiants pour resource_id=" . ($resourceId ?? 'null'));
+            error_log(
+                "Student.php getAllStudents: Retour de " . count($results) .
+                " étudiants pour resource_id=" . ($resourceId ?? 'null')
+            );
             return $results;
         } catch (PDOException $e) {
             error_log("Error getting students: " . $e->getMessage());
