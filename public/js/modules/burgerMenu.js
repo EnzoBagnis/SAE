@@ -81,6 +81,16 @@ export class BurgerMenuManager {
 
         submenu.classList.toggle('active');
         arrow.classList.toggle('rotated');
+
+        // Si le sous-menu s'ouvre (devient actif), afficher les graphes globaux des étudiants
+        if (submenu.classList.contains('active')) {
+            // Fermer le menu burger
+            this.closeMenu();
+            // Basculer vers la vue étudiants avec chargement du contenu
+            if (window.switchListView) {
+                window.switchListView('students', true);
+            }
+        }
     }
 
     toggleExerciseSubmenu(event) {
@@ -91,6 +101,16 @@ export class BurgerMenuManager {
         if (submenu && arrow) {
             submenu.classList.toggle('active');
             arrow.classList.toggle('rotated');
+
+            // Si le sous-menu s'ouvre (devient actif), afficher les graphes globaux des exercices
+            if (submenu.classList.contains('active')) {
+                // Fermer le menu burger
+                this.closeMenu();
+                // Basculer vers la vue exercices avec chargement du contenu
+                if (window.switchListView) {
+                    window.switchListView('exercises', true);
+                }
+            }
         }
     }
 
