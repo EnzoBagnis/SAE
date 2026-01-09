@@ -513,7 +513,15 @@ const DetailedCharts = (function() {
             .text(d => d.data.value > 0 ? d.data.value : '');
 
         // Legend with percentages - positioned bottom left with absolute coordinates
-        const total = data.reduce((sum, d) => sum + d.value, 0);
+        // Calculate total from actual data values, not from stats.total_attempts
+        const totalFromData = data.reduce((sum, d) => sum + d.value, 0);
+
+        console.log('📊 Legend calculation:', {
+            data: data,
+            totalFromData: totalFromData,
+            statsTotal: totalAttempts
+        });
+
         const legend = svg.selectAll('.legend')
             .data(data)
             .enter()
@@ -542,7 +550,8 @@ const DetailedCharts = (function() {
             .style('font-size', '10px')
             .style('fill', '#7f8c8d')
             .text(d => {
-                const percentage = total > 0 ? ((d.value / total) * 100).toFixed(1) : 0;
+                // Use totalFromData instead of total to ensure 100%
+                const percentage = totalFromData > 0 ? ((d.value / totalFromData) * 100).toFixed(1) : 0;
                 return `${d.value} (${percentage}%)`;
             });
     }
