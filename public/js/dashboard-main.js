@@ -29,7 +29,10 @@ function initializeDashboard() {
     window.toggleBurgerMenu = () => burgerMenuManager.toggleMenu();
     window.toggleStudentSubmenu = (e) => burgerMenuManager.toggleStudentSubmenu(e);
     window.toggleExerciseSubmenu = (e) => burgerMenuManager.toggleExerciseSubmenu(e);
-    window.switchListView = (view) => studentListManager.switchView(view);
+    // window.switchListView est géré dans setupEventListeners si les charts sont actifs, ou en fallback en bas de fichier
+    if (!window.switchListView) {
+         window.switchListView = (view) => studentListManager.switchView(view);
+    }
     window.closeBurgerMenu = () => burgerMenuManager.closeMenu();
 
     // Charger les données initiales
