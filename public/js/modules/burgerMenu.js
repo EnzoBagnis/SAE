@@ -82,12 +82,11 @@ export class BurgerMenuManager {
         submenu.classList.toggle('active');
         arrow.classList.toggle('rotated');
 
-        // Si le sous-menu s'ouvre (devient actif), afficher les graphes globaux des étudiants
-        // SANS fermer le menu burger pour permettre la sélection d'un étudiant spécifique
+        // Si le sous-menu s'ouvre, basculer vers la vue étudiants SANS charger le contenu
+        // (on ne charge que la liste dans la sidebar, pas les graphes)
         if (submenu.classList.contains('active')) {
-            // Basculer vers la vue étudiants avec chargement du contenu
             if (window.switchListView) {
-                window.switchListView('students', true);
+                window.switchListView('students', false);
             }
         }
     }
@@ -101,12 +100,11 @@ export class BurgerMenuManager {
             submenu.classList.toggle('active');
             arrow.classList.toggle('rotated');
 
-            // Si le sous-menu s'ouvre (devient actif), afficher les graphes globaux des exercices
-            // SANS fermer le menu burger pour permettre la sélection d'un TP spécifique
+            // Si le sous-menu s'ouvre, basculer vers la vue exercices SANS charger le contenu
+            // (on ne charge que la liste dans la sidebar, pas les graphes)
             if (submenu.classList.contains('active')) {
-                // Basculer vers la vue exercices avec chargement du contenu
                 if (window.switchListView) {
-                    window.switchListView('exercises', true);
+                    window.switchListView('exercises', false);
                 }
             }
         }
