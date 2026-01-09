@@ -242,8 +242,50 @@
 .placeholder-message {
     text-align: center;
     color: #7f8c8d;
-    font-size: 1.2rem;
-    margin-top: 3rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none; /* Hide sidebar on mobile, use burger menu */
+    }
+
+    .dashboard-container {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        padding: 10px;
+        width: 100%;
+        overflow-x: hidden;
+        height: auto;
+        min-height: calc(100vh - 80px);
+    }
+
+    .data-zone {
+        flex-direction: column;
+        display: block;
+        padding: 1rem;
+    }
+
+    .chart-container {
+        width: 100%;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+
+    .data-zone h2 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    /* Adjust tooltip position safety if needed */
+    .d3-tooltip {
+        max-width: 200px;
+        white-space: normal;
+    }
 }
 
 /* Scrollbar styling pour main content */
@@ -834,6 +876,43 @@
     .import-tab.active {
         background: #e8f4f8;
         border-left: 4px solid #3498db;
+    }
+
+    .dashboard-container {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        padding: 10px;
+        width: 100%;
+        overflow-x: hidden;
+        height: auto;
+        min-height: calc(100vh - 80px);
+    }
+
+    .data-zone {
+        flex-direction: column;
+        display: block;
+        padding: 1rem;
+    }
+
+    .chart-container {
+        width: 100%;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+
+    .data-zone h2 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    /* Adjust tooltip position safety if needed */
+    .d3-tooltip {
+        max-width: 200px;
+        white-space: normal;
     }
 }
 

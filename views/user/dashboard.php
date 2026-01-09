@@ -17,10 +17,12 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
     <link rel="stylesheet" href="/public/css/style.css">
     <link rel="stylesheet" href="/public/css/dashboard.css">
-     <link rel="stylesheet" href="/public/css/footer.css">
+    <link rel="stylesheet" href="/public/css/charts.css">
+    <link rel="stylesheet" href="/public/css/footer.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="/public/js/modules/import.js"></script>
     <script src="/public/js/modules/charts.js"></script>
+    <script src="/public/js/modules/detailedCharts.js"></script>
     <script type="module" src="/public/js/dashboard-main.js"></script>
 
 
