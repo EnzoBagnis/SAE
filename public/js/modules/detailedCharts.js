@@ -108,9 +108,11 @@ const DetailedCharts = (function() {
         }
 
         // Sort attempts by date
-        const sortedAttempts = [...attempts].sort((a, b) =>
-            new Date(a.timestamp || a.date_tentative) - new Date(b.timestamp || b.date_tentative)
-        );
+        const sortedAttempts = [...attempts].sort((a, b) => {
+            const dateA = new Date(a.timestamp || a.date_tentative || a.submission_date || 0);
+            const dateB = new Date(b.timestamp || b.date_tentative || b.submission_date || 0);
+            return dateA.getTime() - dateB.getTime();
+        });
 
         // Calculate cumulative success rate
         let successCount = 0;
@@ -447,7 +449,12 @@ const DetailedCharts = (function() {
         // Group by date
         const dateGroups = {};
         attempts.forEach(attempt => {
-            const date = new Date(attempt.timestamp || attempt.date_tentative);
+            const dateStr = attempt.timestamp || attempt.date_tentative || attempt.submission_date;
+            if (!dateStr) return;
+
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return; // Skip invalid dates
+
             const dateKey = date.toISOString().split('T')[0];
             if (!dateGroups[dateKey]) {
                 dateGroups[dateKey] = 0;
@@ -742,8 +749,14 @@ const DetailedCharts = (function() {
         const allAttempts = [];
         students.forEach(student => {
             (student.attempts || []).forEach(attempt => {
+                const dateStr = attempt.timestamp || attempt.date_tentative || attempt.submission_date;
+                if (!dateStr) return;
+
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return; // Skip invalid dates
+
                 allAttempts.push({
-                    date: new Date(attempt.timestamp || attempt.date_tentative),
+                    date: date,
                     success: isAttemptSuccessful(attempt),
                     student: student.student_identifier || `Étudiant ${student.student_id}`
                 });
