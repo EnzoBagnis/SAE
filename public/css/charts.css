@@ -1,0 +1,265 @@
+/* Styles pour les graphiques D3.js détaillés */
+
+/* Container principal des graphiques */
+#student-charts-container,
+#exercise-charts-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Graphiques individuels */
+.chart-container {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Titres des graphiques */
+.chart-container h3 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+/* SVG responsives */
+.chart-container svg {
+    display: block;
+    margin: 0 auto;
+}
+
+/* Axes D3.js */
+.chart-container .domain,
+.chart-container .tick line {
+    stroke: #bdc3c7;
+}
+
+.chart-container .tick text {
+    fill: #7f8c8d;
+    font-size: 11px;
+}
+
+/* Grilles */
+.chart-container .grid line {
+    stroke: #ecf0f1;
+    stroke-opacity: 0.7;
+}
+
+/* Tooltips D3.js */
+.chart-tooltip {
+    z-index: 10000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Barres interactives */
+.chart-container rect {
+    transition: opacity 0.2s ease;
+}
+
+/* Points sur les graphiques en ligne */
+.chart-container circle.dot {
+    transition: r 0.2s ease;
+}
+
+/* Légendes */
+.chart-container .legend text {
+    font-size: 12px;
+    fill: #2c3e50;
+}
+
+/* Cartes métriques (dashboard) */
+.chart-container > div > div[style*="grid-template-columns"] > div {
+    transition: transform 0.2s ease;
+}
+
+.chart-container > div > div[style*="grid-template-columns"] > div:hover {
+    transform: scale(1.02);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #student-charts-container,
+    #exercise-charts-container {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+        padding: 0.5rem !important;
+    }
+
+    .chart-container {
+        padding: 1rem !important;
+    }
+
+    .chart-container h3 {
+        font-size: 1rem !important;
+    }
+
+    /* Ajuster la taille des textes sur les axes */
+    .chart-container .tick text {
+        font-size: 9px;
+    }
+
+    /* Full width pour le graphique de timeline */
+    .chart-container[style*="grid-column"] {
+        grid-column: 1 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #student-charts-container,
+    #exercise-charts-container {
+        gap: 1rem !important;
+        padding: 0.25rem !important;
+    }
+
+    .chart-container {
+        padding: 0.75rem !important;
+    }
+
+    .chart-container h3 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+}
+
+/* Animation de chargement pour les graphiques */
+.chart-container svg {
+    animation: chartLoad 0.5s ease-out;
+}
+
+@keyframes chartLoad {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Style pour les messages d'erreur dans les graphiques */
+.chart-container p[style*="color: #e74c3c"],
+.chart-container p[style*="color: #7f8c8d"] {
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.95rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin: 1rem 0;
+}
+
+/* Amélioration des transitions pour les barres empilées */
+.chart-container .series rect {
+    transition: opacity 0.2s ease, y 0.3s ease, height 0.3s ease;
+}
+
+/* Style pour les lignes dans les graphiques */
+.chart-container path[stroke] {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Amélioration de la lisibilité des légendes */
+.chart-container .legend {
+    cursor: default;
+}
+
+.chart-container .legend rect {
+    stroke: rgba(0,0,0,0.1);
+    stroke-width: 1;
+}
+
+/* Style pour les grilles de fond */
+.chart-container .grid path {
+    stroke-width: 0;
+}
+
+/* Curseurs pour les éléments interactifs */
+.chart-container rect[style*="cursor: pointer"],
+.chart-container circle[style*="cursor: pointer"],
+.chart-container path[style*="cursor: pointer"] {
+    cursor: pointer;
+}
+
+/* Effet de surbrillance pour les éléments cliquables */
+.chart-container rect[style*="cursor: pointer"]:hover,
+.chart-container circle[style*="cursor: pointer"]:hover {
+    filter: brightness(1.1);
+}
+
+/* Amélioration de l'apparence des axes */
+.chart-container .domain {
+    stroke-width: 1.5;
+}
+
+/* Style pour les titres des axes */
+.chart-container text[text-anchor="middle"][style*="font-size: 12px"] {
+    font-weight: 500;
+    fill: #34495e;
+}
+
+/* Padding pour éviter que les graphiques touchent les bords */
+.chart-container svg {
+    padding: 4px;
+}
+
+/* Style pour les graphiques circulaires (pie/donut) */
+.chart-container .arc path {
+    stroke-width: 2;
+}
+
+.chart-container .arc text {
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Animation pour les sections du pie chart */
+.chart-container .arc path {
+    transition: d 0.2s ease;
+}
+
+/* Style pour les barres dans les histogrammes */
+.chart-container .bar {
+    transition: opacity 0.2s ease, fill 0.2s ease;
+}
+
+/* Amélioration du contraste pour les petites valeurs */
+.chart-container text[dy] {
+    font-weight: 500;
+}
+
+/* Accessibilité : focus visible pour les éléments interactifs */
+.chart-container rect:focus,
+.chart-container circle:focus,
+.chart-container path:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .chart-container {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .chart-tooltip {
+        display: none !important;
+    }
+}
+
