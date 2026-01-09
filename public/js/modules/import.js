@@ -1,5 +1,5 @@
 /**
- * import.js - Gestion du modal d'import JSON avec découpage (Chunks)
+ * import.js - Version corrigée (Anti-plantage et Découpage par paquets)
  */
 
 let currentExercisesData = null;
@@ -49,93 +49,56 @@ function handleFileSelect(event, type) {
                 displayAttemptsPreview(data);
             }
         } catch (error) {
-            showImportStatus(`Erreur JSON : ${error.message}`, 'error');
+            showImportStatus(`Erreur lecture JSON : ${error.message}`, 'error');
         }
     };
     reader.readAsText(file);
 }
 
 /**
- * IMPORT DES EXERCICES (CORRIGÉ)
- */
-async function importExercises() {
-    console.log("Données brutes avant import:", currentExercisesData);
-    if (!currentExercisesData) return;
-
-    let list = Array.isArray(currentExercisesData) ? currentExercisesData : (currentExercisesData.exercises || currentExercisesData.data || []);
-    const modal = document.getElementById('importModal');
-    const resourceId = modal?.dataset.resourceId;
-
-    const CHUNK_SIZE = 50;
-    for (let i = 0; i < list.length; i += CHUNK_SIZE) {
-        const chunk = list.slice(i, i + CHUNK_SIZE);
-
-        // On s'assure que chaque exercice possède les champs minimums attendus par le PHP
-        const formattedChunk = chunk.map(ex => ({
-            ...ex,
-            resource_id: resourceId || ex.resource_id,
-            // On double les clés au cas où le PHP attend l'un ou l'autre
-            nom: ex.nom || ex.title || "Sans titre",
-            title: ex.title || ex.nom || "Sans titre"
-        }));
-
-        const payload = { exercises: formattedChunk };
-        console.log("Envoi du paquet à l'API:", payload);
-
-        try {
-            const response = await fetch('api_import_exercises.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-            console.log("Réponse du serveur pour ce paquet:", result);
-
-            if (result.error) {
-                showImportStatus(`Erreur : ${result.error}`, 'error');
-                return;
-            }
-        } catch (e) {
-            console.error("Erreur lors de l'appel API:", e);
-        }
-    }
-    showImportStatus(`Import terminé. Vérifiez la page.`, 'success');
-    setTimeout(() => window.location.reload(), 2000);
-}
-
-/**
- * IMPORT DES TENTATIVES (CORRIGÉ)
+ * IMPORT DES TENTATIVES - VERSION ROBUSTE (CHUNKED)
  */
 async function importAttempts() {
-    console.log("Démarrage importAttempts...");
     if (!currentAttemptsData) {
-        showImportStatus('Aucune donnée chargée.', 'error');
+        showImportStatus('Aucune donnée à importer.', 'error');
         return;
     }
 
-    let list = Array.isArray(currentAttemptsData) ? currentAttemptsData : (currentAttemptsData.attempts || currentAttemptsData.data || []);
+    // Extraction sécurisée de la liste
+    let list = [];
+    let datasetInfo = null;
+    if (Array.isArray(currentAttemptsData)) {
+        list = currentAttemptsData;
+    } else if (typeof currentAttemptsData === 'object' && currentAttemptsData !== null) {
+        list = currentAttemptsData.attempts || currentAttemptsData.data || [];
+        datasetInfo = currentAttemptsData.dataset_info || null;
+    }
 
     if (list.length === 0) {
-        showImportStatus('Aucune tentative trouvée.', 'error');
+        showImportStatus('Le fichier est vide ou mal formaté.', 'error');
         return;
     }
 
     const modal = document.getElementById('importModal');
     let resourceId = modal?.dataset.resourceId || new URLSearchParams(window.location.search).get('id');
 
-    const CHUNK_SIZE = 100;
+    // CONFIGURATION : On envoie par paquets de 50 pour être sûr que Alwaysdata accepte
+    const CHUNK_SIZE = 50;
     let totalAdded = 0;
+
+    showImportStatus(`Démarrage de l'import (${list.length} lignes)...`, 'warning');
 
     try {
         for (let i = 0; i < list.length; i += CHUNK_SIZE) {
             const chunk = list.slice(i, i + CHUNK_SIZE);
-            showImportStatus(`Importation tentatives : ${Math.min(i + CHUNK_SIZE, list.length)} / ${list.length} ...`, 'warning');
+            const progress = Math.min(i + CHUNK_SIZE, list.length);
+
+            showImportStatus(`Import : ${progress} / ${list.length} <span class="loading-spinner"></span>`, 'warning');
 
             const payload = {
                 attempts: chunk,
                 resource_id: resourceId,
-                dataset_info: (i === 0 && !Array.isArray(currentAttemptsData)) ? currentAttemptsData.dataset_info : null
+                dataset_info: (i === 0) ? datasetInfo : null // Uniquement au premier paquet
             };
 
             const response = await fetch(`api_import_attempts.php${resourceId ? '?id='+resourceId : ''}`, {
@@ -144,37 +107,85 @@ async function importAttempts() {
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error(`Erreur paquet ${i}`);
+            // On vérifie si la réponse est bien du JSON
+            const text = await response.text();
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                console.error("Le serveur a répondu :", text);
+                throw new Error("Le serveur a renvoyé une erreur (fichier trop gros ou erreur PHP).");
+            }
 
-            const res = await response.json();
-            totalAdded += (res.added_count || chunk.length);
+            if (!response.ok) {
+                throw new Error(result?.error || `Erreur serveur ${response.status}`);
+            }
+
+            totalAdded += (result?.added_count || chunk.length);
         }
 
-        showImportStatus(`✓ Terminé ! ${totalAdded} tentatives traitées.`, 'success');
-        setTimeout(() => { window.location.reload(); }, 1500);
+        showImportStatus(`✓ Import réussi ! ${totalAdded} lignes traitées.`, 'success');
+        setTimeout(() => window.location.reload(), 2000);
 
     } catch (error) {
-        console.error(error);
+        console.error('Erreur import:', error);
+        showImportStatus(`Erreur : ${error.message}`, 'error');
+        // NOTE: J'ai supprimé le localStorage.setItem qui faisait planter votre navigateur ici.
+    }
+}
+
+/**
+ * IMPORT DES EXERCICES - VERSION ROBUSTE (CHUNKED)
+ */
+async function importExercises() {
+    if (!currentExercisesData) {
+        showImportStatus('Aucun exercice à importer.', 'error');
+        return;
+    }
+
+    let list = Array.isArray(currentExercisesData) ? currentExercisesData : (currentExercisesData.exercises || []);
+    const modal = document.getElementById('importModal');
+    const resourceId = modal?.dataset.resourceId;
+
+    const CHUNK_SIZE = 50;
+    showImportStatus(`Importation des exercices...`, 'warning');
+
+    try {
+        for (let i = 0; i < list.length; i += CHUNK_SIZE) {
+            const chunk = list.slice(i, i + CHUNK_SIZE);
+            const payload = {
+                exercises: chunk.map(ex => ({ ...ex, resource_id: resourceId || ex.resource_id }))
+            };
+
+            const response = await fetch('api_import_exercises.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error("Erreur lors de l'envoi d'un paquet d'exercices.");
+        }
+        showImportStatus(`✓ Import terminé avec succès !`, 'success');
+        setTimeout(() => window.location.reload(), 2000);
+    } catch (error) {
         showImportStatus(`Erreur : ${error.message}`, 'error');
     }
 }
 
-// Fonctions d'aperçu (gardées identiques)
+// Utilitaires d'aperçu
 function displayExercisesPreview(data) {
     const preview = document.getElementById('exercisesPreview');
-    const content = preview?.querySelector('.preview-content');
-    if (!content) return;
+    if (!preview) return;
     const list = Array.isArray(data) ? data : (data.exercises || []);
-    content.innerHTML = `<strong>Exercices détectés :</strong> ${list.length}<br><small>Prêt pour l'import.</small>`;
+    preview.querySelector('.preview-content').innerHTML = `Exercices trouvés : ${list.length}`;
     preview.style.display = 'block';
 }
 
 function displayAttemptsPreview(data) {
     const preview = document.getElementById('attemptsPreview');
-    const content = preview?.querySelector('.preview-content');
-    if (!content) return;
+    if (!preview) return;
     const list = Array.isArray(data) ? data : (data.attempts || []);
-    content.innerHTML = `<strong>Tentatives détectées :</strong> ${list.length}<br><small>Prêt pour l'import.</small>`;
+    preview.querySelector('.preview-content').innerHTML = `Tentatives trouvées : ${list.length}`;
     preview.style.display = 'block';
 }
 
@@ -199,7 +210,7 @@ function resetImportForm() {
     document.getElementById('importStatus').style.display = 'none';
 }
 
-// Initialisation
+// Initialisation au chargement
 document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('click', (e) => {
         if (e.target.id === 'importModal') closeImportModal();
