@@ -102,18 +102,24 @@ export class AttemptsRenderer {
         const exerciseSelect = document.createElement('select');
         exerciseSelect.id = 'exercise-filter';
 
-        // Extraire les exercices uniques des tentatives
+        // Extraire les exercices uniques des tentatives avec leurs informations
         const uniqueExercises = new Map();
         attempts.forEach(attempt => {
             if (attempt.exercise_id && attempt.exo_name) {
-                uniqueExercises.set(attempt.exercise_id, attempt.exo_name);
+                uniqueExercises.set(attempt.exercise_id, {
+                    name: attempt.exo_name,
+                    funcname: attempt.funcname || null
+                });
             }
         });
 
         // Créer les options du select
         let exerciseOptions = '<option value="all">Tous les exercices</option>';
-        uniqueExercises.forEach((name, id) => {
-            exerciseOptions += `<option value="${id}">${name}</option>`;
+        uniqueExercises.forEach((exerciseInfo, id) => {
+            const displayText = exerciseInfo.funcname
+                ? `${exerciseInfo.name} (${exerciseInfo.funcname})`
+                : exerciseInfo.name;
+            exerciseOptions += `<option value="${id}">${displayText}</option>`;
         });
         exerciseSelect.innerHTML = exerciseOptions;
 
@@ -122,7 +128,7 @@ export class AttemptsRenderer {
             borderRadius: '4px',
             border: '1px solid #ddd',
             cursor: 'pointer',
-            minWidth: '150px'
+            minWidth: '200px'
         });
 
         // Compteur de résultats
