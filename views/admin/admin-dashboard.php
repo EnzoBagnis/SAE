@@ -29,7 +29,7 @@
 <main class="main-content">
     <section class="data-zone">
 
-        <?php if (isset($_GET['error'])): ?>
+        <?php if (isset($_GET['error'])) : ?>
             <div class="alert alert-error">
                 <?php
                 $errors = [
@@ -42,7 +42,7 @@
             </div>
         <?php endif; ?>
 
-        <?php if (isset($_GET['success'])): ?>
+        <?php if (isset($_GET['success'])) : ?>
             <div class="alert alert-success">
                 <?php
                 if ($_GET['success'] === 'deleted') {
@@ -99,13 +99,13 @@
                 </thead>
                 <tbody>
 
-                <?php if (empty($verifiedUsers)): ?>
+                <?php if (empty($verifiedUsers)) : ?>
                     <tr>
                         <?php echo"<script>console.log(" . json_encode($verifiedUsers) . ");</script>" ?>
                         <td colspan="5" class="text-center">Aucun utilisateur vérifié</td>
                     </tr>
-                <?php else: ?>
-                    <?php foreach ($verifiedUsers as $user): ?>
+                <?php else : ?>
+                    <?php foreach ($verifiedUsers as $user) : ?>
                         <tr>
                             <td><?= htmlspecialchars($user['id']) ?></td>
                             <td><?= htmlspecialchars($user['nom']) ?></td>
@@ -146,21 +146,21 @@
                 </tr>
                 </thead>
                 <tbody>
-                <?php if (empty($pendingUsers)): ?>
+                <?php if (empty($pendingUsers)) : ?>
                     <tr>
                         <td colspan="5" class="text-center">Aucun utilisateur en attente</td>
                     </tr>
-                <?php else: ?>
-                    <?php foreach ($pendingUsers as $user): ?>
+                <?php else : ?>
+                    <?php foreach ($pendingUsers as $user) : ?>
                         <tr>
-                            <td><?php switch ( $user['verifie']) {
+                            <td><?php switch ($user['verifie']) {
                                 case 0:
                                     echo "Demande envoyée";
                                     break;
                                 case 1:
                                     echo "Email vérifié";
                                     break;
-                            } ?></td>
+                                } ?></td>
                             <td><?= htmlspecialchars($user['id']) ?></td>
                             <td><?= htmlspecialchars($user['nom']) ?></td>
                             <td><?= htmlspecialchars($user['prenom']) ?></td>
@@ -177,7 +177,7 @@
                                 <button class="btn-ban" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?php echo date('Y-m-d'); ?>', '')">
                                     Bloquer
                                 </button>
-                                <?php if ($user['verifie'] == 1): ?>
+                                <?php if ($user['verifie'] == 1) : ?>
                                     <a href="index.php?action=adminValidUser&id=<?= urlencode($user['id']) ?>"
                                        class="btn-validate"
                                        onclick="return confirm('Êtes-vous sûr de vouloir valider cet utilisateur ?')">
@@ -206,22 +206,22 @@
                 </thead>
                 <tbody>
 
-                <?php if (empty($blockedUsers)): ?>
+                <?php if (empty($blockedUsers)) : ?>
                     <tr>
                         <?php echo"<script>console.log(" . json_encode($blockedUsers) . ");</script>" ?>
                         <td colspan="5" class="text-center">Aucun utilisateur vérifié</td>
                     </tr>
-                <?php else: ?>
-                    <?php foreach ($blockedUsers as $user): ?>
+                <?php else : ?>
+                    <?php foreach ($blockedUsers as $user) : ?>
                         <tr>
                             <td><?= htmlspecialchars($user['id']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td><?= htmlspecialchars($user['date_de_ban']) ?></td>
-                            <!--<td><?php if ($user['ban_def'] == 1): ?>
+                            <!--<td><?php if ($user['ban_def'] == 1) : ?>
                                 Permanent
-                            <?php else: ?>
-                                <?= htmlspecialchars($user['duree_ban']) ?>
-                            <?php endif; ?>
+                                    <?php else : ?>
+                                        <?= htmlspecialchars($user['duree_ban']) ?>
+                                    <?php endif; ?>
                             </td>-->
                             <td class="actions">
                                 <button class="btn-edit" onclick="openEditPopup('B', '<?= htmlspecialchars($user['id']) ?>', '', '', '<?= htmlspecialchars($user['mail']) ?>', '', '<?= htmlspecialchars($user['date_de_ban']) ?>', '<?= htmlspecialchars($user['duree_ban']) ?>')">Modifier</button>

@@ -89,7 +89,6 @@ class User
             'id' => $id,
             'table' => $table
         ]);
-
     }
 
 
@@ -347,7 +346,7 @@ class User
             $sql = "DELETE FROM {$table} WHERE id = :id";
         }
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute( ['id' => $id]);
+        return $stmt->execute(['id' => $id]);
     }
 
     /**

@@ -33,20 +33,17 @@ class AdminLogin extends \BaseController
 
             // Vérification des identifiants
             if ($ID === $ADMIN_ID && $mdp === $ADMIN_PASS) {
-
                  $_SESSION['admin'] = true;
                  session_write_close();
                  header('Location: index.php?action=admin');
                  exit;
-
-             } else {
-                 $this->loadView('admin/admin-login', [
-                     'title' => 'Connexion Admin',
-                     'error_message' => 'Identifiants incorrects.'
-                 ]);
-                 return;
-             }
-
+            } else {
+                $this->loadView('admin/admin-login', [
+                    'title' => 'Connexion Admin',
+                    'error_message' => 'Identifiants incorrects.'
+                ]);
+                return;
+            }
         } else {
             $this->index();
         }
