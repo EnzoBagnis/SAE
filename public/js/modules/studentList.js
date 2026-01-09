@@ -12,7 +12,7 @@ export class StudentListManager {
         this.filteredExercises = [];
         this.currentView = 'students'; // 'students' ou 'exercises'
         this.resourceId = this.getResourceIdFromUrl();
-        this.currentSort = 'default'; // 'default', 'name-asc', 'name-desc'
+        this.currentSort = 'name-asc'; // 'name-asc', 'name-desc'
         this.searchTerm = '';
     }
 
@@ -271,19 +271,15 @@ export class StudentListManager {
             searchInput.placeholder = 'Rechercher un étudiant...';
             searchInput.value = this.searchTerm;
 
-            // Mettre à jour les options de tri
+            // Mettre à jour les options de tri (seulement ordre alphabétique)
             sortOptions.innerHTML = `
                 <label>
-                    <input type="radio" name="sort" value="default" ${this.currentSort === 'default' ? 'checked' : ''}>
-                    Tri par défaut (ID)
-                </label>
-                <label>
-                    <input type="radio" name="sort" value="name-asc" ${this.currentSort === 'name-asc' ? 'checked' : ''}>
-                    Nom (A → Z)
+                    <input type="radio" name="sort" value="name-asc" ${this.currentSort === 'name-asc' || this.currentSort === 'default' ? 'checked' : ''}>
+                    Ordre croissant (A → Z)
                 </label>
                 <label>
                     <input type="radio" name="sort" value="name-desc" ${this.currentSort === 'name-desc' ? 'checked' : ''}>
-                    Nom (Z → A)
+                    Ordre décroissant (Z → A)
                 </label>
             `;
         } else {
@@ -293,16 +289,12 @@ export class StudentListManager {
 
             sortOptions.innerHTML = `
                 <label>
-                    <input type="radio" name="sort" value="default" ${this.currentSort === 'default' ? 'checked' : ''}>
-                    Tri par défaut (Alphabétique)
-                </label>
-                <label>
-                    <input type="radio" name="sort" value="name-asc" ${this.currentSort === 'name-asc' ? 'checked' : ''}>
-                    Nom (A → Z)
+                    <input type="radio" name="sort" value="name-asc" ${this.currentSort === 'name-asc' || this.currentSort === 'default' ? 'checked' : ''}>
+                    Ordre croissant (A → Z)
                 </label>
                 <label>
                     <input type="radio" name="sort" value="name-desc" ${this.currentSort === 'name-desc' ? 'checked' : ''}>
-                    Nom (Z → A)
+                    Ordre décroissant (Z → A)
                 </label>
             `;
         }
@@ -406,10 +398,11 @@ export class StudentListManager {
         const type = modal.dataset.type;
 
         this.searchTerm = '';
-        this.currentSort = 'default';
+        this.currentSort = 'name-asc'; // Tri alphabétique croissant par défaut
 
         modal.querySelector('#filterSearchInput').value = '';
-        modal.querySelector('input[name="sort"][value="default"]').checked = true;
+        const defaultRadio = modal.querySelector('input[name="sort"][value="name-asc"]');
+        if (defaultRadio) defaultRadio.checked = true;
 
         if (type === 'students') {
             this.filteredStudents = [...this.allStudents];
