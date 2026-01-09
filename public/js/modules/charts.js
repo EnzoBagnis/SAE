@@ -178,6 +178,7 @@ const ChartModule = (function() {
     }
 
     /**
+     *
      * Render exercise completion chart (done vs not done)
      * @param {Object} data - Object with completed and total counts
      * @param {string} containerId - ID of the container element
