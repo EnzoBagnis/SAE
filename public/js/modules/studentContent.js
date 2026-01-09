@@ -106,7 +106,7 @@ export class StudentContentManager {
         rawDataContent.appendChild(attemptsTitle);
         rawDataContent.appendChild(attemptsContainer);
 
-        const visualizationContent = this.createVisualizationContent();
+        const visualizationContent = this.createVisualizationContent(student, attempts, stats);
 
         dataZone.appendChild(rawDataContent);
         dataZone.appendChild(visualizationContent);
@@ -133,7 +133,7 @@ export class StudentContentManager {
             // Ensure data is valid before stringifying
             const safeStudent = student || {};
             const safeAttempts = Array.isArray(attempts) ? attempts : [];
-            const safeStats = stats || { total_attempts: 0, success_count: 0 };
+            const safeStats = stats || { total_attempts: 0, correct_attempts: 0, success_rate: 0 };
 
             chartsContainer.dataset.student = JSON.stringify(safeStudent);
             chartsContainer.dataset.attempts = JSON.stringify(safeAttempts);

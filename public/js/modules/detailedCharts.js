@@ -61,7 +61,7 @@ const DetailedCharts = (function() {
 
         if (!stats || typeof stats !== 'object') {
             console.warn('⚠️ Stats data is missing or invalid, using default');
-            stats = { total_attempts: 0, success_count: 0 };
+            stats = { total_attempts: 0, correct_attempts: 0, success_rate: 0 };
         }
 
         container.innerHTML = '';
@@ -349,8 +349,8 @@ const DetailedCharts = (function() {
         }
 
         const data = [
-            { label: 'Réussies', value: stats.success_count || 0, color: '#27ae60' },
-            { label: 'Échouées', value: (stats.total_attempts || 0) - (stats.success_count || 0), color: '#e74c3c' }
+            { label: 'Réussies', value: stats.correct_attempts || stats.success_count || 0, color: '#27ae60' },
+            { label: 'Échouées', value: (stats.total_attempts || 0) - (stats.correct_attempts || stats.success_count || 0), color: '#e74c3c' }
         ];
 
         // ...existing code for rendering pie chart...
