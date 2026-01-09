@@ -116,14 +116,6 @@ export class StudentListManager {
             console.error('Erreur chargement background exercices:', error);
         }
     }
-                    return nameA.localeCompare(nameB);
-                });
-                window.dispatchEvent(new CustomEvent('exercisesUpdated', { detail: this.allExercises }));
-            }
-        } catch (error) {
-            console.error('Erreur chargement background exercices:', error);
-        }
-    }
 
     // Afficher la liste des Ã©tudiants
     renderStudentsList() {
@@ -485,65 +477,5 @@ export class StudentListManager {
     // MÃ©thode obsolÃ¨te conservÃ©e pour compatibilitÃ©
     toggleAccordion(accordionId) {
         // Non utilisÃ© dans le nouveau design
-    }
-}
-        if (type === 'students') {
-            this.filteredStudents = [...this.allStudents];
-            this.renderStudentsList();
-        } else {
-            this.filteredExercises = [...this.allExercises];
-            this.renderExercisesList();
-        }
-        modal.style.display = 'none';
-    }
-    // Trier les éléments
-    sortItems(items, sortValue, type) {
-        const sorted = [...items];
-        if (type === 'students') {
-            if (sortValue === 'name-asc') {
-                sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-            } else if (sortValue === 'name-desc') {
-                sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
-            } else {
-                // default: par ID
-                sorted.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
-            }
-        } else {
-            if (sortValue === 'name-asc') {
-                sorted.sort((a, b) => {
-                    const nameA = a.funcname || a.exo_name || '';
-                    const nameB = b.funcname || b.exo_name || '';
-                    return nameA.localeCompare(nameB);
-                });
-            } else if (sortValue === 'name-desc') {
-                sorted.sort((a, b) => {
-                    const nameA = a.funcname || a.exo_name || '';
-                    const nameB = b.funcname || b.exo_name || '';
-                    return nameB.localeCompare(nameA);
-                });
-            } else {
-                // default: alphabétique
-                sorted.sort((a, b) => {
-                    const nameA = a.funcname || a.exo_name || '';
-                    const nameB = b.funcname || b.exo_name || '';
-                    return nameA.localeCompare(nameB);
-                });
-            }
-        }
-        return sorted;
-    }
-    // Charger tous les étudiants pour le menu burger
-    async loadAllStudents() {
-        await this.loadStudents();
-    }
-    getAllStudents() {
-        return this.allStudents;
-    }
-    getResourceId() {
-        return this.resourceId;
-    }
-    // Méthode obsolète conservée pour compatibilité
-    toggleAccordion(accordionId) {
-        // Non utilisé dans le nouveau design
     }
 }
