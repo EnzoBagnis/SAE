@@ -177,8 +177,6 @@ const ChartModule = (function() {
         });
     }
 
-    return { renderStudentChart, renderExerciseChart };
-})();
     /**
      * Render exercise completion chart (done vs not done)
      * @param {Object} data - Object with completed and total counts
