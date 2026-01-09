@@ -177,6 +177,18 @@ class User
     }
 
     /**
+     * READ - Check if an email exists
+     * @param string $email Email to check
+     * @return bool True if email exists, false otherwise
+     */
+    public function banExists($email)
+    {
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM utilisateurs_bloques WHERE mail = :mail");
+        $stmt->execute(['mail' => $email]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    /**
      * READ - Find a user by reset token
      * @param string $token Reset token
      * @return array|false User data or false if not found

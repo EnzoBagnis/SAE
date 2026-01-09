@@ -39,6 +39,10 @@ class AuthController
             return ['success' => false, 'error' => 'pending_exists'];
         }
 
+        if ($this->userModel->banExists($email)) {
+            return ['success' => false, 'error' => 'email_ban'];
+        }
+
         $verificationCode = rand(100000, 999999);
 
         if ($this->pendingRegistrationModel->create($lastName, $firstName, $email, $password, $verificationCode)) {
