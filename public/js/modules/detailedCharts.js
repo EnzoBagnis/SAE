@@ -500,14 +500,14 @@ const DetailedCharts = (function() {
             .style('fill', 'white')
             .text(d => d.data.value > 0 ? d.data.value : '');
 
-        // Legend with percentages - positioned bottom left, further away from donut
+        // Legend with percentages - positioned bottom left with absolute coordinates
         const total = data.reduce((sum, d) => sum + d.value, 0);
         const legend = svg.selectAll('.legend')
             .data(data)
             .enter()
             .append('g')
             .attr('class', 'legend')
-            .attr('transform', (d, i) => `translate(${-radius - 50},${radius + 20 + i * 30})`); // Moved further left and down
+            .attr('transform', (d, i) => `translate(${-viewBoxSize/2 + 20},${viewBoxSize/2 - 70 + i * 30})`); // Absolute positioning in bottom left
 
         legend.append('rect')
             .attr('width', 18)
