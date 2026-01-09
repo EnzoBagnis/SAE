@@ -69,18 +69,14 @@
                 Utilisateurs bloqués (<?= count($blockedUsers ?? []) ?>)
             </button>
         </div>
-
-
-
-
-
-
+        <!-- Barre de recherche
         <div class="search-container">
             <form action="search.php" method="GET" class="search-bar">
                 <input type="text" name="query" placeholder="Rechercher quelque chose..." id="searchInput">
                 <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
             </form>
         </div>
+         -->
 
 
 
