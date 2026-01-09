@@ -16,355 +16,391 @@ $db = Database::getConnection();
 $user_id = $_SESSION['id'];
 $user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
 $user_lastname = $_SESSION['nom'] ?? '';
-
 $title = 'StudTraj - Mes Ressources';
+
+// Calcul des initiales pour l'avatar
+$initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
 
 $resources = Resource::getAllAccessibleResources($db, $user_id);
 
+// Récupération des utilisateurs pour le partage
+$all_users = [];
+try {
+    $stmt_users = $db->prepare(
+        "SELECT id, prenom, nom FROM utilisateurs WHERE id != :id ORDER BY nom ASC"
+    );
+    $stmt_users->execute([':id' => $user_id]);
+    $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
+} catch (PDOException $e) {
+    $all_users = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
-    <link rel="stylesheet" href="../public/css/dashboard.css">
-    <link rel="stylesheet" href="../public/css/footer.css">
-    <script src="../public/js/modules/import.js"></script>
-    <script src="../public/js/dashboard-main.js"></script>
-
-    <meta name="description"
-          content="Gérez et visualisez vos ressources pédagogiques et celles partagées.">
-    <meta name="robots" content="noindex, nofollow">
-    <link rel="canonical"
-          href="http://studtraj.alwaysdata.net/views/user/resources_list.php">
-    <style>
-        /* Styles pour les cartes de ressources (inchangés) */
-        .resources-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 20px auto;
-        }
-
-        .resource-card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .resource-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-
-        .resource-card-image {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            background-color: #f0f0f0;
-            display: block;
-        }
-        .resource-card-image.placeholder {
-            background-image: url('/images/placeholder_resource.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        .resource-card-content {
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .resource-card-content h3 {
-            margin-top: 0;
-            margin-bottom: 5px;
-            font-size: 1.2em;
-            color: #333;
-        }
-
-        .resource-card-content p {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 10px;
-            flex-grow: 1;
-        }
-
-        .resource-card-owner {
-            font-size: 0.8em;
-            color: #999;
-            text-align: right;
-        }
-
-        .filter-bar {
-            display: flex;
-            justify-content: flex-start;
-            gap: 10px;
-            padding: 20px;
-            background-color: #eef;
-            border-bottom: 1px solid #ddd;
-            flex-wrap: wrap;
-        }
-
-        .filter-bar select,
-        .filter-bar input[type="text"] {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-    </style>
+    <title><?= htmlspecialchars($title) ?></title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/dashboard.css">
+    <link rel="stylesheet" href="/public/css/footer.css">
+    <script type="module" src="/public/js/dashboard-main.js"></script>
 </head>
 <body>
-    <!-- Menu du haut -->
-    <header class="top-menu">
-        <div class="logo">
-            <h1>StudTraj</h1>
-        </div>
+<header class="top-menu">
+    <div class="logo"><h1>StudTraj</h1></div>
 
-        <!-- Bouton burger pour mobile -->
-        <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+    <!-- Bouton burger pour mobile -->
+    <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
 
-        <nav class="nav-menu">
-            <a href="/index.php?action=resources_list" class="active">Tableau de bord</a>
-            <a href="#" onclick="openSiteMap()">Plan du site</a>
-            <a href="/index.php?action=mentions">Mentions légales</a>
-        </nav>
-        <div class="user-info">
-            <button onclick="openImportModal()" class="btn-import-trigger">
-                <svg width="20" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                Importer
-            </button>
-            <span><?= htmlspecialchars($user_firstname ?? '') ?> <?= htmlspecialchars($user_lastname ?? '') ?></span>
-            <button onclick="confirmLogout()" class="btn-logout">Déconnexion</button>
-        </div>
-    </header>
-
-    <!-- Menu burger mobile -->
-    <nav class="burger-nav" id="burgerNav">
-        <div class="burger-nav-content">
-            <div class="burger-user-info">
-                <span>
-                    <?= htmlspecialchars($user_firstname) ?>
-                    <?= htmlspecialchars($user_lastname) ?>
-                </span>
-            </div>
-            <ul class="burger-menu-list">
-                <li>
-                    <a href="/index.php?action=dashboard" class="burger-link">
-                        Tableau de bord
-                    </a>
-                </li>
-                <li>
-                    <a href="/index.php?action=resources_list"
-                       class="burger-link active">
-                        Mes Ressources
-                    </a>
-                </li>
-                <li>
-                    <a href="/index.php?action=mentions" class="burger-link">
-                        Mentions légales
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="confirmLogout()"
-                       class="burger-link burger-logout">
-                        Déconnexion
-                    </a>
-                </li>
-            </ul>
-        </div>
+    <nav class="nav-menu">
+        <a href="/index.php?action=dashboard">Tableau de Bord</a>
+        <a href="/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
 
-    <div class="dashboard-container">
-        <main class="main-content">
-            <h2 style="padding: 20px 20px 0;">Vos ressources et celles partagées</h2>
+    <div class="header-right">
+        <!-- Affichage Profil -->
+        <div class="user-profile">
+            <div class="user-avatar">
+                <?= htmlspecialchars($initials) ?>
+            </div>
+            <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
+        </div>
+        <!-- Bouton Déconnexion -->
+        <a href="/index.php?action=logout" class="btn-logout">
+            <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span class="logout-text">Déconnexion</span>
+        </a>
+    </div>
+</header>
 
-            <!-- Bar de filtres et recherche -->
-            <div class="filter-bar">
-                <select id="filterType" onchange="filterResources()">
-                    <option value="all">Toutes les ressources</option>
-                    <option value="owner">Mes ressources</option>
-                    <option value="shared">Ressources partagées</option>
-                </select>
-                <input type="text" id="searchBar"
+<!-- Menu burger mobile -->
+<nav class="burger-nav" id="burgerNav">
+    <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
+    <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()" aria-label="Fermer le menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="burger-nav-content">
+        <div class="burger-user-info">
+            <span>
+                <?= htmlspecialchars($user_firstname ?? '') ?>
+                <?= htmlspecialchars($user_lastname ?? '') ?>
+            </span>
+        </div>
+        <ul class="burger-menu-list">
+            <li><a href="/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
+            <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="dashboard-container">
+    <main class="main-content">
+        <h2 style="padding: 20px 20px 0;">Tableau de bord</h2>
+
+        <div class="filter-bar">
+            <!-- Groupe de gauche pour recherche et select -->
+            <div class="filter-group-left">
+                <input class="searchBar" type="text" id="searchBar"
                        placeholder="Rechercher..." onkeyup="filterResources()">
-                <select id="sortOrder" onchange="filterResources()">
-                    <option value="name_asc">Trier par nom (A-Z)</option>
-                    <option value="name_desc">Trier par nom (Z-A)</option>
-                    <option value="owner_name_asc">Trier par propriétaire (A-Z)</option>
+                <select id="filterType" onchange="filterResources()">
+                    <option value="all">Tout voir</option>
+                    <option value="owner">Mes créations</option>
+                    <option value="shared">Partagées avec moi</option>
                 </select>
             </div>
 
-            <div class="resources-grid" id="resourcesGrid">
-                <?php if (!empty($resources)) : ?>
-                    <?php foreach ($resources as $resource) : ?>
-                        <?php
-                        $ownerFullName = $resource->owner_firstname . ' ' .
-                                         $resource->owner_lastname;
-                        ?>
-                        <a href="/index.php?action=dashboard&resource_id=<?=
-                                   $resource->resource_id ?>"
-                            class="resource-card"
-                            data-name="<?= htmlspecialchars($resource->resource_name) ?>"
-                            data-owner="<?= htmlspecialchars($ownerFullName) ?>"
-                            data-access-type="<?=
-                               htmlspecialchars($resource->access_type) ?>">
-                            <?php if (!empty($resource->image_path)) : ?>
-                                <img src="/images/<?=
-                                         htmlspecialchars($resource->image_path) ?>"
-                                     alt="Image de <?=
-                                         htmlspecialchars($resource->resource_name) ?>"
-                                     class="resource-card-image">
+            <!-- Bouton Créer (ne prend pas toute la largeur) -->
+            <button onclick="openResourceModal('create')" class="btn-create-resource">
+                <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Nouvelle Ressource
+            </button>
+        </div>
+
+        <div class="resources-grid" id="resourcesGrid">
+            <?php if (!empty($resources)) : ?>
+                <?php foreach ($resources as $resource) : ?>
+                    <?php
+                    $creatorId = $resource->owner_user_id ?? 0;
+                    $resId = $resource->resource_id;
+                    $resName = $resource->resource_name ?? 'Sans titre';
+                    $resDesc = $resource->description ?? '';
+                    $resImg = $resource->image_path ?? '';
+                    $isOwner = ($creatorId == $user_id);
+
+
+                    $ownerName = ($resource->owner_firstname ?? '') . ' ' . ($resource->owner_lastname ?? '');
+                    if (trim($ownerName) == '') {
+                        $ownerName = "Utilisateur #$creatorId";
+                    }
+                    ?>
+
+                    <div class="resource-card"
+                         data-name="<?= htmlspecialchars($resName) ?>"
+                         data-owner="<?= htmlspecialchars($ownerName) ?>"
+                         data-access-type="<?= $isOwner ? 'owner' : 'shared' ?>"
+                         data-id="<?= $resId ?>"
+                         data-description="<?= htmlspecialchars($resDesc) ?>"
+                         data-image="<?= htmlspecialchars($resImg) ?>"
+                         data-shared-users="<?= htmlspecialchars($resource->shared_user_ids ?? '') ?>">
+
+                        <?php if ($isOwner) : ?>
+                            <button class="btn-edit-resource" onclick="openResourceModal('edit', this)"
+                                    title="Modifier">✏️</button>
+                        <?php endif; ?>
+
+                        <a href="/index.php?action=dashboard&resource_id=<?= $resId ?>"
+                           class="resource-link-wrapper">
+                            <?php if (!empty($resImg)) : ?>
+                                <img src="/images/<?= htmlspecialchars($resImg) ?>"
+                                     class="resource-card-image" alt="Image">
                             <?php else : ?>
-                                <div class="resource-card-image placeholder"></div>
+                                <div class="resource-card-image"
+                                     style="background:#eee; display:flex; align-items:center;
+                                            justify-content:center; color:#777;">
+                                    Pas d'image
+                                </div>
                             <?php endif; ?>
+
                             <div class="resource-card-content">
-                                <h3><?= htmlspecialchars($resource->resource_name) ?></h3>
-                                <p><?= htmlspecialchars($resource->description ?? 'Pas de description.') ?></p>
+                                <h3><?= htmlspecialchars($resName) ?></h3>
+                                <p><?= htmlspecialchars($resDesc) ?></p>
                                 <span class="resource-card-owner">
-                                    Par: <?= htmlspecialchars($ownerFullName) ?>
+                                    Par: <?= htmlspecialchars($ownerName) ?>
                                 </span>
                             </div>
                         </a>
-                    <?php endforeach; ?>
-                <?php else : ?>
-                    <p class="placeholder-message">
-                        Aucune ressource disponible pour le moment.
-                    </p>
-                <?php endif; ?>
-            </div>
-        </main>
-    </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else : ?>
+                <p style="padding:20px;">Aucune ressource trouvée.</p>
+            <?php endif; ?>
+        </div>
+    </main>
+</div>
 
-    <!-- Modal Plan du site -->
-    <div id="sitemapModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeSiteMap()">&times;</span>
-            <h2>Plan du site</h2>
-            <div class="sitemap-list">
-                <ul>
-                    <li><a href="/index.php?action=resources_list">Tableau de bord</a></li>
-                    <li><a href="/index.php?action=login">Connexion</a></li>
-                    <li><a href="/index.php?action=signup">Inscription</a></li>
-                    <li>
-                        <a href="/index.php?action=forgotpassword">
-                            Mot de passe oublié
-                        </a>
-                    </li>
-                    <li><a href="/index.php?action=mentions">Mentions légales</a></li>
-                </ul>
+<!-- MODAL PRINCIPAL -->
+<div id="resourceModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeResourceModal()">&times;</span>
+        <h2 id="modalTitle">Nouvelle Ressource</h2>
+
+        <form id="resourceForm" action="/index.php?action=save_resource"
+              method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="resource_id" id="formResourceId" value="">
+
+            <div class="form-group">
+                <label for="resourceName">Nom :</label>
+                <input type="text" id="resourceName" name="name" required>
             </div>
+
+            <div class="form-group">
+                <label for="resourceDesc">Description :</label>
+                <textarea id="resourceDesc" name="description" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Image :</label>
+                <input type="file" name="image" accept="image/*">
+                <p id="currentImageName" style="font-size:0.8em; color:#666; display:none;"></p>
+            </div>
+
+
+            <div class="form-group">
+                <label>Partager avec :</label>
+
+                <input type="text" id="userSearch" placeholder="Filtrer les noms..."
+                       style="width: 100%; padding: 8px; margin-bottom: 10px;
+                              border: 1px solid #ddd; border-radius: 4px;"
+                       onkeyup="filterUsersInModal()">
+
+                <div class="users-checklist" id="usersChecklist"
+                     style="max-height: 150px; overflow-y: auto; border: 1px solid #eee;
+                            padding: 10px; border-radius: 4px;">
+                    <?php if (empty($all_users)) : ?>
+                        <p style="color:#999;">Aucun autre utilisateur.</p>
+                    <?php else : ?>
+                        <?php foreach ($all_users as $u) : ?>
+                            <!-- On ajoute une classe 'user-item' pour faciliter le filtrage JS -->
+                            <label class="user-item" style="display:block; margin-bottom:5px;">
+                                <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>"
+                                       class="user-checkbox">
+                                <span class="user-name"><?= htmlspecialchars($u->prenom . ' ' . $u->nom) ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+
+
+            <button type="submit" class="btn-submit" id="modalSubmitBtn">Enregistrer</button>
+
+            <button type="button" id="btnDeleteResource" class="btn-delete-trigger"
+                    onclick="confirmDelete()" style="display:none;">
+                🗑️ Supprimer cette ressource
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMATION -->
+<div id="deleteConfirmModal" class="modal" style="z-index: 200;">
+    <div class="modal-content" style="max-width: 400px; border-color: #f44336;">
+        <h3 style="color: #f44336; margin-top:0;">⚠️ Confirmation</h3>
+        <p>Êtes-vous sûr de vouloir supprimer cette ressource ?</p>
+        <p style="font-size:0.9em; color:#666;">
+            Cela supprimera définitivement :
+        </p>
+        <ul style="font-size:0.9em; color:#666; margin-bottom:15px;">
+            <li>La ressource</li>
+            <li>Tous les exercices liés</li>
+            <li>Toutes les tentatives des étudiants</li>
+        </ul>
+        <div class="confirm-buttons">
+            <button class="btn-confirm-no" onclick="closeDeleteModal()">Annuler</button>
+            <form action="/index.php?action=delete_resource" method="POST">
+                <input type="hidden" name="resource_id" id="deleteResourceId" value="">
+                <button type="submit" class="btn-confirm-yes">Oui, supprimer</button>
+            </form>
         </div>
     </div>
+</div>
+<script>
+    function openResourceModal(mode, btn = null) {
+        const modal = document.getElementById('resourceModal');
+        const form = document.getElementById('resourceForm');
+        const hiddenId = document.getElementById('formResourceId');
+        const deleteBtn = document.getElementById('btnDeleteResource');
 
-    <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
-    <script>
-        function filterResources() {
-            const searchText = document.getElementById('searchBar').value.toLowerCase();
-            const filterType = document.getElementById('filterType').value;
-            const sortOrder = document.getElementById('sortOrder').value;
-            const grid = document.getElementById('resourcesGrid');
-            let cards = Array.from(grid.getElementsByClassName('resource-card'));
+        form.reset();
+        document.getElementById('userSearch').value = ''; // Vide le texte
+        filterUsersInModal();
+        hiddenId.value = '';
+        document.getElementById('currentImageName').style.display = 'none';
 
-            cards.forEach(card => {
-                const name = card.dataset.name.toLowerCase();
-                const owner = card.dataset.owner.toLowerCase();
-                const accessType = card.dataset.accessType;
+        // 1. On décoche tout par défaut
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        checkboxes.forEach(cb => cb.checked = false);
 
-                const matchesSearch = name.includes(searchText) ||
-                                     owner.includes(searchText);
-                const matchesType = (filterType === 'all' ||
-                                    accessType === filterType);
+        if (mode === 'edit' && btn) {
+            document.getElementById('modalTitle').textContent = "Modifier la ressource";
+            document.getElementById('modalSubmitBtn').textContent = "Mettre à jour";
+            deleteBtn.style.display = 'block';
 
-                if (matchesSearch && matchesType) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            const card = btn.closest('.resource-card');
+            console.log("ID de la ressource cliquée :", card.dataset.id);
+            console.log("Liste des utilisateurs partagés reçue :", card.dataset.sharedUsers);
+            hiddenId.value = card.dataset.id;
+            document.getElementById('resourceName').value = card.dataset.name;
+            document.getElementById('resourceDesc').value = card.dataset.description;
 
-            cards.sort((a, b) => {
-                const nameA = a.dataset.name.toLowerCase();
-                const nameB = b.dataset.name.toLowerCase();
-                const ownerA = a.dataset.owner.toLowerCase();
-                const ownerB = b.dataset.owner.toLowerCase();
+            // 2. ON COCHE LES UTILISATEURS DÉJÀ PARTAGÉS
+            if (card.dataset.sharedUsers) {
+                // On transforme la chaîne "1,5,8" en tableau ["1", "5", "8"]
+                const sharedIds = card.dataset.sharedUsers.split(',');
 
-                if (sortOrder === 'name_asc') {
-                    return nameA.localeCompare(nameB);
-                } else if (sortOrder === 'name_desc') {
-                    return nameB.localeCompare(nameA);
-                } else if (sortOrder === 'owner_name_asc') {
-                    return ownerA.localeCompare(ownerB);
-                }
-                return 0;
-            });
+                checkboxes.forEach(cb => {
+                    if (sharedIds.includes(cb.value)) {
+                        cb.checked = true;
+                    }
+                });
+            }
 
-            cards.forEach(card => grid.appendChild(card));
+            if (card.dataset.image) {
+                const p = document.getElementById('currentImageName');
+                p.textContent = "Image actuelle : " + card.dataset.image;
+                p.style.display = 'block';
+            }
+        } else {
+            document.getElementById('modalTitle').textContent = "Nouvelle Ressource";
+            document.getElementById('modalSubmitBtn').textContent = "Créer la ressource";
+            deleteBtn.style.display = 'none';
         }
+        modal.style.display = "block";
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const filterTypeElement = document.getElementById('filterType');
-            if (filterTypeElement) {
-                filterTypeElement.addEventListener('change', filterResources);
+    function closeResourceModal() {
+        document.getElementById('resourceModal').style.display = "none";
+    }
+
+    function confirmDelete() {
+        document.getElementById('deleteResourceId').value = document.getElementById('formResourceId').value;
+        document.getElementById('resourceModal').style.display = "none";
+        document.getElementById('deleteConfirmModal').style.display = "block";
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteConfirmModal').style.display = "none";
+        document.getElementById('resourceModal').style.display = "block";
+    }
+
+    window.onclick = function(event) {
+        const resModal = document.getElementById('resourceModal');
+        const delModal = document.getElementById('deleteConfirmModal');
+        if (event.target === resModal) {
+            closeResourceModal();
+        }
+        if (event.target === delModal) {
+            closeDeleteModal();
+        }
+    }
+
+    function filterResources() {
+        let input = document.getElementById('searchBar').value.toLowerCase();
+        let type = document.getElementById('filterType').value;
+        let cards = document.getElementsByClassName('resource-card');
+
+        for (let card of cards) {
+            let name = card.dataset.name.toLowerCase();
+            let access = card.dataset.accessType;
+            let show = true;
+            if (!name.includes(input)) {
+                show = false;
             }
-
-            const searchBarElement = document.getElementById('searchBar');
-            if (searchBarElement) {
-                searchBarElement.addEventListener('keyup', filterResources);
+            if (type !== 'all' && access !== type) {
+                show = false;
             }
+            card.style.display = show ? "flex" : "none";
+        }
+    }
+    function filterUsersInModal() {
+        // 1. On récupère la valeur saisie
+        let input = document.getElementById('userSearch').value.toLowerCase();
 
-            const sortOrderElement = document.getElementById('sortOrder');
-            if (sortOrderElement) {
-                sortOrderElement.addEventListener('change', filterResources);
+        // 2. On récupère tous les labels (lignes d'utilisateurs)
+        let userItems = document.querySelectorAll('.user-item');
+
+        userItems.forEach(item => {
+            // 3. On récupère le nom de l'utilisateur à l'intérieur
+            let name = item.querySelector('.user-name').textContent.toLowerCase();
+
+            // 4. On affiche ou on cache selon la correspondance
+            if (name.includes(input)) {
+                item.style.display = "block";
+            } else {
+                item.style.display = "none";
             }
-
-            filterResources();
         });
-
-        function toggleBurgerMenu() {
-            const burgerNav = document.getElementById('burgerNav');
-            burgerNav.classList.toggle('active');
-            document.getElementById('burgerBtn').classList.toggle('open');
-        }
-
-        function openSiteMap() {
-            document.getElementById('sitemapModal').style.display = "block";
-        }
-
-        function closeSiteMap() {
-            document.getElementById('sitemapModal').style.display = "none";
-        }
-
-        function confirmLogout() {
-            if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
-                window.location.href = "/index.php?action=logout";
-            }
-        }
-    </script>
-
+    }
+</script>
+<?php include __DIR__ . '/../layouts/footer.php'; ?>
 </body>
 </html>

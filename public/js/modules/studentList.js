@@ -73,6 +73,39 @@ export class StudentListManager {
         } finally {
             this.isLoading = false;
         }
+
+        // Initialisation au chargement de la page: charger les exercices aussi pour le menu burger
+        if (this.allExercises.length === 0) {
+             this.loadExercisesInBackground();
+        }
+    }
+
+    // Charger les exercices en arrière-plan pour le menu burger
+    async loadExercisesInBackground() {
+        if (this.allExercises.length > 0) return;
+
+        try {
+            let url = '/index.php?action=exercises';
+            if (this.resourceId) {
+                url += `&resource_id=${this.resourceId}`;
+            }
+
+            const response = await fetch(url);
+            if (!response.ok) return;
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.allExercises = (result.data.exercises || []).sort((a, b) => {
+                    const nameA = a.funcname || a.exo_name || '';
+                    const nameB = b.funcname || b.exo_name || '';
+                    return nameA.localeCompare(nameB);
+                });
+                window.dispatchEvent(new CustomEvent('exercisesUpdated', { detail: this.allExercises }));
+            }
+        } catch (error) {
+            console.error('Erreur chargement background exercices:', error);
+        }
     }
 
     // Afficher la liste des étudiants
@@ -130,6 +163,7 @@ export class StudentListManager {
                     return nameA.localeCompare(nameB);
                 });
                 this.renderExercisesList();
+                window.dispatchEvent(new CustomEvent('exercisesUpdated', { detail: this.allExercises }));
             }
         } catch (error) {
             console.error('Erreur:', error);
@@ -151,8 +185,17 @@ export class StudentListManager {
             const item = document.createElement('div');
             item.className = 'sidebar-list-item';
             item.dataset.exerciseId = exercise.exercise_id;
-            // Utiliser funcname si disponible, sinon exo_name
-            item.textContent = exercise.funcname || exercise.exo_name || `Exercice #${exercise.exercise_id}`;
+
+            // Safe name resolution
+            let displayName = exercise.funcname ? exercise.funcname.trim() : '';
+            if (!displayName) {
+                displayName = exercise.exo_name ? exercise.exo_name.trim() : '';
+            }
+            if (!displayName) {
+                displayName = `Exercice #${exercise.exercise_id}`;
+            }
+
+            item.textContent = displayName;
 
             item.addEventListener('click', () => {
                 document.querySelectorAll('.sidebar-list-item').forEach(el => el.classList.remove('active'));

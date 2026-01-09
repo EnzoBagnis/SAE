@@ -1,239 +1,62 @@
 /**
- * import.js - Gestion du modal d'import JSON
- * Pour exercices de TP et tentatives d'élèves
+ * import.js - Version corrigée (Anti-plantage et Découpage par paquets)
  */
 
-// Variables globales pour stocker les données
 let currentExercisesData = null;
 let currentAttemptsData = null;
 
-/**
- * Ouvre le modal d'import
- */
-function openImportModal() {
-    console.log('openImportModal appelée');
+function openImportModal(resourceId = null) {
     const modal = document.getElementById('importModal');
-    console.log('Modal trouvé:', modal);
-
     if (modal) {
-        console.log('Style avant:', modal.style.display);
+        if (resourceId) modal.dataset.resourceId = resourceId;
+        else delete modal.dataset.resourceId;
         modal.style.display = 'block';
-        console.log('Style après:', modal.style.display);
-        // Réinitialiser à l'onglet exercices
         switchImportTab('exercises');
-    } else {
-        console.error('Modal #importModal non trouvé dans le DOM !');
     }
 }
 
-/**
- * Ferme le modal d'import
- */
 function closeImportModal() {
     const modal = document.getElementById('importModal');
     if (modal) {
         modal.style.display = 'none';
-        // Réinitialiser les données
         resetImportForm();
     }
 }
 
-/**
- * Change d'onglet dans le modal
- */
 function switchImportTab(tabName) {
-    // Mettre à jour les boutons
-    const tabs = document.querySelectorAll('.import-tab');
-    tabs.forEach(tab => {
-        if (tab.dataset.tab === tabName) {
-            tab.classList.add('active');
-        } else {
-            tab.classList.remove('active');
-        }
+    document.querySelectorAll('.import-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
-
-    // Mettre à jour le contenu
-    const contents = document.querySelectorAll('.import-tab-content');
-    contents.forEach(content => {
-        content.classList.remove('active');
+    document.querySelectorAll('.import-tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === `${tabName}Tab`);
     });
-
-    const activeContent = document.getElementById(`${tabName}Tab`);
-    if (activeContent) {
-        activeContent.classList.add('active');
-    }
 }
 
-/**
- * Gère la sélection de fichier
- */
 function handleFileSelect(event, type) {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Vérifier que c'est un fichier JSON
-    if (!file.name.endsWith('.json')) {
-        showImportStatus('Veuillez sélectionner un fichier JSON valide.', 'error');
-        return;
-    }
-
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
-            const data = JSON.parse(e.target.result);
-
+            let text = e.target.result.replace(/^\uFEFF/, '').trim();
+            const data = JSON.parse(text);
             if (type === 'exercises') {
                 currentExercisesData = data;
                 displayExercisesPreview(data);
-            } else if (type === 'attempts') {
+            } else {
                 currentAttemptsData = data;
                 displayAttemptsPreview(data);
             }
         } catch (error) {
-            showImportStatus(`Erreur lors de la lecture du fichier: ${error.message}`, 'error');
+            showImportStatus(`Erreur lecture JSON : ${error.message}`, 'error');
         }
     };
     reader.readAsText(file);
 }
 
 /**
- * Affiche l'aperçu des exercices
- */
-function displayExercisesPreview(data) {
-    const preview = document.getElementById('exercisesPreview');
-    const content = preview.querySelector('.preview-content');
-
-    if (!preview || !content) return;
-
-    let html = '';
-
-    if (Array.isArray(data)) {
-        html = `<div class="preview-item"><strong>Nombre d'exercices:</strong> ${data.length}</div>`;
-
-        // Afficher les 3 premiers exercices
-        const previewCount = Math.min(3, data.length);
-        for (let i = 0; i < previewCount; i++) {
-            const ex = data[i];
-            html += `
-                <div class="preview-item">
-                    <strong>Exercice ${i + 1}:</strong> ${ex.title || ex.nom || 'Sans titre'}<br>
-                    <small>TP: ${ex.tp_id || ex.tp || 'Non spécifié'}</small>
-                </div>
-            `;
-        }
-
-        if (data.length > 3) {
-            html += `<div class="preview-item"><em>... et ${data.length - 3} autre(s) exercice(s)</em></div>`;
-        }
-    } else if (typeof data === 'object') {
-        html = `<div class="preview-item"><strong>Type:</strong> Objet JSON</div>`;
-        html += `<div class="preview-item"><strong>Clés:</strong> ${Object.keys(data).join(', ')}</div>`;
-    }
-
-    content.innerHTML = html;
-    preview.style.display = 'block';
-}
-
-/**
- * Affiche l'aperçu des tentatives
- */
-function displayAttemptsPreview(data) {
-    const preview = document.getElementById('attemptsPreview');
-    const content = preview.querySelector('.preview-content');
-
-    if (!preview || !content) return;
-
-    let html = '';
-
-    if (Array.isArray(data)) {
-        html = `<div class="preview-item"><strong>Nombre de tentatives:</strong> ${data.length}</div>`;
-
-        // Compter les élèves uniques
-        const students = new Set(data.map(a => a.student_id || a.eleve_id || a.user_id));
-        html += `<div class="preview-item"><strong>Élèves concernés:</strong> ${students.size}</div>`;
-
-        // Afficher les 3 premières tentatives
-        const previewCount = Math.min(3, data.length);
-        for (let i = 0; i < previewCount; i++) {
-            const attempt = data[i];
-            html += `
-                <div class="preview-item">
-                    <strong>Tentative ${i + 1}:</strong><br>
-                    <small>
-                        Élève: ${attempt.student_id || attempt.eleve_id || 'N/A'} | 
-                        TP: ${attempt.tp_id || attempt.tp || 'N/A'} | 
-                        Score: ${attempt.score || attempt.note || 'N/A'}
-                    </small>
-                </div>
-            `;
-        }
-
-        if (data.length > 3) {
-            html += `<div class="preview-item"><em>... et ${data.length - 3} autre(s) tentative(s)</em></div>`;
-        }
-    } else if (typeof data === 'object') {
-        html = `<div class="preview-item"><strong>Type:</strong> Objet JSON</div>`;
-        html += `<div class="preview-item"><strong>Clés:</strong> ${Object.keys(data).join(', ')}</div>`;
-    }
-
-    content.innerHTML = html;
-    preview.style.display = 'block';
-}
-
-/**
- * Importe les exercices
- */
-async function importExercises() {
-    if (!currentExercisesData) {
-        showImportStatus('Aucune donnée à importer.', 'error');
-        return;
-    }
-
-    showImportStatus('Import en cours... <span class="loading-spinner"></span>', 'warning');
-
-    try {
-        // Appel API pour importer les exercices
-        const response = await fetch('/api/exercises/import', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(currentExercisesData)
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            showImportStatus(`✓ Import réussi ! ${result.count || currentExercisesData.length} exercice(s) importé(s).`, 'success');
-
-            // Rafraîchir la liste des TPs après 2 secondes
-            setTimeout(() => {
-                closeImportModal();
-                // Rafraîchir la liste si la fonction existe (depuis dashboard.js)
-                if (typeof loadTPList === 'function') {
-                    loadTPList();
-                }
-                // Recharger la page en dernier recours
-                window.location.reload();
-            }, 2000);
-        } else {
-            throw new Error('Erreur lors de l\'import');
-        }
-    } catch (error) {
-        console.error('Erreur import exercices:', error);
-
-        // Mode démo: stocker localement
-        console.log('Mode démo activé - Données stockées localement');
-        localStorage.setItem('exercises_import', JSON.stringify(currentExercisesData));
-        showImportStatus(`✓ Import réussi (mode démo) ! ${currentExercisesData.length} exercice(s) stocké(s) localement.`, 'success');
-
-        setTimeout(() => {
-            closeImportModal();
-        }, 2000);
-    }
-}
-
-/**
- * Importe les tentatives
+ * IMPORT DES TENTATIVES - VERSION ROBUSTE (CHUNKED)
  */
 async function importAttempts() {
     if (!currentAttemptsData) {
@@ -241,147 +64,155 @@ async function importAttempts() {
         return;
     }
 
-    showImportStatus('Import en cours... <span class="loading-spinner"></span>', 'warning');
+    // Extraction sécurisée de la liste
+    let list = [];
+    let datasetInfo = null;
+    if (Array.isArray(currentAttemptsData)) {
+        list = currentAttemptsData;
+    } else if (typeof currentAttemptsData === 'object' && currentAttemptsData !== null) {
+        list = currentAttemptsData.attempts || currentAttemptsData.data || [];
+        datasetInfo = currentAttemptsData.dataset_info || null;
+    }
+
+    if (list.length === 0) {
+        showImportStatus('Le fichier est vide ou mal formaté.', 'error');
+        return;
+    }
+
+    const modal = document.getElementById('importModal');
+    let resourceId = modal?.dataset.resourceId || new URLSearchParams(window.location.search).get('id');
+
+    // CONFIGURATION : On envoie par paquets de 50 pour être sûr que Alwaysdata accepte
+    const CHUNK_SIZE = 50;
+    let totalAdded = 0;
+
+    showImportStatus(`Démarrage de l'import (${list.length} lignes)...`, 'warning');
 
     try {
-        // Appel API pour importer les tentatives
-        const response = await fetch('/api/attempts/import', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(currentAttemptsData)
-        });
+        for (let i = 0; i < list.length; i += CHUNK_SIZE) {
+            const chunk = list.slice(i, i + CHUNK_SIZE);
+            const progress = Math.min(i + CHUNK_SIZE, list.length);
 
-        if (response.ok) {
-            const result = await response.json();
-            showImportStatus(`✓ Import réussi ! ${result.count || currentAttemptsData.length} tentative(s) importée(s).`, 'success');
+            showImportStatus(`Import : ${progress} / ${list.length} <span class="loading-spinner"></span>`, 'warning');
 
-            // Fermer le modal après 2 secondes
-            setTimeout(() => {
-                closeImportModal();
-            }, 2000);
-        } else {
-            throw new Error('Erreur lors de l\'import');
+            const payload = {
+                attempts: chunk,
+                resource_id: resourceId,
+                dataset_info: (i === 0) ? datasetInfo : null // Uniquement au premier paquet
+            };
+
+            const response = await fetch(`api_import_attempts.php${resourceId ? '?id='+resourceId : ''}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            // On vérifie si la réponse est bien du JSON
+            const text = await response.text();
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                console.error("Le serveur a répondu :", text);
+                throw new Error("Le serveur a renvoyé une erreur (fichier trop gros ou erreur PHP).");
+            }
+
+            if (!response.ok) {
+                throw new Error(result?.error || `Erreur serveur ${response.status}`);
+            }
+
+            totalAdded += (result?.added_count || chunk.length);
         }
+
+        showImportStatus(`✓ Import réussi ! ${totalAdded} lignes traitées.`, 'success');
+        setTimeout(() => window.location.reload(), 2000);
+
     } catch (error) {
-        console.error('Erreur import tentatives:', error);
-
-        // Mode démo: stocker localement
-        console.log('Mode démo activé - Données stockées localement');
-        localStorage.setItem('attempts_import', JSON.stringify(currentAttemptsData));
-        showImportStatus(`✓ Import réussi (mode démo) ! ${currentAttemptsData.length} tentative(s) stockée(s) localement.`, 'success');
-
-        setTimeout(() => {
-            closeImportModal();
-        }, 2000);
+        console.error('Erreur import:', error);
+        showImportStatus(`Erreur : ${error.message}`, 'error');
+        // NOTE: J'ai supprimé le localStorage.setItem qui faisait planter votre navigateur ici.
     }
 }
 
 /**
- * Affiche un message de statut
+ * IMPORT DES EXERCICES - VERSION ROBUSTE (CHUNKED)
  */
-function showImportStatus(message, type) {
-    const status = document.getElementById('importStatus');
-    if (!status) return;
+async function importExercises() {
+    if (!currentExercisesData) {
+        showImportStatus('Aucun exercice à importer.', 'error');
+        return;
+    }
 
-    status.innerHTML = message;
-    status.className = 'import-status ' + type;
-    status.style.display = 'block';
+    let list = Array.isArray(currentExercisesData) ? currentExercisesData : (currentExercisesData.exercises || []);
+    const modal = document.getElementById('importModal');
+    const resourceId = modal?.dataset.resourceId;
+
+    const CHUNK_SIZE = 50;
+    showImportStatus(`Importation des exercices...`, 'warning');
+
+    try {
+        for (let i = 0; i < list.length; i += CHUNK_SIZE) {
+            const chunk = list.slice(i, i + CHUNK_SIZE);
+            const payload = {
+                exercises: chunk.map(ex => ({ ...ex, resource_id: resourceId || ex.resource_id }))
+            };
+
+            const response = await fetch('api_import_exercises.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error("Erreur lors de l'envoi d'un paquet d'exercices.");
+        }
+        showImportStatus(`✓ Import terminé avec succès !`, 'success');
+        setTimeout(() => window.location.reload(), 2000);
+    } catch (error) {
+        showImportStatus(`Erreur : ${error.message}`, 'error');
+    }
 }
 
-/**
- * Réinitialise le formulaire d'import
- */
+// Utilitaires d'aperçu
+function displayExercisesPreview(data) {
+    const preview = document.getElementById('exercisesPreview');
+    if (!preview) return;
+    const list = Array.isArray(data) ? data : (data.exercises || []);
+    preview.querySelector('.preview-content').innerHTML = `Exercices trouvés : ${list.length}`;
+    preview.style.display = 'block';
+}
+
+function displayAttemptsPreview(data) {
+    const preview = document.getElementById('attemptsPreview');
+    if (!preview) return;
+    const list = Array.isArray(data) ? data : (data.attempts || []);
+    preview.querySelector('.preview-content').innerHTML = `Tentatives trouvées : ${list.length}`;
+    preview.style.display = 'block';
+}
+
+function showImportStatus(message, type) {
+    const status = document.getElementById('importStatus');
+    if (status) {
+        status.innerHTML = message;
+        status.className = 'import-status ' + type;
+        status.style.display = 'block';
+    }
+}
+
 function resetImportForm() {
     currentExercisesData = null;
     currentAttemptsData = null;
-
-    const exercisesInput = document.getElementById('exercisesFileInput');
-    const attemptsInput = document.getElementById('attemptsFileInput');
-
-    if (exercisesInput) exercisesInput.value = '';
-    if (attemptsInput) attemptsInput.value = '';
-
-    const exercisesPreview = document.getElementById('exercisesPreview');
-    const attemptsPreview = document.getElementById('attemptsPreview');
-    const importStatus = document.getElementById('importStatus');
-
-    if (exercisesPreview) exercisesPreview.style.display = 'none';
-    if (attemptsPreview) attemptsPreview.style.display = 'none';
-    if (importStatus) importStatus.style.display = 'none';
-}
-
-/**
- * Configure le drag & drop
- */
-function setupDragAndDrop() {
-    ['exercisesDropZone', 'attemptsDropZone'].forEach(zoneId => {
-        const dropZone = document.getElementById(zoneId);
-        if (!dropZone) return;
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => {
-                dropZone.classList.add('dragover');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => {
-                dropZone.classList.remove('dragover');
-            }, false);
-        });
-
-        dropZone.addEventListener('drop', function(e) {
-            const files = e.dataTransfer.files;
-            const type = zoneId === 'exercisesDropZone' ? 'exercises' : 'attempts';
-            const inputId = type === 'exercises' ? 'exercisesFileInput' : 'attemptsFileInput';
-            const input = document.getElementById(inputId);
-
-            if (input && files.length > 0) {
-                input.files = files;
-                handleFileSelect({ target: input }, type);
-            }
-        }, false);
+    ['exercisesFileInput', 'attemptsFileInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
     });
+    document.getElementById('exercisesPreview').style.display = 'none';
+    document.getElementById('attemptsPreview').style.display = 'none';
+    document.getElementById('importStatus').style.display = 'none';
 }
 
-/**
- * Fermer le modal en cliquant en dehors
- */
-function handleModalOutsideClick(event) {
-    const modal = document.getElementById('importModal');
-    if (event.target === modal) {
-        closeImportModal();
-    }
-}
-
-/**
- * Initialisation au chargement de la page
- */
-function initImportModal() {
-    console.log('Import modal initialized');
-
-    // Configurer le drag & drop
-    setupDragAndDrop();
-
-    // Ajouter l'événement de clic en dehors du modal
-    window.addEventListener('click', handleModalOutsideClick);
-}
-
-// Initialiser quand le DOM est prêt
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initImportModal);
-} else {
-    // DOM déjà chargé
-    initImportModal();
-}
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('click', (e) => {
+        if (e.target.id === 'importModal') closeImportModal();
+    });
+});
