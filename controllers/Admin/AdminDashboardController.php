@@ -83,8 +83,7 @@ class AdminDashboardController extends \BaseController
         $success = $this->userModel->delete($table, $id);
         if ($success) {
             header('Location: index.php?action=admin');
-        }
-        else {
+        } else {
             $this->loadView('admin/admin-dashboard');
         }
     }
@@ -100,12 +99,10 @@ class AdminDashboardController extends \BaseController
         if ($success) {
             header('Location: index.php?action=admin');
             exit;
-        }
-        else {
+        } else {
             header('Location: /index.php?action=login');
             exit;
         }
-
     }
 
     public function validateUser()
@@ -114,11 +111,9 @@ class AdminDashboardController extends \BaseController
         $success = $this->userModel->switchUser($id);
         if ($success) {
             header('Location: index.php?action=admin');
-        }
-        else {
+        } else {
             $this->loadView('admin/admin-dashboard');
         }
-
     }
 
     public function banUser()
@@ -129,8 +124,9 @@ class AdminDashboardController extends \BaseController
         $duree_de_ban = $_POST['duree_de_ban'] ?? '';
         $ban_def = $_POST['ban_def'] ?? '';
 
-        if ($table == 'B') {$this->updateBanUser($id, $email, $duree_de_ban, $ban_def);}
-        else {
+        if ($table == 'B') {
+            $this->updateBanUser($id, $email, $duree_de_ban, $ban_def);
+        } else {
             $this->userModel->delete($id, $email);
             $this->firstBanUser($table, $id, $email, $duree_de_ban, $ban_def);
         }
@@ -143,12 +139,10 @@ class AdminDashboardController extends \BaseController
         if ($success) {
             header('Location: index.php?action=admin');
             exit;
-        }
-        else {
+        } else {
             header('Location: /index.php?action=login');
             exit;
         }
-
     }
 
     public function firstBanUser($table, $id, $mail, $duree_de_ban, $ban_def)
@@ -156,7 +150,6 @@ class AdminDashboardController extends \BaseController
         $this->userModel->createBanUser($mail, $duree_de_ban, $ban_def, $table, $id);
 
         header('Location: index.php?action=adminDeleteUser&table=' . $table . '&id=' . $id);
-
     }
 
 

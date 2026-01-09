@@ -19,10 +19,9 @@ class User
      * @param string $email User's email address
      * @param string $password User's password (will be hashed)
      * @param string|null $verificationCode Verification code for email
-     * @param int $isVerified Whether email is verified (0 or 1)
      * @return bool Success status
      */
-    public function create($lastName, $firstName, $email, $password, $verificationCode = null, $isVerified = 0)
+    public function create($lastName, $firstName, $email, $password, $verificationCode = null)
     {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
