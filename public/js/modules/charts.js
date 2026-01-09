@@ -126,6 +126,37 @@ const ChartModule = (function() {
             .attr("text-anchor", "middle")
             .style("font-size", "14px")
             .text("Tentatives (Hauteur) et Taux de réussite (Couleur)");
+
+        // Add legend
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(${width - 180}, 10)`);
+
+        const legendData = [
+            { color: '#66bb6a', label: 'Excellent (≥80%)', range: '≥80%' },
+            { color: '#ffca28', label: 'Bien (50-80%)', range: '50-80%' },
+            { color: '#ef5350', label: 'À améliorer (<50%)', range: '<50%' }
+        ];
+
+        legendData.forEach((item, i) => {
+            const legendRow = legend.append("g")
+                .attr("transform", `translate(0, ${i * 20})`);
+
+            legendRow.append("rect")
+                .attr("width", 14)
+                .attr("height", 14)
+                .attr("fill", item.color)
+                .attr("rx", 2);
+
+            legendRow.append("text")
+                .attr("x", 20)
+                .attr("y", 7)
+                .attr("dy", ".35em")
+                .style("font-size", "11px")
+                .style("fill", "#2c3e50")
+                .style("font-weight", "500")
+                .text(item.label);
+        });
     }
 
     /**
@@ -146,14 +177,19 @@ const ChartModule = (function() {
 
         // Setup margins and dimensions
         const margin = {top: 20, right: 20, bottom: 100, left: 50}; // Larger bottom margin for long names
-        const width = container.offsetWidth - margin.left - margin.right;
-        const height = 300 - margin.top - margin.bottom;
+        const viewBoxWidth = 800;
+        const viewBoxHeight = 400;
+        const width = viewBoxWidth - margin.left - margin.right;
+        const height = viewBoxHeight - margin.top - margin.bottom;
 
-        // Append SVG
+        // Append SVG with viewBox for responsiveness
         const svg = d3.select("#" + containerId)
             .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
+            .attr("viewBox", `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
+            .attr("preserveAspectRatio", "xMidYMid meet")
+            .style("width", "100%")
+            .style("height", "auto")
+            .style("max-height", "400px")
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -241,6 +277,37 @@ const ChartModule = (function() {
             .attr("text-anchor", "middle")
             .style("font-size", "14px")
             .text("Taux de réussite (%)");
+
+        // Add legend (same style as student chart - vertical top right)
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(${width - 180}, 10)`);
+
+        const legendData = [
+            { color: '#66bb6a', label: 'Facile (≥80%)', range: '≥80%' },
+            { color: '#ffca28', label: 'Moyen (50-80%)', range: '50-80%' },
+            { color: '#ef5350', label: 'Difficile (<50%)', range: '<50%' }
+        ];
+
+        legendData.forEach((item, i) => {
+            const legendRow = legend.append("g")
+                .attr("transform", `translate(0, ${i * 20})`);
+
+            legendRow.append("rect")
+                .attr("width", 14)
+                .attr("height", 14)
+                .attr("fill", item.color)
+                .attr("rx", 2);
+
+            legendRow.append("text")
+                .attr("x", 20)
+                .attr("y", 7)
+                .attr("dy", ".35em")
+                .style("font-size", "11px")
+                .style("fill", "#2c3e50")
+                .style("font-weight", "500")
+                .text(item.label);
+        });
     }
 
     return {
