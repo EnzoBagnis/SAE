@@ -129,10 +129,18 @@ export class StudentContentManager {
         // Store data in the container for lazy rendering
         try {
             console.log('📊 Storing data for charts:', { student, attempts, stats });
-            chartsContainer.dataset.student = JSON.stringify(student);
-            chartsContainer.dataset.attempts = JSON.stringify(attempts);
-            chartsContainer.dataset.stats = JSON.stringify(stats);
+
+            // Ensure data is valid before stringifying
+            const safeStudent = student || {};
+            const safeAttempts = Array.isArray(attempts) ? attempts : [];
+            const safeStats = stats || { total_attempts: 0, success_count: 0 };
+
+            chartsContainer.dataset.student = JSON.stringify(safeStudent);
+            chartsContainer.dataset.attempts = JSON.stringify(safeAttempts);
+            chartsContainer.dataset.stats = JSON.stringify(safeStats);
             chartsContainer.dataset.rendered = 'false';
+
+            console.log('✅ Data stored successfully');
         } catch (error) {
             console.error('❌ Erreur de sérialisation des données:', error);
             chartsContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur: Impossible de sérialiser les données</p>';
