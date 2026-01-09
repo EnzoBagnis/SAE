@@ -446,10 +446,22 @@ const DetailedCharts = (function() {
             return;
         }
 
+        const correctAttempts = stats.correct_attempts || stats.success_count || 0;
+        const totalAttempts = stats.total_attempts || 0;
+        const failedAttempts = totalAttempts - correctAttempts;
+
         const data = [
-            { label: 'Réussies', value: stats.correct_attempts || stats.success_count || 0, color: '#27ae60' },
-            { label: 'Échouées', value: (stats.total_attempts || 0) - (stats.correct_attempts || stats.success_count || 0), color: '#e74c3c' }
+            { label: 'Réussies', value: correctAttempts, color: '#27ae60' },
+            { label: 'Échouées', value: failedAttempts, color: '#e74c3c' }
         ];
+
+        // Debug log to verify data
+        console.log('📊 Donut chart data:', {
+            correctAttempts,
+            failedAttempts,
+            totalAttempts,
+            sum: correctAttempts + failedAttempts
+        });
 
         const viewBoxSize = 300;
         const radius = Math.min(viewBoxSize, viewBoxSize) / 2 - 40; // Back to normal size
