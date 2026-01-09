@@ -452,7 +452,7 @@ const DetailedCharts = (function() {
         ];
 
         const viewBoxSize = 300;
-        const radius = Math.min(viewBoxSize, viewBoxSize) / 2 - 70; // Reduced from 40 to 70 to leave more space for legend
+        const radius = Math.min(viewBoxSize, viewBoxSize) / 2 - 40; // Back to normal size
 
         const svg = d3.select(chartDiv)
             .append('svg')
@@ -461,7 +461,7 @@ const DetailedCharts = (function() {
             .style('width', '100%')
             .style('height', 'auto')
             .append('g')
-            .attr('transform', `translate(${viewBoxSize/2},${viewBoxSize/2 - 10})`); // Shifted up slightly
+            .attr('transform', `translate(${viewBoxSize/2},${viewBoxSize/2})`);
 
         const pie = d3.pie()
             .value(d => d.value)
@@ -500,14 +500,14 @@ const DetailedCharts = (function() {
             .style('fill', 'white')
             .text(d => d.data.value > 0 ? d.data.value : '');
 
-        // Legend with percentages - positioned bottom left
+        // Legend with percentages - positioned bottom left, further away from donut
         const total = data.reduce((sum, d) => sum + d.value, 0);
         const legend = svg.selectAll('.legend')
             .data(data)
             .enter()
             .append('g')
             .attr('class', 'legend')
-            .attr('transform', (d, i) => `translate(${-radius + 10},${radius - 60 + i * 30})`);
+            .attr('transform', (d, i) => `translate(${-radius - 50},${radius + 20 + i * 30})`); // Moved further left and down
 
         legend.append('rect')
             .attr('width', 18)
