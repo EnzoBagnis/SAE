@@ -67,19 +67,13 @@ class AuthController
         }
 
         if ($this->pendingRegistrationModel->verifyCode($email, $code)) {
-            $this->userModel->create(
-                $registration['nom'],
-                $registration['prenom'],
-                $registration['mail'],
-                $registration['mdp'],
-                $registration['code_verif'],
-                1
-            );
+            // Mise à jour du statut "vérifié" dans la table d'attente
+            $this->userModel->updateVerifie($registration['id']);
 
-            $this->pendingRegistrationModel->delete($email);
-            $user = $this->userModel->findByEmail($email);
+            // On ne crée plus l'utilisateur ici, on attend la validation admin
+            // L'utilisateur reste dans inscriptions_en_attente avec verifie = 1
 
-            return ['success' => true, 'user' => $user];
+            return ['success' => true, 'user' => $registration];
         }
 
         return ['success' => false, 'error' => 'code_incorrect'];
