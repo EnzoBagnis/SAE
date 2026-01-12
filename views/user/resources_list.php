@@ -58,7 +58,6 @@ try {
     </button>
 
     <nav class="nav-menu">
-        <a href="/index.php?action=dashboard">Tableau de Bord</a>
         <a href="/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
 
@@ -254,7 +253,7 @@ try {
 
             <button type="button" id="btnDeleteResource" class="btn-delete-trigger"
                     onclick="confirmDelete()" style="display:none;">
-                🗑️ Supprimer cette ressource
+                Supprimer cette ressource
             </button>
         </form>
     </div>

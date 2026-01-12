@@ -193,3 +193,12 @@ if (!window.switchListView) {
 }
 window.toggleAccordion = (accordionId) => studentListManager.toggleAccordion(accordionId);
 window.selectExercise = (exerciseId) => studentContentManager.selectExercise(exerciseId);
+
+
+document.addEventListener('student-chart-click', function(e) {
+    const id = e.detail.studentId;
+    // Votre code pour mettre en bleu dans le menu :
+    document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+    const link = document.querySelector(`.sidebar-link[data-id="${id}"]`);
+    if(link) link.classList.add('active');
+});

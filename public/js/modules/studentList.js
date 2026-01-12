@@ -507,4 +507,5 @@ export class StudentListManager {
     toggleAccordion(accordionId) {
         // Non utilisé dans le nouveau design
     }
+
 }
