@@ -31,7 +31,59 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/dashboard.php">
 </head>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
 
+        // Gestion du clic Etudiant dans le graph
+        document.addEventListener('student-chart-click', function(e) {
+            const id = e.detail.studentId;
+
+            // 1. Forcer l'affichage de la liste des étudiants dans la sidebar
+            if (typeof switchListView === 'function') {
+                switchListView('students');
+            }
+
+            // 2. Attendre un court instant que la liste soit générée, puis colorer
+            setTimeout(() => {
+                updateSidebarActiveState(id);
+                // Optionnel : Simuler un clic pour charger les données détaillées
+                const link = document.querySelector(`[data-student-id="${id}"], [onclick*="'${id}'"]`);
+                if (link) link.click();
+            }, 100);
+        });
+
+        // Gestion du clic TP dans le graph
+        document.addEventListener('exercise-chart-click', function(e) {
+            const id = e.detail.exerciseId;
+
+            // 1. Forcer l'affichage de la liste des exercices
+            if (typeof switchListView === 'function') {
+                switchListView('exercises');
+            }
+
+            setTimeout(() => {
+                updateSidebarActiveState(id);
+                const link = document.querySelector(`[data-exercise-id="${id}"], [onclick*="'${id}'"]`);
+                if (link) link.click();
+            }, 100);
+        });
+
+        function updateSidebarActiveState(id) {
+            // Supprimer le bleu partout
+            document.querySelectorAll('.sidebar-item, .list-item, [onclick]').forEach(el => {
+                el.classList.remove('active');
+                el.style.backgroundColor = ""; // Reset inline style si existant
+            });
+
+            // Chercher l'élément par ID ou par le texte contenu dans le onclick
+            const target = document.querySelector(`[data-id="${id}"], [onclick*="'${id}'"]`);
+            if (target) {
+                target.classList.add('active');
+                target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    });
+</script>
 <body>
 <header class="top-menu">
     <div class="logo">
