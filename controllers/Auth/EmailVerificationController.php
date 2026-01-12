@@ -141,7 +141,8 @@ class EmailVerificationController extends \BaseController
             'registration_expired' => 'Votre inscription a expiré. Veuillez vous réinscrire.',
             'email_send_failed' => 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.',
             'session_expiree' => 'Session expirée. Veuillez vous réinscrire.',
-            'code_vide' => 'Veuillez entrer le code de vérification'
+            'code_vide' => 'Veuillez entrer le code de vérification',
+            'email_not_verified' => 'Veuillez valider votre email pour continuer.'
         ];
 
         return $messages[$errorCode] ?? 'Une erreur est survenue';

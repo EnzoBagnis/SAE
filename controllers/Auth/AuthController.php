@@ -84,16 +84,30 @@ class AuthController
      */
     public function login($email, $password)
     {
-        $user = $this->userModel->verifyCredentials($email, $password);
-
-        if (!$user) {
-            if (!$this->userModel->emailExists($email)) {
-                return ['success' => false, 'error' => 'email_not_found'];
+        // 1. Check active users first
+        if ($this->userModel->emailExists($email)) {
+            $user = $this->userModel->verifyCredentials($email, $password);
+            if ($user) {
+                return ['success' => true, 'user' => $user];
             }
             return ['success' => false, 'error' => 'password_incorrect'];
         }
 
-        return ['success' => true, 'user' => $user];
+        // 2. Check pending registrations
+        $pendingUser = $this->pendingRegistrationModel->findByEmail($email);
+        if ($pendingUser) {
+            if (password_verify($password, $pendingUser['mdp'])) {
+                if ($pendingUser['verifie'] == 1) {
+                    return ['success' => false, 'error' => 'account_pending_approval'];
+                } else {
+                    return ['success' => false, 'error' => 'email_not_verified'];
+                }
+            }
+            return ['success' => false, 'error' => 'password_incorrect'];
+        }
+
+        // 3. User not found
+        return ['success' => false, 'error' => 'email_not_found'];
     }
 
     /**
