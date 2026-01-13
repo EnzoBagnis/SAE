@@ -4,6 +4,7 @@ namespace Controllers\Admin;
 
 require_once __DIR__ . '/../BaseController.php';
 require_once __DIR__ . '/../Auth/AuthController.php';
+require_once __DIR__ . '/../../models/EmailService.php';
 
 /**
  * LoginController - Handles login display and authentication
@@ -108,8 +109,18 @@ class AdminDashboardController extends \BaseController
     public function validateUser()
     {
         $id = $_GET['id'];
+
+        // Récupérer l'utilisateur pour avoir son email avant le transfert
+        $userPending = $this->userModel->findByIdInPending($id);
+
         $success = $this->userModel->switchUser($id);
         if ($success) {
+            // Envoyer l'email de confirmation si l'utilisateur a été trouvé
+            if ($userPending && isset($userPending['mail'])) {
+                $emailService = new \EmailService();
+                $emailService->sendAccountValidationNotification($userPending['mail']);
+            }
+
             header('Location: index.php?action=admin');
         } else {
             $this->loadView('admin/admin-dashboard');
