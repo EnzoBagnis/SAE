@@ -67,19 +67,13 @@ class AuthController
         }
 
         if ($this->pendingRegistrationModel->verifyCode($email, $code)) {
-            $this->userModel->create(
-                $registration['nom'],
-                $registration['prenom'],
-                $registration['mail'],
-                $registration['mdp'],
-                $registration['code_verif'],
-                1
-            );
+            // Mise à jour du statut "vérifié" dans la table d'attente
+            $this->userModel->updateVerifie($registration['id']);
 
-            $this->pendingRegistrationModel->delete($email);
-            $user = $this->userModel->findByEmail($email);
+            // On ne crée plus l'utilisateur ici, on attend la validation admin
+            // L'utilisateur reste dans inscriptions_en_attente avec verifie = 1
 
-            return ['success' => true, 'user' => $user];
+            return ['success' => true, 'user' => $registration];
         }
 
         return ['success' => false, 'error' => 'code_incorrect'];
@@ -90,16 +84,30 @@ class AuthController
      */
     public function login($email, $password)
     {
-        $user = $this->userModel->verifyCredentials($email, $password);
-
-        if (!$user) {
-            if (!$this->userModel->emailExists($email)) {
-                return ['success' => false, 'error' => 'email_not_found'];
+        // 1. Check active users first
+        if ($this->userModel->emailExists($email)) {
+            $user = $this->userModel->verifyCredentials($email, $password);
+            if ($user) {
+                return ['success' => true, 'user' => $user];
             }
             return ['success' => false, 'error' => 'password_incorrect'];
         }
 
-        return ['success' => true, 'user' => $user];
+        // 2. Check pending registrations
+        $pendingUser = $this->pendingRegistrationModel->findByEmail($email);
+        if ($pendingUser) {
+            if (password_verify($password, $pendingUser['mdp'])) {
+                if ($pendingUser['verifie'] == 1) {
+                    return ['success' => false, 'error' => 'account_pending_approval'];
+                } else {
+                    return ['success' => false, 'error' => 'email_not_verified'];
+                }
+            }
+            return ['success' => false, 'error' => 'password_incorrect'];
+        }
+
+        // 3. User not found
+        return ['success' => false, 'error' => 'email_not_found'];
     }
 
     /**
