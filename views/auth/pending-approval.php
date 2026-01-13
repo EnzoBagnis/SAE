@@ -18,7 +18,7 @@
 
         <div class="card" style="text-align: center;">
             <div class="logo">
-                <img src="images/prog_intro.png" alt="StudTraj Logo" style="max-height: 60px; margin-bottom: 20px;">
+                <img src="images/favicon.ico" alt="StudTraj Logo" style="max-height: 60px; margin-bottom: 20px;">
                 <h2>StudTraj</h2>
             </div>
 
