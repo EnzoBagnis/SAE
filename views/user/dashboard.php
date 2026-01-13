@@ -308,39 +308,40 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        // Gestion du clic Étudiant
+        // Événement quand on clique sur une barre "Étudiant"
         document.addEventListener('student-chart-click', function(e) {
             const id = e.detail.studentId;
-            // On bascule sur l'onglet étudiants
-            if (typeof switchListView === 'function') switchListView('students');
 
+            // 1. On change l'onglet de la sidebar vers Étudiants
+            if (window.switchListView) switchListView('students');
+
+            // 2. On attend le chargement et on simule le clic pour mettre en bleu
             setTimeout(() => {
-                // On cherche le bouton dans la sidebar et on clique dessus
-                const item = document.querySelector(`.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`);
-                if (item) {
-                    item.click();
-                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const sidebarItem = document.querySelector(`.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`);
+                if (sidebarItem) {
+                    sidebarItem.click(); // Cela active votre fonction de chargement + CSS bleu
+                    sidebarItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-            }, 200);
+            }, 300);
         });
 
-        // Gestion du clic TP
+        // Événement quand on clique sur une barre "Exercice"
         document.addEventListener('exercise-chart-click', function(e) {
             const id = e.detail.exerciseId;
-            // On bascule sur l'onglet TP
-            if (typeof switchListView === 'function') switchListView('exercises');
+
+            // 1. On change l'onglet de la sidebar vers TP
+            if (window.switchListView) switchListView('exercises');
 
             setTimeout(() => {
-                const item = document.querySelector(`.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`);
-                if (item) {
-                    item.click();
-                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const sidebarItem = document.querySelector(`.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`);
+                if (sidebarItem) {
+                    sidebarItem.click(); // Cela active votre fonction de chargement + CSS bleu
+                    sidebarItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-            }, 200);
+            }, 300);
         });
     });
 </script>
-
 
 </body>
 </html>
