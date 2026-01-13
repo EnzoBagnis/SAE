@@ -305,5 +305,42 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 
     <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Gestion du clic Étudiant
+        document.addEventListener('student-chart-click', function(e) {
+            const id = e.detail.studentId;
+            // On bascule sur l'onglet étudiants
+            if (typeof switchListView === 'function') switchListView('students');
+
+            setTimeout(() => {
+                // On cherche le bouton dans la sidebar et on clique dessus
+                const item = document.querySelector(`.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`);
+                if (item) {
+                    item.click();
+                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 200);
+        });
+
+        // Gestion du clic TP
+        document.addEventListener('exercise-chart-click', function(e) {
+            const id = e.detail.exerciseId;
+            // On bascule sur l'onglet TP
+            if (typeof switchListView === 'function') switchListView('exercises');
+
+            setTimeout(() => {
+                const item = document.querySelector(`.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`);
+                if (item) {
+                    item.click();
+                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 200);
+        });
+    });
+</script>
+
+
 </body>
 </html>
