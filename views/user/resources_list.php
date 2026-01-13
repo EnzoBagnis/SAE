@@ -58,7 +58,6 @@ try {
     </button>
 
     <nav class="nav-menu">
-        <a href="/index.php?action=dashboard">Tableau de Bord</a>
         <a href="/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
 
