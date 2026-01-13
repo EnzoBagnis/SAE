@@ -76,13 +76,29 @@ class EmailVerificationController extends \BaseController
         $result = $this->authController->validateCode($email, $code);
 
         if ($result['success']) {
-            $this->authController->createSession($result['user']);
-            header('Location: /index.php?action=dashboard');
+            // On ne crée pas de session car l'utilisateur doit être validé par un admin
+            // $this->authController->createSession($result['user']);
+
+            // Nettoyage de la session d'inscription
+            unset($_SESSION['mail']);
+
+            header('Location: /index.php?action=pendingapproval');
             exit;
         } else {
             header('Location: /index.php?action=emailverification&erreur=' . $result['error']);
             exit;
         }
+    }
+
+    /**
+     * Show pending approval page
+     */
+    public function pendingApproval()
+    {
+        $data = [
+            'title' => 'En attente de validation - StudTraj'
+        ];
+        $this->loadView('auth/pending-approval', $data);
     }
 
     /**
@@ -125,7 +141,8 @@ class EmailVerificationController extends \BaseController
             'registration_expired' => 'Votre inscription a expiré. Veuillez vous réinscrire.',
             'email_send_failed' => 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.',
             'session_expiree' => 'Session expirée. Veuillez vous réinscrire.',
-            'code_vide' => 'Veuillez entrer le code de vérification'
+            'code_vide' => 'Veuillez entrer le code de vérification',
+            'email_not_verified' => 'Veuillez valider votre email pour continuer.'
         ];
 
         return $messages[$errorCode] ?? 'Une erreur est survenue';

@@ -47,6 +47,10 @@ class Router
                 }
                 break;
 
+            case 'pendingapproval':
+                $this->loadNamespacedController('Controllers\Auth\EmailVerificationController', 'pendingApproval');
+                break;
+
             // ========== AUTH - RESEND CODE ==========
             case 'resendcode':
                 $this->loadNamespacedController('Controllers\Auth\EmailVerificationController', 'resendCode');
