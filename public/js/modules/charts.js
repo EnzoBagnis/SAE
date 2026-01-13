@@ -12,8 +12,19 @@ const ChartModule = (function() {
 
     // Helper pour obtenir le nom peu importe la structure de la donnée
     function getName(d) {
+        // 1. Si c'est un étudiant (nom/prénom)
         if (d.nom || d.prenom) return `${d.prenom || ''} ${d.nom || ''}`.trim();
-        return d.exo_name || d.funcname || d.name || d.title || d.student_identifier || "Sans nom";
+
+        // 2. Si c'est un exercice ou un TP
+        // On cherche par ordre de priorité les clés probables venant de la base de données
+        return d.tp_name ||            // Nom du TP
+            d.exercise_name ||      // Nom de l'exercice
+            d.exo_name ||           // Alias fréquent
+            d.title ||              // Titre
+            d.name ||               // Nom générique
+            d.funcname ||           // Nom de la fonction
+            d.student_identifier || // Identifiant (en dernier recours)
+            "Sans nom";
     }
 
     function createTooltip() {
