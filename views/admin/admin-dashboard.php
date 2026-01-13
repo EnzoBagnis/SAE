@@ -15,10 +15,7 @@
         <h1>StudTraj</h1>
     </div>
     <nav class="nav-menu">
-        <a href="/index.php?action=dashboard">Tableau de bord</a>
         <a href="/index.php?action=admin" class="active">Administration</a>
-        <a href="#">Plan du site</a>
-        <a href="#">Mentions légales</a>
     </nav>
     <div class="user-info">
         <span>
