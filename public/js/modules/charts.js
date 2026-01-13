@@ -2,6 +2,7 @@
 
 const ChartModule = (function() {
 
+    // Échelle de couleur sombre aux extrémités et très granulaire
     const getHighGranularityScale = () => {
         return d3.scaleLinear()
             .domain([0, 25, 50, 75, 100])
@@ -9,13 +10,24 @@ const ChartModule = (function() {
             .interpolate(d3.interpolateHcl);
     };
 
-    /**
-     * CORRECTION : On attache le tooltip au body pour éviter les décalages de conteneur
-     */
-    function createTooltip() {
-        // Supprimer l'ancien tooltip s'il existe pour éviter les doublons
-        d3.select(".chart-tooltip").remove();
+    // Helper pour obtenir le nom peu importe la structure de la donnée
+    function getName(d) {
+        // 1. Si c'est un étudiant
+        if (d.nom || d.prenom) return `${d.prenom || ''} ${d.nom || ''}`.trim();
 
+        // 2. Si c'est un exercice (Ordre de priorité ajusté)
+        // On cherche d'abord les labels lisibles avant les identifiants
+        return d.label ||              // Souvent utilisé pour le nom d'affichage
+            d.title ||              // Titre de l'exercice
+            d.exo_name ||           // Nom de l'exo
+            d.funcname ||           // Nom de la fonction (ex: "compare")
+            d.name ||               // Nom générique
+            d.exercise_id ||        // En dernier recours
+            d.student_identifier ||
+            "Sans nom";
+    }
+    function createTooltip() {
+        d3.select(".chart-tooltip").remove();
         return d3.select("body")
             .append("div")
             .attr("class", "chart-tooltip")
@@ -27,7 +39,7 @@ const ChartModule = (function() {
             .style("border-radius", "4px")
             .style("font-size", "12px")
             .style("pointer-events", "none")
-            .style("z-index", "9999") // Très haut pour passer devant tout
+            .style("z-index", "9999")
             .style("box-shadow", "0 4px 8px rgba(0,0,0,0.5)");
     }
 
@@ -45,26 +57,19 @@ const ChartModule = (function() {
         const width = container.offsetWidth - margin.left - margin.right;
         const height = 350 - margin.top - margin.bottom;
 
-        const svg = d3.select("#" + containerId)
-            .append("svg")
+        const svg = d3.select("#" + containerId).append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
+            .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-        const x = d3.scaleBand()
-            .range([0, width])
-            .domain(data.map(d => (d.nom && d.prenom) ? `${d.nom} ${d.prenom}` : d.student_identifier))
-            .padding(0.3);
-
+        const x = d3.scaleBand().range([0, width]).domain(data.map(d => getName(d))).padding(0.3);
         const maxAttempts = d3.max(data, d => +d.total_attempts) || 10;
         const y = d3.scaleLinear().domain([0, maxAttempts * 1.1]).range([height, 0]);
         const colorScale = getHighGranularityScale();
         const tooltip = createTooltip();
 
-        // Bars
         svg.selectAll("rect").data(data).enter().append("rect")
-            .attr("x", d => x((d.nom && d.prenom) ? `${d.nom} ${d.prenom}` : d.student_identifier))
+            .attr("x", d => x(getName(d)))
             .attr("y", d => y(d.total_attempts))
             .attr("width", x.bandwidth())
             .attr("height", d => height - y(d.total_attempts))
@@ -73,27 +78,16 @@ const ChartModule = (function() {
             .style("cursor", "pointer")
             .on("mouseover", function(event, d) {
                 d3.select(this).attr("opacity", 0.7);
-                tooltip.style("visibility", "visible")
-                    .html(`<strong>${(d.nom && d.prenom) ? `${d.nom} ${d.prenom}` : d.student_identifier}</strong><br>` +
-                        `Taux de réussite: <span style="color:${colorScale(d.success_rate)}; font-weight:bold">${d.success_rate}%</span><br>` +
-                        `Tentatives: ${d.total_attempts}`);
+                tooltip.style("visibility", "visible").html(`<strong>${getName(d)}</strong><br>Réussite: ${d.success_rate}%<br>Tentatives: ${d.total_attempts}`);
             })
-            .on("mousemove", function(event) {
-                // CORRECTION POSITION : Utilisation des coordonnées page avec un petit offset
-                tooltip.style("top", (event.pageY - 40) + "px") // Un peu plus haut que le curseur
-                    .style("left", (event.pageX + 15) + "px"); // Un peu à droite
-            })
-            .on("mouseout", function() {
-                d3.select(this).attr("opacity", 1);
-                tooltip.style("visibility", "hidden");
-            })
+            .on("mousemove", (event) => tooltip.style("top", (event.pageY - 40) + "px").style("left", (event.pageX + 15) + "px"))
+            .on("mouseout", function() { d3.select(this).attr("opacity", 1); tooltip.style("visibility", "hidden"); })
             .on("click", (event, d) => {
-                document.dispatchEvent(new CustomEvent('student-chart-click', { detail: { studentId: d.id } }));
+                tooltip.style("visibility", "hidden");
+                document.dispatchEvent(new CustomEvent('student-chart-click', { detail: { studentId: d.id || d.student_id } }));
             });
 
-        // Axes & Legend
-        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x))
-            .selectAll("text").attr("transform", "translate(-10,5)rotate(-35)").style("text-anchor", "end");
+        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x)).selectAll("text").attr("transform", "translate(-10,5)rotate(-35)").style("text-anchor", "end");
         svg.append("g").call(d3.axisLeft(y));
         renderLegend(svg, width + 30, 0);
     }
@@ -110,23 +104,20 @@ const ChartModule = (function() {
 
         const margin = {top: 30, right: 180, bottom: 100, left: 60};
         const viewBoxWidth = 950;
-        const viewBoxHeight = 450;
         const width = viewBoxWidth - margin.left - margin.right;
-        const height = viewBoxHeight - margin.top - margin.bottom;
+        const height = 450 - margin.top - margin.bottom;
 
-        const svg = d3.select("#" + containerId)
-            .append("svg")
-            .attr("viewBox", `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
-            .style("width", "100%").style("height", "auto")
+        const svg = d3.select("#" + containerId).append("svg")
+            .attr("viewBox", `0 0 ${viewBoxWidth} 450`).style("width", "100%")
             .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-        const x = d3.scaleBand().range([0, width]).domain(data.map(d => d.funcname || d.exo_name)).padding(0.3);
+        const x = d3.scaleBand().range([0, width]).domain(data.map(d => getName(d))).padding(0.3);
         const y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
         const colorScale = getHighGranularityScale();
         const tooltip = createTooltip();
 
         svg.selectAll("rect").data(data).enter().append("rect")
-            .attr("x", d => x(d.funcname || d.exo_name))
+            .attr("x", d => x(getName(d)))
             .attr("y", d => y(d.success_rate))
             .attr("width", x.bandwidth())
             .attr("height", d => height - y(d.success_rate))
@@ -135,251 +126,62 @@ const ChartModule = (function() {
             .style("cursor", "pointer")
             .on("mouseover", function(event, d) {
                 d3.select(this).attr("opacity", 0.7);
-                tooltip.style("visibility", "visible")
-                    .html(`<strong>${d.exo_name}</strong><br>` +
-                        `Réussite: <span style="color:${colorScale(d.success_rate)}; font-weight:bold">${d.success_rate}%</span><br>` +
-                        `Essais totaux: ${d.total_attempts}`);
+                tooltip.style("visibility", "visible").html(`<strong>${getName(d)}</strong><br>Réussite: ${d.success_rate}%`);
             })
-            .on("mousemove", function(event) {
-                // CORRECTION POSITION : Coordonnées page
-                tooltip.style("top", (event.pageY - 40) + "px")
-                    .style("left", (event.pageX + 15) + "px");
-            })
-            .on("mouseout", function() {
-                d3.select(this).attr("opacity", 1);
-                tooltip.style("visibility", "hidden");
-            })
+            .on("mousemove", (event) => tooltip.style("top", (event.pageY - 40) + "px").style("left", (event.pageX + 15) + "px"))
+            .on("mouseout", function() { d3.select(this).attr("opacity", 1); tooltip.style("visibility", "hidden"); })
             .on("click", (event, d) => {
-                document.dispatchEvent(new CustomEvent('exercise-chart-click', { detail: { exerciseId: d.exercise_id } }));
+                tooltip.style("visibility", "hidden");
+                document.dispatchEvent(new CustomEvent('exercise-chart-click', { detail: { exerciseId: d.exercise_id || d.id } }));
             });
 
-        // Axes & Legend
-        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x))
-            .selectAll("text").attr("transform", "translate(-10,5)rotate(-45)").style("text-anchor", "end");
+        svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x)).selectAll("text").attr("transform", "translate(-10,5)rotate(-45)").style("text-anchor", "end");
         svg.append("g").call(d3.axisLeft(y).tickFormat(d => d + "%"));
         renderLegend(svg, width + 30, 0);
     }
 
-    function renderLegend(svg, x, y) {
-        const legend = svg.append("g").attr("transform", `translate(${x}, ${y})`);
-        const categories = [
-            { c: "#1b5e20", l: "Parfait (100%)" },
-            { c: "#4caf50", l: "Très Bien (75%)" },
-            { c: "#fbc02d", l: "Passable (50%)" },
-            { c: "#f44336", l: "Faible (25%)" },
-            { c: "#7f0000", l: "Critique (0%)" }
-        ];
-
-        categories.forEach((item, i) => {
-            const row = legend.append("g").attr("transform", `translate(0, ${i * 25})`);
-            row.append("rect").attr("width", 18).attr("height", 18).attr("fill", item.c).attr("rx", 3);
-            row.append("text").attr("x", 26).attr("y", 14).style("font-size", "12px").style("font-weight", "600").text(item.l);
-        });
-    }
-
-    /**
-     *
-     * Render exercise completion chart (done vs not done)
-     * @param {Object} data - Object with completed and total counts
-     * @param {string} containerId - ID of the container element
-     */
     function renderExerciseCompletionChart(data, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
-
         container.innerHTML = '<h3>Progression des exercices</h3>';
-
-        if (!data || typeof data.total === 'undefined') {
+        if (!data || typeof data.total === 'undefined' || data.total === 0) {
             container.innerHTML += '<p>Aucune donnée disponible.</p>';
             return;
         }
 
         const completed = data.completed || 0;
-        const notCompleted = data.total - completed;
         const total = data.total || 0;
-
-        if (total === 0) {
-            container.innerHTML += '<p>Aucun exercice disponible.</p>';
-            return;
-        }
-
-        // Setup dimensions
         const margin = {top: 40, right: 20, bottom: 60, left: 60};
-        const viewBoxWidth = 600;
-        const viewBoxHeight = 400;
-        const width = viewBoxWidth - margin.left - margin.right;
-        const height = viewBoxHeight - margin.top - margin.bottom;
+        const width = 600 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
 
-        // Append SVG with viewBox for responsiveness
-        const svg = d3.select("#" + containerId)
-            .append("svg")
-            .attr("viewBox", `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
-            .attr("preserveAspectRatio", "xMidYMid meet")
-            .style("width", "100%")
-            .style("height", "auto")
-            .style("max-height", "400px")
-            .append("g")
-            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        const svg = d3.select("#" + containerId).append("svg").attr("viewBox", `0 0 600 400`).style("width", "100%")
+            .append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-        // Prepare data for stacked bar chart
-        const chartData = [
-            { category: 'Exercices', completed: completed, notCompleted: notCompleted }
-        ];
+        const x = d3.scaleBand().range([0, width]).domain(['Exercices']).padding(0.3);
+        const y = d3.scaleLinear().domain([0, total]).range([height, 0]);
 
-        // X Axis
-        const x = d3.scaleBand()
-            .range([0, width])
-            .domain(['Exercices'])
-            .padding(0.3);
+        const stackData = d3.stack().keys(['completed', 'notCompleted'])([{ category: 'Exercices', completed: completed, notCompleted: total - completed }]);
+        const colors = { completed: '#1b5e20', notCompleted: '#7f0000' }; // On utilise nos couleurs extrêmes ici aussi
 
-        svg.append("g")
-            .attr("transform", `translate(0, ${height})`)
-            .call(d3.axisBottom(x))
-            .selectAll("text")
-            .style("font-size", "14px")
-            .style("font-weight", "bold");
+        svg.selectAll("g.layer").data(stackData).enter().append("g").attr("fill", d => colors[d.key])
+            .selectAll("rect").data(d => d).enter().append("rect")
+            .attr("x", d => x('Exercices')).attr("y", d => y(d[1])).attr("height", d => y(d[0]) - y(d[1])).attr("width", x.bandwidth());
 
-        // Y Axis
-        const y = d3.scaleLinear()
-            .domain([0, total])
-            .range([height, 0]);
+        svg.append("g").attr("transform", `translate(0, ${height})`).call(d3.axisBottom(x));
+        svg.append("g").call(d3.axisLeft(y));
+        svg.append("text").attr("x", width / 2).attr("y", -20).attr("text-anchor", "middle").style("font-weight", "bold").text(`Total: ${completed} / ${total}`);
+    }
 
-        svg.append("g")
-            .call(d3.axisLeft(y).ticks(Math.min(total, 10)));
-
-        // Add Y axis label
-        svg.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 0 - margin.left + 10)
-            .attr("x", 0 - (height / 2))
-            .attr("dy", "1em")
-            .style("text-anchor", "middle")
-            .style("font-size", "12px")
-            .text("Nombre d'exercices");
-
-        // Tooltip
-        const tooltip = d3.select("#" + containerId)
-            .append("div")
-            .style("position", "absolute")
-            .style("visibility", "hidden")
-            .style("background-color", "rgba(0,0,0,0.8)")
-            .style("color", "#fff")
-            .style("padding", "8px")
-            .style("border-radius", "4px")
-            .style("font-size", "12px")
-            .style("pointer-events", "none");
-
-        // Stack the data
-        const stack = d3.stack()
-            .keys(['completed', 'notCompleted']);
-
-        const stackedData = stack(chartData);
-
-        // Color scale
-        const colors = {
-            completed: '#66bb6a',
-            notCompleted: '#ef5350'
-        };
-
-        // Draw stacked bars
-        svg.selectAll("g.layer")
-            .data(stackedData)
-            .enter()
-            .append("g")
-            .attr("class", "layer")
-            .attr("fill", d => colors[d.key])
-            .selectAll("rect")
-            .data(d => d)
-            .enter()
-            .append("rect")
-            .attr("x", d => x('Exercices'))
-            .attr("y", d => y(d[1]))
-            .attr("height", d => y(d[0]) - y(d[1]))
-            .attr("width", x.bandwidth())
-            .style("cursor", "pointer")
-            .on("mouseover", function(event, d) {
-                const key = d3.select(this.parentNode).datum().key;
-                const value = d[1] - d[0];
-                const label = key === 'completed' ? 'Exercices faits' : 'Exercices non faits';
-                const percentage = ((value / total) * 100).toFixed(1);
-
-                d3.select(this).attr("opacity", 0.8);
-                tooltip.style("visibility", "visible")
-                       .html(`<strong>${label}</strong><br>` +
-                             `Nombre: ${value}<br>` +
-                             `Pourcentage: ${percentage}%`);
-            })
-            .on("mousemove", function(event) {
-                tooltip.style("top", (event.pageY - 10) + "px")
-                       .style("left", (event.pageX + 10) + "px");
-            })
-            .on("mouseout", function() {
-                d3.select(this).attr("opacity", 1);
-                tooltip.style("visibility", "hidden");
-            });
-
-        // Add value labels on bars
-        svg.selectAll("g.layer")
-            .selectAll("text")
-            .data(d => d)
-            .enter()
-            .append("text")
-            .attr("x", d => x('Exercices') + x.bandwidth() / 2)
-            .attr("y", d => y(d[1]) + (y(d[0]) - y(d[1])) / 2)
-            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .style("fill", "#fff")
-            .style("font-weight", "bold")
-            .style("font-size", "16px")
-            .style("text-shadow", "1px 1px 2px rgba(0,0,0,0.8)")
-            .text(d => {
-                const value = d[1] - d[0];
-                return value > 0 ? value : '';
-            });
-
-        // Add title
-        svg.append("text")
-            .attr("x", width / 2)
-            .attr("y", -20)
-            .attr("text-anchor", "middle")
-            .style("font-size", "16px")
-            .style("font-weight", "bold")
-            .text(`Total: ${completed} / ${total} exercices`);
-
-        // Add legend (top left)
-        const legend = svg.append("g")
-            .attr("class", "legend")
-            .attr("transform", `translate(0, -25)`);
-
-        const legendData = [
-            { color: '#66bb6a', label: 'Exercices faits', key: 'completed' },
-            { color: '#ef5350', label: 'Exercices non faits', key: 'notCompleted' }
-        ];
-
-        legendData.forEach((item, i) => {
-            const legendRow = legend.append("g")
-                .attr("transform", `translate(0, ${i * 20})`);
-
-            legendRow.append("rect")
-                .attr("width", 14)
-                .attr("height", 14)
-                .attr("fill", item.color)
-                .attr("rx", 2);
-
-            legendRow.append("text")
-                .attr("x", 20)
-                .attr("y", 7)
-                .attr("dy", ".35em")
-                .style("font-size", "11px")
-                .style("fill", "#2c3e50")
-                .style("font-weight", "500")
-                .text(item.label);
+    function renderLegend(svg, x, y) {
+        const legend = svg.append("g").attr("transform", `translate(${x}, ${y})`);
+        const cats = [{c: "#1b5e20", l: "Parfait"}, {c: "#4caf50", l: "Bien"}, {c: "#fbc02d", l: "Moyen"}, {c: "#f44336", l: "Faible"}, {c: "#7f0000", l: "Critique"}];
+        cats.forEach((item, i) => {
+            const row = legend.append("g").attr("transform", `translate(0, ${i * 25})`);
+            row.append("rect").attr("width", 15).attr("height", 15).attr("fill", item.c).attr("rx", 2);
+            row.append("text").attr("x", 22).attr("y", 12).style("font-size", "11px").text(item.l);
         });
     }
 
-    return {
-        renderStudentChart: renderStudentChart,
-        renderExerciseChart: renderExerciseChart,
-        renderExerciseCompletionChart: renderExerciseCompletionChart
-    };
+    return { renderStudentChart, renderExerciseChart, renderExerciseCompletionChart };
 })();
