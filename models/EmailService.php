@@ -103,7 +103,34 @@ class EmailService
             $mail->send();
             return true;
         } catch (Exception $e) {
-            error_log("Reset email sending error: " . $mail->ErrorInfo);
+            error_log("Email sending error: " . $mail->ErrorInfo);
+            return false;
+        }
+    }
+
+    /**
+     * Send account validation notification email
+     * @param string $recipient Email recipient
+     * @return bool Success status
+     */
+    public function sendAccountValidationNotification($recipient)
+    {
+        try {
+            $mail = $this->configureMail();
+            $mail->addAddress($recipient);
+
+            // Email content
+            $mail->Subject = 'Compte validé - StudTraj';
+            $mail->Body    = "Bonjour,\n\n";
+            $mail->Body   .= "Votre compte a été validé par un administrateur.\n\n";
+            $mail->Body   .= "Vous pouvez maintenant vous connecter à votre espace membre sur StudTraj.\n\n";
+            $mail->Body   .= "Cordialement,\n";
+            $mail->Body   .= "L'équipe StudTraj";
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Email sending error: " . $mail->ErrorInfo);
             return false;
         }
     }
