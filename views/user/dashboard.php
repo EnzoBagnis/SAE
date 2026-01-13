@@ -308,38 +308,23 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        // Événement quand on clique sur une barre "Étudiant"
-        document.addEventListener('student-chart-click', function(e) {
-            const id = e.detail.studentId;
-
-            // 1. On change l'onglet de la sidebar vers Étudiants
-            if (window.switchListView) switchListView('students');
-
-            // 2. On attend le chargement et on simule le clic pour mettre en bleu
-            setTimeout(() => {
-                const sidebarItem = document.querySelector(`.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`);
-                if (sidebarItem) {
-                    sidebarItem.click(); // Cela active votre fonction de chargement + CSS bleu
-                    sidebarItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 300);
-        });
-
-        // Événement quand on clique sur une barre "Exercice"
-        document.addEventListener('exercise-chart-click', function(e) {
-            const id = e.detail.exerciseId;
-
-            // 1. On change l'onglet de la sidebar vers TP
-            if (window.switchListView) switchListView('exercises');
+        function syncSidebar(type, id) {
+            // Change la vue (étudiants ou TP)
+            if (window.switchListView) switchListView(type);
 
             setTimeout(() => {
-                const sidebarItem = document.querySelector(`.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`);
-                if (sidebarItem) {
-                    sidebarItem.click(); // Cela active votre fonction de chargement + CSS bleu
-                    sidebarItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Trouve le bouton dans la liste
+                const selector = `.sidebar-item[data-id="${id}"], [onclick*="'${id}'"]`;
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.click(); // Déclenche le chargement + la couleur bleue
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }, 300);
-        });
+        }
+
+        document.addEventListener('student-chart-click', e => syncSidebar('students', e.detail.studentId));
+        document.addEventListener('exercise-chart-click', e => syncSidebar('exercises', e.detail.exerciseId));
     });
 </script>
 
