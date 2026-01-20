@@ -100,8 +100,18 @@ StudTraj/
 
 3. **Configurer la base de données**
    - Créez une base de données MySQL
-   - Importez le schéma de base de données (fichier SQL à fournir)
-   - Configurez les paramètres de connexion dans `models/Database.php`
+   - Configurez les paramètres de connexion via un fichier `.env` dans le dossier `config/`
+   - Le schéma de base de données est créé automatiquement via les migrations ou scripts d'installation
+   
+   **Exemple de configuration `.env` :**
+   ```ini
+   DB_HOST=localhost
+   DB_USER=your_username
+   DB_PASS=your_secure_password
+   DB_NAME=studtraj
+   ```
+   
+   ⚠️ **Sécurité Production** : N'utilisez JAMAIS de mots de passe vides en production. Utilisez des identifiants sécurisés et complexes.
 
 4. **Configurer le serveur web**
    - Assurez-vous que le fichier `.htaccess` est activé
@@ -117,6 +127,27 @@ StudTraj/
 6. **Accéder à l'application**
    - Ouvrez votre navigateur à l'adresse de votre serveur local
    - Créez un compte administrateur via l'interface
+
+7. **Configurer les services externes**
+   
+   **Service d'email (PHPMailer) :**
+   Ajoutez les paramètres SMTP dans votre fichier `.env` :
+   ```ini
+   MAIL_HOST=smtp.example.com
+   MAIL_PORT=587
+   MAIL_USERNAME=your-email@example.com
+   MAIL_PASSWORD=your-email-password
+   MAIL_FROM_NAME=StudTraj
+   ```
+   
+   **Service Code2Vec :**
+   - Installez Python 3 et les dépendances requises
+   - Placez le modèle pré-entraîné dans `data/models/pretrained_code2vec.model`
+   - Configurez le chemin Python dans `Code2VecService.php` (ligne 16) si nécessaire
+   - Scripts Python requis dans le dossier `python_scripts/` :
+     - `generate_aes.py` : Génération des séquences AST
+     - `infer_vectors.py` : Inférence des vecteurs de code
+     - `process_complete.py` : Traitement complet en arrière-plan
 
 ---
 
@@ -203,10 +234,11 @@ vendor/bin/php-cs-fixer fix
 ## 🔒 Sécurité
 
 - **Protection XSS** : Headers de sécurité configurés
-- **Protection CSRF** : À implémenter selon vos besoins
+- **Protection CSRF** : ⚠️ Non implémentée - à ajouter pour un environnement de production (recommandé : jetons synchronisés sur formulaires)
 - **Validation des entrées** : PDO avec requêtes préparées
 - **Gestion des sessions** : Sessions PHP sécurisées
 - **Vérification par email** : Double authentification pour les inscriptions
+- **Configuration sécurisée** : Variables d'environnement via fichier `.env` (ne pas versionner)
 
 ---
 
