@@ -111,7 +111,10 @@ StudTraj/
    DB_NAME=studtraj
    ```
    
-   ⚠️ **Sécurité Production** : N'utilisez JAMAIS de mots de passe vides en production. Utilisez des identifiants sécurisés et complexes.
+   ⚠️ **Sécurité Production** : 
+   - N'utilisez JAMAIS de mots de passe vides ou par défaut en production
+   - Utilisez des mots de passe forts et uniques (minimum 12 caractères, avec majuscules, minuscules, chiffres et caractères spéciaux)
+   - Changez les identifiants par défaut (root, admin, etc.)
 
 4. **Configurer le serveur web**
    - Assurez-vous que le fichier `.htaccess` est activé
@@ -136,9 +139,11 @@ StudTraj/
    MAIL_HOST=smtp.example.com
    MAIL_PORT=587
    MAIL_USERNAME=your-email@example.com
-   MAIL_PASSWORD=your-email-password
+   MAIL_PASSWORD=your-app-specific-password
    MAIL_FROM_NAME=StudTraj
    ```
+   
+   💡 **Conseil** : Utilisez des mots de passe d'application spécifiques ou OAuth2 plutôt que votre mot de passe de compte principal pour plus de sécurité.
    
    **Service Code2Vec :**
    - Installez Python 3 et les dépendances requises
@@ -234,7 +239,7 @@ vendor/bin/php-cs-fixer fix
 ## 🔒 Sécurité
 
 - **Protection XSS** : Headers de sécurité configurés
-- **Protection CSRF** : ⚠️ Non implémentée - à ajouter pour un environnement de production (recommandé : jetons synchronisés sur formulaires)
+- **Protection CSRF** : ❌ **CRITIQUE** - Non implémentée actuellement. **DOIT être implémentée avant tout déploiement en production** (recommandation : jetons synchronisés sur tous les formulaires)
 - **Validation des entrées** : PDO avec requêtes préparées
 - **Gestion des sessions** : Sessions PHP sécurisées
 - **Vérification par email** : Double authentification pour les inscriptions
