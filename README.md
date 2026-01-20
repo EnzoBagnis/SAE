@@ -167,25 +167,6 @@ Content-Type: application/json
 
 ---
 
-## 🔧 Configuration
-
-### Base de données
-Modifiez les paramètres dans `models/Database.php` :
-```php
-private static $host = 'localhost';
-private static $dbname = 'studtraj';
-private static $username = 'root';
-private static $password = '';
-```
-
-### Email
-Configurez le service d'email dans `models/EmailService.php` pour l'envoi des codes de vérification.
-
-### Code2Vec
-Le service `Code2VecService.php` nécessite une configuration pour l'analyse vectorielle des codes.
-
----
-
 ## 📚 Documentation
 
 ### Documentation technique
