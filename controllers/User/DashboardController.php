@@ -18,7 +18,7 @@ class DashboardController extends \BaseController
     {
         // Check if user is authenticated
         if (!isset($_SESSION['id'])) {
-            header('Location: /index.php?action=login');
+            header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
 
@@ -53,7 +53,7 @@ class DashboardController extends \BaseController
                     if (!$hasAccess) {
                         // User does not have access to this resource
                         // Redirect to previous valid resource if available, otherwise to dashboard root
-                        $redirectUrl = '/index.php?action=dashboard';
+                        $redirectUrl = BASE_URL . '/index.php?action=dashboard';
 
                         if (
                             isset($_SESSION['last_valid_resource_id']) &&

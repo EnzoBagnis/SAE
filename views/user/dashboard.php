@@ -13,17 +13,17 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
     <title><?= htmlspecialchars($title ?? 'StudTraj - Tableau de bord') ?></title>
-    <link rel="stylesheet" href="/public/css/style.css">
-    <link rel="stylesheet" href="/public/css/dashboard.css">
-    <link rel="stylesheet" href="/public/css/charts.css">
-    <link rel="stylesheet" href="/public/css/footer.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/dashboard.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/charts.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="/public/js/modules/import.js"></script>
-    <script src="/public/js/modules/charts.js"></script>
-    <script src="/public/js/modules/detailedCharts.js"></script>
-    <script type="module" src="/public/js/dashboard-main.js"></script>
+    <script src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
+    <script src="<?= BASE_URL ?>/public/js/modules/charts.js"></script>
+    <script src="<?= BASE_URL ?>/public/js/modules/detailedCharts.js"></script>
+    <script type="module" src="<?= BASE_URL ?>/public/js/dashboard-main.js"></script>
 
 
     <!-- SEO Meta Tags -->
@@ -46,7 +46,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     </button>
 
     <nav class="nav-menu">
-        <a href="/index.php?action=resources_list" class="active">Ressources</a>
+        <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
 
     <!-- Nouveau conteneur pour regrouper Import + Profil + Déconnexion -->
@@ -75,7 +75,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
         </div>
 
         <!-- Bouton Déconnexion -->
-        <a href="/index.php?action=logout" class="btn-logout">
+        <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -105,7 +105,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
             </div>
             <ul class="burger-menu-list">
                 <li>
-                    <a href="/index.php?action=resources_list" class="burger-link">
+                    <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link">
                         Ressources
                     </a>
                 </li>
@@ -241,11 +241,11 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
-                    <li><a href="/index.php?action=login">Connexion</a></li>
-                    <li><a href="/index.php?action=signup">Inscription</a></li>
-                    <li><a href="/index.php?action=forgotpassword">Mot de passe oublié</a></li>
-                    <li><a href="/index.php?action=mentions">Mentions légales</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=login">Connexion</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=signup">Inscription</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>

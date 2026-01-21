@@ -49,7 +49,7 @@ class LoginController extends \BaseController
     public function authenticate()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /index.php?action=login');
+            header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
 
@@ -57,7 +57,7 @@ class LoginController extends \BaseController
         $password = $_POST['mdp'] ?? '';
 
         if (empty($email) || empty($password)) {
-            header('Location: /index.php?action=login&error=empty_fields');
+            header('Location: ' . BASE_URL . '/index.php?action=login&error=empty_fields');
             exit;
         }
 
@@ -65,23 +65,23 @@ class LoginController extends \BaseController
 
         if ($result['success']) {
             $this->authController->createSession($result['user']);
-            header('Location: /index.php?action=resources_list');
+            header('Location: ' . BASE_URL . '/index.php?action=resources_list');
             exit;
         } else {
             // Check for specific error codes for redirection
             if ($result['error'] === 'account_pending_approval') {
-                header('Location: /index.php?action=pendingapproval');
+                header('Location: ' . BASE_URL . '/index.php?action=pendingapproval');
                 exit;
             } elseif ($result['error'] === 'email_not_verified') {
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
                 $_SESSION['mail'] = $email;
-                header('Location: /index.php?action=emailverification&erreur=email_not_verified');
+                header('Location: ' . BASE_URL . '/index.php?action=emailverification&erreur=email_not_verified');
                 exit;
             }
 
-            header('Location: /index.php?action=login&error=' . $result['error']);
+            header('Location: ' . BASE_URL . '/index.php?action=login&error=' . $result['error']);
             exit;
         }
     }

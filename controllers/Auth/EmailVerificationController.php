@@ -52,7 +52,7 @@ class EmailVerificationController extends \BaseController
     public function verify()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /index.php?action=emailverification');
+            header('Location: ' . BASE_URL . '/index.php?action=emailverification');
             exit;
         }
 
@@ -64,12 +64,12 @@ class EmailVerificationController extends \BaseController
         $email = $_SESSION['mail'] ?? '';
 
         if (empty($email)) {
-            header('Location: /index.php?action=signup&error=session_expiree');
+            header('Location: ' . BASE_URL . '/index.php?action=signup&error=session_expiree');
             exit;
         }
 
         if (empty($code)) {
-            header('Location: /index.php?action=emailverification&erreur=code_vide');
+            header('Location: ' . BASE_URL . '/index.php?action=emailverification&erreur=code_vide');
             exit;
         }
 
@@ -82,10 +82,10 @@ class EmailVerificationController extends \BaseController
             // Nettoyage de la session d'inscription
             unset($_SESSION['mail']);
 
-            header('Location: /index.php?action=pendingapproval');
+            header('Location: ' . BASE_URL . '/index.php?action=pendingapproval');
             exit;
         } else {
-            header('Location: /index.php?action=emailverification&erreur=' . $result['error']);
+            header('Location: ' . BASE_URL . '/index.php?action=emailverification&erreur=' . $result['error']);
             exit;
         }
     }
@@ -107,7 +107,7 @@ class EmailVerificationController extends \BaseController
     public function resendCode()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /index.php?action=emailverification');
+            header('Location: ' . BASE_URL . '/index.php?action=emailverification');
             exit;
         }
 
@@ -116,7 +116,7 @@ class EmailVerificationController extends \BaseController
         }
 
         if (!isset($_SESSION['mail'])) {
-            header('Location: /index.php?action=signup&error=session_expiree');
+            header('Location: ' . BASE_URL . '/index.php?action=signup&error=session_expiree');
             exit;
         }
 
@@ -124,9 +124,9 @@ class EmailVerificationController extends \BaseController
         $result = $this->authController->resendCode($email);
 
         if ($result['success']) {
-            header('Location: /index.php?action=emailverification&succes=code_renvoye');
+            header('Location: ' . BASE_URL . '/index.php?action=emailverification&succes=code_renvoye');
         } else {
-            header('Location: /index.php?action=emailverification&erreur=' . $result['error']);
+            header('Location: ' . BASE_URL . '/index.php?action=emailverification&erreur=' . $result['error']);
         }
         exit;
     }
