@@ -49,7 +49,7 @@ export class StudentContentManager {
 
         try {
             // Construire l'URL avec le resource_id si disponible
-            let url = `/index.php?action=student&id=${studentId}`;
+            let url = `${window.BASE_URL}/index.php?action=student&id=${studentId}`;
             if (this.resourceId) {
                 url += `&resource_id=${this.resourceId}`;
             }
@@ -168,7 +168,7 @@ export class StudentContentManager {
         dataZone.innerHTML = '<div class="loading-spinner">⏳ Chargement des tentatives...</div>';
 
         try {
-            let url = `/index.php?action=exercise&id=${exerciseId}`;
+            let url = `${window.BASE_URL}/index.php?action=exercise&id=${exerciseId}`;
             if (this.resourceId) {
                 url += `&resource_id=${this.resourceId}`;
             }

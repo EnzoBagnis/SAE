@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
     <meta name="description" content="Vérification de votre email">
     <title><?= htmlspecialchars($title ?? 'Vérification Email - StudTraj') ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <!-- SEO Meta Tags -->
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/verificationMail.php">
@@ -27,7 +27,7 @@
         <h2>Vérification de l'email</h2>
         <p>Entrez le code à 6 chiffres envoyé par email</p>
 
-        <form action="/index.php?action=emailverification" method="POST">
+        <form action="<?= BASE_URL ?>/index.php?action=emailverification" method="POST">
             <label for="code">Code de vérification</label>
             <input type="number"
                    id="code"
@@ -40,15 +40,14 @@
         </form>
 
         <p class="mt-3">Vous n'avez pas reçu le code ?</p>
-        <form action="/index.php?action=resendcode" method="POST">
+        <form action="<?= BASE_URL ?>/index.php?action=resendcode" method="POST">
             <button type="submit" class="btn-secondary" name="renvoyer_code">Renvoyer le code</button>
         </form>
     </div>
 
-    <div class="back-arrow" onclick="window.location.href='../index.html';">←</div>
+    <div class="back-arrow" onclick="window.location.href='<?= BASE_URL ?>/index.html';">←</div>
 
 </div>
 
 </body>
 </html>
-

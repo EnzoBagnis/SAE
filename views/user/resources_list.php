@@ -4,7 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['id'])) {
-    header('Location: /index.php?action=login');
+    // Utilise BASE_URL pour la redirection
+    header('Location: ' . BASE_URL . '/index.php?action=login');
     exit;
 }
 
@@ -41,10 +42,10 @@ try {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><?= htmlspecialchars($title) ?></title>
-    <link rel="stylesheet" href="/public/css/style.css">
-    <link rel="stylesheet" href="/public/css/dashboard.css">
-    <link rel="stylesheet" href="/public/css/footer.css">
-    <script type="module" src="/public/js/dashboard-main.js"></script>
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/dashboard.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
+    <script type="module" src="<?= BASE_URL ?>/public/js/dashboard-main.js"></script>
 </head>
 <body>
 <header class="top-menu">
@@ -58,7 +59,7 @@ try {
     </button>
 
     <nav class="nav-menu">
-        <a href="/index.php?action=resources_list" class="active">Ressources</a>
+        <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
 
     <div class="header-right">
@@ -70,7 +71,7 @@ try {
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
         <!-- Bouton Déconnexion -->
-        <a href="/index.php?action=logout" class="btn-logout">
+        <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">
             <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -99,7 +100,7 @@ try {
             </span>
         </div>
         <ul class="burger-menu-list">
-            <li><a href="/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
+            <li><a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
             <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>
@@ -164,7 +165,7 @@ try {
                                     title="Modifier">✏️</button>
                         <?php endif; ?>
 
-                        <a href="/index.php?action=dashboard&resource_id=<?= $resId ?>"
+                        <a href="<?= BASE_URL ?>/index.php?action=dashboard&resource_id=<?= $resId ?>"
                            class="resource-link-wrapper">
                             <?php if (!empty($resImg)) : ?>
                                 <img src="/images/<?= htmlspecialchars($resImg) ?>"
@@ -200,7 +201,7 @@ try {
         <span class="close" onclick="closeResourceModal()">&times;</span>
         <h2 id="modalTitle">Nouvelle Ressource</h2>
 
-        <form id="resourceForm" action="/index.php?action=save_resource"
+        <form id="resourceForm" action="<?= BASE_URL ?>/index.php?action=save_resource"
               method="POST" enctype="multipart/form-data">
             <input type="hidden" name="resource_id" id="formResourceId" value="">
 
@@ -274,7 +275,7 @@ try {
         </ul>
         <div class="confirm-buttons">
             <button class="btn-confirm-no" onclick="closeDeleteModal()">Annuler</button>
-            <form action="/index.php?action=delete_resource" method="POST">
+            <form action="<?= BASE_URL ?>/index.php?action=delete_resource" method="POST">
                 <input type="hidden" name="resource_id" id="deleteResourceId" value="">
                 <button type="submit" class="btn-confirm-yes">Oui, supprimer</button>
             </form>

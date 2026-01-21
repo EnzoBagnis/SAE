@@ -14,6 +14,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Définition de la racine du projet pour le navigateur
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+$host = $_SERVER['HTTP_HOST'];
+$baseDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+if ($baseDir === '/') $baseDir = '';
+
+define('BASE_URL', $protocol . "://" . $host . $baseDir);
+
 // Désactiver l'affichage des erreurs pour les actions API (après le démarrage de session)
 $action = $_GET['action'] ?? 'home';
 $apiActions = ['students', 'resources', 'resource', 'upload', 'vector']; // Retiré 'student' temporairement

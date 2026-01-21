@@ -86,7 +86,7 @@ function setupEventListeners() {
 
                 if (loadContent) {
                     // Load global student stats
-                    fetch(`/index.php?action=students_stats&resource_id=${resourceId || ''}`)
+                    fetch(`${window.BASE_URL}/index.php?action=students_stats&resource_id=${resourceId || ''}`)
                         .then(r => r.json())
                         .then(resp => {
                             if(resp.success) {
@@ -148,7 +148,7 @@ function setupEventListeners() {
                      dataZone.appendChild(chartsWrapper);
 
                      // Fetch and render success rate chart
-                     fetch(`/index.php?action=exercises_stats&resource_id=${resourceId || ''}`)
+                     fetch(`${window.BASE_URL}/index.php?action=exercises_stats&resource_id=${resourceId || ''}`)
                          .then(r => r.json())
                          .then(resp => {
                              if(resp.success) {
@@ -161,7 +161,7 @@ function setupEventListeners() {
                          });
 
                      // Fetch and render completion chart
-                     fetch(`/index.php?action=exercise_completion_stats&resource_id=${resourceId || ''}`)
+                     fetch(`${window.BASE_URL}/index.php?action=exercise_completion_stats&resource_id=${resourceId || ''}`)
                          .then(r => r.json())
                          .then(resp => {
                              if(resp.success) {

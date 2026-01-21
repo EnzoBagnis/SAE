@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
 
     <!-- SEO Meta Tags -->
     <meta name="description"
@@ -15,14 +15,14 @@
     <link rel="canonical" href="http://studtraj.alwaysdata.net/index.php?action=login">
 
     <title><?= htmlspecialchars($title ?? 'Connexion - StudTraj') ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
 </head>
 <body>
 
 <div class="page-wrap">
 
     <!-- Flèche de retour à l'accueil -->
-    <a href="/index.html" class="back-arrow" title="Retour à l'accueil">
+    <a href="<?= BASE_URL ?>/index.html" class="back-arrow" title="Retour à l'accueil">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
@@ -36,7 +36,7 @@
         <div class="success"><?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="/index.php?action=login">
+    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=login">
         <h2>Connexion</h2>
 
         <label for="mail">Email</label>
@@ -57,11 +57,11 @@
         <button type="submit" class="btn-submit" name="ok">Se connecter</button>
 
         <div class="text-center mt-2">
-            <a href="/index.php?action=forgotpassword">Mot de passe oublié ?</a>
+            <a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oublié ?</a>
         </div>
 
         <div class="text-center mt-2">
-            <a href="/index.php?action=signup">Pas encore de compte ? S'inscrire</a>
+            <a href="<?= BASE_URL ?>/index.php?action=signup">Pas encore de compte ? S'inscrire</a>
         </div>
     </form>
 
