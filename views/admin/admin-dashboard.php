@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Panel Admin - StudTraj') ?></title>
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <link rel="stylesheet" href="../public/css/admin.css">
+    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/admin.css">
 </head>
 <body>
 
@@ -15,14 +15,14 @@
         <h1>StudTraj</h1>
     </div>
     <nav class="nav-menu">
-        <a href="/index.php?action=admin" class="active">Administration</a>
+        <a href="<?= BASE_URL ?>/index.php?action=admin" class="active">Administration</a>
     </nav>
     <div class="user-info">
         <span>
             <?= htmlspecialchars($_SESSION['prenom'] ?? 'Admin') ?>
             <?= htmlspecialchars($_SESSION['nom'] ?? '') ?>
         </span>
-        <a href="/index.php?action=adminLogout" class="btn-logout">Déconnexion</a>
+        <a href="<?= BASE_URL ?>/index.php?action=adminLogout" class="btn-logout">Déconnexion</a>
     </div>
 </header>
 
@@ -122,7 +122,8 @@
                                     Modifier
                                 </button>
 
-                                <a href="index.php?action=adminDeleteUser&table=V&id=<?= urlencode($user['id']) ?>"
+                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=V&id=<?=
+                                    urlencode($user['id']) ?>"
                                    class="btn-delete"
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
@@ -189,7 +190,8 @@
                                         '', '')">
                                     Modifier
                                 </button>
-                                <a href="index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
+                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=P&id=<?=
+                                    urlencode($user['id']) ?>"
                                    class="btn-delete"
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
@@ -205,9 +207,12 @@
                                     Bloquer
                                 </button>
                                 <?php if ($user['verifie'] == 1) : ?>
-                                    <a href="index.php?action=adminValidUser&id=<?= urlencode($user['id']) ?>"
+                                    <a href="<?= BASE_URL ?>/index.php?action=adminValidUser&id=<?=
+                                        urlencode($user['id']) ?>"
                                        class="btn-validate"
-                                       onclick="return confirm('Êtes-vous sûr de vouloir valider cet utilisateur ?')">
+                                       onclick="return confirm(
+                                           'Êtes-vous sûr de vouloir valider cet utilisateur ?'
+                                       )">
                                         Valider
                                     </a>
                                 <?php endif; ?>
@@ -262,9 +267,10 @@
                                     Modifier
                                 </button>
 
-                                <a href="index.php?action=adminDeleteUser&table=B&id=<?= urlencode($user['mail']) ?>"
+                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=B&id=<?=
+                                    urlencode($user['mail']) ?>"
                                    class="btn-delete"
-                                onclick="return confirm('Êtes-vous sûr débloquer cet utilisateur ?')">
+                                   onclick="return confirm('Êtes-vous sûr débloquer cet utilisateur ?')">
                                 Débloquer
                                 </a>
                             </td>
@@ -283,7 +289,7 @@
 
 <div id="editVerifie" class="popup-container">
     <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="index.php?action=adminEditUser">
+    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=adminEditUser">
         <div class="form-group">
             <label for="idVerifie">id</label>
             <input type="text" id="idVerifie" name="id" readonly>
@@ -309,7 +315,7 @@
 
 <div id="editPending" class="popup-container">
     <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="index.php?action=adminEditUser">
+    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=adminEditUser">
         <div class="form-group">
             <label for="idPending">id</label>
             <input type="text" id="idPending" name="id" readonly>
@@ -339,7 +345,7 @@
 
 <div id="editBlocked" class="popup-container">
     <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="index.php?action=adminBanUser&table=V">
+    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=adminBanUser&table=V">
         <div class="form-group">
             <label for="idBlocked">id</label>
             <input type="text" id="idBlocked" name="id" readonly>

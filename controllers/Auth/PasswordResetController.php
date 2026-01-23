@@ -42,23 +42,23 @@ class PasswordResetController extends \BaseController
     public function requestReset()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /index.php?action=forgotpassword');
+            header('Location: ' . BASE_URL . '/index.php?action=forgotpassword');
             exit;
         }
 
         $email = trim($_POST['mail'] ?? '');
 
         if (empty($email)) {
-            header('Location: /index.php?action=forgotpassword&error=email_vide');
+            header('Location: ' . BASE_URL . '/index.php?action=forgotpassword&error=email_vide');
             exit;
         }
 
         $result = $this->authController->requestPasswordReset($email);
 
         if ($result['success']) {
-            header('Location: /index.php?action=login&succes=reset_envoye');
+            header('Location: ' . BASE_URL . '/index.php?action=login&succes=reset_envoye');
         } else {
-            header('Location: /index.php?action=forgotpassword&error=' . $result['error']);
+            header('Location: ' . BASE_URL . '/index.php?action=forgotpassword&error=' . $result['error']);
         }
         exit;
     }
@@ -71,7 +71,7 @@ class PasswordResetController extends \BaseController
         $token = $_GET['token'] ?? '';
 
         if (empty($token)) {
-            header('Location: /index.php?action=login&error=token_invalide');
+            header('Location: ' . BASE_URL . '/index.php?action=login&error=token_invalide');
             exit;
         }
 
@@ -96,7 +96,7 @@ class PasswordResetController extends \BaseController
     public function resetPassword()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /index.php?action=login');
+            header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
 
@@ -105,21 +105,27 @@ class PasswordResetController extends \BaseController
         $confirmPassword = $_POST['confirm_mdp'] ?? '';
 
         if (empty($token) || empty($newPassword)) {
-            header('Location: /index.php?action=resetpassword&token=' . urlencode($token) . '&error=champs_vides');
+            header(
+                'Location: ' . BASE_URL . '/index.php?action=resetpassword&token=' .
+                urlencode($token) . '&error=champs_vides'
+            );
             exit;
         }
 
         if ($newPassword !== $confirmPassword) {
-            header('Location: /index.php?action=resetpassword&token=' . urlencode($token) . '&error=mdp_different');
+            header(
+                'Location: ' . BASE_URL . '/index.php?action=resetpassword&token=' .
+                urlencode($token) . '&error=mdp_different'
+            );
             exit;
         }
 
         $result = $this->authController->resetPassword($token, $newPassword);
 
         if ($result['success']) {
-            header('Location: /index.php?action=login&succes=mdp_reinitialise');
+            header('Location: ' . BASE_URL . '/index.php?action=login&succes=mdp_reinitialise');
         } else {
-            header('Location: /index.php?action=login&error=' . $result['error']);
+            header('Location: ' . BASE_URL . '/index.php?action=login&error=' . $result['error']);
         }
         exit;
     }

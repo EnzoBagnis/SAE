@@ -10,7 +10,7 @@ class AdminLogin extends \BaseController
     {
         // Si déjà connecté, redirection vers le dashboard
         if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
-            header('Location: index.php?action=admin');
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
             exit;
         }
         $this->loadView('admin/admin-login', ['title' => 'Connexion Admin']);
@@ -34,7 +34,7 @@ class AdminLogin extends \BaseController
             if ($ID === $ADMIN_ID && $mdp === $ADMIN_PASS) {
                  $_SESSION['admin'] = true;
                  session_write_close();
-                 header('Location: index.php?action=admin');
+                 header('Location: ' . BASE_URL . '/index.php?action=admin');
                  exit;
             } else {
                 $this->loadView('admin/admin-login', [
@@ -59,7 +59,7 @@ class AdminLogin extends \BaseController
         session_destroy();
 
         // Rediriger vers la page de connexion admin
-        header('Location: index.php?action=adminLogin');
+        header('Location: ' . BASE_URL . '/index.php?action=adminLogin');
         exit;
     }
 }

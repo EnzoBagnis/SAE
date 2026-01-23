@@ -43,10 +43,10 @@
         <div class="footer-bottom-content">
             <p>&copy; <?php echo date('Y'); ?> StudTraj - Tous droits réservés</p>
             <p class="footer-legal">
-                <a href="index.php?action=mentions">Mentions légales</a> |
+                <a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a> |
                 <a href="#" onclick="showCGU()">CGU</a> |
                 <a href="#" onclick="showPrivacy()">Confidentialité</a> |
-                <a href="sitemap.php">Sitemap XML</a>
+                <a href="<?= BASE_URL ?>/sitemap.php">Sitemap XML</a>
             </p>
             <p class="footer-compliance">
                 Conformité RGPD | Accessibilité : Conforme |
@@ -159,3 +159,8 @@ window.onclick = function(event) {
 }
 </script>
 
+<!-- Inject global BASE_URL for JS usage -->
+<script>
+    // window.BASE_URL is injected from PHP's BASE_URL constant
+    window.BASE_URL = "<?= rtrim(BASE_URL, '\\/') ?>";
+</script>

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <title><?= htmlspecialchars($title ?? 'Réinitialiser le mot de passe - StudTraj') ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <!-- SEO Meta Tags -->
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/index.php?action=resetPassword">
@@ -19,7 +19,7 @@
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="/index.php?action=resetpassword" id="resetForm">
+    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=resetpassword" id="resetForm">
         <h2>Créer un nouveau mot de passe</h2>
         <p>Entrez votre nouveau mot de passe</p>
 
