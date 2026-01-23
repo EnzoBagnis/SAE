@@ -105,12 +105,18 @@ class PasswordResetController extends \BaseController
         $confirmPassword = $_POST['confirm_mdp'] ?? '';
 
         if (empty($token) || empty($newPassword)) {
-            header('Location: ' . BASE_URL . '/index.php?action=resetpassword&token=' . urlencode($token) . '&error=champs_vides');
+            header(
+                'Location: ' . BASE_URL . '/index.php?action=resetpassword&token=' .
+                urlencode($token) . '&error=champs_vides'
+            );
             exit;
         }
 
         if ($newPassword !== $confirmPassword) {
-            header('Location: ' . BASE_URL . '/index.php?action=resetpassword&token=' . urlencode($token) . '&error=mdp_different');
+            header(
+                'Location: ' . BASE_URL . '/index.php?action=resetpassword&token=' .
+                urlencode($token) . '&error=mdp_different'
+            );
             exit;
         }
 

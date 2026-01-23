@@ -18,7 +18,9 @@ if (session_status() === PHP_SESSION_NONE) {
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $host = $_SERVER['HTTP_HOST'];
 $baseDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-if ($baseDir === '/') $baseDir = '';
+if ($baseDir === '/') {
+    $baseDir = '';
+}
 
 define('BASE_URL', $protocol . "://" . $host . $baseDir);
 
