@@ -122,7 +122,8 @@
                                     Modifier
                                 </button>
 
-                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=V&id=<?= urlencode($user['id']) ?>"
+                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=V&id=<?=
+                                    urlencode($user['id']) ?>"
                                    class="btn-delete"
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
@@ -189,7 +190,8 @@
                                         '', '')">
                                     Modifier
                                 </button>
-                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=P&id=<?= urlencode($user['id']) ?>"
+                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=P&id=<?=
+                                    urlencode($user['id']) ?>"
                                    class="btn-delete"
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
@@ -205,9 +207,12 @@
                                     Bloquer
                                 </button>
                                 <?php if ($user['verifie'] == 1) : ?>
-                                    <a href="<?= BASE_URL ?>/index.php?action=adminValidUser&id=<?= urlencode($user['id']) ?>"
+                                    <a href="<?= BASE_URL ?>/index.php?action=adminValidUser&id=<?=
+                                        urlencode($user['id']) ?>"
                                        class="btn-validate"
-                                       onclick="return confirm('Êtes-vous sûr de vouloir valider cet utilisateur ?')">
+                                       onclick="return confirm(
+                                           'Êtes-vous sûr de vouloir valider cet utilisateur ?'
+                                       )">
                                         Valider
                                     </a>
                                 <?php endif; ?>
@@ -262,9 +267,10 @@
                                     Modifier
                                 </button>
 
-                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=B&id=<?= urlencode($user['mail']) ?>"
+                                <a href="<?= BASE_URL ?>/index.php?action=adminDeleteUser&table=B&id=<?=
+                                    urlencode($user['mail']) ?>"
                                    class="btn-delete"
-                                onclick="return confirm('Êtes-vous sûr débloquer cet utilisateur ?')">
+                                   onclick="return confirm('Êtes-vous sûr débloquer cet utilisateur ?')">
                                 Débloquer
                                 </a>
                             </td>
