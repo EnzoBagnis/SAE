@@ -54,12 +54,19 @@ class StudentsController extends \BaseController
         if ($page < 1) {
             $page = 1;
         }
-        if ($perPage < 1 || $perPage > 100) {
+        // Augmenter la limite pour permettre de charger tous les étudiants
+        if ($perPage < 1 || $perPage > 10000) {
             $perPage = 15;
         }
 
         try {
             $result = $this->studentModel->getPaginatedStudents($page, $perPage, $resourceId);
+
+            // Log pour debug
+            error_log(
+                "StudentsController: Chargement de " . count($result['students']) .
+                " étudiants (total: " . $result['total'] . ", perPage: $perPage)"
+            );
 
             // Format students for display
             $formattedStudents = [];
@@ -207,5 +214,38 @@ class StudentsController extends \BaseController
         } finally {
             restore_error_handler();
         }
+    }
+
+    /**
+     * Get statistics for all students in a resource (for charts)
+     */
+    public function getStats()
+    {
+        // Set JSON header
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Check if model is initialized
+        if (!$this->studentModel->isInitialized()) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Service error']);
+            exit;
+        }
+
+        // Check auth
+        if (!isset($_SESSION['id'])) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit;
+        }
+
+        $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
+
+        $stats = $this->studentModel->getStudentStatistics($resourceId);
+
+        echo json_encode([
+            'success' => true,
+            'data' => $stats
+        ]);
+        exit;
     }
 }

@@ -4,7 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['id'])) {
-    header('Location: /index.php?action=login');
+    // Utilise BASE_URL pour la redirection
+    header('Location: ' . BASE_URL . '/index.php?action=login');
     exit;
 }
 
@@ -41,341 +42,27 @@ try {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><?= htmlspecialchars($title) ?></title>
-    <link rel="stylesheet" href="../public/css/style.css">
-    <link rel="stylesheet" href="../public/css/dashboard.css">
-
-    <style>
-        /* =========================================
-           CSS DE BASE (Desktop First)
-           ========================================= */
-
-        /* Reset de box-sizing pour mieux gérer les largeurs */
-        * {
-            box-sizing: border-box;
-        }
-
-        /* --- GRILLE DES RESSOURCES (Inchangé ou presque) --- */
-        .resources-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .resource-card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s;
-        }
-        .resource-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-        .resource-link-wrapper {
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        .resource-card-image {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            background-color: #f0f0f0;
-        }
-        .resource-card-content {
-            padding: 15px;
-        }
-        .resource-card-owner {
-            font-size: 0.8em;
-            color: #999;
-            display: block;
-            text-align: right;
-            margin-top: 10px;
-        }
-        .btn-edit-resource {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-        }
-        .btn-edit-resource:hover {
-            background-color: #f0f0f0;
-        }
-
-        /* --- BARRE DE FILTRES --- */
-        .filter-bar {
-            padding: 20px;
-            background: #eef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-            flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire */
-        }
-
-        .filter-group-left {
-            display: flex;
-            gap: 10px;
-            flex-grow: 1; /* Prend l'espace disponible */
-            flex-wrap: wrap;
-        }
-
-        .filter-bar input, .filter-bar select {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            min-width: 150px;
-        }
-        .filter-bar input {
-            flex-grow: 1; /* La recherche s'agrandit */
-        }
-
-        /* --- BOUTONS & USER INFO --- */
-
-        .btn-create-resource {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-            /* CORRECTION DEMANDEE : Taille adaptée au contenu, pas tout le bloc */
-            width: fit-content;
-            white-space: nowrap; /* Empêche le texte de se couper */
-            flex-shrink: 0; /* Empêche le bouton de s'écraser */
-        }
-        .btn-create-resource:hover {
-            background-color: #2980b9;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-        }
-
-        .user-avatar {
-            width: 35px;
-            height: 35px;
-            background-color: #e67e22;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.9em;
-            border: 2px solid rgba(255,255,255,0.3);
-            flex-shrink: 0;
-        }
-
-        .btn-logout {
-            color: #ecf0f1;
-            text-decoration: none;
-            padding: 6px 12px;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 4px;
-            font-size: 0.9em;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            white-space: nowrap;
-        }
-        .btn-logout:hover {
-            background-color: #c0392b;
-            border-color: #c0392b;
-            color: white;
-        }
-
-        /* --- MODAL (Inchangé) --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            overflow-y: auto; /* Permet le scroll si l'écran est petit */
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 8px;
-            position: relative;
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input[type="text"], .form-group textarea {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .users-checklist {
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            background: #fafafa;
-        }
-        .btn-submit {
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px;
-            border: none;
-            width: 100%;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        .btn-submit:hover { background-color: #45a049; }
-
-        .btn-delete-trigger {
-            background-color: #f44336;
-            color: white;
-            padding: 10px;
-            border: none;
-            width: 100%;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-        .btn-delete-trigger:hover { background-color: #d32f2f; }
-
-        .confirm-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-        .btn-confirm-yes {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-confirm-no {
-            background-color: #ccc;
-            color: black;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        /* =========================================
-           RESPONSIVE (MOBILE & TABLETTE)
-           ========================================= */
-
-        /* Tablettes et petits écrans (< 900px) */
-        @media (max-width: 900px) {
-            .filter-bar {
-                flex-direction: column;
-                align-items: stretch; /* Les éléments prennent toute la largeur dispo */
-            }
-            .filter-group-left {
-                width: 100%;
-            }
-            .btn-create-resource {
-                align-self: flex-end; /* Bouton aligné à droite */
-                width: auto;
-            }
-        }
-
-        /* Mobile (< 600px) */
-        @media (max-width: 600px) {
-            /* Header s'empile verticalement */
-            .top-menu {
-                flex-direction: column;
-                height: auto;
-                padding: 15px;
-                gap: 15px;
-            }
-
-            .user-info {
-                width: 100%;
-                justify-content: space-between; /* Espace entre Profil et Déconnexion */
-            }
-
-            /* Filtres en colonne */
-            .filter-group-left {
-                flex-direction: column;
-            }
-
-            .filter-bar input, .filter-bar select {
-                width: 100%;
-            }
-
-            /* Bouton création prend toute la largeur sur très petit écran pour être facile à cliquer */
-            .btn-create-resource {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .resources-grid {
-                grid-template-columns: 1fr; /* Une seule colonne */
-                padding: 10px;
-            }
-        }
-
-    </style>
-    <script src="../public/js/dashboard-main.js"></script>
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/dashboard.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
+    <script type="module" src="<?= BASE_URL ?>/public/js/dashboard-main.js"></script>
 </head>
 <body>
 <header class="top-menu">
     <div class="logo"><h1>StudTraj</h1></div>
-    <div class="user-info">
+
+    <!-- Bouton burger pour mobile -->
+    <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <nav class="nav-menu">
+        <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
+    </nav>
+
+    <div class="header-right">
         <!-- Affichage Profil -->
         <div class="user-profile">
             <div class="user-avatar">
@@ -384,8 +71,9 @@ try {
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
         <!-- Bouton Déconnexion -->
-        <a href="/index.php?action=logout" class="btn-logout">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">
+            <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -395,6 +83,29 @@ try {
     </div>
 </header>
 
+<!-- Menu burger mobile -->
+<nav class="burger-nav" id="burgerNav">
+    <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
+    <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()" aria-label="Fermer le menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="burger-nav-content">
+        <div class="burger-user-info">
+            <span>
+                <?= htmlspecialchars($user_firstname ?? '') ?>
+                <?= htmlspecialchars($user_lastname ?? '') ?>
+            </span>
+        </div>
+        <ul class="burger-menu-list">
+            <li><a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
+            <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
+        </ul>
+    </div>
+</nav>
+
 <div class="dashboard-container">
     <main class="main-content">
         <h2 style="padding: 20px 20px 0;">Tableau de bord</h2>
@@ -402,7 +113,8 @@ try {
         <div class="filter-bar">
             <!-- Groupe de gauche pour recherche et select -->
             <div class="filter-group-left">
-                <input type="text" id="searchBar" placeholder="Rechercher..." onkeyup="filterResources()">
+                <input class="searchBar" type="text" id="searchBar"
+                       placeholder="Rechercher..." onkeyup="filterResources()">
                 <select id="filterType" onchange="filterResources()">
                     <option value="all">Tout voir</option>
                     <option value="owner">Mes créations</option>
@@ -412,7 +124,8 @@ try {
 
             <!-- Bouton Créer (ne prend pas toute la largeur) -->
             <button onclick="openResourceModal('create')" class="btn-create-resource">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
@@ -431,6 +144,7 @@ try {
                     $resImg = $resource->image_path ?? '';
                     $isOwner = ($creatorId == $user_id);
 
+
                     $ownerName = ($resource->owner_firstname ?? '') . ' ' . ($resource->owner_lastname ?? '');
                     if (trim($ownerName) == '') {
                         $ownerName = "Utilisateur #$creatorId";
@@ -443,14 +157,15 @@ try {
                          data-access-type="<?= $isOwner ? 'owner' : 'shared' ?>"
                          data-id="<?= $resId ?>"
                          data-description="<?= htmlspecialchars($resDesc) ?>"
-                         data-image="<?= htmlspecialchars($resImg) ?>">
+                         data-image="<?= htmlspecialchars($resImg) ?>"
+                         data-shared-users="<?= htmlspecialchars($resource->shared_user_ids ?? '') ?>">
 
                         <?php if ($isOwner) : ?>
                             <button class="btn-edit-resource" onclick="openResourceModal('edit', this)"
                                     title="Modifier">✏️</button>
                         <?php endif; ?>
 
-                        <a href="/index.php?action=dashboard&resource_id=<?= $resId ?>"
+                        <a href="<?= BASE_URL ?>/index.php?action=dashboard&resource_id=<?= $resId ?>"
                            class="resource-link-wrapper">
                             <?php if (!empty($resImg)) : ?>
                                 <img src="/images/<?= htmlspecialchars($resImg) ?>"
@@ -486,17 +201,17 @@ try {
         <span class="close" onclick="closeResourceModal()">&times;</span>
         <h2 id="modalTitle">Nouvelle Ressource</h2>
 
-        <form id="resourceForm" action="/index.php?action=save_resource"
+        <form id="resourceForm" action="<?= BASE_URL ?>/index.php?action=save_resource"
               method="POST" enctype="multipart/form-data">
             <input type="hidden" name="resource_id" id="formResourceId" value="">
 
             <div class="form-group">
-                <label>Nom :</label>
+                <label for="resourceName">Nom :</label>
                 <input type="text" id="resourceName" name="name" required>
             </div>
 
             <div class="form-group">
-                <label>Description :</label>
+                <label for="resourceDesc">Description :</label>
                 <textarea id="resourceDesc" name="description" rows="3"></textarea>
             </div>
 
@@ -506,22 +221,34 @@ try {
                 <p id="currentImageName" style="font-size:0.8em; color:#666; display:none;"></p>
             </div>
 
+
             <div class="form-group">
                 <label>Partager avec :</label>
-                <div class="users-checklist">
+
+                <input type="text" id="userSearch" placeholder="Filtrer les noms..."
+                       style="width: 100%; padding: 8px; margin-bottom: 10px;
+                              border: 1px solid #ddd; border-radius: 4px;"
+                       onkeyup="filterUsersInModal()">
+
+                <div class="users-checklist" id="usersChecklist"
+                     style="max-height: 150px; overflow-y: auto; border: 1px solid #eee;
+                            padding: 10px; border-radius: 4px;">
                     <?php if (empty($all_users)) : ?>
                         <p style="color:#999;">Aucun autre utilisateur.</p>
                     <?php else : ?>
                         <?php foreach ($all_users as $u) : ?>
-                            <label style="display:block; margin-bottom:5px;">
+                            <!-- On ajoute une classe 'user-item' pour faciliter le filtrage JS -->
+                            <label class="user-item" style="display:block; margin-bottom:5px;">
                                 <input type="checkbox" name="shared_users[]" value="<?= $u->id ?>"
                                        class="user-checkbox">
-                                <?= htmlspecialchars($u->prenom . ' ' . $u->nom) ?>
+                                <span class="user-name"><?= htmlspecialchars($u->prenom . ' ' . $u->nom) ?></span>
                             </label>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
             </div>
+
+
 
             <button type="submit" class="btn-submit" id="modalSubmitBtn">Enregistrer</button>
 
@@ -548,7 +275,7 @@ try {
         </ul>
         <div class="confirm-buttons">
             <button class="btn-confirm-no" onclick="closeDeleteModal()">Annuler</button>
-            <form action="/index.php?action=delete_resource" method="POST">
+            <form action="<?= BASE_URL ?>/index.php?action=delete_resource" method="POST">
                 <input type="hidden" name="resource_id" id="deleteResourceId" value="">
                 <button type="submit" class="btn-confirm-yes">Oui, supprimer</button>
             </form>
@@ -562,10 +289,16 @@ try {
         const hiddenId = document.getElementById('formResourceId');
         const deleteBtn = document.getElementById('btnDeleteResource');
 
+
         form.reset();
+        document.getElementById('userSearch').value = ''; // Vide le texte
+        filterUsersInModal();
         hiddenId.value = '';
         document.getElementById('currentImageName').style.display = 'none';
-        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+
+        // 1. On décoche tout par défaut
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        checkboxes.forEach(cb => cb.checked = false);
 
         if (mode === 'edit' && btn) {
             document.getElementById('modalTitle').textContent = "Modifier la ressource";
@@ -573,9 +306,23 @@ try {
             deleteBtn.style.display = 'block';
 
             const card = btn.closest('.resource-card');
+            console.log("ID de la ressource cliquée :", card.dataset.id);
+            console.log("Liste des utilisateurs partagés reçue :", card.dataset.sharedUsers);
             hiddenId.value = card.dataset.id;
             document.getElementById('resourceName').value = card.dataset.name;
             document.getElementById('resourceDesc').value = card.dataset.description;
+
+            // 2. ON COCHE LES UTILISATEURS DÉJÀ PARTAGÉS
+            if (card.dataset.sharedUsers) {
+                // On transforme la chaîne "1,5,8" en tableau ["1", "5", "8"]
+                const sharedIds = card.dataset.sharedUsers.split(',');
+
+                checkboxes.forEach(cb => {
+                    if (sharedIds.includes(cb.value)) {
+                        cb.checked = true;
+                    }
+                });
+            }
 
             if (card.dataset.image) {
                 const p = document.getElementById('currentImageName');
@@ -595,8 +342,7 @@ try {
     }
 
     function confirmDelete() {
-        const resourceId = document.getElementById('formResourceId').value;
-        document.getElementById('deleteResourceId').value = resourceId;
+        document.getElementById('deleteResourceId').value = document.getElementById('formResourceId').value;
         document.getElementById('resourceModal').style.display = "none";
         document.getElementById('deleteConfirmModal').style.display = "block";
     }
@@ -609,10 +355,10 @@ try {
     window.onclick = function(event) {
         const resModal = document.getElementById('resourceModal');
         const delModal = document.getElementById('deleteConfirmModal');
-        if (event.target == resModal) {
+        if (event.target === resModal) {
             closeResourceModal();
         }
-        if (event.target == delModal) {
+        if (event.target === delModal) {
             closeDeleteModal();
         }
     }
@@ -635,6 +381,26 @@ try {
             card.style.display = show ? "flex" : "none";
         }
     }
+    function filterUsersInModal() {
+        // 1. On récupère la valeur saisie
+        let input = document.getElementById('userSearch').value.toLowerCase();
+
+        // 2. On récupère tous les labels (lignes d'utilisateurs)
+        let userItems = document.querySelectorAll('.user-item');
+
+        userItems.forEach(item => {
+            // 3. On récupère le nom de l'utilisateur à l'intérieur
+            let name = item.querySelector('.user-name').textContent.toLowerCase();
+
+            // 4. On affiche ou on cache selon la correspondance
+            if (name.includes(input)) {
+                item.style.display = "block";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    }
 </script>
+<?php include __DIR__ . '/../layouts/footer.php'; ?>
 </body>
 </html>

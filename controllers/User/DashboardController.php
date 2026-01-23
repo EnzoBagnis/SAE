@@ -18,7 +18,7 @@ class DashboardController extends \BaseController
     {
         // Check if user is authenticated
         if (!isset($_SESSION['id'])) {
-            header('Location: /index.php?action=login');
+            header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
 
@@ -32,6 +32,45 @@ class DashboardController extends \BaseController
                 $db = \Database::getConnection();
                 $resource = \Resource::getResourceById($db, $resourceId);
                 if ($resource) {
+                    // Verify access permissions (Owner or Shared)
+                    // Ensure strict integer comparison for security
+                    $currentUserId = (int)$_SESSION['id'];
+                    $ownerId = (int)$resource->owner_user_id;
+
+                    $hasAccess = ($ownerId === $currentUserId);
+
+                    if (!$hasAccess) {
+                        $stmt = $db->prepare(
+                            "SELECT 1 FROM resource_professors_access " .
+                            "WHERE resource_id = :resourceId AND user_id = :userId"
+                        );
+                        $stmt->execute(['resourceId' => $resourceId, 'userId' => $currentUserId]);
+                        if ($stmt->fetch()) {
+                            $hasAccess = true;
+                        }
+                    }
+
+                    if (!$hasAccess) {
+                        // User does not have access to this resource
+                        // Redirect to previous valid resource if available, otherwise to dashboard root
+                        $redirectUrl = BASE_URL . '/index.php?action=dashboard';
+
+                        if (
+                            isset($_SESSION['last_valid_resource_id']) &&
+                            $_SESSION['last_valid_resource_id'] != $resourceId
+                        ) {
+                            // Verify if we still have access to the last valid resource to avoid loops
+                            // (Simplified check: just redirect, if distinct)
+                            $redirectUrl .= '&resource_id=' . (int)$_SESSION['last_valid_resource_id'];
+                        }
+
+                        header('Location: ' . $redirectUrl);
+                        exit;
+                    }
+
+                    // Save current resource as last valid resource for future redirections
+                    $_SESSION['last_valid_resource_id'] = $resourceId;
+
                     $resourceName = $resource->resource_name;
                 }
             } catch (\Exception $e) {

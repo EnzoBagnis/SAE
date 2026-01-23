@@ -98,6 +98,7 @@ class ExercisesController extends \BaseController
      * Fetch exercises from database
      *
      * Retrieves exercises with optional resource filtering.
+     * Only includes exercises that have at least one attempt.
      * Results are sorted by exercise name in ascending order.
      *
      * @param int|null $resourceId Optional resource ID to filter exercises
@@ -111,10 +112,11 @@ class ExercisesController extends \BaseController
      */
     private function fetchExercises(?int $resourceId): array
     {
-        $sql = "SELECT e.exercise_id, e.exo_name, e.funcname, e.description, e.difficulte, 
+        $sql = "SELECT DISTINCT e.exercise_id, e.exo_name, e.funcname, e.description, e.difficulte, 
                        r.resource_name
                 FROM exercises e
-                LEFT JOIN resources r ON e.resource_id = r.resource_id";
+                LEFT JOIN resources r ON e.resource_id = r.resource_id
+                INNER JOIN attempts a ON e.exercise_id = a.exercise_id";
 
         $params = [];
 
@@ -273,5 +275,109 @@ class ExercisesController extends \BaseController
         }
 
         return $students;
+    }
+
+    /**
+     * Get statistics for all exercises in a resource (for charts)
+     */
+    public function getStats()
+    {
+        // Set JSON header
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Check if DB is initialized (handled in parent or constructor)
+        if (!$this->db) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Service error']);
+            exit;
+        }
+
+        // Check auth
+        if (!isset($_SESSION['id'])) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit;
+        }
+
+        $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
+
+        if (!$resourceId) {
+             http_response_code(400);
+             echo json_encode(['success' => false, 'message' => 'Missing resource_id']);
+             exit;
+        }
+
+        try {
+            $stats = \Exercise::getExerciseStatistics($this->db, $resourceId);
+            echo json_encode(['success' => true, 'data' => $stats]);
+        } catch (\Exception $e) {
+            error_log("Error in ExercisesController::getStats: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Server error']);
+        }
+        exit;
+    }
+
+    /**
+     * Get completion statistics for exercises in a resource
+     * Returns the number of exercises completed vs not completed
+     */
+    public function getCompletionStats()
+    {
+        // Set JSON header
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Check if DB is initialized
+        if (!$this->db) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Service error']);
+            exit;
+        }
+
+        // Check auth
+        if (!isset($_SESSION['id'])) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit;
+        }
+
+        $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
+
+        if (!$resourceId) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Missing resource_id']);
+            exit;
+        }
+
+        try {
+            // Get total number of exercises in the resource
+            $sqlTotal = "SELECT COUNT(*) as total FROM exercises WHERE resource_id = :resourceId";
+            $stmtTotal = $this->db->prepare($sqlTotal);
+            $stmtTotal->execute(['resourceId' => $resourceId]);
+            $total = (int)$stmtTotal->fetchColumn();
+
+            // Get number of exercises with at least one successful attempt
+            $sqlCompleted = "SELECT COUNT(DISTINCT e.exercise_id) as completed
+                            FROM exercises e
+                            INNER JOIN attempts a ON e.exercise_id = a.exercise_id
+                            WHERE e.resource_id = :resourceId AND a.correct = 1";
+            $stmtCompleted = $this->db->prepare($sqlCompleted);
+            $stmtCompleted->execute(['resourceId' => $resourceId]);
+            $completed = (int)$stmtCompleted->fetchColumn();
+
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'total' => $total,
+                    'completed' => $completed,
+                    'notCompleted' => $total - $completed
+                ]
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in ExercisesController::getCompletionStats: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Server error']);
+        }
+        exit;
     }
 }

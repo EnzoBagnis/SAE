@@ -17,7 +17,7 @@ class ResourceDetailsController extends \BaseController
     {
         // Check if user is authenticated
         if (!isset($_SESSION['id'])) {
-            header('Location: /index.php?action=login');
+            header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
 
@@ -25,7 +25,7 @@ class ResourceDetailsController extends \BaseController
         $resourceId = $_GET['id'] ?? null;
 
         if (!$resourceId || !is_numeric($resourceId)) {
-            header('Location: /index.php?action=resources_list');
+            header('Location: ' . BASE_URL . '/index.php?action=resources_list');
             exit;
         }
 
@@ -33,7 +33,7 @@ class ResourceDetailsController extends \BaseController
         $resource = \Resource::getResourceById($db, (int)$resourceId);
 
         if (!$resource) {
-            header('Location: /index.php?action=resources_list');
+            header('Location: ' . BASE_URL . '/index.php?action=resources_list');
             exit;
         }
 
@@ -53,7 +53,7 @@ class ResourceDetailsController extends \BaseController
         }
 
         if (!$hasAccess) {
-            header('Location: /index.php?action=resources_list&error=access_denied');
+            header('Location: ' . BASE_URL . '/index.php?action=resources_list&error=access_denied');
             exit;
         }
 

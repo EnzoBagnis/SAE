@@ -4,9 +4,13 @@ export class AttemptsRenderer {
     constructor() {
         this.currentFilter = 'all'; // 'all', 'success', 'failed'
         this.currentSort = 'recent'; // 'recent', 'oldest'
+        this.currentExerciseFilter = 'all'; // 'all' ou exercise_id spécifique
     }
 
     renderAttempts(attempts) {
+        // Réinitialiser le filtre d'exercices pour chaque nouvel étudiant
+        this.currentExerciseFilter = 'all';
+
         const attemptsTitle = document.createElement('h3');
         attemptsTitle.textContent = `Historique des tentatives (${attempts.length})`;
         attemptsTitle.style.marginTop = '2rem';
@@ -89,6 +93,47 @@ export class AttemptsRenderer {
             cursor: 'pointer'
         });
 
+        // Filtre par exercice
+        const exerciseLabel = document.createElement('label');
+        exerciseLabel.textContent = 'Exercice : ';
+        Object.assign(exerciseLabel.style, {
+            fontWeight: 'bold',
+            color: '#2c3e50',
+            marginLeft: '1rem'
+        });
+
+        const exerciseSelect = document.createElement('select');
+        exerciseSelect.id = 'exercise-filter';
+
+        // Extraire les exercices uniques des tentatives avec leurs informations
+        const uniqueExercises = new Map();
+        attempts.forEach(attempt => {
+            if (attempt.exercise_id && attempt.funcname) {
+                uniqueExercises.set(attempt.exercise_id, {
+                    funcname: attempt.funcname
+                });
+            }
+        });
+
+        // Créer les options du select
+        let exerciseOptions = '<option value="all">Tous les exercices</option>';
+        uniqueExercises.forEach((exerciseInfo, id) => {
+            const displayText = exerciseInfo.funcname;
+            exerciseOptions += `<option value="${id}">${displayText}</option>`;
+        });
+        exerciseSelect.innerHTML = exerciseOptions;
+
+        // S'assurer que la valeur sélectionnée correspond au filtre actuel (réinitialisé à 'all')
+        exerciseSelect.value = this.currentExerciseFilter;
+
+        Object.assign(exerciseSelect.style, {
+            padding: '0.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            cursor: 'pointer',
+            minWidth: '200px'
+        });
+
         // Compteur de résultats
         const resultCount = document.createElement('span');
         resultCount.id = 'result-count';
@@ -111,10 +156,18 @@ export class AttemptsRenderer {
             this.displayFilteredAttempts(attempts, container);
         });
 
+        exerciseSelect.addEventListener('change', (e) => {
+            this.currentExerciseFilter = e.target.value;
+            const container = document.getElementById('attempts-list');
+            this.displayFilteredAttempts(attempts, container);
+        });
+
         controlsBar.appendChild(filterLabel);
         controlsBar.appendChild(filterSelect);
         controlsBar.appendChild(sortLabel);
         controlsBar.appendChild(sortSelect);
+        controlsBar.appendChild(exerciseLabel);
+        controlsBar.appendChild(exerciseSelect);
         controlsBar.appendChild(resultCount);
 
         return controlsBar;
@@ -125,10 +178,20 @@ export class AttemptsRenderer {
 
         // Filtrer les tentatives
         let filteredAttempts = attempts.filter(attempt => {
-            if (this.currentFilter === 'all') return true;
-            const isCorrect = attempt.correct === 1 || attempt.correct === '1';
-            if (this.currentFilter === 'success') return isCorrect;
-            if (this.currentFilter === 'failed') return !isCorrect;
+            // Filtre par statut
+            if (this.currentFilter !== 'all') {
+                const isCorrect = attempt.correct === 1 || attempt.correct === '1';
+                if (this.currentFilter === 'success' && !isCorrect) return false;
+                if (this.currentFilter === 'failed' && isCorrect) return false;
+            }
+
+            // Filtre par exercice
+            if (this.currentExerciseFilter !== 'all') {
+                if (String(attempt.exercise_id) !== String(this.currentExerciseFilter)) {
+                    return false;
+                }
+            }
+
             return true;
         });
 

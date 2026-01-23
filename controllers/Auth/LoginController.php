@@ -49,7 +49,7 @@ class LoginController extends \BaseController
     public function authenticate()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /index.php?action=login');
+            header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
 
@@ -57,7 +57,7 @@ class LoginController extends \BaseController
         $password = $_POST['mdp'] ?? '';
 
         if (empty($email) || empty($password)) {
-            header('Location: /index.php?action=login&error=empty_fields');
+            header('Location: ' . BASE_URL . '/index.php?action=login&error=empty_fields');
             exit;
         }
 
@@ -65,10 +65,23 @@ class LoginController extends \BaseController
 
         if ($result['success']) {
             $this->authController->createSession($result['user']);
-            header('Location: /index.php?action=resources_list');
+            header('Location: ' . BASE_URL . '/index.php?action=resources_list');
             exit;
         } else {
-            header('Location: /index.php?action=login&error=' . $result['error']);
+            // Check for specific error codes for redirection
+            if ($result['error'] === 'account_pending_approval') {
+                header('Location: ' . BASE_URL . '/index.php?action=pendingapproval');
+                exit;
+            } elseif ($result['error'] === 'email_not_verified') {
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['mail'] = $email;
+                header('Location: ' . BASE_URL . '/index.php?action=emailverification&erreur=email_not_verified');
+                exit;
+            }
+
+            header('Location: ' . BASE_URL . '/index.php?action=login&error=' . $result['error']);
             exit;
         }
     }
@@ -83,7 +96,9 @@ class LoginController extends \BaseController
             'password_incorrect' => 'Mot de passe incorrect',
             'empty_fields' => 'Tous les champs sont requis',
             'token_invalide' => 'Lien de réinitialisation invalide',
-            'token_expire' => 'Lien de réinitialisation expiré'
+            'token_expire' => 'Lien de réinitialisation expiré',
+            'account_pending_approval' => 'Votre compte est en attente de validation par un administrateur.',
+            'email_not_verified' => 'Vous devez valider votre email avant de vous connecter.'
         ];
 
         return $messages[$errorCode] ?? 'Une erreur est survenue';

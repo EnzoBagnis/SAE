@@ -81,6 +81,39 @@ export class TabManager {
             if (vizContent) {
                 vizContent.style.display = 'block';
                 vizContent.classList.add('active');
+
+                // Render charts on first activation
+                const chartsContainer = document.getElementById('student-charts-container');
+                if (chartsContainer && chartsContainer.dataset.rendered === 'false') {
+                    chartsContainer.dataset.rendered = 'true';
+
+                    try {
+                        console.log('🎨 Parsing stored data...');
+                        const student = JSON.parse(chartsContainer.dataset.student || '{}');
+                        const attempts = JSON.parse(chartsContainer.dataset.attempts || '[]');
+                        const stats = JSON.parse(chartsContainer.dataset.stats || '{}');
+
+                        console.log('✅ Data parsed successfully:', { student, attempts: attempts.length, stats });
+
+                        if (typeof window.DetailedCharts !== 'undefined') {
+                            console.log('🚀 Rendering charts...');
+                            window.DetailedCharts.renderStudentDetailedCharts(
+                                student,
+                                attempts,
+                                stats,
+                                'student-charts-container'
+                            );
+                            console.log('✅ Charts rendered successfully');
+                        } else {
+                            console.error('❌ DetailedCharts module not found');
+                            chartsContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur: Module de graphiques non chargé</p>';
+                        }
+                    } catch (e) {
+                        console.error('❌ Erreur lors du rendu des graphiques:', e);
+                        console.error('Stack trace:', e.stack);
+                        chartsContainer.innerHTML = `<p style="color: #e74c3c; text-align: center; padding: 2rem;">Erreur lors du chargement des graphiques<br><small>${e.message}</small></p>`;
+                    }
+                }
             }
         }
     }

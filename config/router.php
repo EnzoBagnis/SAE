@@ -47,6 +47,10 @@ class Router
                 }
                 break;
 
+            case 'pendingapproval':
+                $this->loadNamespacedController('Controllers\Auth\EmailVerificationController', 'pendingApproval');
+                break;
+
             // ========== AUTH - RESEND CODE ==========
             case 'resendcode':
                 $this->loadNamespacedController('Controllers\Auth\EmailVerificationController', 'resendCode');
@@ -98,9 +102,48 @@ class Router
                 $this->loadNamespacedController('Controllers\User\ExercisesController', 'getExercise');
                 break;
 
+            // ========== ADMIN - DASHBOARD ==========
+            case 'admin':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'index');
+                break;
+
+            case 'adminLogin':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'login');
+                } else {
+                    $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'index');
+                }
+                break;
+
+            case 'adminLogout':
+                $this->loadNamespacedController('Controllers\Admin\AdminLogin', 'logout');
+                break;
+
+            case 'adminSVU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showVerifiedUsers');
+                break;
+            case 'adminSPU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showPendingUsers');
+                break;
+            case 'adminSBU':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'showBlockedUsers');
+                break;
+            case 'adminDeleteUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'deleteUser');
+                break;
+            case 'adminEditUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'editUser');
+                break;
+            case 'adminValidUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'validateUser');
+                break;
+            case 'adminBanUser':
+                $this->loadNamespacedController('Controllers\Admin\AdminDashboardController', 'banUser');
+                break;
+
             // ========== PAGES ==========
             case 'mentions':
-                $this->loadView('pages/mentions-legales');
+                $this->loadView('user/mentions-legales');
                 break;
 
 
@@ -286,6 +329,41 @@ class Router
 
             case 'visualization-data':
                 $this->loadNamespacedController('Controllers\Analysis\VisualizationController', 'getData');
+                break;
+
+            // ========== IMPORT - API ==========
+            case 'api/exercises/import':
+            case 'import-exercises':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Import\ImportController', 'importExercises');
+                } else {
+                    http_response_code(405);
+                    echo json_encode(['error' => 'Méthode non autorisée']);
+                }
+                break;
+
+            case 'api/attempts/import':
+            case 'import-attempts':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->loadNamespacedController('Controllers\Import\ImportController', 'importAttempts');
+                } else {
+                    http_response_code(405);
+                    echo json_encode(['error' => 'Méthode non autorisée']);
+                }
+                break;
+
+            // ========== STATS - STUDENTS ==========
+            case 'students_stats':
+                $this->loadNamespacedController('Controllers\User\StudentsController', 'getStats');
+                break;
+
+            // ========== STATS - EXERCISES ==========
+            case 'exercises_stats':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getStats');
+                break;
+
+            case 'exercise_completion_stats':
+                $this->loadNamespacedController('Controllers\User\ExercisesController', 'getCompletionStats');
                 break;
 
             default:

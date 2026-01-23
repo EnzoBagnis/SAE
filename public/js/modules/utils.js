@@ -3,7 +3,8 @@
 export class Utils {
     static confirmLogout() {
         if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-            window.location.href = '/index.php?action=logout';
+            // Utilise la variable globale fournie par le footer via PHP
+            window.location.href = window.BASE_URL + '/index.php?action=logout';
         }
     }
 
@@ -29,5 +30,11 @@ export class Utils {
             }
         };
     }
-}
 
+    static getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+}

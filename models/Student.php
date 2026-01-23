@@ -57,23 +57,56 @@ class Student
                 $stmt = $this->db->prepare($query);
                 $stmt->execute();
             } else {
-                // Récupérer les étudiants qui ont des tentatives pour les exercices de cette ressource
-                $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
-                         "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
-                         "FROM students s " .
-                         "JOIN datasets d ON s.dataset_id = d.dataset_id " .
-                         "JOIN attempts a ON s.student_id = a.student_id " .
-                         "JOIN exercises e ON a.exercise_id = e.exercise_id " .
-                         "WHERE e.resource_id = :resource_id " .
-                         "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
-                $stmt = $this->db->prepare($query);
-                $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
-                $stmt->execute();
+                // Vérifier si la table exercises a une colonne dataset_id
+                $checkQuery = "SHOW COLUMNS FROM exercises LIKE 'dataset_id'";
+                $checkStmt = $this->db->query($checkQuery);
+                $hasDatasetId = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($hasDatasetId) {
+                    // Méthode 1: Via dataset_id des exercices (inclut TOUS les étudiants du dataset)
+                    error_log("Student.php: Utilisation de exercises.dataset_id pour resource_id=$resourceId");
+                    $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
+                             "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
+                             "FROM students s " .
+                             "JOIN datasets d ON s.dataset_id = d.dataset_id " .
+                             "WHERE s.dataset_id IN (" .
+                             "    SELECT DISTINCT e.dataset_id " .
+                             "    FROM exercises e " .
+                             "    WHERE e.resource_id = :resource_id" .
+                             ") " .
+                             "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
+                    $stmt = $this->db->prepare($query);
+                    $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
+                    $stmt->execute();
+                } else {
+                    // Méthode 2: Via les tentatives (seulement les étudiants avec tentatives)
+                    error_log(
+                        "Student.php: exercises.dataset_id n'existe pas, " .
+                        "utilisation des tentatives pour resource_id=$resourceId"
+                    );
+                    $query = "SELECT DISTINCT s.student_id, s.student_identifier, " .
+                             "s.nom_fictif, s.prenom_fictif, d.nom_dataset " .
+                             "FROM students s " .
+                             "JOIN datasets d ON s.dataset_id = d.dataset_id " .
+                             "JOIN attempts a ON s.student_id = a.student_id " .
+                             "JOIN exercises e ON a.exercise_id = e.exercise_id " .
+                             "WHERE e.resource_id = :resource_id " .
+                             "ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)";
+                    $stmt = $this->db->prepare($query);
+                    $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
+                    $stmt->execute();
+                }
             }
 
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log(
+                "Student.php getAllStudents: Retour de " . count($results) .
+                " étudiants pour resource_id=" . ($resourceId ?? 'null')
+            );
+            return $results;
         } catch (PDOException $e) {
             error_log("Error getting students: " . $e->getMessage());
+            error_log("SQL Error: " . $e->getTraceAsString());
             return [];
         }
     }
@@ -320,6 +353,61 @@ class Student
         } catch (PDOException $e) {
             error_log("Error getting student by identifier: " . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Get statistics for all students in a resource
+     * This method calculates the success rate (or average score) for each student.
+     * @param int|null $resourceId The resource ID
+     * @return array
+     */
+    public function getStudentStatistics($resourceId = null)
+    {
+        if (!$this->isInitialized()) {
+            return [];
+        }
+
+        try {
+            $sql = "SELECT 
+                        s.student_id as id, 
+                        s.student_identifier,
+                        s.nom_fictif as nom, 
+                        s.prenom_fictif as prenom, 
+                        COUNT(a.attempt_id) as total_attempts, 
+                        SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) as successful_attempts
+                    FROM students s
+                    LEFT JOIN attempts a ON s.student_id = a.student_id
+                    LEFT JOIN exercises e ON a.exercise_id = e.exercise_id
+                    WHERE 1=1";
+
+            $params = [];
+            if ($resourceId !== null) {
+                $sql .= " AND e.resource_id = :resource_id";
+                $params[':resource_id'] = $resourceId;
+            }
+
+            $sql .= " GROUP BY s.student_id, s.student_identifier, s.nom_fictif, 
+            s.prenom_fictif ORDER BY s.student_identifier";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Calculate percentage
+            foreach ($results as &$row) {
+                if ($row['total_attempts'] > 0) {
+                    $row['success_rate'] = round(($row['successful_attempts'] / $row['total_attempts']) * 100, 2);
+                } else {
+                    $row['success_rate'] = 0;
+                }
+            }
+
+            return $results;
+        } catch (PDOException $e) {
+            error_log("Error getting student stats: " . $e->getMessage());
+            return [];
         }
     }
 }
