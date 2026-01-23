@@ -19,7 +19,7 @@ class HomeController extends BaseController
             $this->redirect('dashboard');
         } else {
             // Redirect to public home page
-            header('Location: /index.html');
+            header('Location: ' . BASE_URL . '/index.html');
             exit;
         }
     }

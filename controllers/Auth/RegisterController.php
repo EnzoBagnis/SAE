@@ -42,7 +42,7 @@ class RegisterController extends \BaseController
     public function register()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /index.php?action=signup');
+            header('Location: ' . BASE_URL . '/index.php?action=signup');
             exit;
         }
 
@@ -52,7 +52,7 @@ class RegisterController extends \BaseController
         $password = $_POST['mdp'] ?? '';
 
         if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
-            header('Location: /index.php?action=signup&error=empty_fields');
+            header('Location: ' . BASE_URL . '/index.php?action=signup&error=empty_fields');
             exit;
         }
 
@@ -61,10 +61,10 @@ class RegisterController extends \BaseController
         if ($result['success']) {
             session_start();
             $_SESSION['mail'] = $result['email'];
-            header('Location: /index.php?action=emailverification&succes=inscription');
+            header('Location: ' . BASE_URL . '/index.php?action=emailverification&succes=inscription');
             exit;
         } else {
-            header('Location: /index.php?action=signup&error=' . $result['error']);
+            header('Location: ' . BASE_URL . '/index.php?action=signup&error=' . $result['error']);
             exit;
         }
     }

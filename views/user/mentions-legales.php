@@ -8,12 +8,12 @@ $isLoggedIn = isset($_SESSION['id']);
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
     <title>StudTraj - Mentions légales</title>
-    <link rel="stylesheet" href="public/css/style.css">
-    <link rel="stylesheet" href="public/css/dashboard.css">
-    <link rel="stylesheet" href="public/css/mentions-legales.css">
-    <link rel="stylesheet" href="public/css/footer.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/dashboard.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/mentions-legales.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
     <!-- SEO Meta Tags -->
     <meta name="mentions-legales" content="Je vous assure qu'on est ici en toute légalité.">
     <meta name="robots" content="noindex, nofollow">
@@ -63,7 +63,11 @@ $isLoggedIn = isset($_SESSION['id']);
 
 <div class="legal-container">
     <a href="javascript:void(0)"
-       onclick="if(window.history.length > 1){window.history.back();}else{window.location.href='index.php';}"
+       onclick="if(window.history.length > 1){
+           window.history.back();
+       }else{
+           window.location.href='<?= BASE_URL ?>/index.php';
+       }"
        class="back-link"
        style="display: inline-block; margin-bottom: 20px; text-decoration: none;
               color: inherit; font-weight: bold; font-size: 1.2em;">
@@ -150,11 +154,11 @@ $isLoggedIn = isset($_SESSION['id']);
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="index.php?action=dashboard">Tableau de bord</a></li>
-                    <li><a href="index.php?action=login">Connexion</a></li>
-                    <li><a href="index.php?action=signup">Inscription</a></li>
-                    <li><a href="index.php?action=forgotpassword">Mot de passe oublié</a></li>
-                    <li><a href="index.php?action=mentions">Mentions légales</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=login">Connexion</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=signup">Inscription</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>
@@ -193,7 +197,7 @@ $isLoggedIn = isset($_SESSION['id']);
     // Fonction de déconnexion
     function confirmLogout() {
         if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-            window.location.href = '../controllers/deconnexion.php';
+            window.location.href = '<?= BASE_URL ?>/index.php?action=logout';
         }
     }
 

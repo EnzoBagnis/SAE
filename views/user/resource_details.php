@@ -101,8 +101,8 @@
         </button>
 
         <nav class="nav-menu">
-            <a href="/index.php?action=dashboard">Tableau de Bord</a>
-            <a href="/index.php?action=resources_list" class="active">Ressources</a>
+            <a href="<?= BASE_URL ?>/index.php?action=dashboard">Tableau de Bord</a>
+            <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
         </nav>
         <div class="header-right">
             <button onclick="openImportModal(<?= $resource->resource_id ?>)" class="btn-import-trigger">
@@ -120,7 +120,7 @@
                     <?= htmlspecialchars($user_lastname ?? '') ?>
                 </span>
             </div>
-            <a href="/index.php?action=logout" class="btn-logout">Déconnexion</a>
+            <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">Déconnexion</a>
         </div>
     </header>
 
@@ -143,12 +143,12 @@
             </div>
             <ul class="burger-menu-list">
                 <li>
-                    <a href="/index.php?action=resources_list" class="burger-link active">
+                    <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">
                         Mes Ressources
                     </a>
                 </li>
                 <li>
-                    <a href="/index.php?action=logout" class="burger-link burger-logout">Déconnexion</a>
+                    <a href="<?= BASE_URL ?>/index.php?action=logout" class="burger-link burger-logout">Déconnexion</a>
                 </li>
             </ul>
         </div>
@@ -200,7 +200,7 @@
                             </p>
                         </div>
                         <div class="tp-item-actions">
-                            <a href="/index.php?action=exercise_details&id=<?= $exercise->exercise_id ?>"
+                            <a href="<?= BASE_URL ?>/index.php?action=exercise_details&id=<?= $exercise->exercise_id ?>"
                                class="btn">Voir le TP</a>
                         </div>
                     </div>
@@ -287,11 +287,11 @@
             <h2>Plan du site</h2>
             <div class="sitemap-list">
                 <ul>
-                    <li><a href="/index.php?action=dashboard">Tableau de bord</a></li>
-                    <li><a href="/index.php?action=login">Connexion</a></li>
-                    <li><a href="/index.php?action=signup">Inscription</a></li>
-                    <li><a href="/index.php?action=forgotpassword">Mot de passe oublié</a></li>
-                    <li><a href="/index.php?action=mentions">Mentions légales</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=dashboard">Tableau de bord</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=login">Connexion</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=signup">Inscription</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>
@@ -302,7 +302,7 @@
         <div class="footer-content">
             <p>&copy; 2024 StudTraj - Tous droits réservés</p>
             <ul class="footer-links">
-                <li><a href="/index.php?action=mentions">Mentions légales</a></li>
+                <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a></li>
             </ul>
         </div>
     </footer>
@@ -324,7 +324,8 @@
 
         function confirmLogout() {
             if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
-                window.location.href = "/index.php?action=logout";
+                // Utilise la variable globale BASE_URL injectée côté PHP
+                window.location.href = window.BASE_URL + '/index.php?action=logout';
             }
         }
 

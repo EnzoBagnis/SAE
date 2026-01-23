@@ -69,6 +69,7 @@ function closeSiteMap() {
 
 function confirmLogout() {
     if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
-        window.location.href = "/SAE/index.php?action=logout";
+        // Utilise la variable globale window.BASE_URL injectée depuis PHP
+        window.location.href = window.BASE_URL + '/index.php?action=logout';
     }
 }

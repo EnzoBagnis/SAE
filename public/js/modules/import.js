@@ -101,7 +101,7 @@ async function importAttempts() {
                 dataset_info: (i === 0) ? datasetInfo : null // Uniquement au premier paquet
             };
 
-            const response = await fetch(`api_import_attempts.php${resourceId ? '?id='+resourceId : ''}`, {
+            const response = await fetch(`${window.BASE_URL}/api_import_attempts.php${resourceId ? '?id='+resourceId : ''}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -157,7 +157,7 @@ async function importExercises() {
                 exercises: chunk.map(ex => ({ ...ex, resource_id: resourceId || ex.resource_id }))
             };
 
-            const response = await fetch('api_import_exercises.php', {
+            const response = await fetch(`${window.BASE_URL}/api_import_exercises.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

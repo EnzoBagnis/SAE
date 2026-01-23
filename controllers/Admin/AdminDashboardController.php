@@ -17,7 +17,7 @@ class AdminDashboardController extends \BaseController
     {
         // Vérifier si l'utilisateur est connecté en tant qu'admin
         if (!isset($_SESSION['admin']) || $_SESSION['admin'] !== true) {
-            header('Location: index.php?action=adminLogin');
+            header('Location: ' . BASE_URL . '/index.php?action=adminLogin');
             exit;
         }
 
@@ -83,7 +83,7 @@ class AdminDashboardController extends \BaseController
         $id = $_GET['id'];
         $success = $this->userModel->delete($table, $id);
         if ($success) {
-            header('Location: index.php?action=admin');
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
         } else {
             $this->loadView('admin/admin-dashboard');
         }
@@ -98,10 +98,10 @@ class AdminDashboardController extends \BaseController
 
         $success = $this->userModel->update($id, $nom, $prenom, $email);
         if ($success) {
-            header('Location: index.php?action=admin');
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
             exit;
         } else {
-            header('Location: /index.php?action=login');
+            header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
     }
@@ -121,7 +121,7 @@ class AdminDashboardController extends \BaseController
                 $emailService->sendAccountValidationNotification($userPending['mail']);
             }
 
-            header('Location: index.php?action=admin');
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
         } else {
             $this->loadView('admin/admin-dashboard');
         }
@@ -148,10 +148,10 @@ class AdminDashboardController extends \BaseController
 
         $success = $this->userModel->updateBan($id, $email, $duree_de_ban, $ban_def);
         if ($success) {
-            header('Location: index.php?action=admin');
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
             exit;
         } else {
-            header('Location: /index.php?action=login');
+            header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
     }
@@ -160,7 +160,7 @@ class AdminDashboardController extends \BaseController
     {
         $this->userModel->createBanUser($mail, $duree_de_ban, $ban_def, $table, $id);
 
-        header('Location: index.php?action=adminDeleteUser&table=' . $table . '&id=' . $id);
+        header('Location: ' . BASE_URL . '/index.php?action=adminDeleteUser&table=' . $table . '&id=' . $id);
     }
 
 
