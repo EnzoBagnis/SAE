@@ -14,6 +14,8 @@ class HomeController
      */
     public function index(): void
     {
-        require __DIR__ . '/../Views/home.php';
+        // Redirect to static index.html for now
+        header('Location: ' . BASE_URL . '/index.html');
+        exit;
     }
 }
