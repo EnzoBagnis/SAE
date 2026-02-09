@@ -41,29 +41,57 @@ class LoginController
      */
     public function authenticate(): void
     {
+        // Start session if not started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         // Debug: Log that we're in authenticate
-        error_log("LoginController::authenticate() called");
+        error_log("=== LoginController::authenticate() START ===");
         error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
         error_log("POST data: " . print_r($_POST, true));
+        error_log("Session ID: " . session_id());
 
-        $email = $_POST['mail'] ?? '';
-        $password = $_POST['mdp'] ?? '';
+        try {
+            $email = $_POST['mail'] ?? '';
+            $password = $_POST['mdp'] ?? '';
 
-        error_log("Email: $email, Password length: " . strlen($password));
+            error_log("Email: $email, Password length: " . strlen($password));
 
-        $request = new LoginRequest($email, $password);
-        $response = $this->loginUseCase->execute($request);
+            if (empty($email) || empty($password)) {
+                error_log("ERROR: Email ou mot de passe vide");
+                $_SESSION['error'] = 'Veuillez remplir tous les champs';
+                header('Location: ' . BASE_URL . '/index.php?action=login');
+                exit;
+            }
 
-        error_log("Response success: " . ($response->success ? 'true' : 'false'));
-        error_log("Response message: " . $response->message);
+            $request = new LoginRequest($email, $password);
+            error_log("LoginRequest créé");
 
-        if ($response->success) {
-            header('Location: ' . BASE_URL . '/index.php?action=dashboard');
-            exit;
-        } else {
-            $_SESSION['error'] = $response->message;
+            $response = $this->loginUseCase->execute($request);
+            error_log("LoginUseCase exécuté");
+
+            error_log("Response success: " . ($response->success ? 'true' : 'false'));
+            error_log("Response message: " . $response->message);
+
+            if ($response->success) {
+                error_log("Login réussi, redirection vers dashboard");
+                header('Location: ' . BASE_URL . '/index.php?action=dashboard');
+                exit;
+            } else {
+                error_log("Login échoué: " . $response->message);
+                $_SESSION['error'] = $response->message;
+                header('Location: ' . BASE_URL . '/index.php?action=login');
+                exit;
+            }
+        } catch (\Exception $e) {
+            error_log("EXCEPTION dans authenticate: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            $_SESSION['error'] = 'Une erreur est survenue lors de la connexion';
             header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
+        } finally {
+            error_log("=== LoginController::authenticate() END ===");
         }
     }
 }
