@@ -177,7 +177,7 @@ class PdoUserRepository implements UserRepositoryInterface
             $data['mail'],
             $data['mdp'],
             $data['code_verif'] ?? null,
-            isset($data['code_verif']) && $data['code_verif'] === null,
+            true, // Les utilisateurs dans la table 'utilisateurs' sont toujours vérifiés
             isset($data['date_creation']) ? new \DateTimeImmutable($data['date_creation']) : null,
             $data['reset_token'] ?? null,
             isset($data['reset_expiration']) && $data['reset_expiration']
