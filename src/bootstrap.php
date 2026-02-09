@@ -37,18 +37,14 @@ if (php_sapi_name() !== 'cli') {
 // Autoloader for new architecture
 spl_autoload_register(function ($class) {
     // Convert namespace to file path
-    $prefix = '';
     $baseDir = SRC_PATH . '/';
 
-    // Check if class uses our namespace
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        // No, move to the next registered autoloader
-        $file = $baseDir . str_replace('\\', '/', $class) . '.php';
-        if (file_exists($file)) {
-            require $file;
-            return;
-        }
+    // Convert namespace separators to directory separators
+    $file = $baseDir . str_replace('\\', '/', $class) . '.php';
+
+    // If the file exists, require it
+    if (file_exists($file)) {
+        require $file;
     }
 });
 
