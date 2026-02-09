@@ -54,7 +54,14 @@ class DatabaseConnection
 
             return $pdo;
         } catch (PDOException $e) {
-            error_log("Database connection failed: " . $e->getMessage());
+            $errorMessage = "Database connection failed: " . $e->getMessage();
+            $errorDetails = "\nHost: {$host}\nDatabase: {$dbname}\nUsername: {$username}";
+            error_log($errorMessage . $errorDetails);
+
+            // Show detailed error only in development
+            if (ini_get('display_errors')) {
+                throw new \RuntimeException($errorMessage . $errorDetails);
+            }
             throw new \RuntimeException("Could not connect to database");
         }
     }
