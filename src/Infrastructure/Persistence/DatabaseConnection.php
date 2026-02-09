@@ -73,10 +73,18 @@ class DatabaseConnection
      */
     private static function loadEnv(): array
     {
+        // Try config/.env outside the project root first (production)
+        $envFile = __DIR__ . '/../../../../config/.env';
+        if (file_exists($envFile)) {
+            return parse_ini_file($envFile);
+        }
+
+        // Fallback to config/.env inside the project root (development)
         $envFile = __DIR__ . '/../../../config/.env';
         if (file_exists($envFile)) {
             return parse_ini_file($envFile);
         }
+
         return [];
     }
 }

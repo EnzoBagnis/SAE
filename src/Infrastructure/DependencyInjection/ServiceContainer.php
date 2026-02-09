@@ -258,11 +258,12 @@ class ServiceContainer
      */
     private function loadEnv(): array
     {
-        // .env is outside the repo for security reasons
+        // Try config/.env outside the project root first (production)
         $envFile = __DIR__ . '/../../../../config/.env';
         if (file_exists($envFile)) {
             return parse_ini_file($envFile);
         }
+
         return [];
     }
 }
