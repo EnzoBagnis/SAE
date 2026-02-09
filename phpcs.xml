@@ -4,7 +4,6 @@
 
     <!-- Fichiers à analyser -->
     <file>./src</file>
-    <file>./views</file>
     <file>./cron</file>
     <file>./index.php</file>
     <file>./sitemap.php</file>

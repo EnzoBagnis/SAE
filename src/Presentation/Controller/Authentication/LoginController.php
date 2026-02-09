@@ -31,7 +31,7 @@ class LoginController
      */
     public function index(): void
     {
-        require __DIR__ . '/../../../../views/auth/login.php';
+        require __DIR__ . '/../../Views/auth/login.php';
     }
 
     /**

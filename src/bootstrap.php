@@ -53,7 +53,16 @@ spl_autoload_register(function ($class) {
 });
 
 // Require composer autoload for external dependencies
-require_once ROOT_PATH . '/vendor/autoload.php';
+$autoloadPath = ROOT_PATH . '/vendor/autoload.php';
+if (!file_exists($autoloadPath)) {
+    die('<h1>Erreur de configuration</h1>' .
+        '<p><strong>Le fichier vendor/autoload.php est manquant.</strong></p>' .
+        '<p>Veuillez exécuter la commande suivante à la racine du projet :</p>' .
+        '<pre style="background:#f4f4f4;padding:10px;border:1px solid #ddd;">composer install</pre>' .
+        '<p>Chemin recherché : ' . htmlspecialchars($autoloadPath) . '</p>' .
+        '<p>Répertoire actuel : ' . htmlspecialchars(ROOT_PATH) . '</p>');
+}
+require_once $autoloadPath;
 
 // Initialize dependency injection container
 $container = new \Infrastructure\DependencyInjection\ServiceContainer();
