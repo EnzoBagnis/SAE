@@ -3,9 +3,7 @@
     <description>Standards PHP personnalisés pour le projet SAE</description>
 
     <!-- Fichiers à analyser -->
-    <file>./controllers</file>
-    <file>./models</file>
-    <file>./config</file>
+    <file>./src</file>
     <file>./views</file>
     <file>./cron</file>
     <file>./index.php</file>
