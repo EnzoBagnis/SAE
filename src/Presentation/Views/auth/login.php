@@ -32,11 +32,21 @@
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
+    <?php if (isset($_SESSION['error'])) : ?>
+        <div class="error"><?= htmlspecialchars($_SESSION['error']) ?></div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
     <?php if (isset($success_message)) : ?>
         <div class="success"><?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=login">
+    <?php if (isset($_SESSION['success'])) : ?>
+        <div class="success"><?= htmlspecialchars($_SESSION['success']) ?></div>
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
+    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=authenticate">
         <h2>Connexion</h2>
 
         <label for="mail">Email</label>

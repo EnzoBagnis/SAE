@@ -32,6 +32,20 @@
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
+    <?php if (isset($_SESSION['error'])) : ?>
+        <div class="error"><?= htmlspecialchars($_SESSION['error']) ?></div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($success_message)) : ?>
+        <div class="success"><?= htmlspecialchars($success_message) ?></div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['success'])) : ?>
+        <div class="success"><?= htmlspecialchars($_SESSION['success']) ?></div>
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
     <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=signup">
 
         <label for="nom">Nom</label>

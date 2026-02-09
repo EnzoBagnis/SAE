@@ -31,7 +31,7 @@ class RegisterController
      */
     public function index(): void
     {
-        require __DIR__ . '/../../Views/auth/signup.php';
+        require __DIR__ . '/../../Views/auth/register.php';
     }
 
     /**

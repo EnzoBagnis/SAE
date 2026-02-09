@@ -41,11 +41,21 @@ class LoginController
      */
     public function authenticate(): void
     {
+        // Debug: Log that we're in authenticate
+        error_log("LoginController::authenticate() called");
+        error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+        error_log("POST data: " . print_r($_POST, true));
+
         $email = $_POST['mail'] ?? '';
         $password = $_POST['mdp'] ?? '';
 
+        error_log("Email: $email, Password length: " . strlen($password));
+
         $request = new LoginRequest($email, $password);
         $response = $this->loginUseCase->execute($request);
+
+        error_log("Response success: " . ($response->success ? 'true' : 'false'));
+        error_log("Response message: " . $response->message);
 
         if ($response->success) {
             header('Location: ' . BASE_URL . '/index.php?action=dashboard');

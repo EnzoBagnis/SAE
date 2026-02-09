@@ -40,6 +40,7 @@ class Router
         // Login
         $this->get('login', \Presentation\Controller\Authentication\LoginController::class, 'index');
         $this->post('login', \Presentation\Controller\Authentication\LoginController::class, 'authenticate');
+        $this->post('authenticate', \Presentation\Controller\Authentication\LoginController::class, 'authenticate');
 
         // Register
         $this->get('signup', \Presentation\Controller\Authentication\RegisterController::class, 'index');
@@ -149,18 +150,20 @@ class Router
         $action = $_GET['action'] ?? 'home';
         $method = $_SERVER['REQUEST_METHOD'];
 
+        // Debug logging
+        error_log("Router::dispatch() - Action: $action, Method: $method");
+        error_log("Available GET routes: " . implode(', ', array_keys($this->routes['GET'] ?? [])));
+        error_log("Available POST routes: " . implode(', ', array_keys($this->routes['POST'] ?? [])));
+
         // Check if route exists for this method
         if (!isset($this->routes[$method][$action])) {
-            // Try GET as fallback for backward compatibility
-            if ($method === 'POST' && isset($this->routes['GET'][$action])) {
-                $route = $this->routes['GET'][$action];
-            } else {
-                $this->notFound();
-                return;
-            }
-        } else {
-            $route = $this->routes[$method][$action];
+            error_log("Route not found for $method $action");
+            $this->notFound();
+            return;
         }
+
+        $route = $this->routes[$method][$action];
+        error_log("Found route: " . $route['controller'] . '::' . $route['method']);
 
         $controllerClass = $route['controller'];
         $controllerMethod = $route['method'];
