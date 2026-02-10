@@ -8,6 +8,14 @@
     "friendsofphp/php-cs-fixer": "^3.17",
     "phpunit/phpunit": "^9.5"
   },
+  "autoload": {
+    "psr-4": {
+      "Application\\": "src/Application/",
+      "Domain\\": "src/Domain/",
+      "Infrastructure\\": "src/Infrastructure/",
+      "Presentation\\": "src/Presentation/"
+    }
+  },
   "config": {
     "platform": {
       "php": "7.4"

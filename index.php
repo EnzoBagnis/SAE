@@ -24,6 +24,9 @@ if ($baseDir === '/') {
 
 define('BASE_URL', $protocol . "://" . $host . $baseDir);
 
+// Load Composer autoloader
+require_once __DIR__ . '/vendor/autoload.php';
+
 // Désactiver l'affichage des erreurs pour les actions API (après le démarrage de session)
 $action = $_GET['action'] ?? 'home';
 $apiActions = ['students', 'resources', 'resource', 'upload', 'vector']; // Retiré 'student' temporairement
