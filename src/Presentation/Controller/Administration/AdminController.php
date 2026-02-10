@@ -120,8 +120,8 @@ class AdminController
             ];
         }, $allPending);
 
-        // Separate banned users (empty for now)
-        $bannedUsers = [];
+        // Blocked users (empty for now - would need a separate table or status field)
+        $blockedUsers = [];
 
         $title = 'Panel Admin - StudTraj';
         require_once SRC_PATH . '/Presentation/Views/admin/admin-dashboard.php';
