@@ -31,7 +31,7 @@ class EmailVerificationController
      */
     public function index(): void
     {
-        require __DIR__ . '/../../Views/auth/emailverification.php';
+        require __DIR__ . '/../../Views/auth/email-verification.php';
     }
 
     /**
@@ -65,6 +65,6 @@ class EmailVerificationController
      */
     public function pendingApproval(): void
     {
-        require __DIR__ . '/../../Views/auth/pendingapproval.php';
+        require __DIR__ . '/../../Views/auth/pending-approval.php';
     }
 }
