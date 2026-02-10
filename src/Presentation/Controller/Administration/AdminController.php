@@ -309,11 +309,8 @@ class AdminController
      */
     private function insertBannedUser($userId, string $email): void
     {
-        // Get PDO connection from user repository using reflection
-        $reflection = new \ReflectionClass($this->userRepository);
-        $property = $reflection->getProperty('pdo');
-        $property->setAccessible(true);
-        $pdo = $property->getValue($this->userRepository);
+        // Get PDO connection from user repository
+        $pdo = $this->userRepository->getPdo();
 
         // Create table if not exists
         $pdo->exec("CREATE TABLE IF NOT EXISTS utilisateurs_bannis (
@@ -362,11 +359,8 @@ class AdminController
     private function getBannedUsers(): array
     {
         try {
-            // Get PDO connection from user repository using reflection
-            $reflection = new \ReflectionClass($this->userRepository);
-            $property = $reflection->getProperty('pdo');
-            $property->setAccessible(true);
-            $pdo = $property->getValue($this->userRepository);
+            // Get PDO connection from user repository
+            $pdo = $this->userRepository->getPdo();
 
             // Check if table exists
             $stmt = $pdo->query("SHOW TABLES LIKE 'utilisateurs_bannis'");
@@ -400,11 +394,8 @@ class AdminController
     private function unbanUser($userEmail): bool
     {
         try {
-            // Get PDO connection from user repository using reflection
-            $reflection = new \ReflectionClass($this->userRepository);
-            $property = $reflection->getProperty('pdo');
-            $property->setAccessible(true);
-            $pdo = $property->getValue($this->userRepository);
+            // Get PDO connection from user repository
+            $pdo = $this->userRepository->getPdo();
 
             // Delete from banned users table
             $stmt = $pdo->prepare("DELETE FROM utilisateurs_bannis WHERE mail = :mail");

@@ -103,6 +103,16 @@ class PdoUserRepository implements UserRepositoryInterface
     }
 
     /**
+     * Get PDO connection (for admin operations)
+     *
+     * @return PDO PDO connection
+     */
+    public function getPdo(): PDO
+    {
+        return $this->pdo;
+    }
+
+    /**
      * Insert new user
      *
      * @param User $user User entity
