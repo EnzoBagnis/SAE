@@ -94,12 +94,33 @@ class AdminController
         }
 
         // Get all users
-        $validatedUsers = $this->userRepository->findAll();
+        $allUsers = $this->userRepository->findAll();
+
+        // Convert User entities to array format expected by the view
+        $verifiedUsers = array_map(function($user) {
+            return [
+                'id' => $user->getId(),
+                'nom' => $user->getLastName(),
+                'prenom' => $user->getFirstName(),
+                'mail' => $user->getEmail()
+            ];
+        }, $allUsers);
 
         // Get pending registrations
-        $pendingUsers = $this->pendingRepository->findAll();
+        $allPending = $this->pendingRepository->findAll();
 
-        // Separate banned users (you may need to add a method for this)
+        // Convert PendingRegistration entities to array format expected by the view
+        $pendingUsers = array_map(function($pending) {
+            return [
+                'id' => $pending->getId(),
+                'nom' => $pending->getLastName(),
+                'prenom' => $pending->getFirstName(),
+                'mail' => $pending->getEmail(),
+                'verified' => $pending->isVerified() ? 1 : 0
+            ];
+        }, $allPending);
+
+        // Separate banned users (empty for now)
         $bannedUsers = [];
 
         $title = 'Panel Admin - StudTraj';
