@@ -56,22 +56,24 @@ class AdminController
         $id = $_POST['ID'] ?? '';
         $password = $_POST['mdp'] ?? '';
 
-        // Find user by ID
-        $user = $this->userRepository->findById((int)$id);
+        // Load admin credentials from .env file
+        $env = $this->loadEnv();
+        $adminId = $env['ADMIN_ID'] ?? '';
+        $adminPass = $env['ADMIN_PASS'] ?? '';
 
-        if (!$user || !$user->verifyPassword($password)) {
+        // Verify admin credentials
+        if ($id !== $adminId || $password !== $adminPass) {
             $error_message = 'Identifiant ou mot de passe incorrect';
             $title = 'Connexion Admin - StudTraj';
             require_once SRC_PATH . '/Presentation/Views/admin/admin-login.php';
             return;
         }
 
-        // Check if user is admin (role should be verified)
-        // For now, we'll allow any authenticated user - you may want to add role check
-        $_SESSION['user_id'] = $user->getId();
-        $_SESSION['nom'] = $user->getLastName();
-        $_SESSION['prenom'] = $user->getFirstName();
-        $_SESSION['email'] = $user->getEmail();
+        // Set admin session
+        $_SESSION['user_id'] = 'admin';
+        $_SESSION['nom'] = 'Admin';
+        $_SESSION['prenom'] = $adminId;
+        $_SESSION['email'] = 'admin@studtraj.com';
         $_SESSION['is_admin'] = true;
 
         header('Location: ' . BASE_URL . '/index.php?action=adminDashboard');
@@ -270,6 +272,28 @@ class AdminController
             'pending_users' => count($this->pendingRepository->findAll())
         ]);
         exit;
+    }
+
+    /**
+     * Load environment variables from .env file
+     *
+     * @return array Environment variables
+     */
+    private function loadEnv(): array
+    {
+        // Try config/.env outside the project root first (production)
+        $envFile = __DIR__ . '/../../../../config/.env';
+        if (file_exists($envFile)) {
+            return parse_ini_file($envFile);
+        }
+
+        // Fallback to config/.env inside the project root (development)
+        $envFile = __DIR__ . '/../../../config/.env';
+        if (file_exists($envFile)) {
+            return parse_ini_file($envFile);
+        }
+
+        return [];
     }
 }
 
