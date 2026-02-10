@@ -136,13 +136,9 @@
                                     Supprimer
                                 </a>
                                 <button class="btn-ban"
-                                    onclick="openEditPopup('B',
+                                    onclick="openBanPopup('V',
                                         '<?= htmlspecialchars($user['id']) ?>',
-                                        '', '',
-                                        '<?= htmlspecialchars($user['mail']) ?>',
-                                        '',
-                                        '<?php echo date('Y-m-d'); ?>',
-                                        '')">
+                                        '<?= htmlspecialchars($user['mail']) ?>')">
                                     Bloquer
                                 </button>
                             </td>
@@ -204,13 +200,9 @@
                                     Supprimer
                                 </a>
                                 <button class="btn-ban"
-                                    onclick="openEditPopup('B',
+                                    onclick="openBanPopup('P',
                                         '<?= htmlspecialchars($user['id']) ?>',
-                                        '', '',
-                                        '<?= htmlspecialchars($user['mail']) ?>',
-                                        '',
-                                        '<?php echo date('Y-m-d'); ?>',
-                                        '')">
+                                        '<?= htmlspecialchars($user['mail']) ?>')">
                                     Bloquer
                                 </button>
                                 <?php if ($user['verifie'] == 1) : ?>
@@ -448,6 +440,23 @@
         //document.getElementById('editPopup').style.display = 'block';
         console.log("test");
         console.log(nom, prenom, email);
+    }
+
+    function openBanPopup(sourceTable, id, email) {
+        // Open the ban popup with the source table information
+        document.getElementById('editBlocked').style.display = 'block';
+        document.getElementById('editPopupOverlay').style.display = 'block';
+
+        // Set the values
+        document.getElementById('tableBlocked').value = sourceTable; // V or P
+        document.getElementById('idBlocked').value = id;
+        document.getElementById('editEmailBlocked').value = email;
+
+        // Set current date as ban date
+        const dateDuJour = new Date().toISOString().split('T')[0];
+        document.getElementById('editDateBanBlocked').value = dateDuJour;
+
+        console.log("Opening ban popup - Source table:", sourceTable, "ID:", id, "Email:", email);
     }
 
     function closeEditPopup() {
