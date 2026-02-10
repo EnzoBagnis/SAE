@@ -158,21 +158,21 @@ class PdoUserRepository implements UserRepositoryInterface
                 // Update existing ban
                 $stmt = $this->pdo->prepare(
                     "UPDATE utilisateurs_bannis 
-                     SET date_de_ban = :date_ban, duree_ban = NULL, mail = :mail 
+                     SET date_de_ban = :date_de_ban, duree_ban = NULL, mail = :mail 
                      WHERE id = :id"
                 );
             } else {
                 // Insert new ban
                 $stmt = $this->pdo->prepare(
                     "INSERT INTO utilisateurs_bannis (id, mail, date_de_ban, duree_ban, ban_definitif) 
-                     VALUES (:id, :mail, :date_ban, NULL, 1)"
+                     VALUES (:id, :mail, :date_de_ban, NULL, 1)"
                 );
             }
 
             $result = $stmt->execute([
                 'id' => $userId,
                 'mail' => $email,
-                'date_ban' => $dateBan
+                'date_de_ban' => $dateBan
             ]);
 
             if ($result) {
