@@ -51,6 +51,7 @@ class RegisterController
 
         if ($response->success) {
             $_SESSION['success'] = $response->message;
+            $_SESSION['pending_verification_email'] = $email; // Store email for verification
             header('Location: ' . BASE_URL . '/index.php?action=emailverification');
             exit;
         } else {

@@ -34,23 +34,33 @@ class VerifyUserEmail
      */
     public function execute(VerifyEmailRequest $request): VerifyEmailResponse
     {
+        // Debug logging
+        error_log("VerifyUserEmail::execute() - Email: " . $request->email);
+        error_log("VerifyUserEmail::execute() - Code: " . $request->verificationCode);
+
         // Find pending registration by email
         $pendingRegistration = $this->pendingRepository->findByEmail($request->email);
 
         if (!$pendingRegistration) {
+            error_log("VerifyUserEmail::execute() - No pending registration found");
             return new VerifyEmailResponse(
                 false,
                 'Aucune inscription en attente trouvée pour cet email'
             );
         }
 
+        error_log("VerifyUserEmail::execute() - Found pending registration, stored code: " . $pendingRegistration->getVerificationCode());
+
         // Verify the code
         if (!$pendingRegistration->verify($request->verificationCode)) {
+            error_log("VerifyUserEmail::execute() - Code verification failed");
             return new VerifyEmailResponse(
                 false,
                 'Code de vérification incorrect'
             );
         }
+
+        error_log("VerifyUserEmail::execute() - Code verification successful");
 
         // Save the updated pending registration
         $this->pendingRepository->save($pendingRegistration);

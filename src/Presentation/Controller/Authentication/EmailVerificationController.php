@@ -31,6 +31,13 @@ class EmailVerificationController
      */
     public function index(): void
     {
+        // Check if email is in session
+        if (!isset($_SESSION['pending_verification_email'])) {
+            $_SESSION['error'] = 'Session expirée. Veuillez vous réinscrire.';
+            header('Location: ' . BASE_URL . '/index.php?action=signup');
+            exit;
+        }
+
         require __DIR__ . '/../../Views/auth/email-verification.php';
     }
 
@@ -41,13 +48,37 @@ class EmailVerificationController
      */
     public function verify(): void
     {
-        $email = $_POST['mail'] ?? '';
+        // Get email from session instead of POST
+        $email = $_SESSION['pending_verification_email'] ?? '';
         $code = $_POST['code'] ?? '';
+
+        // Debug logging
+        error_log("EmailVerificationController::verify() - Email from session: " . $email);
+        error_log("EmailVerificationController::verify() - Code from POST: " . $code);
+
+        // Validate session
+        if (!$email) {
+            $_SESSION['error'] = 'Session expirée. Veuillez vous réinscrire.';
+            header('Location: ' . BASE_URL . '/index.php?action=signup');
+            exit;
+        }
+
+        // Validate code input
+        if (!$code) {
+            $_SESSION['error'] = 'Veuillez entrer le code de vérification.';
+            header('Location: ' . BASE_URL . '/index.php?action=emailverification');
+            exit;
+        }
 
         $request = new VerifyEmailRequest($email, $code);
         $response = $this->verifyEmailUseCase->execute($request);
 
+        error_log("EmailVerificationController::verify() - Response success: " . ($response->success ? 'true' : 'false'));
+        error_log("EmailVerificationController::verify() - Response message: " . $response->message);
+
         if ($response->success) {
+            // Clear the pending verification email from session
+            unset($_SESSION['pending_verification_email']);
             $_SESSION['success'] = $response->message;
             header('Location: ' . BASE_URL . '/index.php?action=pendingapproval');
             exit;

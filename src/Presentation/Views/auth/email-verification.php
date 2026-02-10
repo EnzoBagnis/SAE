@@ -15,12 +15,14 @@
 
 <div class="page-wrap">
 
-    <?php if (isset($error_message)) : ?>
-        <div class="error"><?= htmlspecialchars($error_message) ?></div>
+    <?php if (isset($_SESSION['error'])) : ?>
+        <div class="error"><?= htmlspecialchars($_SESSION['error']) ?></div>
+        <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
 
-    <?php if (isset($success_message)) : ?>
-        <div class="success"><?= htmlspecialchars($success_message) ?></div>
+    <?php if (isset($_SESSION['success'])) : ?>
+        <div class="success"><?= htmlspecialchars($_SESSION['success']) ?></div>
+        <?php unset($_SESSION['success']); ?>
     <?php endif; ?>
 
     <div class="card verification-container">
@@ -29,12 +31,14 @@
 
         <form action="<?= BASE_URL ?>/index.php?action=emailverification" method="POST">
             <label for="code">Code de vérification</label>
-            <input type="number"
+            <input type="text"
                    id="code"
                    name="code"
                    class="code-input"
                    placeholder="000000"
                    maxlength="6"
+                   pattern="[0-9]{6}"
+                   inputmode="numeric"
                    required>
             <button type="submit" class="btn-submit" name="verifier">Vérifier</button>
         </form>
