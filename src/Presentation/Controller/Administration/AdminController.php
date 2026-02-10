@@ -267,38 +267,49 @@ class AdminController
         $email = $_POST['email'] ?? null;
         $table = $_POST['table'] ?? 'V'; // V for verified users, P for pending users
 
+        error_log("Ban user attempt - ID: $userId, Email: $email, Table: $table");
+
         if (!$userId || !$email) {
+            error_log("Ban user failed - Missing data");
             header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=missing_data');
             exit;
         }
 
         // Prevent self-ban
         if ($userId == $_SESSION['user_id']) {
+            error_log("Ban user failed - Cannot ban self");
             header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=cannot_ban_self');
             exit;
         }
 
         try {
             // Ban the user (insert into banned users table)
+            error_log("Attempting to ban user ID: $userId");
             $banned = $this->userRepository->banUser((int)$userId, $email);
 
             if (!$banned) {
+                error_log("Ban user failed - banUser returned false");
                 header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=ban_failed');
                 exit;
             }
 
+            error_log("User banned successfully, now deleting from original table: $table");
+
             // Delete from appropriate table
             if ($table === 'P') {
                 // Delete from pending registrations
-                $this->pendingRepository->delete((int)$userId);
+                $deleted = $this->pendingRepository->delete((int)$userId);
+                error_log("Deleted from pending: " . ($deleted ? 'success' : 'failed'));
             } else {
                 // Delete from verified users
-                $this->userRepository->delete((int)$userId);
+                $deleted = $this->userRepository->delete((int)$userId);
+                error_log("Deleted from users: " . ($deleted ? 'success' : 'failed'));
             }
 
             header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&success=banned');
         } catch (\Exception $e) {
-            error_log("Ban user error: " . $e->getMessage());
+            error_log("Ban user exception: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=ban_failed');
         }
         exit;

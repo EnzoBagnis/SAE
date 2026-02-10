@@ -148,20 +148,43 @@ class PdoUserRepository implements UserRepositoryInterface
                 ban_definitif TINYINT(1) DEFAULT 1
             )");
 
-            // Insert banned user
-            $stmt = $this->pdo->prepare(
-                "INSERT INTO utilisateurs_bannis (id, mail, date_de_ban, duree_ban, ban_definitif) 
-                 VALUES (:id, :mail, :date_ban, NULL, 1)
-                 ON DUPLICATE KEY UPDATE date_de_ban = :date_ban, duree_ban = NULL"
-            );
+            // Check if user already banned
+            $checkStmt = $this->pdo->prepare("SELECT id FROM utilisateurs_bannis WHERE id = :id");
+            $checkStmt->execute(['id' => $userId]);
 
-            return $stmt->execute([
+            $dateBan = date('Y-m-d');
+
+            if ($checkStmt->rowCount() > 0) {
+                // Update existing ban
+                $stmt = $this->pdo->prepare(
+                    "UPDATE utilisateurs_bannis 
+                     SET date_de_ban = :date_ban, duree_ban = NULL, mail = :mail 
+                     WHERE id = :id"
+                );
+            } else {
+                // Insert new ban
+                $stmt = $this->pdo->prepare(
+                    "INSERT INTO utilisateurs_bannis (id, mail, date_de_ban, duree_ban, ban_definitif) 
+                     VALUES (:id, :mail, :date_ban, NULL, 1)"
+                );
+            }
+
+            $result = $stmt->execute([
                 'id' => $userId,
                 'mail' => $email,
-                'date_ban' => date('Y-m-d')
+                'date_ban' => $dateBan
             ]);
+
+            if ($result) {
+                error_log("Successfully banned user ID: $userId, Email: $email");
+            } else {
+                error_log("Failed to ban user ID: $userId, Email: $email");
+            }
+
+            return $result;
         } catch (\Exception $e) {
             error_log("Ban user error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             return false;
         }
     }
