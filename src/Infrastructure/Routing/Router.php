@@ -91,6 +91,17 @@ class Router
         // ========== USER MANAGEMENT DOMAIN ==========
         $this->get('dashboard', \Presentation\Controller\UserManagement\DashboardController::class, 'index');
 
+        // ========== ADMINISTRATION DOMAIN ==========
+        $this->get('admin', \Presentation\Controller\Administration\AdminController::class, 'showLogin');
+        $this->post('adminLogin', \Presentation\Controller\Administration\AdminController::class, 'authenticate');
+        $this->get('adminDashboard', \Presentation\Controller\Administration\AdminController::class, 'dashboard');
+        $this->get('adminDeleteUser', \Presentation\Controller\Administration\AdminController::class, 'deleteUser');
+        $this->get('adminValidUser', \Presentation\Controller\Administration\AdminController::class, 'validateUser');
+        $this->post('adminEditUser', \Presentation\Controller\Administration\AdminController::class, 'editUser');
+        $this->post('adminBanUser', \Presentation\Controller\Administration\AdminController::class, 'banUser');
+        $this->get('adminLogout', \Presentation\Controller\Administration\AdminController::class, 'logout');
+        $this->get('adminSU', \Presentation\Controller\Administration\AdminController::class, 'getStats');
+
         // ========== STUDENT TRACKING DOMAIN ==========
         $this->get('students', \Presentation\Controller\StudentTracking\StudentsController::class, 'getStudents');
 

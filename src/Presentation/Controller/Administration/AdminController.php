@@ -1,0 +1,275 @@
+<?php
+
+namespace Presentation\Controller\Administration;
+
+use Domain\Authentication\Repository\UserRepositoryInterface;
+use Domain\Authentication\Repository\PendingRegistrationRepositoryInterface;
+
+/**
+ * AdminController - Handles administration panel
+ *
+ * This controller manages the admin interface for user management,
+ * including viewing, editing, deleting, and approving users.
+ */
+class AdminController
+{
+    private UserRepositoryInterface $userRepository;
+    private PendingRegistrationRepositoryInterface $pendingRepository;
+
+    /**
+     * Constructor
+     *
+     * @param UserRepositoryInterface $userRepository User repository
+     * @param PendingRegistrationRepositoryInterface $pendingRepository Pending registration repository
+     */
+    public function __construct(
+        UserRepositoryInterface $userRepository,
+        PendingRegistrationRepositoryInterface $pendingRepository
+    ) {
+        $this->userRepository = $userRepository;
+        $this->pendingRepository = $pendingRepository;
+    }
+
+    /**
+     * Display admin login page
+     *
+     * @return void
+     */
+    public function showLogin(): void
+    {
+        $title = 'Connexion Admin - StudTraj';
+        require_once SRC_PATH . '/Presentation/Views/admin/admin-login.php';
+    }
+
+    /**
+     * Handle admin authentication
+     *
+     * @return void
+     */
+    public function authenticate(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
+            exit;
+        }
+
+        $id = $_POST['ID'] ?? '';
+        $password = $_POST['mdp'] ?? '';
+
+        // Find user by ID
+        $user = $this->userRepository->findById((int)$id);
+
+        if (!$user || !$user->verifyPassword($password)) {
+            $error_message = 'Identifiant ou mot de passe incorrect';
+            $title = 'Connexion Admin - StudTraj';
+            require_once SRC_PATH . '/Presentation/Views/admin/admin-login.php';
+            return;
+        }
+
+        // Check if user is admin (role should be verified)
+        // For now, we'll allow any authenticated user - you may want to add role check
+        $_SESSION['user_id'] = $user->getId();
+        $_SESSION['nom'] = $user->getLastName();
+        $_SESSION['prenom'] = $user->getFirstName();
+        $_SESSION['email'] = $user->getEmail();
+        $_SESSION['is_admin'] = true;
+
+        header('Location: ' . BASE_URL . '/index.php?action=adminDashboard');
+        exit;
+    }
+
+    /**
+     * Display admin dashboard
+     *
+     * @return void
+     */
+    public function dashboard(): void
+    {
+        // Check if user is authenticated as admin
+        if (!isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
+            exit;
+        }
+
+        // Get all users
+        $validatedUsers = $this->userRepository->findAll();
+
+        // Get pending registrations
+        $pendingUsers = $this->pendingRepository->findAll();
+
+        // Separate banned users (you may need to add a method for this)
+        $bannedUsers = [];
+
+        $title = 'Panel Admin - StudTraj';
+        require_once SRC_PATH . '/Presentation/Views/admin/admin-dashboard.php';
+    }
+
+    /**
+     * Handle user deletion
+     *
+     * @return void
+     */
+    public function deleteUser(): void
+    {
+        if (!isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
+            exit;
+        }
+
+        $userId = $_GET['id'] ?? null;
+        $table = $_GET['table'] ?? 'V';
+
+        if (!$userId) {
+            header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=user_not_found');
+            exit;
+        }
+
+        // Prevent self-deletion
+        if ($userId == $_SESSION['user_id']) {
+            header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=cannot_delete_self');
+            exit;
+        }
+
+        $success = false;
+
+        if ($table === 'P') {
+            // Delete from pending registrations
+            $success = $this->pendingRepository->delete((int)$userId);
+        } else {
+            // Delete from users
+            $success = $this->userRepository->delete((int)$userId);
+        }
+
+        if ($success) {
+            header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&success=deleted');
+        } else {
+            header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=delete_failed');
+        }
+        exit;
+    }
+
+    /**
+     * Handle user validation (approve pending registration)
+     *
+     * @return void
+     */
+    public function validateUser(): void
+    {
+        if (!isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
+            exit;
+        }
+
+        $userId = $_GET['id'] ?? null;
+
+        if (!$userId) {
+            header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=user_not_found');
+            exit;
+        }
+
+        // Get pending registration
+        $pendingUser = $this->pendingRepository->findById((int)$userId);
+
+        if (!$pendingUser) {
+            header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=user_not_found');
+            exit;
+        }
+
+        // Create user from pending registration
+        $user = new \Domain\Authentication\Entity\User(
+            null,
+            $pendingUser->getLastName(),
+            $pendingUser->getFirstName(),
+            $pendingUser->getEmail(),
+            $pendingUser->getPasswordHash()
+        );
+
+        // Save user
+        $this->userRepository->save($user);
+
+        // Delete from pending
+        $this->pendingRepository->delete((int)$userId);
+
+        header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&success=validated');
+        exit;
+    }
+
+    /**
+     * Handle user edit
+     *
+     * @return void
+     */
+    public function editUser(): void
+    {
+        if (!isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '/index.php?action=adminDashboard');
+            exit;
+        }
+
+        // Implementation for editing user
+        header('Location: ' . BASE_URL . '/index.php?action=adminDashboard');
+        exit;
+    }
+
+    /**
+     * Handle user ban
+     *
+     * @return void
+     */
+    public function banUser(): void
+    {
+        if (!isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
+            header('Location: ' . BASE_URL . '/index.php?action=admin');
+            exit;
+        }
+
+        // Implementation for banning user
+        header('Location: ' . BASE_URL . '/index.php?action=adminDashboard');
+        exit;
+    }
+
+    /**
+     * Handle admin logout
+     *
+     * @return void
+     */
+    public function logout(): void
+    {
+        unset($_SESSION['is_admin']);
+        unset($_SESSION['user_id']);
+        unset($_SESSION['nom']);
+        unset($_SESSION['prenom']);
+        unset($_SESSION['email']);
+
+        header('Location: ' . BASE_URL . '/index.php?action=admin');
+        exit;
+    }
+
+    /**
+     * Get system statistics (AJAX endpoint)
+     *
+     * @return void
+     */
+    public function getStats(): void
+    {
+        if (!isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Unauthorized']);
+            exit;
+        }
+
+        // Return stats as JSON
+        header('Content-Type: application/json');
+        echo json_encode([
+            'total_users' => count($this->userRepository->findAll()),
+            'pending_users' => count($this->pendingRepository->findAll())
+        ]);
+        exit;
+    }
+}
+

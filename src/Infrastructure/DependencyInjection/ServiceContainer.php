@@ -200,6 +200,13 @@ class ServiceContainer
                 $this->get(ExerciseRepositoryInterface::class)
             );
         });
+
+        $this->bind(\Presentation\Controller\Administration\AdminController::class, function () {
+            return new \Presentation\Controller\Administration\AdminController(
+                $this->get(UserRepositoryInterface::class),
+                $this->get(PendingRegistrationRepositoryInterface::class)
+            );
+        });
     }
 
     /**
