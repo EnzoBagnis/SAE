@@ -103,6 +103,85 @@ class PdoUserRepository implements UserRepositoryInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function findAllBanned(): array
+    {
+        try {
+            // Check if table exists
+            $stmt = $this->pdo->query("SHOW TABLES LIKE 'utilisateurs_bannis'");
+            if ($stmt->rowCount() === 0) {
+                return [];
+            }
+
+            // Get all banned users
+            $stmt = $this->pdo->query("SELECT * FROM utilisateurs_bannis ORDER BY date_de_ban DESC");
+            $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return array_map(function($row) {
+                return [
+                    'id' => $row['id'],
+                    'mail' => $row['mail'],
+                    'date_de_ban' => $row['date_de_ban'],
+                    'duree_ban' => $row['duree_ban'] ?? null,
+                    'ban_def' => $row['ban_definitif'] ?? 1
+                ];
+            }, $data);
+        } catch (\Exception $e) {
+            error_log("Get banned users error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function banUser(int $userId, string $email): bool
+    {
+        try {
+            // Create table if not exists
+            $this->pdo->exec("CREATE TABLE IF NOT EXISTS utilisateurs_bannis (
+                id INT PRIMARY KEY,
+                mail VARCHAR(255) NOT NULL,
+                date_de_ban DATE NOT NULL,
+                duree_ban INT DEFAULT NULL,
+                ban_definitif TINYINT(1) DEFAULT 1
+            )");
+
+            // Insert banned user
+            $stmt = $this->pdo->prepare(
+                "INSERT INTO utilisateurs_bannis (id, mail, date_de_ban, duree_ban, ban_definitif) 
+                 VALUES (:id, :mail, :date_ban, NULL, 1)
+                 ON DUPLICATE KEY UPDATE date_de_ban = :date_ban, duree_ban = NULL"
+            );
+
+            return $stmt->execute([
+                'id' => $userId,
+                'mail' => $email,
+                'date_ban' => date('Y-m-d')
+            ]);
+        } catch (\Exception $e) {
+            error_log("Ban user error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function unbanUser(string $email): bool
+    {
+        try {
+            // Delete from banned users table
+            $stmt = $this->pdo->prepare("DELETE FROM utilisateurs_bannis WHERE mail = :mail");
+            return $stmt->execute(['mail' => $email]);
+        } catch (\Exception $e) {
+            error_log("Unban user error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Get PDO connection (for admin operations)
      *
      * @return PDO PDO connection

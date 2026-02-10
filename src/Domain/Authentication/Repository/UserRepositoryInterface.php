@@ -66,4 +66,28 @@ interface UserRepositoryInterface
      * @return User[] Array of user entities
      */
     public function findAll(): array;
+
+    /**
+     * Get all banned users
+     *
+     * @return array Array of banned user data
+     */
+    public function findAllBanned(): array;
+
+    /**
+     * Ban a user by adding them to the banned users table
+     *
+     * @param int $userId User ID
+     * @param string $email User email
+     * @return bool True if banned successfully
+     */
+    public function banUser(int $userId, string $email): bool;
+
+    /**
+     * Unban a user by removing them from the banned users table
+     *
+     * @param string $email User email
+     * @return bool True if unbanned successfully
+     */
+    public function unbanUser(string $email): bool;
 }

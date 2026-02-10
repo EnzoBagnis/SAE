@@ -121,7 +121,7 @@ class AdminController
         }, $allPending);
 
         // Get blocked/banned users
-        $blockedUsers = $this->getBannedUsers();
+        $blockedUsers = $this->userRepository->findAllBanned();
 
         $title = 'Panel Admin - StudTraj';
         require_once SRC_PATH . '/Presentation/Views/admin/admin-dashboard.php';
@@ -160,7 +160,7 @@ class AdminController
             $success = $this->pendingRepository->delete((int)$userId);
         } elseif ($table === 'B') {
             // Unban user - delete from banned users table
-            $success = $this->unbanUser($userId);
+            $success = $this->userRepository->unbanUser($userId);
         } else {
             // Delete from users
             $success = $this->userRepository->delete((int)$userId);
@@ -265,6 +265,7 @@ class AdminController
 
         $userId = $_POST['id'] ?? null;
         $email = $_POST['email'] ?? null;
+        $table = $_POST['table'] ?? 'V'; // V for verified users, P for pending users
 
         if (!$userId || !$email) {
             header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=missing_data');
@@ -278,19 +279,22 @@ class AdminController
         }
 
         try {
-            // Get user info before deletion
-            $user = $this->userRepository->findById((int)$userId);
+            // Ban the user (insert into banned users table)
+            $banned = $this->userRepository->banUser((int)$userId, $email);
 
-            if (!$user) {
-                header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=user_not_found');
+            if (!$banned) {
+                header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=ban_failed');
                 exit;
             }
 
-            // Insert into banned users table
-            $this->insertBannedUser($userId, $email);
-
-            // Delete from users table
-            $this->userRepository->delete((int)$userId);
+            // Delete from appropriate table
+            if ($table === 'P') {
+                // Delete from pending registrations
+                $this->pendingRepository->delete((int)$userId);
+            } else {
+                // Delete from verified users
+                $this->userRepository->delete((int)$userId);
+            }
 
             header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&success=banned');
         } catch (\Exception $e) {
@@ -298,40 +302,6 @@ class AdminController
             header('Location: ' . BASE_URL . '/index.php?action=adminDashboard&error=ban_failed');
         }
         exit;
-    }
-
-    /**
-     * Insert banned user into utilisateurs_bannis table
-     *
-     * @param int|string $userId User ID
-     * @param string $email User email
-     * @return void
-     */
-    private function insertBannedUser($userId, string $email): void
-    {
-        // Get PDO connection from user repository
-        $pdo = $this->userRepository->getPdo();
-
-        // Create table if not exists
-        $pdo->exec("CREATE TABLE IF NOT EXISTS utilisateurs_bannis (
-            id INT PRIMARY KEY,
-            mail VARCHAR(255) NOT NULL,
-            date_de_ban DATE NOT NULL,
-            ban_definitif TINYINT(1) DEFAULT 1
-        )");
-
-        // Insert banned user
-        $stmt = $pdo->prepare(
-            "INSERT INTO utilisateurs_bannis (id, mail, date_de_ban, ban_definitif) 
-             VALUES (:id, :mail, :date_ban, 1)
-             ON DUPLICATE KEY UPDATE date_de_ban = :date_ban"
-        );
-
-        $stmt->execute([
-            'id' => $userId,
-            'mail' => $email,
-            'date_ban' => date('Y-m-d')
-        ]);
     }
 
     /**
@@ -351,60 +321,6 @@ class AdminController
         exit;
     }
 
-    /**
-     * Get banned users from database
-     *
-     * @return array Array of banned users
-     */
-    private function getBannedUsers(): array
-    {
-        try {
-            // Get PDO connection from user repository
-            $pdo = $this->userRepository->getPdo();
-
-            // Check if table exists
-            $stmt = $pdo->query("SHOW TABLES LIKE 'utilisateurs_bannis'");
-            if ($stmt->rowCount() === 0) {
-                return [];
-            }
-
-            // Get all banned users
-            $stmt = $pdo->query("SELECT * FROM utilisateurs_bannis ORDER BY date_de_ban DESC");
-            $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            return array_map(function($row) {
-                return [
-                    'id' => $row['id'],
-                    'mail' => $row['mail'],
-                    'date_de_ban' => $row['date_de_ban']
-                ];
-            }, $data);
-        } catch (\Exception $e) {
-            error_log("Get banned users error: " . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
-     * Unban a user (remove from banned users table)
-     *
-     * @param int|string $userEmail User email (used as identifier in banned table)
-     * @return bool True if unbanned successfully
-     */
-    private function unbanUser($userEmail): bool
-    {
-        try {
-            // Get PDO connection from user repository
-            $pdo = $this->userRepository->getPdo();
-
-            // Delete from banned users table
-            $stmt = $pdo->prepare("DELETE FROM utilisateurs_bannis WHERE mail = :mail");
-            return $stmt->execute(['mail' => $userEmail]);
-        } catch (\Exception $e) {
-            error_log("Unban user error: " . $e->getMessage());
-            return false;
-        }
-    }
 
     /**
      * Get system statistics (AJAX endpoint)

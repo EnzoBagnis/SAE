@@ -34,7 +34,10 @@
                 <?php
                 $errors = [
                     'cannot_delete_self' => 'Vous ne pouvez pas supprimer votre propre compte',
+                    'cannot_ban_self' => 'Vous ne pouvez pas bloquer votre propre compte',
                     'delete_failed' => 'Échec de la suppression de l\'utilisateur',
+                    'ban_failed' => 'Échec du blocage de l\'utilisateur',
+                    'missing_data' => 'Données manquantes pour bloquer l\'utilisateur',
                     'user_not_found' => 'Utilisateur introuvable'
                 ];
                 echo htmlspecialchars($errors[$_GET['error']] ?? 'Une erreur est survenue');
@@ -45,9 +48,13 @@
         <?php if (isset($_GET['success'])) : ?>
             <div class="alert alert-success">
                 <?php
-                if ($_GET['success'] === 'deleted') {
-                    echo 'Utilisateur supprimé avec succès';
-                }
+                $success = [
+                    'deleted' => 'Utilisateur supprimé avec succès',
+                    'banned' => 'Utilisateur bloqué avec succès',
+                    'unbanned' => 'Utilisateur débloqué avec succès',
+                    'validated' => 'Utilisateur validé avec succès'
+                ];
+                echo htmlspecialchars($success[$_GET['success']] ?? 'Opération réussie');
                 ?>
             </div>
         <?php endif; ?>
@@ -344,10 +351,11 @@
 </div>
 
 <div id="editBlocked" class="popup-container">
-    <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=adminBanUser&table=V">
+    <h2>Bloquer l'utilisateur</h2>
+    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=adminBanUser">
+        <input type="hidden" id="tableBlocked" name="table" value="">
         <div class="form-group">
-            <label for="idBlocked">id</label>
+            <label for="idBlocked">ID</label>
             <input type="text" id="idBlocked" name="id" readonly>
         </div>
         <div class="form-group">
@@ -356,7 +364,7 @@
         </div>
         <div class="form-group">
             <label for="editDateBanBlocked">Date de ban</label>
-            <input type="int" id="editDateBanBlocked" name="date_de_ban" readonly>
+            <input type="text" id="editDateBanBlocked" name="date_de_ban" readonly>
         </div>
         <!-- Possibilité de modifier la durée de ban dans le futur
         <div class="form-group">
@@ -404,18 +412,19 @@
     }
 
     function openEditPopup(table, id, nom, prenom, email, verifie, date_de_ban, duree_ban) {
+        let tableName = '';
         switch (table) {
             case 'V':
                 document.getElementById('editVerifie').style.display = 'block';
-                table = "Verifie";
+                tableName = "Verifie";
                 break;
             case 'P':
                 document.getElementById('editPending').style.display = 'block';
-                table = "Pending";
+                tableName = "Pending";
                 break;
             case 'B':
                 document.getElementById('editBlocked').style.display = 'block';
-                table = "Blocked";
+                tableName = "Blocked";
                 break;
         }
         switch (verifie) {
@@ -426,14 +435,14 @@
                 verifie = "Email vérifié";
                 break;
         }
-        setValue('table', table, table);
-        setValue('verifie', verifie, table);
-        setValue('id', id, table);
-        setValue('editNom', nom, table);
-        setValue('editPrenom', prenom, table);
-        setValue('editEmail', email, table);
-        setValue('editDateBan', date_de_ban, table);
-        setValue('editDureeBan', duree_ban, table);
+        setValue('table', table, tableName);
+        setValue('verifie', verifie, tableName);
+        setValue('id', id, tableName);
+        setValue('editNom', nom, tableName);
+        setValue('editPrenom', prenom, tableName);
+        setValue('editEmail', email, tableName);
+        setValue('editDateBan', date_de_ban, tableName);
+        setValue('editDureeBan', duree_ban, tableName);
 
         document.getElementById('editPopupOverlay').style.display = 'block';
         //document.getElementById('editPopup').style.display = 'block';
