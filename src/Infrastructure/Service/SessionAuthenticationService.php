@@ -35,8 +35,12 @@ class SessionAuthenticationService implements AuthenticationServiceInterface
      */
     public function createSession(User $user): void
     {
+        $_SESSION['id'] = $user->getId();
         $_SESSION['user_id'] = $user->getId();
+        $_SESSION['mail'] = $user->getEmail();
         $_SESSION['user_email'] = $user->getEmail();
+        $_SESSION['nom'] = $user->getLastName();
+        $_SESSION['prenom'] = $user->getFirstName();
         $_SESSION['user_name'] = $user->getFullName();
     }
 
@@ -54,11 +58,12 @@ class SessionAuthenticationService implements AuthenticationServiceInterface
      */
     public function getCurrentUser(): ?User
     {
-        if (!isset($_SESSION['user_id'])) {
+        if (!isset($_SESSION['id']) && !isset($_SESSION['user_id'])) {
             return null;
         }
 
-        return $this->userRepository->findById($_SESSION['user_id']);
+        $userId = $_SESSION['id'] ?? $_SESSION['user_id'];
+        return $this->userRepository->findById($userId);
     }
 
     /**
@@ -66,6 +71,6 @@ class SessionAuthenticationService implements AuthenticationServiceInterface
      */
     public function isAuthenticated(): bool
     {
-        return isset($_SESSION['user_id']);
+        return isset($_SESSION['id']) || isset($_SESSION['user_id']);
     }
 }
