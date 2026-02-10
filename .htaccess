@@ -9,6 +9,9 @@
     # Allow direct access to sitemap.php and robots.txt
     RewriteRule ^(sitemap\.xml|robots\.txt)$ - [L]
 
+    # Admin panel redirect
+    RewriteRule ^admin/?$ index.php?action=admin [L,QSA]
+
     # Force HTTPS (décommentez quand vous avez un certificat SSL)
     #RewriteCond %{HTTPS} off
     #RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
