@@ -116,7 +116,7 @@ class AdminController
                 'nom' => $pending->getLastName(),
                 'prenom' => $pending->getFirstName(),
                 'mail' => $pending->getEmail(),
-                'verified' => $pending->isVerified() ? 1 : 0
+                'verifie' => $pending->isVerified() ? 1 : 0
             ];
         }, $allPending);
 
