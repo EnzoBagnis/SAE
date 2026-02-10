@@ -120,7 +120,7 @@ class PdoUserRepository implements UserRepositoryInterface
             'prenom' => $user->getFirstName(),
             'mdp' => $user->getPasswordHash(),
             'mail' => $user->getEmail(),
-            'code_verif' => $user->getVerificationCode(),
+            'code_verif' => $user->getVerificationCode() ?? '',
             'date_creation' => $user->getCreatedAt()
                 ? $user->getCreatedAt()->format('Y-m-d H:i:s')
                 : date('Y-m-d H:i:s')
@@ -151,7 +151,7 @@ class PdoUserRepository implements UserRepositoryInterface
             'prenom' => $user->getFirstName(),
             'mdp' => $user->getPasswordHash(),
             'mail' => $user->getEmail(),
-            'code_verif' => $user->getVerificationCode(),
+            'code_verif' => $user->getVerificationCode() ?? '',
             'reset_token' => $user->getResetToken(),
             'reset_expiration' => $user->getResetTokenExpiration()
                 ? $user->getResetTokenExpiration()->format('Y-m-d H:i:s')

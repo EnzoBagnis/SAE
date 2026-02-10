@@ -204,7 +204,10 @@ class AdminController
             $pendingUser->getLastName(),
             $pendingUser->getFirstName(),
             $pendingUser->getEmail(),
-            $pendingUser->getPasswordHash()
+            $pendingUser->getPasswordHash(),
+            null,  // verificationCode - null because already verified
+            true,  // isVerified - true because admin is validating
+            $pendingUser->getCreatedAt()
         );
 
         // Save user
