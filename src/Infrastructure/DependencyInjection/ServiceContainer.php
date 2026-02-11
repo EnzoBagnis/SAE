@@ -220,6 +220,12 @@ class ServiceContainer
             );
         });
 
+        $this->bind(\Presentation\Controller\ResourceManagement\ResourceDeleteController::class, function () {
+            return new \Presentation\Controller\ResourceManagement\ResourceDeleteController(
+                $this->get(\Application\ResourceManagement\UseCase\DeleteResource::class)
+            );
+        });
+
         $this->bind(\Presentation\Controller\Administration\AdminController::class, function () {
             return new \Presentation\Controller\Administration\AdminController(
                 $this->get(UserRepositoryInterface::class),

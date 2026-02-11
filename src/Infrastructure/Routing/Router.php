@@ -124,6 +124,11 @@ class Router
             \Presentation\Controller\ResourceManagement\ResourceSaveController::class,
             'save'
         );
+        $this->post(
+            'delete_resource',
+            \Presentation\Controller\ResourceManagement\ResourceDeleteController::class,
+            'delete'
+        );
 
         // ========== HOME ==========
         $this->get('home', \Presentation\Controller\HomeController::class, 'index');
