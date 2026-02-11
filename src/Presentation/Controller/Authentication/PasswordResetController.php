@@ -111,9 +111,15 @@ class PasswordResetController
             exit;
         }
 
+        $errorMessage = null;
+        if (isset($_GET['error'])) {
+            $errorMessage = $this->getErrorMessage($_GET['error']);
+        }
+
         $data = [
             'title' => 'Réinitialiser le mot de passe - StudTraj',
-            'token' => $token
+            'token' => $token,
+            'error_message' => $errorMessage
         ];
 
         $this->loadView('auth/reset-password', $data);
@@ -126,7 +132,12 @@ class PasswordResetController
      */
     public function resetPassword(): void
     {
+        error_log("PasswordResetController::resetPassword() - Method called");
+        error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+        error_log("POST data: " . print_r($_POST, true));
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            error_log("Not a POST request, redirecting to login");
             header('Location: ' . BASE_URL . '/index.php?action=login');
             exit;
         }
@@ -136,14 +147,20 @@ class PasswordResetController
         $password = $_POST['nouveau_mdp'] ?? $_POST['password'] ?? '';
         $confirmPassword = $_POST['confirm_mdp'] ?? $_POST['confirm_password'] ?? '';
 
+        error_log("Token: " . ($token ? 'present' : 'missing'));
+        error_log("Password: " . ($password ? 'present' : 'missing'));
+        error_log("Confirm Password: " . ($confirmPassword ? 'present' : 'missing'));
+
         // Validate inputs
         if (empty($token) || empty($password) || empty($confirmPassword)) {
+            error_log("Validation failed: empty fields");
             $url = BASE_URL . '/index.php?action=resetpassword&token=' . urlencode($token);
             header('Location: ' . $url . '&error=champs_manquants');
             exit;
         }
 
         if ($password !== $confirmPassword) {
+            error_log("Validation failed: passwords don't match");
             $url = BASE_URL . '/index.php?action=resetpassword&token=' . urlencode($token);
             header('Location: ' . $url . '&error=passwords_mismatch');
             exit;
@@ -151,25 +168,34 @@ class PasswordResetController
 
         // Validate password strength
         if (strlen($password) < 8) {
+            error_log("Validation failed: password too short");
             $url = BASE_URL . '/index.php?action=resetpassword&token=' . urlencode($token);
             header('Location: ' . $url . '&error=password_too_short');
             exit;
         }
 
+        error_log("Use case available: " . ($this->resetPasswordUseCase ? 'yes' : 'no'));
+
         // Execute use case if available
         if ($this->resetPasswordUseCase) {
+            error_log("Executing reset password use case");
             $request = new UpdatePasswordRequest($token, $password);
             $response = $this->resetPasswordUseCase->execute($request);
 
+            error_log("Use case response - Success: " . ($response->success ? 'yes' : 'no') . ", Message: " . $response->message);
+
             if ($response->success) {
                 $_SESSION['success'] = $response->message;
+                error_log("Redirecting to login with success message");
                 header('Location: ' . BASE_URL . '/index.php?action=login');
             } else {
                 $_SESSION['error'] = $response->message;
+                error_log("Redirecting to reset form with error message");
                 header('Location: ' . BASE_URL . '/index.php?action=resetpassword&token=' . urlencode($token));
             }
         } else {
             // Fallback if use case not injected
+            error_log("Use case not available, using fallback");
             $_SESSION['info'] = 'La mise à jour du mot de passe sera bientôt disponible';
             header('Location: ' . BASE_URL . '/index.php?action=login');
         }

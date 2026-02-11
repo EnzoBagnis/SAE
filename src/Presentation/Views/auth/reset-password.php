@@ -30,8 +30,9 @@
             <input type="password"
                    name="nouveau_mdp"
                    id="password"
-                   placeholder="Minimum 6 caractères"
-                   required>
+                   placeholder="Minimum 8 caractères"
+                   required
+                   minlength="8">
             <button type="button" class="password-toggle" onclick="togglePassword('password')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -101,6 +102,13 @@
         if(password === '' || confirm === '') {
             submitBtn.disabled = true;
             errorMsg.style.display = 'none';
+            return;
+        }
+
+        if(password.length < 8) {
+            submitBtn.disabled = true;
+            errorMsg.textContent = 'Le mot de passe doit contenir au moins 8 caractères.';
+            errorMsg.style.display = 'block';
             return;
         }
 

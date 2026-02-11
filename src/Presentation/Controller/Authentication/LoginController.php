@@ -31,6 +31,22 @@ class LoginController
      */
     public function index(): void
     {
+        // Start session if not started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Get messages from session
+        $error_message = $_SESSION['error'] ?? null;
+        $success_message = $_SESSION['success'] ?? null;
+        $info_message = $_SESSION['info'] ?? null;
+
+        // Clear messages from session
+        unset($_SESSION['error'], $_SESSION['success'], $_SESSION['info']);
+
+        // Set data for view
+        $title = 'Connexion - StudTraj';
+
         require __DIR__ . '/../../Views/auth/login.php';
     }
 
