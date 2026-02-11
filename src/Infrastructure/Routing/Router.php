@@ -119,6 +119,11 @@ class Router
             \Presentation\Controller\ResourceManagement\ResourceDetailsController::class,
             'index'
         );
+        $this->post(
+            'save_resource',
+            \Presentation\Controller\ResourceManagement\ResourceSaveController::class,
+            'save'
+        );
 
         // ========== HOME ==========
         $this->get('home', \Presentation\Controller\HomeController::class, 'index');

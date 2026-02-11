@@ -197,7 +197,7 @@ try {
                                     title="Modifier">✏️</button>
                         <?php endif; ?>
 
-                        <a href="<?= BASE_URL ?>/index.php?action=dashboard&resource_id=<?= $resId ?>"
+                        <a href="<?= BASE_URL ?>/index.php?action=resource_details&id=<?= $resId ?>"
                            class="resource-link-wrapper">
                             <?php if (!empty($resImg)) : ?>
                                 <img src="/images/<?= htmlspecialchars($resImg) ?>"

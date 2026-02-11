@@ -138,6 +138,101 @@ class PdoResourceRepository implements ResourceRepositoryInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function create(string $name, int $userId, ?string $description = null, ?string $imagePath = null): int
+    {
+        $sql = "INSERT INTO resources (resource_name, description, image_path, owner_user_id) 
+                VALUES (:name, :description, :image_path, :user_id)";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'name' => $name,
+            'description' => $description,
+            'image_path' => $imagePath,
+            'user_id' => $userId
+        ]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function update(int $resourceId, string $name, ?string $description = null, ?string $imagePath = null): bool
+    {
+        $sql = "UPDATE resources
+                SET resource_name = :name,
+                    description = :description";
+
+        $params = [
+            'resource_id' => $resourceId,
+            'name' => $name,
+            'description' => $description
+        ];
+
+        // Only update image if provided
+        if ($imagePath !== null) {
+            $sql .= ", image_path = :image_path";
+            $params['image_path'] = $imagePath;
+        }
+
+        $sql .= " WHERE resource_id = :resource_id";
+
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($params);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(int $resourceId): bool
+    {
+        // Delete shared access first (foreign key constraint)
+        $stmt = $this->pdo->prepare("DELETE FROM resource_professors_access WHERE resource_id = :resource_id");
+        $stmt->execute(['resource_id' => $resourceId]);
+
+        // Delete resource
+        $stmt = $this->pdo->prepare("DELETE FROM resources WHERE resource_id = :resource_id");
+        return $stmt->execute(['resource_id' => $resourceId]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateSharedUsers(int $resourceId, array $userIds): bool
+    {
+        try {
+            // Begin transaction
+            $this->pdo->beginTransaction();
+
+            // Delete existing shares
+            $stmt = $this->pdo->prepare("DELETE FROM resource_professors_access WHERE resource_id = :resource_id");
+            $stmt->execute(['resource_id' => $resourceId]);
+
+            // Insert new shares
+            if (!empty($userIds)) {
+                $stmt = $this->pdo->prepare(
+                    "INSERT INTO resource_professors_access (resource_id, user_id) VALUES (:resource_id, :user_id)"
+                );
+                foreach ($userIds as $userId) {
+                    $stmt->execute([
+                        'resource_id' => $resourceId,
+                        'user_id' => $userId
+                    ]);
+                }
+            }
+
+            $this->pdo->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->pdo->rollBack();
+            error_log("Error updating shared users: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Hydrate resource from database row
      *
      * @param array $row Database row

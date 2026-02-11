@@ -43,4 +43,43 @@ interface ResourceRepositoryInterface
      * @return int[] Array of user IDs
      */
     public function getSharedUserIds(int $resourceId): array;
+
+    /**
+     * Create a new resource
+     *
+     * @param string $name Resource name
+     * @param int $userId Owner user ID
+     * @param string|null $description Resource description
+     * @param string|null $imagePath Image path
+     * @return int Created resource ID
+     */
+    public function create(string $name, int $userId, ?string $description = null, ?string $imagePath = null): int;
+
+    /**
+     * Update an existing resource
+     *
+     * @param int $resourceId Resource ID
+     * @param string $name Resource name
+     * @param string|null $description Resource description
+     * @param string|null $imagePath Image path
+     * @return bool True if updated successfully
+     */
+    public function update(int $resourceId, string $name, ?string $description = null, ?string $imagePath = null): bool;
+
+    /**
+     * Delete a resource
+     *
+     * @param int $resourceId Resource ID
+     * @return bool True if deleted successfully
+     */
+    public function delete(int $resourceId): bool;
+
+    /**
+     * Update shared users for a resource
+     *
+     * @param int $resourceId Resource ID
+     * @param int[] $userIds Array of user IDs to share with
+     * @return bool True if updated successfully
+     */
+    public function updateSharedUsers(int $resourceId, array $userIds): bool;
 }

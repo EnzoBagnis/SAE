@@ -201,6 +201,13 @@ class ServiceContainer
             );
         });
 
+        $this->bind(\Presentation\Controller\ResourceManagement\ResourceSaveController::class, function () {
+            return new \Presentation\Controller\ResourceManagement\ResourceSaveController(
+                $this->get(\Application\ResourceManagement\UseCase\CreateResource::class),
+                $this->get(\Application\ResourceManagement\UseCase\UpdateResource::class)
+            );
+        });
+
         $this->bind(\Presentation\Controller\Administration\AdminController::class, function () {
             return new \Presentation\Controller\Administration\AdminController(
                 $this->get(UserRepositoryInterface::class),
