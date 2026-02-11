@@ -103,22 +103,23 @@ class PdoResourceRepository implements ResourceRepositoryInterface
     {
         $sql = "SELECT 1 
                 FROM resources r
-                WHERE r.resource_id = :resourceId 
+                WHERE r.resource_id = :resourceId1 
                 AND (
-                    r.owner_user_id = :userId 
+                    r.owner_user_id = :userId1 
                     OR EXISTS (
                         SELECT 1 
                         FROM resource_professors_access rpa 
-                        WHERE rpa.resource_id = :resourceId 
-                        AND rpa.user_id = :userId
+                        WHERE rpa.resource_id = :resourceId2 
+                        AND rpa.user_id = :userId2
                     )
                 )";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'resourceId' => $resourceId,
-            'userId' => $userId
-        ]);
+        $stmt->bindValue(':resourceId1', $resourceId, \PDO::PARAM_INT);
+        $stmt->bindValue(':userId1', $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(':resourceId2', $resourceId, \PDO::PARAM_INT);
+        $stmt->bindValue(':userId2', $userId, \PDO::PARAM_INT);
+        $stmt->execute();
 
         return (bool) $stmt->fetch();
     }
