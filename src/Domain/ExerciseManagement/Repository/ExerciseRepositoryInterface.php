@@ -1,3 +1,5 @@
+<?php
+
 namespace Domain\ExerciseManagement\Repository;
 
 use Domain\ExerciseManagement\Entity\Exercise;
@@ -11,7 +13,7 @@ interface ExerciseRepositoryInterface
     /**
      * Find all exercises
      *
-     * @param int | null $resourceId Optional resource ID filter
+     * @param int|null $resourceId Optional resource ID filter
      * @return Exercise[] Array of exercises
      */
     public function findAll(?int $resourceId = null): array;
@@ -20,7 +22,7 @@ interface ExerciseRepositoryInterface
      * Find exercise by ID
      *
      * @param int $exerciseId Exercise ID
-     * @return Exercise | null Exercise or null if not found
+     * @return Exercise|null Exercise or null if not found
      */
     public function findById(int $exerciseId): ?Exercise;
 
@@ -43,10 +45,9 @@ interface ExerciseRepositoryInterface
     /**
      * Count exercises
      *
-     * @param int | null $resourceId Optional resource ID filter
+     * @param int|null $resourceId Optional resource ID filter
      * @return int Total count
-     *  /
-public function count(?int $resourceId = null): int;
+     */
+    public function count(?int $resourceId = null): int;
 }
 
-<?php
