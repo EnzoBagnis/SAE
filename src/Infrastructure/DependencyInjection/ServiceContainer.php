@@ -146,6 +146,12 @@ class ServiceContainer
             );
         });
 
+        $this->bind(\Application\ResourceManagement\UseCase\DeleteResource::class, function () {
+            return new \Application\ResourceManagement\UseCase\DeleteResource(
+                $this->get(ResourceRepositoryInterface::class)
+            );
+        });
+
         // Register controllers
         $this->bind(\Presentation\Controller\Authentication\LoginController::class, function () {
             return new \Presentation\Controller\Authentication\LoginController(
