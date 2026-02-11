@@ -37,24 +37,27 @@ class PdoResourceRepository implements ResourceRepositoryInterface
              FROM resource_professors_access rpa2 
              WHERE rpa2.resource_id = r.resource_id) AS shared_user_ids,
             CASE 
-                WHEN r.owner_user_id = :userId THEN 'owner'
+                WHEN r.owner_user_id = :userId1 THEN 'owner'
                 ELSE 'shared'
             END AS access_type
         FROM resources r
         JOIN utilisateurs u ON r.owner_user_id = u.id
-        WHERE r.owner_user_id = :userId 
+        WHERE r.owner_user_id = :userId2 
            OR EXISTS (
                SELECT 1 
                FROM resource_professors_access rpa 
                WHERE rpa.resource_id = r.resource_id 
-               AND rpa.user_id = :userId
+               AND rpa.user_id = :userId3
            )
         ORDER BY r.resource_name ASC";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':userId' => $userId]);
+        $stmt->bindValue(':userId1', $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(':userId2', $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(':userId3', $userId, \PDO::PARAM_INT);
+        $stmt->execute();
 
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         return array_map(function ($row) {
             return $this->hydrateResource($row);
