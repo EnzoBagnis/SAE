@@ -1,27 +1,26 @@
 <?php
-}
-    }
-        $this->userId = $userId;
-        $this->resourceId = $resourceId;
-    {
-    public function __construct(int $resourceId, int $userId)
-     */
-     * @param int $userId User ID requesting deletion
-     * @param int $resourceId Resource ID to delete
-     *
-     * Constructor
-    /**
-
-    public int $userId;
-    public int $resourceId;
-{
-class DeleteResourceRequest
- */
- * Data Transfer Object for resource deletion requests
- *
- * DeleteResourceRequest DTO
-/**
 
 namespace Application\ResourceManagement\DTO;
 
+/**
+ * DeleteResourceRequest DTO
+ *
+ * Data Transfer Object for resource deletion requests
+ */
+class DeleteResourceRequest
+{
+    public int $resourceId;
+    public int $userId;
 
+    /**
+     * Constructor
+     *
+     * @param int $resourceId Resource ID to delete
+     * @param int $userId User ID requesting deletion
+     */
+    public function __construct(int $resourceId, int $userId)
+    {
+        $this->resourceId = $resourceId;
+        $this->userId = $userId;
+    }
+}
