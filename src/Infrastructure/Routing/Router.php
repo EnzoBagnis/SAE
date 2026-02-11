@@ -73,6 +73,11 @@ class Router
             'forgotPassword'
         );
         $this->post(
+            'forgotpassword',
+            \Presentation\Controller\Authentication\PasswordResetController::class,
+            'requestReset'
+        );
+        $this->post(
             'requestreset',
             \Presentation\Controller\Authentication\PasswordResetController::class,
             'requestReset'
