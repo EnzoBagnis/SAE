@@ -169,16 +169,23 @@ class PdoUserRepository implements UserRepositoryInterface
                 );
             }
 
-            $result = $stmt->execute([
-                'id' => $userId,
-                'mail' => $email,
-                'date_de_ban' => $dateBan
-            ]);
+            try {
+                $result = $stmt->execute([
+                    'id' => $userId,
+                    'mail' => $email,
+                    'date_de_ban' => $dateBan
+                ]);
+            } catch (\PDOException $pdoEx) {
+                error_log("PDO Exception in banUser: " . $pdoEx->getMessage());
+                return false;
+            }
 
             if ($result) {
                 error_log("Successfully banned user ID: $userId, Email: $email");
             } else {
                 error_log("Failed to ban user ID: $userId, Email: $email");
+                $errorInfo = $stmt->errorInfo();
+                error_log("SQL Error Info: " . print_r($errorInfo, true));
             }
 
             return $result;

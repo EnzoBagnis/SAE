@@ -472,7 +472,10 @@
     // Puis on ne garde que les 10 premiers caractères (AAAA-MM-JJ)
     const dateDuJour = new Date().toISOString().split('T')[0];
 
-    document.getElementById('date_fixe').textContent = dateDuJour;
+    const dateFixeElement = document.getElementById('date_fixe');
+    if (dateFixeElement) {
+        dateFixeElement.textContent = dateDuJour;
+    }
 </script>
 </body>
 </html>

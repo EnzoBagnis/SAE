@@ -2,6 +2,7 @@
   "require": {
     "php": ">=7.4",
     "ext-json": "*",
+    "ext-pdo": "*",
     "phpmailer/phpmailer": "^6.8"
   },
   "require-dev": {
