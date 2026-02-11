@@ -132,8 +132,9 @@ class PasswordResetController
         }
 
         $token = $_POST['token'] ?? '';
-        $password = $_POST['password'] ?? '';
-        $confirmPassword = $_POST['confirm_password'] ?? '';
+        // Accept both naming conventions for compatibility
+        $password = $_POST['nouveau_mdp'] ?? $_POST['password'] ?? '';
+        $confirmPassword = $_POST['confirm_mdp'] ?? $_POST['confirm_password'] ?? '';
 
         // Validate inputs
         if (empty($token) || empty($password) || empty($confirmPassword)) {
