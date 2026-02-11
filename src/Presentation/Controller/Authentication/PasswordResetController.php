@@ -63,7 +63,8 @@ class PasswordResetController
             exit;
         }
 
-        $email = trim($_POST['email'] ?? '');
+        // Accept both 'mail' and 'email' for compatibility
+        $email = trim($_POST['mail'] ?? $_POST['email'] ?? '');
 
         // Validate email
         if (empty($email)) {
