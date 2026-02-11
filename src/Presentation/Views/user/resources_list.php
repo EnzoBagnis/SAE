@@ -11,8 +11,6 @@ if (!isset($_SESSION['id'])) {
 
 // Use new architecture classes
 use Infrastructure\Persistence\DatabaseConnection;
-use PDO;
-use PDOException;
 
 $db = DatabaseConnection::getConnection();
 
@@ -51,8 +49,8 @@ try {
 
     $stmt = $db->prepare($sql);
     $stmt->execute([':userId' => $user_id]);
-    $resources = $stmt->fetchAll(PDO::FETCH_OBJ);
-} catch (PDOException $e) {
+    $resources = $stmt->fetchAll(\PDO::FETCH_OBJ);
+} catch (\PDOException $e) {
     error_log("Error fetching resources: " . $e->getMessage());
     $resources = [];
 }
@@ -64,8 +62,8 @@ try {
         "SELECT id, prenom, nom FROM utilisateurs WHERE id != :id ORDER BY nom ASC"
     );
     $stmt_users->execute([':id' => $user_id]);
-    $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
-} catch (PDOException $e) {
+    $all_users = $stmt_users->fetchAll(\PDO::FETCH_OBJ);
+} catch (\PDOException $e) {
     error_log("Error fetching users: " . $e->getMessage());
     $all_users = [];
 }
