@@ -134,6 +134,18 @@ class ServiceContainer
             );
         });
 
+        $this->bind(\Application\ResourceManagement\UseCase\CreateResource::class, function () {
+            return new \Application\ResourceManagement\UseCase\CreateResource(
+                $this->get(ResourceRepositoryInterface::class)
+            );
+        });
+
+        $this->bind(\Application\ResourceManagement\UseCase\UpdateResource::class, function () {
+            return new \Application\ResourceManagement\UseCase\UpdateResource(
+                $this->get(ResourceRepositoryInterface::class)
+            );
+        });
+
         // Register controllers
         $this->bind(\Presentation\Controller\Authentication\LoginController::class, function () {
             return new \Presentation\Controller\Authentication\LoginController(

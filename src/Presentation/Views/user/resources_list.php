@@ -9,64 +9,31 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-// Use new architecture classes
-use Infrastructure\Persistence\DatabaseConnection;
+// Data is passed from the controller via extract($data)
+// Available variables: $user_id, $user_firstname, $user_lastname, $resources, $all_users, $title
 
-$db = DatabaseConnection::getConnection();
-
-$user_id = $_SESSION['id'];
-$user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
-$user_lastname = $_SESSION['nom'] ?? '';
-$title = 'StudTraj - Mes Ressources';
+// Set default values if not provided by controller
+if (!isset($user_id)) {
+    $user_id = $_SESSION['id'];
+}
+if (!isset($user_firstname)) {
+    $user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
+}
+if (!isset($user_lastname)) {
+    $user_lastname = $_SESSION['nom'] ?? '';
+}
+if (!isset($title)) {
+    $title = 'StudTraj - Mes Ressources';
+}
+if (!isset($resources)) {
+    $resources = [];
+}
+if (!isset($all_users)) {
+    $all_users = [];
+}
 
 // Calcul des initiales pour l'avatar
 $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
-
-// Fetch resources using raw SQL (until we implement repository pattern fully)
-$resources = [];
-try {
-    $sql = "SELECT 
-        r.*, 
-        u.prenom AS owner_firstname, 
-        u.nom AS owner_lastname,
-        (SELECT GROUP_CONCAT(user_id) 
-         FROM resource_professors_access rpa2 
-         WHERE rpa2.resource_id = r.resource_id) AS shared_user_ids,
-        CASE 
-            WHEN r.owner_user_id = :userId THEN 'owner'
-            ELSE 'shared'
-        END AS access_type
-    FROM resources r
-    JOIN utilisateurs u ON r.owner_user_id = u.id
-    WHERE r.owner_user_id = :userId 
-       OR EXISTS (
-           SELECT 1 
-           FROM resource_professors_access rpa 
-           WHERE rpa.resource_id = r.resource_id 
-           AND rpa.user_id = :userId
-       )
-    ORDER BY r.resource_name ASC";
-
-    $stmt = $db->prepare($sql);
-    $stmt->execute([':userId' => $user_id]);
-    $resources = $stmt->fetchAll(\PDO::FETCH_OBJ);
-} catch (\PDOException $e) {
-    error_log("Error fetching resources: " . $e->getMessage());
-    $resources = [];
-}
-
-// Récupération des utilisateurs pour le partage
-$all_users = [];
-try {
-    $stmt_users = $db->prepare(
-        "SELECT id, prenom, nom FROM utilisateurs WHERE id != :id ORDER BY nom ASC"
-    );
-    $stmt_users->execute([':id' => $user_id]);
-    $all_users = $stmt_users->fetchAll(\PDO::FETCH_OBJ);
-} catch (\PDOException $e) {
-    error_log("Error fetching users: " . $e->getMessage());
-    $all_users = [];
-}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
