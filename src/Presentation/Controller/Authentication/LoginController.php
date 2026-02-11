@@ -75,8 +75,8 @@ class LoginController
             error_log("Response message: " . $response->message);
 
             if ($response->success) {
-                error_log("Login réussi, redirection vers dashboard");
-                header('Location: ' . BASE_URL . '/index.php?action=dashboard');
+                error_log("Login réussi, redirection vers resources_list");
+                header('Location: ' . BASE_URL . '/index.php?action=resources_list');
                 exit;
             } else {
                 error_log("Login échoué: " . $response->message);

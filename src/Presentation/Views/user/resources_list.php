@@ -9,10 +9,12 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-require_once __DIR__ . '/../../models/Database.php';
-require_once __DIR__ . '/../../models/Resource.php';
+// Use new architecture classes
+use Infrastructure\Persistence\DatabaseConnection;
+use PDO;
+use PDOException;
 
-$db = Database::getConnection();
+$db = DatabaseConnection::getConnection();
 
 $user_id = $_SESSION['id'];
 $user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
@@ -22,7 +24,38 @@ $title = 'StudTraj - Mes Ressources';
 // Calcul des initiales pour l'avatar
 $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
 
-$resources = Resource::getAllAccessibleResources($db, $user_id);
+// Fetch resources using raw SQL (until we implement repository pattern fully)
+$resources = [];
+try {
+    $sql = "SELECT 
+        r.*, 
+        u.prenom AS owner_firstname, 
+        u.nom AS owner_lastname,
+        (SELECT GROUP_CONCAT(user_id) 
+         FROM resource_professors_access rpa2 
+         WHERE rpa2.resource_id = r.resource_id) AS shared_user_ids,
+        CASE 
+            WHEN r.owner_user_id = :userId THEN 'owner'
+            ELSE 'shared'
+        END AS access_type
+    FROM resources r
+    JOIN utilisateurs u ON r.owner_user_id = u.id
+    WHERE r.owner_user_id = :userId 
+       OR EXISTS (
+           SELECT 1 
+           FROM resource_professors_access rpa 
+           WHERE rpa.resource_id = r.resource_id 
+           AND rpa.user_id = :userId
+       )
+    ORDER BY r.resource_name ASC";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':userId' => $user_id]);
+    $resources = $stmt->fetchAll(PDO::FETCH_OBJ);
+} catch (PDOException $e) {
+    error_log("Error fetching resources: " . $e->getMessage());
+    $resources = [];
+}
 
 // Récupération des utilisateurs pour le partage
 $all_users = [];
@@ -33,6 +66,7 @@ try {
     $stmt_users->execute([':id' => $user_id]);
     $all_users = $stmt_users->fetchAll(PDO::FETCH_OBJ);
 } catch (PDOException $e) {
+    error_log("Error fetching users: " . $e->getMessage());
     $all_users = [];
 }
 ?>
