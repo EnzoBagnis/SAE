@@ -48,7 +48,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 </head>
 <body>
 <header class="top-menu">
-    <div class="logo"><h1>StudTraj</h1></div>
+    <div class="logo"><a href="<?= BASE_URL ?>/index.php?action=resources_list"><h1>StudTraj</h1></a></div>
 
     <!-- Bouton burger pour mobile -->
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
@@ -58,7 +58,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     </button>
 
     <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
+        <!-- Le lien 'Ressources' a été déplacé sur le logo gauche -->
     </nav>
 
     <div class="header-right">
@@ -99,7 +99,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
             </span>
         </div>
         <ul class="burger-menu-list">
-            <li><a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
+            <!-- 'Ressources' supprimé : accessible via le logo -->
             <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>
@@ -167,8 +167,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                         <a href="<?= BASE_URL ?>/index.php?action=resource_details&id=<?= $resId ?>"
                            class="resource-link-wrapper">
                             <?php if (!empty($resImg)) : ?>
-                                <img src="/images/<?= htmlspecialchars($resImg) ?>"
-                                     class="resource-card-image" alt="Image">
+                                <img src="/images/<?= htmlspecialchars($resImg) ?>" class="resource-card-image" alt="Image">
                             <?php else : ?>
                                 <div class="resource-card-image"
                                      style="background:#eee; display:flex; align-items:center;

@@ -35,7 +35,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 <body>
 <header class="top-menu">
     <div class="logo">
-        <h1>StudTraj</h1>
+        <a href="<?= BASE_URL ?>/index.php?action=resources_list"><h1>StudTraj</h1></a>
     </div>
 
     <!-- Bouton burger pour mobile -->
@@ -46,7 +46,6 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     </button>
 
     <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
 
     <!-- Nouveau conteneur pour regrouper Import + Profil + Déconnexion -->
@@ -104,11 +103,6 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                 </span>
             </div>
             <ul class="burger-menu-list">
-                <li>
-                    <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link">
-                        Ressources
-                    </a>
-                </li>
                 <li class="has-submenu">
                     <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
                         Liste des Étudiants
