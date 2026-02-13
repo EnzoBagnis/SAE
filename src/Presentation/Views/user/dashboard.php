@@ -34,6 +34,11 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 
 <body>
 <header class="top-menu">
+    <?php
+    // Define current_resource_id early for use in nav menu
+    $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
+    ?>
+
     <div class="logo">
         <a href="<?= BASE_URL ?>/index.php?action=resources_list"><h1>StudTraj</h1></a>
     </div>
@@ -54,9 +59,6 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 
     <!-- Nouveau conteneur pour regrouper Import + Profil + Déconnexion -->
     <div class="header-right">
-        <?php
-        $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
-        ?>
 
         <!-- Bouton Importer (placé à gauche du profil) -->
         <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
