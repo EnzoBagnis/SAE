@@ -52,7 +52,6 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 
     <nav class="nav-menu">
         <?php if ($current_resource_id !== 'null' && $current_resource_id > 0): ?>
-            <a href="<?= BASE_URL ?>/index.php?action=resource_details&id=<?= $current_resource_id ?>">📋 Liste des TPs</a>
             <a href="<?= BASE_URL ?>/index.php?action=resource_visualization&id=<?= $current_resource_id ?>">📊 Visualisations</a>
         <?php endif; ?>
     </nav>
