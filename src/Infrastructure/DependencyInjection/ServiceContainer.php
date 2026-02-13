@@ -194,9 +194,21 @@ class ServiceContainer
             );
         });
 
+        $this->bind(\Presentation\Controller\StudentTracking\StudentsStatsController::class, function () {
+            return new \Presentation\Controller\StudentTracking\StudentsStatsController(
+                $this->get(StudentRepositoryInterface::class)
+            );
+        });
+
         $this->bind(\Presentation\Controller\ExerciseManagement\ExercisesController::class, function () {
             return new \Presentation\Controller\ExerciseManagement\ExercisesController(
                 $this->get(\Application\ExerciseManagement\UseCase\ListExercises::class)
+            );
+        });
+
+        $this->bind(\Presentation\Controller\ExerciseManagement\ExercisesStatsController::class, function () {
+            return new \Presentation\Controller\ExerciseManagement\ExercisesStatsController(
+                $this->get(ExerciseRepositoryInterface::class)
             );
         });
 
@@ -216,6 +228,12 @@ class ServiceContainer
             return new \Presentation\Controller\ResourceManagement\ResourceDetailsController(
                 $this->get(ResourceRepositoryInterface::class),
                 $this->get(ExerciseRepositoryInterface::class)
+            );
+        });
+
+        $this->bind(\Presentation\Controller\ResourceManagement\ResourceVisualizationController::class, function () {
+            return new \Presentation\Controller\ResourceManagement\ResourceVisualizationController(
+                $this->get(ResourceRepositoryInterface::class)
             );
         });
 

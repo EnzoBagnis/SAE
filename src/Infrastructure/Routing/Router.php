@@ -109,9 +109,24 @@ class Router
 
         // ========== STUDENT TRACKING DOMAIN ==========
         $this->get('students', \Presentation\Controller\StudentTracking\StudentsController::class, 'getStudents');
+        $this->get(
+            'students_stats',
+            \Presentation\Controller\StudentTracking\StudentsStatsController::class,
+            'getStats'
+        );
 
         // ========== EXERCISE MANAGEMENT DOMAIN ==========
         $this->get('exercises', \Presentation\Controller\ExerciseManagement\ExercisesController::class, 'getExercises');
+        $this->get(
+            'exercises_stats',
+            \Presentation\Controller\ExerciseManagement\ExercisesStatsController::class,
+            'getStats'
+        );
+        $this->get(
+            'exercise_completion_stats',
+            \Presentation\Controller\ExerciseManagement\ExercisesStatsController::class,
+            'getCompletionStats'
+        );
 
         // ========== RESOURCE MANAGEMENT DOMAIN ==========
         $this->get(
@@ -122,6 +137,11 @@ class Router
         $this->get(
             'resource_details',
             \Presentation\Controller\ResourceManagement\ResourceDetailsController::class,
+            'index'
+        );
+        $this->get(
+            'resource_visualization',
+            \Presentation\Controller\ResourceManagement\ResourceVisualizationController::class,
             'index'
         );
         $this->post(

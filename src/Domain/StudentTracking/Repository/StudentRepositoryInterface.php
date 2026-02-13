@@ -33,6 +33,16 @@ interface StudentRepositoryInterface
     public function findByDatasetId(int $datasetId): array;
 
     /**
+     * Find students by resource ID
+     *
+     * @param int $resourceId Resource ID
+     * @param int $page Page number
+     * @param int $perPage Items per page
+     * @return array Array of students with statistics
+     */
+    public function findByResourceId(int $resourceId, int $page = 1, int $perPage = 100): array;
+
+    /**
      * Get paginated students
      *
      * @param int $page Page number

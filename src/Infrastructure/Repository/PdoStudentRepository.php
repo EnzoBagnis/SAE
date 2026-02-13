@@ -147,6 +147,49 @@ class PdoStudentRepository implements StudentRepositoryInterface
     /**
      * {@inheritdoc}
      */
+    public function findByResourceId(int $resourceId, int $page = 1, int $perPage = 100): array
+    {
+        $query = "SELECT DISTINCT 
+                    s.student_id,
+                    s.student_identifier,
+                    s.nom_fictif as first_name,
+                    s.prenom_fictif as last_name,
+                    CONCAT(s.prenom_fictif, '@student.edu') as email,
+                    s.dataset_id,
+                    d.nom_dataset,
+                    COUNT(DISTINCT a.attempt_id) as attempts_count,
+                    COUNT(DISTINCT CASE WHEN a.correct = 1 THEN e.exercise_id END) as exercises_completed,
+                    COALESCE(
+                        ROUND(
+                            (COUNT(CASE WHEN a.correct = 1 THEN 1 END) * 100.0 / 
+                            NULLIF(COUNT(a.attempt_id), 0)),
+                            2
+                        ),
+                        0
+                    ) as success_rate
+                 FROM students s
+                 JOIN datasets d ON s.dataset_id = d.dataset_id
+                 JOIN attempts a ON s.student_id = a.student_id
+                 JOIN exercises e ON a.exercise_id = e.exercise_id
+                 WHERE e.resource_id = :resource_id
+                 GROUP BY s.student_id, s.student_identifier, s.nom_fictif, 
+                          s.prenom_fictif, s.dataset_id, d.nom_dataset
+                 ORDER BY CAST(SUBSTRING_INDEX(s.student_identifier, '_', -1) AS UNSIGNED)
+                 LIMIT :offset, :perPage";
+
+        $offset = ($page - 1) * $perPage;
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->bindParam(':perPage', $perPage, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPaginated(int $page, int $perPage, ?int $resourceId = null): array
     {
         $allStudents = $this->findAll($resourceId);

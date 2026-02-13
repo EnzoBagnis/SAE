@@ -79,9 +79,25 @@ class PdoExerciseRepository implements ExerciseRepositoryInterface
      */
     public function findByResourceId(int $resourceId): array
     {
-        $query = "SELECT * FROM exercises 
-                 WHERE resource_id = :resource_id 
-                 ORDER BY exo_name ASC";
+        $query = "SELECT 
+                    e.*,
+                    COUNT(DISTINCT a.attempt_id) as attempts_count,
+                    COUNT(DISTINCT a.student_id) as students_count,
+                    ROUND(
+                        (COUNT(CASE WHEN a.correct = 1 THEN 1 END) * 100.0 / 
+                        NULLIF(COUNT(a.attempt_id), 0)),
+                        2
+                    ) as success_rate,
+                    ROUND(
+                        (COUNT(DISTINCT CASE WHEN a.correct = 1 THEN a.student_id END) * 100.0 / 
+                        NULLIF(COUNT(DISTINCT a.student_id), 0)),
+                        2
+                    ) as completion_rate
+                 FROM exercises e
+                 LEFT JOIN attempts a ON e.exercise_id = a.exercise_id
+                 WHERE e.resource_id = :resource_id
+                 GROUP BY e.exercise_id
+                 ORDER BY e.exo_name ASC";
 
         $stmt = $this->pdo->prepare($query);
         $stmt->bindParam(':resource_id', $resourceId, PDO::PARAM_INT);
@@ -90,7 +106,13 @@ class PdoExerciseRepository implements ExerciseRepositoryInterface
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return array_map(function ($row) {
-            return $this->hydrateExercise($row);
+            $exercise = $this->hydrateExercise($row);
+            // Add statistics as properties
+            $exercise->attempts_count = $row['attempts_count'] ?? 0;
+            $exercise->students_count = $row['students_count'] ?? 0;
+            $exercise->success_rate = $row['success_rate'] ?? 0;
+            $exercise->completion_rate = $row['completion_rate'] ?? 0;
+            return $exercise;
         }, $results);
     }
 

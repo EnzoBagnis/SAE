@@ -162,6 +162,11 @@
                 ) ?>
             </div>
             <div style="margin-top: 15px;">
+                <a href="<?= BASE_URL ?>/index.php?action=resource_visualization&id=<?= $resource->resource_id ?>"
+                   class="btn"
+                   style="display: inline-block; margin-right: 10px; text-decoration: none;">
+                    📊 Voir les visualisations
+                </a>
                 <button class="btn" onclick="openImportModal(<?= $resource->resource_id ?>)">
                     Importer des données
                 </button>
