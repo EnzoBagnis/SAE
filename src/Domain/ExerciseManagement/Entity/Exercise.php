@@ -18,6 +18,12 @@ class Exercise
     private string $dateCreation;
     private ?int $datasetId;
 
+    // Statistics properties (optional, populated when needed)
+    public ?int $attempts_count = null;
+    public ?int $students_count = null;
+    public ?float $success_rate = null;
+    public ?float $completion_rate = null;
+
     /**
      * Constructor
      *
@@ -98,6 +104,26 @@ class Exercise
         return $this->datasetId;
     }
 
+    public function getAttemptsCount(): ?int
+    {
+        return $this->attempts_count;
+    }
+
+    public function getStudentsCount(): ?int
+    {
+        return $this->students_count;
+    }
+
+    public function getSuccessRate(): ?float
+    {
+        return $this->success_rate;
+    }
+
+    public function getCompletionRate(): ?float
+    {
+        return $this->completion_rate;
+    }
+
     /**
      * Convert to array
      *
@@ -105,7 +131,7 @@ class Exercise
      */
     public function toArray(): array
     {
-        return [
+        $data = [
             'exercise_id' => $this->exerciseId,
             'resource_id' => $this->resourceId,
             'exo_name' => $this->exoName,
@@ -116,5 +142,21 @@ class Exercise
             'date_creation' => $this->dateCreation,
             'dataset_id' => $this->datasetId
         ];
+
+        // Add statistics if available
+        if ($this->attempts_count !== null) {
+            $data['attempts_count'] = $this->attempts_count;
+        }
+        if ($this->students_count !== null) {
+            $data['students_count'] = $this->students_count;
+        }
+        if ($this->success_rate !== null) {
+            $data['success_rate'] = $this->success_rate;
+        }
+        if ($this->completion_rate !== null) {
+            $data['completion_rate'] = $this->completion_rate;
+        }
+
+        return $data;
     }
 }
