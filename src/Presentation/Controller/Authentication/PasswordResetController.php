@@ -114,6 +114,9 @@ class PasswordResetController
         $errorMessage = null;
         if (isset($_GET['error'])) {
             $errorMessage = $this->getErrorMessage($_GET['error']);
+        } elseif (isset($_SESSION['error'])) {
+            $errorMessage = $_SESSION['error'];
+            unset($_SESSION['error']);
         }
 
         $data = [
