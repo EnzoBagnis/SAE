@@ -1,3 +1,5 @@
+<?php
+
 namespace Domain\StudentTracking\Repository;
 
 use Domain\StudentTracking\Entity\Student;
@@ -47,8 +49,10 @@ interface StudentRepositoryInterface
      *
      * @param int | null $resourceId Optional resource ID filter
      * @return int Total count
-     *  /
+     *
+     * Note: This method is used for pagination to determine total pages
+     */
 public function count(?int $resourceId = null): int;
 }
 
-<?php
+
