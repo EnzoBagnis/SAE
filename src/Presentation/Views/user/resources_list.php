@@ -164,7 +164,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                                     title="Modifier">✏️</button>
                         <?php endif; ?>
 
-                        <a href="<?= BASE_URL ?>/index.php?action=resource_details&id=<?= $resId ?>"
+                        <a href="<?= BASE_URL ?>/index.php?action=dashboard&resource_id=<?= $resId ?>"
                            class="resource-link-wrapper">
                             <?php if (!empty($resImg)) : ?>
                                 <img src="/images/<?= htmlspecialchars($resImg) ?>" class="resource-card-image" alt="Image">
