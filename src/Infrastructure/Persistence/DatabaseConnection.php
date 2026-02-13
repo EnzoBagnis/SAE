@@ -40,7 +40,7 @@ class DatabaseConnection
         $host = $env['DB_HOST'] ?? 'localhost';
         $dbname = $env['DB_NAME'] ?? 'sae';
         $username = $env['DB_USER'] ?? 'root';
-        $password = $env['DB_PASSWORD'] ?? '';
+        $password = $env['DB_PASS'] ?? $env['DB_PASSWORD'] ?? '';
         $charset = 'utf8mb4';
 
         $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";
