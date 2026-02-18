@@ -19,17 +19,15 @@ class DatabaseConnection
     private function __construct()
     {
         $host = EnvLoader::get('DB_HOST', 'localhost');
-        $port = EnvLoader::get('DB_PORT', '3306');
         $dbname = EnvLoader::get('DB_NAME');
         $user = EnvLoader::get('DB_USER');
         $pass = EnvLoader::get('DB_PASS', '');
-        $charset = EnvLoader::get('DB_CHARSET', 'utf8mb4');
 
         if (empty($dbname) || empty($user)) {
             throw new \RuntimeException("Configuration de base de données incomplète. Vérifiez DB_NAME et DB_USER dans .env");
         }
 
-        $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset={$charset}";
+        $dsn = "mysql:host={$host};dbname={$dbname}";
 
         $options = [
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,

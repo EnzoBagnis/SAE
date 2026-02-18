@@ -28,7 +28,6 @@ class EnvLoader
         // Structure Alwaysdata: www/SAE/Core/Config/ et .env dans www/config/
         $possiblePaths = [
             __DIR__ . '/../../../config/.env',  // Alwaysdata: www/config/.env (depuis www/SAE/Core/Config/)
-            __DIR__ . '/../../.env',             // Local: SAE/.env
             $_SERVER['DOCUMENT_ROOT'] . '/../config/.env', // Alwaysdata alternative path
         ];
 
