@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Controller;
+
+use Core\Controller\AbstractController;
+use App\Model\UseCase\ListExercisesUseCase;
+use App\Model\ExerciseRepository;
+use App\Model\AuthenticationService;
+use Core\Service\SessionService;
+
+/**
+ * Exercises Controller
+ * Handles exercise listing
+ */
+class ExercisesController extends AbstractController
+{
+    private ListExercisesUseCase $listExercisesUseCase;
+    private AuthenticationService $authService;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $exerciseRepository = new ExerciseRepository();
+        $this->listExercisesUseCase = new ListExercisesUseCase($exerciseRepository);
+        $this->authService = new AuthenticationService(new SessionService());
+    }
+
+    /**
+     * List exercises
+     *
+     * @return void
+     */
+    public function index(): void
+    {
+        $this->authService->requireAuth('/auth/login');
+
+        $resourceId = $this->getQuery('resource_id');
+        $result = $this->listExercisesUseCase->execute($resourceId);
+
+        if ($this->isAjax()) {
+            $this->jsonResponse($result);
+        } else {
+            $this->renderView('exercises/list', [
+                'exercises' => $result['exercises'] ?? [],
+                'total' => $result['total'] ?? 0,
+            ]);
+        }
+    }
+}
+
