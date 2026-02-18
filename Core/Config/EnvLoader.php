@@ -27,19 +27,8 @@ class EnvLoader
         $envPath = __DIR__ . '/../../../config/.env';
 
         if (!file_exists($envPath)) {
-            // Log the error with more details
-            $debugInfo = [
-                'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'not set',
-                'current_dir' => __DIR__,
-                'script_filename' => $_SERVER['SCRIPT_FILENAME'] ?? 'not set',
-                'env_path' => $envPath,
-                'realpath' => realpath($envPath) ?: 'file does not exist',
-            ];
-            error_log("CRITICAL: Fichier .env introuvable. Debug: " . json_encode($debugInfo));
-
-            throw new \RuntimeException(
-                "Fichier .env introuvable à l'emplacement: {$envPath}"
-            );
+            // Affichage direct de l'erreur pour débogage immédiat
+            die("CRITICAL: Fichier .env introuvable. Chemin testé : " . realpath($envPath) . " (Brut: " . $envPath . ")");
         }
 
         // Use parse_ini_file to parse the .env file

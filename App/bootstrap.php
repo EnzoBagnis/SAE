@@ -5,43 +5,22 @@
  * Initializes autoloader and configuration
  */
 
-// Error reporting for development
-ini_set('display_errors', '0');
-ini_set('log_errors', '1');
-ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
+// Error reporting for development - Display errors directly
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+ini_set('log_errors', '0'); // Disable logging to file
 error_reporting(E_ALL);
 
-// Custom error handler to log errors
+// Custom error handler to display errors
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    error_log("PHP Error [$errno]: $errstr in $errfile on line $errline");
-    return false;
+    echo "<b>PHP Error [$errno]:</b> $errstr in <b>$errfile</b> on line <b>$errline</b><br>";
+    return true; // Prevent default handler
 });
 
 // Custom exception handler
 set_exception_handler(function($exception) {
-    error_log("Uncaught Exception: " . $exception->getMessage() . " in " . $exception->getFile() . " on line " . $exception->getLine());
-    http_response_code(500);
-
-    // In production, show a generic error page
-    if (php_sapi_name() !== 'cli') {
-        echo '<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Erreur</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 50px; text-align: center; }
-        h1 { color: #e74c3c; }
-    </style>
-</head>
-<body>
-    <h1>Une erreur est survenue</h1>
-    <p>Nous sommes désolés, une erreur technique est survenue. Veuillez réessayer plus tard.</p>
-    <p><a href="/">Retour à l\'accueil</a></p>
-</body>
-</html>';
-    }
-    exit(1);
+    echo "<b>Uncaught Exception:</b> " . $exception->getMessage() . " in <b>" . $exception->getFile() . "</b> on line <b>" . $exception->getLine() . "</b><br>";
+    echo "<pre>" . $exception->getTraceAsString() . "</pre>";
 });
 
 // Define base path
