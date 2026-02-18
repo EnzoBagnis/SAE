@@ -10,7 +10,7 @@ class Router
 {
     private array $routes = [];
     private array $middleware = [];
-    private ?string $notFoundHandler = null;
+    private $notFoundHandler = null;
 
     /**
      * Add route for any HTTP method
