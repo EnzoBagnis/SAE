@@ -47,7 +47,6 @@
 
             <div class="auth-footer">
                 <p>Pas encore de compte ? <a href="/auth/register">S'inscrire</a></p>
-                <p><a href="/auth/forgot-password">Mot de passe oublié ?</a></p>
             </div>
         </div>
     </div>
