@@ -23,74 +23,32 @@ class EnvLoader
             return;
         }
 
-        // Try multiple possible paths for .env file
-        // Structure locale (XAMPP): htdocs/SAE/Core/Config/
-        // Structure Alwaysdata: www/SAE/Core/Config/ et .env dans www/config/
-        $possiblePaths = [
-            __DIR__ . '/../../../config/.env',  // Alwaysdata: www/config/.env (depuis www/SAE/Core/Config/)
-            $_SERVER['DOCUMENT_ROOT'] . '/../config/.env', // Alwaysdata alternative path
-        ];
+        // Path to .env file - Alwaysdata: www/config/.env (from www/SAE/Core/Config/)
+        $envPath = __DIR__ . '/../../../config/.env';
 
-        $envPath = null;
-        foreach ($possiblePaths as $path) {
-            $realPath = realpath($path);
-            if ($realPath && file_exists($realPath)) {
-                $envPath = $realPath;
-                break;
-            }
-        }
-
-        if ($envPath === null) {
+        if (!file_exists($envPath)) {
             // Log the error with more details
             $debugInfo = [
-                'tested_paths' => $possiblePaths,
                 'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'not set',
                 'current_dir' => __DIR__,
                 'script_filename' => $_SERVER['SCRIPT_FILENAME'] ?? 'not set',
+                'env_path' => $envPath,
             ];
             error_log("CRITICAL: Fichier .env introuvable. Debug: " . json_encode($debugInfo));
 
-            // Set default values for minimal functionality
-            self::$config = [
-                'DB_HOST' => getenv('DB_HOST') ?: 'localhost',
-                'DB_PORT' => getenv('DB_PORT') ?: '3306',
-                'DB_NAME' => getenv('DB_NAME') ?: '',
-                'DB_USER' => getenv('DB_USER') ?: '',
-                'DB_PASS' => getenv('DB_PASS') ?: '',
-                'DB_CHARSET' => 'utf8mb4',
-                'APP_ENV' => getenv('APP_ENV') ?: 'production',
-                'APP_DEBUG' => getenv('APP_DEBUG') ?: 'false',
-            ];
-            self::$loaded = true;
-
-            throw new \RuntimeException("Fichier .env introuvable. Veuillez créer un fichier .env à partir de .env.example. Chemins testés: " . implode(', ', $possiblePaths));
+            throw new \RuntimeException(
+                "Fichier .env introuvable. Veuillez créer un fichier .env à partir de .env.example."
+            );
         }
 
-        $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        // Use parse_ini_file to parse the .env file
+        $config = parse_ini_file($envPath, false, INI_SCANNER_RAW);
 
-        foreach ($lines as $line) {
-            $line = trim($line);
-
-            if (empty($line) || strpos($line, '#') === 0) {
-                continue;
-            }
-
-            if (strpos($line, '=') === false) {
-                continue;
-            }
-
-            list($key, $value) = explode('=', $line, 2);
-            $key = trim($key);
-            $value = trim($value);
-
-            // Remove quotes if present
-            if (preg_match('/^(["\'])(.*)\1$/', $value, $matches)) {
-                $value = $matches[2];
-            }
-
-            self::$config[$key] = $value;
+        if ($config === false) {
+            throw new \RuntimeException("Erreur lors du parsing du fichier .env");
         }
 
+        self::$config = $config;
         self::$loaded = true;
     }
 
