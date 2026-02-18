@@ -24,10 +24,10 @@ RewriteRule ^(.*)$ index.php [QSA,L]
 # Disable directory browsing
 Options -Indexes
 
-# PHP Error Handling
-php_flag display_errors Off
-php_flag log_errors On
-php_value error_log error_log.txt
+# PHP Error Handling - DESACTIVÉ pour éviter erreur 500 sur serveurs FastCGI
+# php_flag display_errors On
+# php_flag log_errors Off
+# php_value error_log error_log.txt
 
 # Custom Error Pages
 ErrorDocument 404 /index.php

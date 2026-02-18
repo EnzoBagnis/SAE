@@ -98,7 +98,7 @@ class EnvLoader
      * @param mixed $value Configuration value
      * @return void
      */
-    public static function set(string $key, mixed $value): void
+    public static function set(string $key, $value): void
     {
         self::$config[$key] = $value;
     }
