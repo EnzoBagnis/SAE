@@ -22,8 +22,12 @@ class DatabaseConnection
         $port = EnvLoader::get('DB_PORT', '3306');
         $dbname = EnvLoader::get('DB_NAME');
         $user = EnvLoader::get('DB_USER');
-        $pass = EnvLoader::get('DB_PASS');
+        $pass = EnvLoader::get('DB_PASS', '');
         $charset = EnvLoader::get('DB_CHARSET', 'utf8mb4');
+
+        if (empty($dbname) || empty($user)) {
+            throw new \RuntimeException("Configuration de base de données incomplète. Vérifiez DB_NAME et DB_USER dans .env");
+        }
 
         $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset={$charset}";
 
@@ -33,7 +37,12 @@ class DatabaseConnection
             \PDO::ATTR_EMULATE_PREPARES => false,
         ];
 
-        $this->pdo = new \PDO($dsn, $user, $pass, $options);
+        try {
+            $this->pdo = new \PDO($dsn, $user, $pass, $options);
+        } catch (\PDOException $e) {
+            error_log("Database Connection Error: " . $e->getMessage());
+            throw new \RuntimeException("Impossible de se connecter à la base de données. Vérifiez vos identifiants.");
+        }
     }
 
     /**

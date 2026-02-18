@@ -1,50 +1,35 @@
 # Enable Rewrite Engine
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /SAE/
+RewriteEngine On
 
-    # Prevent access to hidden files and directories
-    RewriteCond %{SCRIPT_FILENAME} -d [OR]
-    RewriteCond %{SCRIPT_FILENAME} -f
-    RewriteRule "(^|/)\." - [F]
+# Redirect to HTTPS (optional, but recommended)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-    # Allow access to public directory and debug files
-    RewriteCond %{REQUEST_URI} ^/SAE/public/ [OR]
-    RewriteCond %{REQUEST_URI} ^/SAE/debug\.php [OR]
-    RewriteCond %{REQUEST_URI} ^/SAE/test\.php [OR]
-    RewriteCond %{REQUEST_URI} ^/SAE/diagnostic\.php
-    RewriteRule ^ - [L]
+# Redirect all requests to index.php except for existing files/directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
 
-    # Route all requests to index.php except existing files
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
-</IfModule>
-
-# Prevent directory browsing
-Options -Indexes
-
-# PHP Configuration (pour debug temporaire)
-<IfModule mod_php.c>
-    php_flag display_errors On
-    php_value error_reporting E_ALL
-    php_value upload_max_filesize 20M
-    php_value post_max_size 20M
-    php_value max_execution_time 300
-    php_value max_input_time 300
-</IfModule>
-
-# Prevent access to sensitive files (sauf .txt pour la doc)
-<FilesMatch "^\.env$|^composer\.(json|lock)$|^\.gitignore$">
+# Protect sensitive files
+<FilesMatch "^\.env">
     Order allow,deny
     Deny from all
 </FilesMatch>
 
-# Security Headers
-<IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-</IfModule>
+<FilesMatch "composer\.(json|lock)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Disable directory browsing
+Options -Indexes
+
+# PHP Error Handling
+php_flag display_errors Off
+php_flag log_errors On
+php_value error_log error_log.txt
+
+# Custom Error Pages
+ErrorDocument 404 /index.php
+ErrorDocument 500 /index.php
 
