@@ -33,11 +33,12 @@ class EnvLoader
                 'current_dir' => __DIR__,
                 'script_filename' => $_SERVER['SCRIPT_FILENAME'] ?? 'not set',
                 'env_path' => $envPath,
+                'realpath' => realpath($envPath) ?: 'file does not exist',
             ];
             error_log("CRITICAL: Fichier .env introuvable. Debug: " . json_encode($debugInfo));
 
             throw new \RuntimeException(
-                "Fichier .env introuvable. Veuillez créer un fichier .env à partir de .env.example."
+                "Fichier .env introuvable à l'emplacement: {$envPath}"
             );
         }
 
@@ -45,8 +46,12 @@ class EnvLoader
         $config = parse_ini_file($envPath, false, INI_SCANNER_RAW);
 
         if ($config === false) {
+            error_log("CRITICAL: Erreur lors du parsing du fichier .env à: {$envPath}");
             throw new \RuntimeException("Erreur lors du parsing du fichier .env");
         }
+
+        // Log successful loading for debugging
+        error_log("INFO: Fichier .env chargé avec succès. Clés trouvées: " . implode(', ', array_keys($config)));
 
         self::$config = $config;
         self::$loaded = true;
