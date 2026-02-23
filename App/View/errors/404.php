@@ -50,7 +50,7 @@
     <p class="error-code">404</p>
     <h2>Page introuvable</h2>
     <p>La ressource que vous recherchez n'existe pas ou vous n'avez pas les droits pour y accéder.</p>
-    <a href="<?= BASE_URL ?>/resources">&larr; Retour aux ressources</a>
+    <a href="<?= BASE_URL ?>/">&larr; Retour à l'accueil</a>
 </div>
 </body>
 </html>

@@ -22,7 +22,7 @@
 <div class="page-wrap">
 
     <!-- Fl├¿che de retour ├á l'accueil -->
-    <a href="<?= BASE_URL ?>/index.html" class="back-arrow" title="Retour ├á l'accueil">
+    <a href="<?= BASE_URL ?>/" class="back-arrow" title="Retour à l'accueil">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>

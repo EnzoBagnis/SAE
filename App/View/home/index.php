@@ -1,3 +1,4 @@
+<?php if (!defined('BASE_URL')) { define('BASE_URL', ''); } ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -68,8 +69,8 @@
 
         <div class="card" style="text-align: center;">
             <h2>Accédez à votre compte</h2>
-            <button class="btn-submit" onclick="window.location.href='/auth/login'">Se connecter</button>
-            <button class="btn-secondary" onclick="window.location.href='/auth/register'">S'inscrire</button>
+            <button class="btn-submit" onclick="window.location.href='<?= BASE_URL ?>/auth/login'">Se connecter</button>
+            <button class="btn-secondary" onclick="window.location.href='<?= BASE_URL ?>/auth/register'">S'inscrire</button>
         </div>
     </div>
 </div>
