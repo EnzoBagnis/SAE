@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <?php
+    if (!defined('BASE_URL')) {
+        define('BASE_URL', '');
+    }
+    ?>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
