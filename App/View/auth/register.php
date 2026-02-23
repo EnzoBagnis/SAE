@@ -28,25 +28,32 @@
         </svg>
     </a>
 
-    <?php if (isset($error_message)) : ?>
-        <div class="error"><?= htmlspecialchars($error_message) ?></div>
+    <?php if (isset($error)) : ?>
+        <div class="error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=signup">
+    <form class="card" method="POST" action="<?= BASE_URL ?>/auth/register">
 
-        <label for="nom">Nom</label>
-        <input type="text" id="nom" name="nom" placeholder="Entrez votre nom..." required><br>
+        <label for="last_name">Nom</label>
+        <input type="text" id="last_name" name="last_name"
+               value="<?= htmlspecialchars($last_name ?? '') ?>"
+               placeholder="Entrez votre nom..." required><br>
 
-        <label for="prenom">Pr├®nom</label>
-        <input type="text" id="prenom" name="prenom" placeholder="Entrez votre pr├®nom..." required><br>
+        <label for="first_name">Prénom</label>
+        <input type="text" id="first_name" name="first_name"
+               value="<?= htmlspecialchars($first_name ?? '') ?>"
+               placeholder="Entrez votre prénom..." required><br>
 
-        <label for="mail">Email</label>
-        <input type="email" id="mail" name="mail" placeholder="Entrez votre mail..." required><br>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<?= htmlspecialchars($email ?? '') ?>"
+               placeholder="Entrez votre mail..." required><br>
 
-        <label for="mdp">Mot de passe</label>
+        <label for="password">Mot de passe</label>
         <div class="password-container">
-            <input type="password" id="mdp" name="mdp" placeholder="Entrez votre mot de passe..." required>
-            <button type="button" class="password-toggle" onclick="togglePassword('mdp')">
+            <input type="password" id="password" name="password"
+                   placeholder="Entrez votre mot de passe..." required>
+            <button type="button" class="password-toggle" onclick="togglePassword('password')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -55,10 +62,10 @@
             </button>
         </div><br>
 
-        <button type="submit" class="btn-submit" name="ok">Inscription</button>
+        <button type="submit" class="btn-submit">S'inscrire</button>
 
         <div class="text-center mt-2">
-            <a href="<?= BASE_URL ?>/index.php?action=login">D├®j├á un compte ? Se connecter</a>
+            <a href="<?= BASE_URL ?>/auth/login">Déjà un compte ? Se connecter</a>
         </div>
 
     </form>

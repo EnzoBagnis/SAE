@@ -28,24 +28,23 @@
         </svg>
     </a>
 
-    <?php if (isset($error_message)) : ?>
-        <div class="error"><?= htmlspecialchars($error_message) ?></div>
+    <?php if (isset($error)) : ?>
+        <div class="error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <?php if (isset($success_message)) : ?>
-        <div class="success"><?= htmlspecialchars($success_message) ?></div>
-    <?php endif; ?>
-
-    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=login">
+    <form class="card" method="POST" action="<?= BASE_URL ?>/auth/login">
         <h2>Connexion</h2>
 
-        <label for="mail">Email</label>
-        <input type="email" id="mail" name="mail" placeholder="Entrez votre email..." required><br>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<?= htmlspecialchars($email ?? '') ?>"
+               placeholder="Entrez votre email..." required><br>
 
-        <label for="mdp">Mot de passe</label>
+        <label for="password">Mot de passe</label>
         <div class="password-container">
-            <input type="password" id="mdp" name="mdp" placeholder="Entrez votre mot de passe..." required>
-            <button type="button" class="password-toggle" onclick="togglePassword('mdp')">
+            <input type="password" id="password" name="password"
+                   placeholder="Entrez votre mot de passe..." required>
+            <button type="button" class="password-toggle" onclick="togglePassword('password')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -54,14 +53,10 @@
             </button>
         </div><br>
 
-        <button type="submit" class="btn-submit" name="ok">Se connecter</button>
+        <button type="submit" class="btn-submit">Se connecter</button>
 
         <div class="text-center mt-2">
-            <a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oublié ?</a>
-        </div>
-
-        <div class="text-center mt-2">
-            <a href="<?= BASE_URL ?>/index.php?action=signup">Pas encore de compte ? S'inscrire</a>
+            <a href="<?= BASE_URL ?>/auth/register">Pas encore de compte ? S'inscrire</a>
         </div>
     </form>
 
