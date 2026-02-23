@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8">
@@ -43,7 +43,7 @@
         </div>
     </form>
 
-    <div class="back-arrow" onclick="window.location.href='<?= BASE_URL ?>/index.html';">ÔåÉ</div>
+    <div class="back-arrow" onclick="window.location.href='<?= BASE_URL ?>/';">&#8592;</div>
 
 </div>
 
