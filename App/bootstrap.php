@@ -110,3 +110,15 @@ date_default_timezone_set($timezone);
 ini_set('default_charset', 'UTF-8');
 mb_internal_encoding('UTF-8');
 
+// Define BASE_URL constant if not already set
+if (!defined('BASE_URL')) {
+    $baseUrl = EnvLoader::get('BASE_URL', '');
+    if (empty($baseUrl)) {
+        // Auto-detect from server variables
+        $scheme   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $baseUrl  = $scheme . '://' . $host;
+    }
+    define('BASE_URL', rtrim($baseUrl, '/'));
+}
+

@@ -128,6 +128,16 @@ class Router
         $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
+        // Strip subdirectory prefix so routes work in both root and subfolder installs
+        // e.g. /SAE/auth/login → /auth/login
+        $scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\');
+        if ($scriptDir !== '' && strpos($requestUri, $scriptDir) === 0) {
+            $requestUri = substr($requestUri, strlen($scriptDir));
+        }
+        if ($requestUri === '' || $requestUri === false) {
+            $requestUri = '/';
+        }
+
         // Normalize URI (remove trailing slash except for root)
         if ($requestUri !== '/' && substr($requestUri, -1) === '/') {
             $requestUri = rtrim($requestUri, '/');

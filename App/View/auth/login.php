@@ -1,56 +1,86 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - StudTraj</title>
-    <link rel="stylesheet" href="/public/css/style.css">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+          content="Connectez-vous à votre compte StudTraj pour accéder à votre tableau de bord
+                   et suivre votre trajectoire étudiante.">
+    <meta name="keywords" content="connexion studtraj, login étudiant, se connecter">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="http://studtraj.alwaysdata.net/index.php?action=login">
+
+    <title><?= htmlspecialchars($title ?? 'Connexion - StudTraj') ?></title>
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2>Connexion</h2>
 
-            <?php if (isset($error)): ?>
-                <div class="alert alert-error">
-                    <?= htmlspecialchars($error) ?>
-                </div>
-            <?php endif; ?>
+<div class="page-wrap">
 
-            <form method="POST" action="/auth/login">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value="<?= htmlspecialchars($email ?? '') ?>"
-                        required
-                        autofocus
-                    >
-                </div>
+    <!-- Flèche de retour à l'accueil -->
+    <a href="<?= BASE_URL ?>/index.html" class="back-arrow" title="Retour à l'accueil">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+    </a>
 
-                <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        required
-                    >
-                </div>
+    <?php if (isset($error)) : ?>
+        <div class="error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
-                <button type="submit" class="btn btn-primary btn-block">
-                    Se connecter
-                </button>
-            </form>
+    <form class="card" method="POST" action="<?= BASE_URL ?>/auth/login">
+        <h2>Connexion</h2>
 
-            <div class="auth-footer">
-                <p>Pas encore de compte ? <a href="/auth/register">S'inscrire</a></p>
-                <p><a href="/auth/forgot-password">Mot de passe oublié ?</a></p>
-            </div>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<?= htmlspecialchars($email ?? '') ?>"
+               placeholder="Entrez votre email..." required><br>
+
+        <label for="password">Mot de passe</label>
+        <div class="password-container">
+            <input type="password" id="password" name="password"
+                   placeholder="Entrez votre mot de passe..." required>
+            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </button>
+        </div><br>
+
+        <button type="submit" class="btn-submit">Se connecter</button>
+
+        <div class="text-center mt-2">
+            <a href="<?= BASE_URL ?>/auth/register">Pas encore de compte ? S'inscrire</a>
         </div>
-    </div>
+    </form>
+
+</div>
+
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const button = input.nextElementSibling;
+        const icon = button.querySelector('svg');
+
+        if (input.type === "password") {
+            input.type = "text";
+            // Change icon to "eye-off"
+            icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 ' +
+                '5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 ' +
+                '0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+        } else {
+            input.type = "password";
+            // Change icon back to "eye"
+            icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>' +
+                '<circle cx="12" cy="12" r="3"></circle>';
+        }
+    }
+</script>
 </body>
 </html>
-
