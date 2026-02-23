@@ -23,7 +23,7 @@
     <?php if (isset($error_message)) : ?>
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
-    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=adminLogin">
+    <form class="card" method="POST" action="<?= BASE_URL ?>/admin/login">
         <h2>Connexion Admin</h2>
 
         <label for="ID">Identifiant</label>

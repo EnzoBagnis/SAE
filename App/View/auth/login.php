@@ -56,6 +56,10 @@
         <button type="submit" class="btn-submit">Se connecter</button>
 
         <div class="text-center mt-2">
+            <a href="<?= BASE_URL ?>/auth/forgot-password">Mot de passe oublié ?</a>
+        </div>
+
+        <div class="text-center mt-2">
             <a href="<?= BASE_URL ?>/auth/register">Pas encore de compte ? S'inscrire</a>
         </div>
     </form>

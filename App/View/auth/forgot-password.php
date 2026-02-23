@@ -1,11 +1,11 @@
-﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
-    <title><?= htmlspecialchars($title ?? 'Mot de passe oubli├® - StudTraj') ?></title>
+    <title><?= htmlspecialchars($title ?? 'Mot de passe oublié - StudTraj') ?></title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <!-- SEO Meta Tags -->
     <meta name="robots" content="noindex, nofollow">
@@ -19,27 +19,30 @@
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=forgotpassword" id="forgotForm">
-        <h2>Mot de passe oubli├®</h2>
-        <p>Entrez votre email pour recevoir un lien de r├®initialisation</p>
+    <?php if (isset($success_message)) : ?>
+        <div class="success"><?= htmlspecialchars($success_message) ?></div>
+    <?php endif; ?>
+
+    <form class="card" method="POST" action="<?= BASE_URL ?>/auth/forgot-password" id="forgotForm">
+        <h2>Mot de passe oublié</h2>
+        <p>Entrez votre email pour recevoir un lien de réinitialisation</p>
 
         <label for="email">Email</label>
         <input type="email"
                id="email"
-               name="mail"
+               name="email"
                placeholder="Votre email"
                required>
 
         <button type="submit"
-                name="forgot_password"
                 id="submitBtn"
                 class="btn-submit"
                 disabled>
-            Envoyer le lien de r├®initialisation
+            Envoyer le lien de réinitialisation
         </button>
 
         <div class="text-center mt-2">
-            <a href="<?= BASE_URL ?>/index.php?action=login">Retour ├á la connexion</a>
+            <a href="<?= BASE_URL ?>/auth/login">Retour à la connexion</a>
         </div>
     </form>
 

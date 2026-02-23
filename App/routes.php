@@ -19,6 +19,11 @@ $router->post('/auth/register', App\Controller\RegisterController::class, 'regis
 
 $router->get('/auth/logout', App\Controller\LogoutController::class, 'logout');
 
+$router->get('/auth/forgot-password', App\Controller\ForgotPasswordController::class, 'index');
+$router->post('/auth/forgot-password', App\Controller\ForgotPasswordController::class, 'send');
+$router->get('/auth/reset-password', App\Controller\ForgotPasswordController::class, 'resetForm');
+$router->post('/auth/reset-password', App\Controller\ForgotPasswordController::class, 'reset');
+
 // Dashboard routes (protected)
 $router->get('/dashboard', App\Controller\DashboardController::class, 'index');
 
@@ -30,4 +35,13 @@ $router->get('/exercises/{id}', App\Controller\ExercisesController::class, 'show
 $router->get('/resources', App\Controller\ResourcesController::class, 'index');
 $router->get('/resources/{id}', App\Controller\ResourcesController::class, 'show');
 
-
+// Admin routes
+$router->get('/admin/login', App\Controller\AdminController::class, 'loginForm');
+$router->post('/admin/login', App\Controller\AdminController::class, 'login');
+$router->get('/admin/dashboard', App\Controller\AdminController::class, 'dashboard');
+$router->get('/admin/logout', App\Controller\AdminController::class, 'logout');
+$router->get('/admin/delete-user', App\Controller\AdminController::class, 'deleteUser');
+$router->get('/admin/validate-user', App\Controller\AdminController::class, 'validateUser');
+$router->post('/admin/edit-user', App\Controller\AdminController::class, 'editUser');
+$router->post('/admin/ban-user', App\Controller\AdminController::class, 'banUser');
+$router->get('/admin/switch-user', App\Controller\AdminController::class, 'switchUser');

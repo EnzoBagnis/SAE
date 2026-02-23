@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
     <title><?= htmlspecialchars($title ?? 'R├®initialiser le mot de passe - StudTraj') ?></title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <!-- SEO Meta Tags -->
@@ -19,7 +19,7 @@
         <div class="error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
-    <form class="card" method="POST" action="<?= BASE_URL ?>/index.php?action=resetpassword" id="resetForm">
+    <form class="card" method="POST" action="<?= BASE_URL ?>/auth/reset-password" id="resetForm">
         <h2>Cr├®er un nouveau mot de passe</h2>
         <p>Entrez votre nouveau mot de passe</p>
 
