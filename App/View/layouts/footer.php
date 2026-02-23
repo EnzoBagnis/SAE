@@ -1,0 +1,166 @@
+﻿<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-container">
+        <!-- Section 1: ├Ç propos -->
+        <div class="footer-section">
+            <h3>├Ç propos de StudTraj</h3>
+            <p>Plateforme d├®di├®e ├á l'apprentissage et ├á la visualisation de donn├®es pour les ├®tudiants.</p>
+        </div>
+
+        <!-- Section 2: Contact -->
+        <div class="footer-section">
+            <h3>Contact</h3>
+            <ul class="footer-contact">
+                <li><a href="mailto:StudTraj.amu@gmail.com">StudTraj.amu@gmail.com</a></li>
+                <li>+33 01 23 45 67 89</li>
+            </ul>
+        </div>
+
+        <!-- Section 3: Labels & Certifications -->
+        <div class="footer-section">
+            <h3>Qualit├® & Accessibilit├®</h3>
+            <div class="footer-badges">
+                <a href="https://validator.w3.org/check?uri=referer"
+                   target="_blank" rel="noopener" title="HTML5 Valide">
+                    <img src="https://www.w3.org/html/logo/badge/html5-badge-h-css3-semantics.png"
+                         alt="HTML5 Valide" width="100" height="auto">
+                </a>
+                <a href="https://jigsaw.w3.org/css-validator/check/referer"
+                   target="_blank" rel="noopener" title="CSS3 Valide">
+                    <img src="https://jigsaw.w3.org/css-validator/images/vcss"
+                         alt="CSS Valide" width="88" height="31">
+                </a>
+                <a href="https://www.ecoindex.fr"
+                   target="_blank" rel="noopener" title="Performance environnementale">
+                    <span class="eco-badge">EcoIndex</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre inf├®rieure -->
+    <div class="footer-bottom">
+        <div class="footer-bottom-content">
+            <p>&copy; <?php echo date('Y'); ?> StudTraj - Tous droits r├®serv├®s</p>
+            <p class="footer-legal">
+                <a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions l├®gales</a> |
+                <a href="#" onclick="showCGU()">CGU</a> |
+                <a href="#" onclick="showPrivacy()">Confidentialit├®</a> |
+                <a href="<?= BASE_URL ?>/sitemap.php">Sitemap XML</a>
+            </p>
+            <p class="footer-compliance">
+                Conformit├® RGPD | Accessibilit├® : Conforme |
+                <a href="https://www.w3.org/WAI/WCAG2AA-Conformance"
+                   target="_blank" rel="noopener">WCAG 2.1 AA</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<!-- Modal CGU -->
+<div id="cguModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCGU()">&times;</span>
+        <h2>Conditions G├®n├®rales d'Utilisation</h2>
+        <div class="modal-text">
+            <h3>1. Acceptation des conditions</h3>
+            <p>
+                En acc├®dant et en utilisant StudTraj, vous acceptez d'├¬tre li├®
+                par ces conditions g├®n├®rales d'utilisation.
+            </p>
+
+            <h3>2. Utilisation du service</h3>
+            <p>
+                Ce service est destin├® ├á un usage ├®ducatif.
+                Toute utilisation abusive ou frauduleuse est strictement interdite.
+            </p>
+
+            <h3>3. Compte utilisateur</h3>
+            <p>
+                Vous ├¬tes responsable de la confidentialit├®
+                de vos identifiants de connexion.
+            </p>
+
+            <h3>4. Propri├®t├® intellectuelle</h3>
+            <p>
+                Tous les contenus pr├®sents sur StudTraj
+                sont prot├®g├®s par les droits d'auteur.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Politique de confidentialit├® -->
+<div id="privacyModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closePrivacy()">&times;</span>
+        <h2>Politique de confidentialit├®</h2>
+        <div class="modal-text">
+            <h3>1. Collecte des donn├®es</h3>
+            <p>
+                Nous collectons uniquement les donn├®es n├®cessaires
+                ├á la cr├®ation et gestion de votre compte
+                (nom, pr├®nom, email).
+            </p>
+
+            <h3>2. Utilisation des donn├®es</h3>
+            <p>
+                Vos donn├®es sont utilis├®es exclusivement
+                pour le fonctionnement du service
+                et ne sont jamais partag├®es avec des tiers.
+            </p>
+
+            <h3>3. S├®curit├®</h3>
+            <p>
+                Nous mettons en ┼ôuvre des mesures de s├®curit├® appropri├®es
+                pour prot├®ger vos donn├®es personnelles.
+            </p>
+
+            <h3>4. Vos droits</h3>
+            <p>
+                Conform├®ment au RGPD, vous disposez d'un droit d'acc├¿s,
+                de rectification, de suppression et d'opposition.
+            </p>
+
+            <h3>5. Contact</h3>
+            <p>Pour toute question : StudTraj.amu@gmail.com</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fonctions pour les modals CGU et Confidentialit├®
+function showCGU() {
+    document.getElementById('cguModal').style.display = 'block';
+}
+
+function closeCGU() {
+    document.getElementById('cguModal').style.display = 'none';
+}
+
+function showPrivacy() {
+    document.getElementById('privacyModal').style.display = 'block';
+}
+
+function closePrivacy() {
+    document.getElementById('privacyModal').style.display = 'none';
+}
+
+// Fermer les modals en cliquant en dehors
+window.onclick = function(event) {
+    const cguModal = document.getElementById('cguModal');
+    const privacyModal = document.getElementById('privacyModal');
+    if (event.target === cguModal) {
+        closeCGU();
+    }
+    if (event.target === privacyModal) {
+        closePrivacy();
+    }
+}
+</script>
+
+<!-- Inject global BASE_URL for JS usage -->
+<script>
+    // window.BASE_URL is injected from PHP's BASE_URL constant
+    window.BASE_URL = "<?= rtrim(BASE_URL, '\\/') ?>";
+</script>

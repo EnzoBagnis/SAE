@@ -50,3 +50,4 @@ class ExercisesController extends AbstractController
     }
 }
 
+
