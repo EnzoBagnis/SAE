@@ -118,7 +118,6 @@ class UserRepository extends AbstractRepository
         (:mail, :name, :surname, :password, :code_verif, :account_status, :reset_token, :reset_expiration)
     ");
 
-        // On récupère l'expiration pour la formater comme dans la méthode update()
         $resetTokenExpiration = $user->getResetTokenExpiration();
 
         $stmt->execute([
@@ -127,9 +126,9 @@ class UserRepository extends AbstractRepository
             'surname'           => $user->getLastName(),
             'password'          => $user->getPasswordHash(),
             'code_verif'        => $user->getVerificationCode(),
-            'account_status'    => $user->isVerified() ? 1 : 0,
+            'account_status'    => $user->getAccountStatus(),
             'reset_token'       => $user->getResetToken() ?? '',
-            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d H:i:s') : null, // <--- Il manquait cette ligne
+            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d H:i:s') : null,
         ]);
 
         return $user;
@@ -162,7 +161,7 @@ class UserRepository extends AbstractRepository
             'surname'           => $user->getLastName(),
             'password'          => $user->getPasswordHash(),
             'code_verif'        => $user->getVerificationCode(),
-            'account_status'    => $user->isVerified() ? 1 : 0,
+            'account_status'    => $user->getAccountStatus(),
             'reset_token'       => $user->getResetToken() ?? '',
             'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d') : null,
         ]);
@@ -197,7 +196,7 @@ class UserRepository extends AbstractRepository
         $user->setEmail($data['mail'] ?? '');
         $user->setPasswordHash($data['password'] ?? '');
         $user->setVerificationCode(isset($data['code_verif']) ? (string) $data['code_verif'] : null);
-        $user->setIsVerified(($data['account_status'] ?? 0) == 1);
+        $user->setAccountStatus((int) ($data['account_status'] ?? 0));
 
         if (!empty($data['reset_expiration']) && !empty($data['reset_token'])) {
             $user->setResetToken(

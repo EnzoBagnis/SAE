@@ -45,4 +45,6 @@ $router->get('/admin/delete-user', App\Controller\AdminController::class, 'delet
 $router->get('/admin/validate-user', App\Controller\AdminController::class, 'validateUser');
 $router->post('/admin/edit-user', App\Controller\AdminController::class, 'editUser');
 $router->post('/admin/ban-user', App\Controller\AdminController::class, 'banUser');
+$router->get('/admin/unban-user', App\Controller\AdminController::class, 'unbanUser');
 $router->get('/admin/switch-user', App\Controller\AdminController::class, 'switchUser');
+

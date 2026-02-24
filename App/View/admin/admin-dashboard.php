@@ -200,8 +200,9 @@
             <table class="user-table">
                 <thead>
                 <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
                     <th>Email</th>
-                    <th>Date de ban</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -209,19 +210,26 @@
 
                 <?php if (empty($blockedUsers)) : ?>
                     <tr>
-                        <td colspan="3" class="text-center">Aucun utilisateur bloqué</td>
+                        <td colspan="4" class="text-center">Aucun utilisateur bloqué</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($blockedUsers as $user) : ?>
                         <tr>
+                            <td><?= htmlspecialchars($user['surname']) ?></td>
+                            <td><?= htmlspecialchars($user['name']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
-                            <td><?= htmlspecialchars($user['date_de_ban'] ?? '') ?></td>
                             <td class="actions">
+                                <a href="<?= BASE_URL ?>/admin/unban-user?id=<?=
+                                    urlencode($user['mail']) ?>"
+                                   class="btn-validate"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir débloquer cet utilisateur ?')">
+                                    Débloquer
+                                </a>
                                 <a href="<?= BASE_URL ?>/admin/delete-user?id=<?=
                                     urlencode($user['mail']) ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('Êtes-vous sûr de débloquer cet utilisateur ?')">
-                                Débloquer
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cet utilisateur ?')">
+                                    Supprimer
                                 </a>
                             </td>
                         </tr>

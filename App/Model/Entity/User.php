@@ -15,6 +15,7 @@ class User
     private string $passwordHash;
     private ?string $verificationCode = null;
     private bool $isVerified = false;
+    private int $accountStatus = 0;
     private ?\DateTimeImmutable $createdAt = null;
     private ?string $resetToken = null;
     private ?\DateTimeImmutable $resetTokenExpiration = null;
@@ -117,6 +118,16 @@ class User
         return $this->firstName . ' ' . $this->lastName;
     }
 
+    /**
+     * Check if user account is blocked
+     *
+     * @return bool True if blocked
+     */
+    public function isBlocked(): bool
+    {
+        return $this->accountStatus === 2;
+    }
+
     // Getters and Setters
 
     public function getId(): ?int
@@ -208,5 +219,15 @@ class User
     {
         return $this->resetTokenExpiration;
     }
-}
 
+    public function getAccountStatus(): int
+    {
+        return $this->accountStatus;
+    }
+
+    public function setAccountStatus(int $accountStatus): void
+    {
+        $this->accountStatus = $accountStatus;
+        $this->isVerified = ($accountStatus === 1);
+    }
+}

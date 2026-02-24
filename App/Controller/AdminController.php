@@ -85,10 +85,15 @@ class AdminController extends AbstractController
             "SELECT mail, name, surname, account_status FROM teachers WHERE account_status = 0 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
+        // Utilisateurs bloqués (account_status = 2)
+        $blockedUsers = $pdo->query(
+            "SELECT mail, name, surname FROM teachers WHERE account_status = 2 ORDER BY surname ASC"
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
         $this->renderView('admin/admin-dashboard', [
             'verifiedUsers' => $verifiedUsers,
             'pendingUsers'  => $pendingUsers,
-            'blockedUsers'  => [],
+            'blockedUsers'  => $blockedUsers,
         ]);
     }
 
@@ -195,7 +200,7 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Ban a user (delete from teachers)
+     * Ban a user (set account_status to 2)
      *
      * @return void
      */
@@ -210,8 +215,31 @@ class AdminController extends AbstractController
 
         if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            $del = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
-            $del->execute(['mail' => $id]);
+            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 2 WHERE mail = :mail");
+            $stmt->execute(['mail' => $id]);
+        }
+
+        $this->redirect('/admin/dashboard');
+    }
+
+    /**
+     * Unban a user (set account_status back to 1)
+     *
+     * @return void
+     */
+    public function unbanUser(): void
+    {
+        if (!$this->isAdminLoggedIn()) {
+            $this->redirect('/admin/login');
+            return;
+        }
+
+        $mail = $this->getQuery('id') ?? '';
+
+        if (!empty($mail)) {
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 1 WHERE mail = :mail AND account_status = 2");
+            $stmt->execute(['mail' => $mail]);
         }
 
         $this->redirect('/admin/dashboard');
