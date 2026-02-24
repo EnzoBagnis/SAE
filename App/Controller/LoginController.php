@@ -54,7 +54,7 @@ class LoginController extends AbstractController
         ]);
 
         if ($result['success']) {
-            $this->redirect('/dashboard');
+            $this->redirect('/resources');
         } else {
             $this->renderView('auth/login', [
                 'error' => $result['message'],
