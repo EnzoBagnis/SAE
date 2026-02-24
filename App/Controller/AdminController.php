@@ -238,7 +238,7 @@ class AdminController extends AbstractController
 
         if (!empty($mail)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 1 WHERE mail = :mail");
+            $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
             $stmt->execute(['mail' => $mail]);
         }
 
