@@ -5,7 +5,6 @@ namespace App\Controller;
 use Core\Controller\AbstractController;
 use App\Model\UseCase\RegisterUserUseCase;
 use App\Model\UserRepository;
-use App\Model\PendingRegistrationRepository;
 use App\Model\EmailService;
 
 /**
@@ -22,12 +21,10 @@ class RegisterController extends AbstractController
     public function __construct()
     {
         $userRepository = new UserRepository();
-        $pendingRepository = new PendingRegistrationRepository();
         $emailService = new EmailService();
 
         $this->registerUseCase = new RegisterUserUseCase(
             $userRepository,
-            $pendingRepository,
             $emailService
         );
     }

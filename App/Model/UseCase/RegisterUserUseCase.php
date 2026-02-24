@@ -3,41 +3,38 @@
 namespace App\Model\UseCase;
 
 use App\Model\UserRepository;
-use App\Model\PendingRegistrationRepository;
-use App\Model\Entity\PendingRegistration;
+use App\Model\Entity\User;
 use App\Model\EmailService;
 
 /**
  * Register User Use Case
- * Handles user registration process
+ * Handles user registration process.
+ * Inserts directly into the `teachers` table with account_status=0 (pending approval).
  */
 class RegisterUserUseCase
 {
     private UserRepository $userRepository;
-    private PendingRegistrationRepository $pendingRepository;
     private EmailService $emailService;
 
     /**
      * Constructor
      *
      * @param UserRepository $userRepository User repository
-     * @param PendingRegistrationRepository $pendingRepository Pending registration repository
      * @param EmailService $emailService Email service
      */
     public function __construct(
         UserRepository $userRepository,
-        PendingRegistrationRepository $pendingRepository,
         EmailService $emailService
     ) {
         $this->userRepository = $userRepository;
-        $this->pendingRepository = $pendingRepository;
         $this->emailService = $emailService;
     }
 
     /**
-     * Execute registration use case
+     * Execute registration use case.
+     * Creates a teacher account with account_status=0 (awaiting verification).
      *
-     * @param array $data Registration data
+     * @param array $data Registration data (email, password, first_name, last_name)
      * @return array Result array with success status and message
      */
     public function execute(array $data): array
@@ -64,7 +61,7 @@ class RegisterUserUseCase
             ];
         }
 
-        // Check if email already exists
+        // Check if email already exists in teachers
         if ($this->userRepository->emailExists($data['email'])) {
             return [
                 'success' => false,
@@ -72,26 +69,19 @@ class RegisterUserUseCase
             ];
         }
 
-        if ($this->pendingRepository->emailExists($data['email'])) {
-            return [
-                'success' => false,
-                'message' => 'Une inscription avec cet email est déjà en attente',
-            ];
-        }
+        // Create user entity with account_status = 0 (not verified yet)
+        $user = new User();
+        $user->setLastName($data['last_name']);
+        $user->setFirstName($data['first_name']);
+        $user->setEmail($data['email']);
+        $user->setPasswordHash(password_hash($data['password'], PASSWORD_DEFAULT));
+        $user->setIsVerified(false);
 
-        // Create pending registration
-        $registration = new PendingRegistration();
-        $registration->setLastName($data['last_name']);
-        $registration->setFirstName($data['first_name']);
-        $registration->setEmail($data['email']);
-        $registration->setPasswordHash(password_hash($data['password'], PASSWORD_DEFAULT));
-        $registration->setCreatedAt(new \DateTimeImmutable());
+        // Generate and assign verification code
+        $verificationCode = $user->generateVerificationCode();
 
-        // Generate verification code
-        $verificationCode = $registration->generateVerificationCode();
-
-        // Save pending registration
-        $savedRegistration = $this->pendingRepository->save($registration);
+        // Save user into teachers table
+        $this->userRepository->save($user);
 
         // Send verification email
         $emailSent = $this->emailService->sendVerificationCode(
@@ -110,7 +100,6 @@ class RegisterUserUseCase
         return [
             'success' => true,
             'message' => 'Inscription réussie. Veuillez vérifier votre email.',
-            'registration_id' => $savedRegistration->getId(),
         ];
     }
 }

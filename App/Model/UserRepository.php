@@ -168,15 +168,16 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Delete user by mail
+     * Delete user by mail (overrides AbstractRepository::delete).
+     * In the teachers table, the PK is 'mail' (string), not 'id'.
      *
-     * @param string $mail User mail
+     * @param mixed $id User mail address used as primary key
      * @return bool True if deleted
      */
-    public function delete(string $mail): bool
+    public function delete($id): bool
     {
         $stmt = $this->pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
-        return $stmt->execute(['mail' => $mail]);
+        return $stmt->execute(['mail' => $id]);
     }
 
     /**
