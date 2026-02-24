@@ -13,7 +13,7 @@ use Core\Service\SessionService;
  */
 class ResourcesController extends AbstractController
 {
-    private ResourceRepository $resourceRepository;
+    private ?ResourceRepository $resourceRepository = null;
     private AuthenticationService $authService;
 
     /**
@@ -21,8 +21,20 @@ class ResourcesController extends AbstractController
      */
     public function __construct()
     {
-        $this->resourceRepository = new ResourceRepository();
         $this->authService = new AuthenticationService(new SessionService());
+    }
+
+    /**
+     * Get ResourceRepository instance (lazy initialization)
+     *
+     * @return ResourceRepository
+     */
+    private function getRepository(): ResourceRepository
+    {
+        if ($this->resourceRepository === null) {
+            $this->resourceRepository = new ResourceRepository();
+        }
+        return $this->resourceRepository;
     }
 
     /**
@@ -34,12 +46,27 @@ class ResourcesController extends AbstractController
     {
         $this->authService->requireAuth('/auth/login');
 
-        $userId = $this->authService->getUserId();
-        $ownedResources = $this->resourceRepository->findByOwnerUserId($userId);
-        $sharedResources = $this->resourceRepository->findSharedWithUser($userId);
+        $email = $this->authService->getUserEmail();
+
+        if ($email === null) {
+            $this->redirect('/auth/login');
+            return;
+        }
+
+        try {
+            $ownedResources = $this->getRepository()->findByOwnerMail($email);
+        } catch (\Exception $e) {
+            $ownedResources = [];
+        }
+
+        try {
+            $sharedResources = $this->getRepository()->findSharedWithMail($email);
+        } catch (\Exception $e) {
+            $sharedResources = [];
+        }
 
         $this->renderView('resources/list', [
-            'owned_resources' => $ownedResources,
+            'owned_resources'  => $ownedResources,
             'shared_resources' => $sharedResources,
         ]);
     }
@@ -54,7 +81,11 @@ class ResourcesController extends AbstractController
     {
         $this->authService->requireAuth('/auth/login');
 
-        $resource = $this->resourceRepository->findById($resourceId);
+        try {
+            $resource = $this->getRepository()->findById($resourceId);
+        } catch (\Exception $e) {
+            $resource = null;
+        }
 
         if (!$resource) {
             http_response_code(404);
@@ -67,4 +98,3 @@ class ResourcesController extends AbstractController
         ]);
     }
 }
-

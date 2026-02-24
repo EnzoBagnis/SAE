@@ -4,18 +4,16 @@ namespace App\Model\Entity;
 
 /**
  * Resource Entity
- * Represents a pedagogical resource in the system
+ * Represents a pedagogical resource in the system.
+ * Maps to the `ressources` table.
  */
 class Resource
 {
     private ?int $resourceId = null;
-    private int $ownerUserId;
-    private string $resourceName;
+    private string $ownerMail = '';
+    private string $resourceName = '';
     private ?string $description = null;
     private ?string $imagePath = null;
-    private ?string $dateCreation = null;
-    private ?string $ownerFirstname = null;
-    private ?string $ownerLastname = null;
     private string $accessType = 'owner';
 
     // Getters and Setters
@@ -30,14 +28,14 @@ class Resource
         $this->resourceId = $resourceId;
     }
 
-    public function getOwnerUserId(): int
+    public function getOwnerMail(): string
     {
-        return $this->ownerUserId;
+        return $this->ownerMail;
     }
 
-    public function setOwnerUserId(int $ownerUserId): void
+    public function setOwnerMail(string $ownerMail): void
     {
-        $this->ownerUserId = $ownerUserId;
+        $this->ownerMail = $ownerMail;
     }
 
     public function getResourceName(): string
@@ -70,36 +68,6 @@ class Resource
         $this->imagePath = $imagePath;
     }
 
-    public function getDateCreation(): ?string
-    {
-        return $this->dateCreation;
-    }
-
-    public function setDateCreation(?string $dateCreation): void
-    {
-        $this->dateCreation = $dateCreation;
-    }
-
-    public function getOwnerFirstname(): ?string
-    {
-        return $this->ownerFirstname;
-    }
-
-    public function setOwnerFirstname(?string $ownerFirstname): void
-    {
-        $this->ownerFirstname = $ownerFirstname;
-    }
-
-    public function getOwnerLastname(): ?string
-    {
-        return $this->ownerLastname;
-    }
-
-    public function setOwnerLastname(?string $ownerLastname): void
-    {
-        $this->ownerLastname = $ownerLastname;
-    }
-
     public function getAccessType(): string
     {
         return $this->accessType;
@@ -109,45 +77,4 @@ class Resource
     {
         $this->accessType = $accessType;
     }
-
-    /**
-     * Get owner full name
-     *
-     * @return string Owner full name
-     */
-    public function getOwnerFullName(): string
-    {
-        return trim($this->ownerFirstname . ' ' . $this->ownerLastname);
-    }
-
-    /**
-     * Check if user is owner
-     *
-     * @return bool True if access type is owner
-     */
-    public function isOwner(): bool
-    {
-        return $this->accessType === 'owner';
-    }
-
-    /**
-     * Convert entity to array
-     *
-     * @return array Entity data as array
-     */
-    public function toArray(): array
-    {
-        return [
-            'resource_id' => $this->resourceId,
-            'owner_user_id' => $this->ownerUserId,
-            'resource_name' => $this->resourceName,
-            'description' => $this->description,
-            'image_path' => $this->imagePath,
-            'date_creation' => $this->dateCreation,
-            'owner_firstname' => $this->ownerFirstname,
-            'owner_lastname' => $this->ownerLastname,
-            'access_type' => $this->accessType,
-        ];
-    }
 }
-

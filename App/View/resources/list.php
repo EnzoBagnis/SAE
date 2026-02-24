@@ -2,9 +2,12 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '');
+}
 
-$user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
-$user_lastname  = $_SESSION['nom'] ?? '';
+$user_firstname = $_SESSION['user_firstname'] ?? ($_SESSION['name'] ?? 'Utilisateur');
+$user_lastname  = $_SESSION['user_lastname'] ?? ($_SESSION['surname'] ?? '');
 $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
 $title = 'StudTraj - Mes Ressources';
 ?>
@@ -32,8 +35,8 @@ $title = 'StudTraj - Mes Ressources';
     </button>
 
     <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
-        <a href="<?= BASE_URL ?>/index.php?action=exercises">Exercices</a>
+        <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
+        <a href="<?= BASE_URL ?>/exercises">Exercices</a>
     </nav>
 
     <div class="header-right">
@@ -41,7 +44,7 @@ $title = 'StudTraj - Mes Ressources';
             <div class="user-avatar"><?= htmlspecialchars($initials) ?></div>
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
-        <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">
+        <a href="<?= BASE_URL ?>/auth/logout" class="btn-logout">
             <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -63,8 +66,8 @@ $title = 'StudTraj - Mes Ressources';
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
         <ul class="burger-menu-list">
-            <li><a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
-            <li><a href="<?= BASE_URL ?>/index.php?action=exercises" class="burger-link">Exercices</a></li>
+            <li><a href="<?= BASE_URL ?>/resources" class="burger-link active">Ressources</a></li>
+            <li><a href="<?= BASE_URL ?>/exercises" class="burger-link">Exercices</a></li>
             <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>
@@ -80,7 +83,7 @@ $title = 'StudTraj - Mes Ressources';
                 <?php foreach ($owned_resources as $resource) : ?>
                     <div class="resource-card">
                         <?php if ($resource->getImagePath()) : ?>
-                            <img src="/images/<?= htmlspecialchars($resource->getImagePath()) ?>"
+                            <img src="<?= htmlspecialchars($resource->getImagePath()) ?>"
                                  class="resource-card-image"
                                  alt="<?= htmlspecialchars($resource->getResourceName()) ?>">
                         <?php else : ?>
@@ -95,7 +98,7 @@ $title = 'StudTraj - Mes Ressources';
                             <?php if ($resource->getDescription()) : ?>
                                 <p><?= htmlspecialchars($resource->getDescription()) ?></p>
                             <?php endif; ?>
-                            <a href="<?= BASE_URL ?>/index.php?action=resource_details&id=<?= (int)$resource->getResourceId() ?>"
+                            <a href="<?= BASE_URL ?>/resources/<?= (int)$resource->getResourceId() ?>"
                                class="resource-link-wrapper">Voir les détails</a>
                         </div>
                     </div>
@@ -109,7 +112,7 @@ $title = 'StudTraj - Mes Ressources';
                 <?php foreach ($shared_resources as $resource) : ?>
                     <div class="resource-card">
                         <?php if ($resource->getImagePath()) : ?>
-                            <img src="/images/<?= htmlspecialchars($resource->getImagePath()) ?>"
+                            <img src="<?= htmlspecialchars($resource->getImagePath()) ?>"
                                  class="resource-card-image"
                                  alt="<?= htmlspecialchars($resource->getResourceName()) ?>">
                         <?php else : ?>
@@ -124,12 +127,10 @@ $title = 'StudTraj - Mes Ressources';
                             <?php if ($resource->getDescription()) : ?>
                                 <p><?= htmlspecialchars($resource->getDescription()) ?></p>
                             <?php endif; ?>
-                            <?php if ($resource->getOwnerFirstname() || $resource->getOwnerLastname()) : ?>
-                                <span class="resource-card-owner">
-                                    Par : <?= htmlspecialchars($resource->getOwnerFullName()) ?>
-                                </span>
-                            <?php endif; ?>
-                            <a href="<?= BASE_URL ?>/index.php?action=resource_details&id=<?= (int)$resource->getResourceId() ?>"
+                            <span class="resource-card-owner">
+                                Par : <?= htmlspecialchars($resource->getOwnerMail()) ?>
+                            </span>
+                            <a href="<?= BASE_URL ?>/resources/<?= (int)$resource->getResourceId() ?>"
                                class="resource-link-wrapper">Voir les détails</a>
                         </div>
                     </div>
