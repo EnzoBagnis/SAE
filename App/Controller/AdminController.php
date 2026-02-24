@@ -25,7 +25,7 @@ class AdminController extends AbstractController
     public function loginForm(): void
     {
         if ($this->isAdminLoggedIn()) {
-            $this->redirect('/admin/dashboard');
+            $this->redirect(BASE_URL . '/admin/dashboard');
             return;
         }
 
@@ -48,12 +48,12 @@ class AdminController extends AbstractController
         $password = $this->getPost('mdp') ?? '';
 
         $expectedId  = \Core\Config\EnvLoader::get('ADMIN_ID', 'admin');
-        $expectedPwd = \Core\Config\EnvLoader::get('ADMIN_PASSWORD', '');
+        $expectedPwd = \Core\Config\EnvLoader::get('ADMIN_PASS', '');
 
         if ($adminId === $expectedId && $password === $expectedPwd) {
             session_start();
             $_SESSION[self::SESSION_KEY] = true;
-            $this->redirect('/admin/dashboard');
+            $this->redirect(BASE_URL . '/admin/dashboard');
         } else {
             $this->renderView('admin/admin-login', [
                 'error_message' => 'Identifiants incorrects.',
@@ -69,29 +69,26 @@ class AdminController extends AbstractController
     public function dashboard(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
-        $pdo = DatabaseConnection::getConnection();
+        $pdo = DatabaseConnection::getInstance()->getConnection();
 
+        // Utilisateurs vérifiés (account_status = 1)
         $verifiedUsers = $pdo->query(
-            "SELECT id, nom, prenom, mail FROM utilisateurs ORDER BY nom ASC"
+            "SELECT mail, name, surname FROM teachers WHERE account_status = 1 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
+        // Utilisateurs en attente de vérification (account_status = 0)
         $pendingUsers = $pdo->query(
-            "SELECT id, nom, prenom, mail, verifie FROM inscription_en_attente ORDER BY id ASC"
+            "SELECT mail, name, surname, account_status FROM teachers WHERE account_status = 0 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
+        // Utilisateurs bloqués (account_status = 2)
         $blockedUsers = $pdo->query(
-            "SELECT mail, date_de_ban, ban_def, duree_ban FROM liste_noire ORDER BY date_de_ban DESC"
+            "SELECT mail, name, surname FROM teachers WHERE account_status = 2 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
-
-        // Add index as pseudo-id for blocked users display
-        foreach ($blockedUsers as $i => &$bu) {
-            $bu['id'] = $i + 1;
-        }
-        unset($bu);
 
         $this->renderView('admin/admin-dashboard', [
             'verifiedUsers' => $verifiedUsers,
@@ -112,7 +109,7 @@ class AdminController extends AbstractController
         }
         unset($_SESSION[self::SESSION_KEY]);
         session_destroy();
-        $this->redirect('/admin/login');
+        $this->redirect(BASE_URL . '/admin/login');
     }
 
     /**
@@ -136,75 +133,43 @@ class AdminController extends AbstractController
     public function deleteUser(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
-            return;
-        }
-
-        $table = $this->getQuery('table') ?? 'V';
-        $id    = $this->getQuery('id') ?? '';
-
-        if (!empty($id)) {
-            $pdo = DatabaseConnection::getConnection();
-            if ($table === 'B') {
-                $stmt = $pdo->prepare("DELETE FROM liste_noire WHERE mail = :id");
-            } elseif ($table === 'P') {
-                $stmt = $pdo->prepare("DELETE FROM inscription_en_attente WHERE id = :id");
-            } else {
-                $stmt = $pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
-            }
-            $stmt->execute(['id' => $id]);
-        }
-
-        $this->redirect('/admin/dashboard');
-    }
-
-    /**
-     * Validate a pending user
-     *
-     * @return void
-     */
-    public function validateUser(): void
-    {
-        if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
         $id = $this->getQuery('id') ?? '';
 
         if (!empty($id)) {
-            $pdo = DatabaseConnection::getConnection();
-
-            // Fetch pending user
-            $stmt = $pdo->prepare("SELECT * FROM inscription_en_attente WHERE id = :id");
-            $stmt->execute(['id' => $id]);
-            $pending = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-            if ($pending) {
-                // Move to verified users
-                $ins = $pdo->prepare("
-                    INSERT INTO utilisateurs (nom, prenom, mail, mdp, code_verif, mail_verifie, date_creation)
-                    VALUES (:nom, :prenom, :mail, :mdp, :code_verif, 1, NOW())
-                ");
-                $ins->execute([
-                    'nom'        => $pending['nom'],
-                    'prenom'     => $pending['prenom'],
-                    'mail'       => $pending['mail'],
-                    'mdp'        => $pending['mdp'],
-                    'code_verif' => $pending['code_verif'] ?? null,
-                ]);
-
-                // Delete from pending
-                $del = $pdo->prepare("DELETE FROM inscription_en_attente WHERE id = :id");
-                $del->execute(['id' => $id]);
-
-                // Send notification
-                $emailService = new EmailService();
-                $emailService->sendVerificationCode($pending['mail'], $pending['prenom'] ?? '', '');
-            }
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+            $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
+            $stmt->execute(['mail' => $id]);
         }
 
-        $this->redirect('/admin/dashboard');
+        $this->redirect(BASE_URL . '/admin/dashboard');
+    }
+
+    /**
+     * Validate a pending user (set account_status to 1)
+     *
+     * @return void
+     */
+    public function validateUser(): void
+    {
+        if (!$this->isAdminLoggedIn()) {
+            $this->redirect(BASE_URL . '/admin/login');
+            return;
+        }
+
+        $mail = $this->getQuery('id') ?? '';
+
+        if (!empty($mail)) {
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+
+            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 1 WHERE mail = :mail AND account_status = 0");
+            $stmt->execute(['mail' => $mail]);
+        }
+
+        $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
@@ -215,65 +180,69 @@ class AdminController extends AbstractController
     public function editUser(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
-        $id     = $this->getPost('id') ?? '';
+        $mail   = $this->getPost('id') ?? '';
         $nom    = $this->getPost('nom') ?? '';
         $prenom = $this->getPost('prenom') ?? '';
-        $email  = $this->getPost('email') ?? '';
 
-        if (!empty($id)) {
-            $pdo  = DatabaseConnection::getConnection();
+        if (!empty($mail)) {
+            $pdo  = DatabaseConnection::getInstance()->getConnection();
             $stmt = $pdo->prepare("
-                UPDATE utilisateurs SET nom = :nom, prenom = :prenom, mail = :mail WHERE id = :id
+                UPDATE teachers SET surname = :surname, name = :name WHERE mail = :mail
             ");
-            $stmt->execute(['nom' => $nom, 'prenom' => $prenom, 'mail' => $email, 'id' => $id]);
+            $stmt->execute(['surname' => $nom, 'name' => $prenom, 'mail' => $mail]);
         }
 
-        $this->redirect('/admin/dashboard');
+        $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
-     * Ban a user
+     * Ban a user (set account_status to 2)
      *
      * @return void
      */
     public function banUser(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
-        $table   = $this->getQuery('table') ?? 'V';
-        $id      = $this->getPost('id') ?? '';
-        $email   = $this->getPost('email') ?? '';
-        $ban_def = $this->getPost('ban_def') ?? 1;
+        $id = $this->getPost('id') ?? '';
 
-        if (!empty($email)) {
-            $pdo = DatabaseConnection::getConnection();
-
-            // Insert into blacklist
-            $stmt = $pdo->prepare("
-                INSERT INTO liste_noire (mail, date_de_ban, ban_def)
-                VALUES (:mail, NOW(), :ban_def)
-                ON DUPLICATE KEY UPDATE date_de_ban = NOW(), ban_def = :ban_def
-            ");
-            $stmt->execute(['mail' => $email, 'ban_def' => $ban_def]);
-
-            // Remove from original table
-            if ($table === 'V') {
-                $del = $pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
-                $del->execute(['id' => $id]);
-            } elseif ($table === 'P') {
-                $del = $pdo->prepare("DELETE FROM inscription_en_attente WHERE id = :id");
-                $del->execute(['id' => $id]);
-            }
+        if (!empty($id)) {
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 2 WHERE mail = :mail");
+            $stmt->execute(['mail' => $id]);
         }
 
-        $this->redirect('/admin/dashboard');
+        $this->redirect(BASE_URL . '/admin/dashboard');
+    }
+
+    /**
+     * Unban a user (set account_status back to 1)
+     *
+     * @return void
+     */
+    public function unbanUser(): void
+    {
+        if (!$this->isAdminLoggedIn()) {
+            $this->redirect(BASE_URL . '/admin/login');
+            return;
+        }
+
+        $mail = $this->getQuery('id') ?? '';
+
+        if (!empty($mail)) {
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+            $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
+            $stmt->execute(['mail' => $mail]);
+        }
+
+        $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**

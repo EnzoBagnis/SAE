@@ -54,6 +54,14 @@ class LoginUserUseCase
             ];
         }
 
+        // Check if account is blocked
+        if ($user->isBlocked()) {
+            return [
+                'success' => false,
+                'message' => 'Votre compte a été bloqué. Contactez un administrateur.',
+            ];
+        }
+
         // Check if email is verified
         if (!$user->isVerified()) {
             return [
@@ -85,4 +93,3 @@ class LoginUserUseCase
         ];
     }
 }
-
