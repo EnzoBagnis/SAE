@@ -1,10 +1,10 @@
 ﻿<!-- Footer -->
 <footer class="site-footer">
     <div class="footer-container">
-        <!-- Section 1: ├Ç propos -->
+        <!-- Section 1: À propos -->
         <div class="footer-section">
-            <h3>├Ç propos de StudTraj</h3>
-            <p>Plateforme d├®di├®e ├á l'apprentissage et ├á la visualisation de donn├®es pour les ├®tudiants.</p>
+            <h3>À propos de StudTraj</h3>
+            <p>Plateforme dédiée à l'apprentissage et à la visualisation de données pour les étudiants.</p>
         </div>
 
         <!-- Section 2: Contact -->
@@ -18,7 +18,7 @@
 
         <!-- Section 3: Labels & Certifications -->
         <div class="footer-section">
-            <h3>Qualit├® & Accessibilit├®</h3>
+            <h3>Qualité & Accessibilité</h3>
             <div class="footer-badges">
                 <a href="https://validator.w3.org/check?uri=referer"
                    target="_blank" rel="noopener" title="HTML5 Valide">
@@ -38,18 +38,18 @@
         </div>
     </div>
 
-    <!-- Barre inf├®rieure -->
+    <!-- Barre inférieure -->
     <div class="footer-bottom">
         <div class="footer-bottom-content">
-            <p>&copy; <?php echo date('Y'); ?> StudTraj - Tous droits r├®serv├®s</p>
+            <p>&copy; <?php echo date('Y'); ?> StudTraj - Tous droits réservés</p>
             <p class="footer-legal">
-                <a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions l├®gales</a> |
+                <a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a> |
                 <a href="#" onclick="showCGU()">CGU</a> |
-                <a href="#" onclick="showPrivacy()">Confidentialit├®</a> |
+                <a href="#" onclick="showPrivacy()">Confidentialité</a> |
                 <a href="<?= BASE_URL ?>/sitemap.php">Sitemap XML</a>
             </p>
             <p class="footer-compliance">
-                Conformit├® RGPD | Accessibilit├® : Conforme |
+                Conformité RGPD | Accessibilité : Conforme |
                 <a href="https://www.w3.org/WAI/WCAG2AA-Conformance"
                    target="_blank" rel="noopener">WCAG 2.1 AA</a>
             </p>
@@ -61,64 +61,64 @@
 <div id="cguModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeCGU()">&times;</span>
-        <h2>Conditions G├®n├®rales d'Utilisation</h2>
+        <h2>Conditions Générales d'Utilisation</h2>
         <div class="modal-text">
             <h3>1. Acceptation des conditions</h3>
             <p>
-                En acc├®dant et en utilisant StudTraj, vous acceptez d'├¬tre li├®
-                par ces conditions g├®n├®rales d'utilisation.
+                En accédant et en utilisant StudTraj, vous acceptez d'être lié
+                par ces conditions générales d'utilisation.
             </p>
 
             <h3>2. Utilisation du service</h3>
             <p>
-                Ce service est destin├® ├á un usage ├®ducatif.
+                Ce service est destiné à un usage éducatif.
                 Toute utilisation abusive ou frauduleuse est strictement interdite.
             </p>
 
             <h3>3. Compte utilisateur</h3>
             <p>
-                Vous ├¬tes responsable de la confidentialit├®
+                Vous êtes responsable de la confidentialité
                 de vos identifiants de connexion.
             </p>
 
-            <h3>4. Propri├®t├® intellectuelle</h3>
+            <h3>4. Propriété intellectuelle</h3>
             <p>
-                Tous les contenus pr├®sents sur StudTraj
-                sont prot├®g├®s par les droits d'auteur.
+                Tous les contenus présents sur StudTraj
+                sont protégés par les droits d'auteur.
             </p>
         </div>
     </div>
 </div>
 
-<!-- Modal Politique de confidentialit├® -->
+<!-- Modal Politique de confidentialité -->
 <div id="privacyModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closePrivacy()">&times;</span>
-        <h2>Politique de confidentialit├®</h2>
+        <h2>Politique de confidentialité</h2>
         <div class="modal-text">
-            <h3>1. Collecte des donn├®es</h3>
+            <h3>1. Collecte des données</h3>
             <p>
-                Nous collectons uniquement les donn├®es n├®cessaires
-                ├á la cr├®ation et gestion de votre compte
-                (nom, pr├®nom, email).
+                Nous collectons uniquement les données nécessaires
+                à la création et gestion de votre compte
+                (nom, prénom, email).
             </p>
 
-            <h3>2. Utilisation des donn├®es</h3>
+            <h3>2. Utilisation des données</h3>
             <p>
-                Vos donn├®es sont utilis├®es exclusivement
+                Vos données sont utilisées exclusivement
                 pour le fonctionnement du service
-                et ne sont jamais partag├®es avec des tiers.
+                et ne sont jamais partagées avec des tiers.
             </p>
 
-            <h3>3. S├®curit├®</h3>
+            <h3>3. Sécurité</h3>
             <p>
-                Nous mettons en ┼ôuvre des mesures de s├®curit├® appropri├®es
-                pour prot├®ger vos donn├®es personnelles.
+                Nous mettons en œuvre des mesures de sécurité appropriées
+                pour protéger vos données personnelles.
             </p>
 
             <h3>4. Vos droits</h3>
             <p>
-                Conform├®ment au RGPD, vous disposez d'un droit d'acc├¿s,
+                Conformément au RGPD, vous disposez d'un droit d'accès,
                 de rectification, de suppression et d'opposition.
             </p>
 
@@ -129,7 +129,7 @@
 </div>
 
 <script>
-// Fonctions pour les modals CGU et Confidentialit├®
+// Fonctions pour les modals CGU et Confidentialité
 function showCGU() {
     document.getElementById('cguModal').style.display = 'block';
 }

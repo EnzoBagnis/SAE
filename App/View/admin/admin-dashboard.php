@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<!-- Bandeau sup├®rieur -->
+<!-- Bandeau supérieur -->
 <header class="top-menu">
     <div class="logo">
         <h1>StudTraj</h1>
@@ -34,7 +34,7 @@
                 <?php
                 $errors = [
                     'cannot_delete_self' => 'Vous ne pouvez pas supprimer votre propre compte',
-                    'delete_failed' => '├ëchec de la suppression de l\'utilisateur',
+                    'delete_failed' => 'Échec de la suppression de l\'utilisateur',
                     'user_not_found' => 'Utilisateur introuvable'
                 ];
                 echo htmlspecialchars($errors[$_GET['error']] ?? 'Une erreur est survenue');
@@ -46,7 +46,7 @@
             <div class="alert alert-success">
                 <?php
                 if ($_GET['success'] === 'deleted') {
-                    echo 'Utilisateur supprim├® avec succ├¿s';
+                    echo 'Utilisateur supprimé avec succès';
                 }
                 ?>
             </div>
@@ -58,15 +58,15 @@
         <div class="tabs">
             <button class="tab-btn <?= ($currentTab ?? 'verified') === 'verified' ? 'active' : '' ?>"
                     onclick="showTab('verified')">
-                Utilisateurs v├®rifi├®s (<?= count($verifiedUsers ?? []) ?>)
+                Utilisateurs vérifiés (<?= count($verifiedUsers ?? []) ?>)
             </button>
             <button class="tab-btn <?= ($currentTab ?? '') === 'pending' ? 'active' : '' ?>"
                     onclick="showTab('pending')">
-                En attente de v├®rification (<?= count($pendingUsers ?? []) ?>)
+                En attente de vérification (<?= count($pendingUsers ?? []) ?>)
             </button>
             <button class="tab-btn <?= ($currentTab ?? '') === 'blocked' ? 'active' : '' ?>"
                     onclick="showTab('blocked')">
-                Utilisateurs bloqu├®s (<?= count($blockedUsers ?? []) ?>)
+                Utilisateurs bloqués (<?= count($blockedUsers ?? []) ?>)
             </button>
         </div>
         <!-- Barre de recherche
@@ -85,14 +85,14 @@
 
 
 
-        <!-- Tableau des utilisateurs v├®rifi├®s -->
+        <!-- Tableau des utilisateurs vérifiés -->
         <div id="verified-tab" class="tab-content <?= ($currentTab ?? 'verified') === 'verified' ? 'active' : '' ?>">
             <table class="user-table">
                 <thead>
                 <tr>
                     <th>ID</th>
                     <th>Nom</th>
-                    <th>Pr├®nom</th>
+                    <th>Prénom</th>
                     <th>Email</th>
                     <th>Actions</th>
                 </tr>
@@ -102,7 +102,7 @@
                 <?php if (empty($verifiedUsers)) : ?>
                     <tr>
                         <?php echo"<script>console.log(" . json_encode($verifiedUsers) . ");</script>" ?>
-                        <td colspan="5" class="text-center">Aucun utilisateur v├®rifi├®</td>
+                        <td colspan="5" class="text-center">Aucun utilisateur vérifié</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($verifiedUsers as $user) : ?>
@@ -125,7 +125,7 @@
                                 <a href="<?= BASE_URL ?>/admin/delete-user?table=V&id=<?=
                                     urlencode($user['id']) ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('├ètes-vous s├╗r de vouloir supprimer cet utilisateur ?')">
+                                   onclick="return confirm('Ètes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
                                 <button class="btn-ban"
@@ -151,10 +151,10 @@
             <table class="user-table">
                 <thead>
                 <tr>
-                    <th>V├®rif├®</th>
+                    <th>Vérifé</th>
                     <th>ID</th>
                     <th>Nom</th>
-                    <th>Pr├®nom</th>
+                    <th>Prénom</th>
                     <th>Email</th>
                     <th>Actions</th>
                 </tr>
@@ -169,10 +169,10 @@
                         <tr>
                             <td><?php switch ($user['verifie']) {
                                 case 0:
-                                    echo "Demande envoy├®e";
+                                    echo "Demande envoyée";
                                     break;
                                 case 1:
-                                    echo "Email v├®rifi├®";
+                                    echo "Email vérifié";
                                     break;
                                 } ?></td>
                             <td><?= htmlspecialchars($user['id']) ?></td>
@@ -193,7 +193,7 @@
                                 <a href="<?= BASE_URL ?>/admin/delete-user?table=P&id=<?=
                                     urlencode($user['id']) ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('├ètes-vous s├╗r de vouloir supprimer cet utilisateur ?')">
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
                                 <button class="btn-ban"
@@ -211,7 +211,7 @@
                                         urlencode($user['id']) ?>"
                                        class="btn-validate"
                                        onclick="return confirm(
-                                           '├ètes-vous s├╗r de vouloir valider cet utilisateur ?'
+                                           'Ètes-vous sûr de vouloir valider cet utilisateur ?'
                                        )">
                                         Valider
                                     </a>
@@ -224,7 +224,7 @@
             </table>
         </div>
 
-        <!-- Tableau des utilisateurs bloqu├®s -->
+        <!-- Tableau des utilisateurs bloqués -->
         <div id="blocked-tab" class="tab-content <?= ($currentTab ?? '') === 'blocked' ? 'active' : '' ?>">
             <table class="user-table">
                 <thead>
@@ -232,7 +232,7 @@
                     <th>ID</th>
                     <th>Email</th>
                     <th>Date de ban</th>
-                    <!--<th>Dur├®e de bannissement</th>-->
+                    <!--<th>Durée de bannissement</th>-->
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -241,7 +241,7 @@
                 <?php if (empty($blockedUsers)) : ?>
                     <tr>
                         <?php echo"<script>console.log(" . json_encode($blockedUsers) . ");</script>" ?>
-                        <td colspan="5" class="text-center">Aucun utilisateur v├®rifi├®</td>
+                        <td colspan="5" class="text-center">Aucun utilisateur vérifié</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($blockedUsers as $user) : ?>
@@ -270,8 +270,8 @@
                                 <a href="<?= BASE_URL ?>/admin/delete-user?table=B&id=<?=
                                     urlencode($user['mail']) ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('├ètes-vous s├╗r d├®bloquer cet utilisateur ?')">
-                                D├®bloquer
+                                   onclick="return confirm('Êtes-vous sûr débloquer cet utilisateur ?')">
+                                Débloquer
                                 </a>
                             </td>
                         </tr>
@@ -299,7 +299,7 @@
                 <input type="text" id="editNomVerifie" name="nom" required>
             </div>
         <div class="form-group">
-            <label for="editPrenomVerifie">Pr├®nom</label>
+            <label for="editPrenomVerifie">Prénom</label>
             <input type="text" id="editPrenomVerifie" name="prenom" required>
         </div>
         <div class="form-group">
@@ -325,7 +325,7 @@
             <input type="text" id="editNomPending" name="nom" required>
         </div>
         <div class="form-group">
-            <label for="editPrenomPending">Pr├®nom</label>
+            <label for="editPrenomPending">Prénom</label>
             <input type="text" id="editPrenomPending" name="prenom" required>
         </div>
         <div class="form-group">
@@ -358,14 +358,14 @@
             <label for="editDateBanBlocked">Date de ban</label>
             <input type="int" id="editDateBanBlocked" name="date_de_ban" readonly>
         </div>
-        <!-- Possibilit├® de modifier la dur├®e de ban dans le futur
+        <!-- Possibilité de modifier la durée de ban dans le futur
         <div class="form-group">
-            <label for="editDureeBanBlocked">Dur├®e de ban</label>
+            <label for="editDureeBanBlocked">Durée de ban</label>
             <input type="int" id="editDureeBanBlocked" name="duree_de_ban" required>
         </div>
         -->
         <div class="form-group">
-            <label for="ban_def">Bloquage d├®finitif</label>
+            <label for="ban_def">Bloquage définitif</label>
             <input type="checkbox" id="ban_def" name="ban_def" value="1" checked disabled>
         </div>
         <div class="form-actions">
@@ -382,16 +382,16 @@
             tab.classList.remove('active');
         });
 
-        // D├®sactiver tous les boutons
+        // Désactiver tous les boutons
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
 
-        // Afficher le contenu s├®lectionn├®
+        // Afficher le contenu sélectionné
         document.getElementById(tabName + '-tab').classList.add('active');
         fetch('<?= BASE_URL ?>/admin/switch-user');
 
-        // Activer le bouton s├®lectionn├®
+        // Activer le bouton sélectionné
         event.target.classList.add('active');
     }
     function test() {
@@ -420,10 +420,10 @@
         }
         switch (verifie) {
             case '0':
-                verifie = "Demande envoy├®e";
+                verifie = "Demande envoyée";
                 break;
             case '1':
-                verifie = "Email v├®rifi├®";
+                verifie = "Email vérifié";
                 break;
         }
         setValue('table', table, table);
@@ -450,8 +450,8 @@
         });
     }
 
-    // R├®cup├¿re la date locale au format ISO (AAAA-MM-JJTHH:mm:ss...)
-    // Puis on ne garde que les 10 premiers caract├¿res (AAAA-MM-JJ)
+    // Récupère la date locale au format ISO (AAAA-MM-JJTHH:mm:ss...)
+    // Puis on ne garde que les 10 premiers caractères (AAAA-MM-JJ)
     const dateDuJour = new Date().toISOString().split('T')[0];
 
     document.getElementById('date_fixe').textContent = dateDuJour;

@@ -120,13 +120,13 @@
                     <?= htmlspecialchars($user_lastname ?? '') ?>
                 </span>
             </div>
-            <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">D├®connexion</a>
+            <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">Déconnexion</a>
         </div>
     </header>
 
     <!-- Menu burger mobile -->
     <nav class="burger-nav" id="burgerNav">
-        <!-- Bouton de fermeture positionn├® comme le bouton d'ouverture -->
+        <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
         <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()"
                 aria-label="Fermer le menu">
             <span></span>
@@ -148,7 +148,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="<?= BASE_URL ?>/index.php?action=logout" class="burger-link burger-logout">D├®connexion</a>
+                    <a href="<?= BASE_URL ?>/index.php?action=logout" class="burger-link burger-logout">Déconnexion</a>
                 </li>
             </ul>
         </div>
@@ -163,14 +163,14 @@
                 ) ?>
             </p>
             <div class="owner-info">
-                Cr├®├®e par <?= htmlspecialchars(
+                Créée par <?= htmlspecialchars(
                     ($resource->owner_firstname ?? '') . ' ' .
                     ($resource->owner_lastname ?? '')
                 ) ?>
             </div>
             <div style="margin-top: 15px;">
                 <button class="btn" onclick="openImportModal(<?= $resource->resource_id ?>)">
-                    Importer des donn├®es
+                    Importer des données
                 </button>
             </div>
         </div>
@@ -195,8 +195,8 @@
                                 <?php endif; ?>
                             </p>
                             <p>
-                                Difficult├®:
-                                <?= htmlspecialchars($exercise->difficulte ?? 'Non sp├®cifi├®e') ?>
+                                Difficulté:
+                                <?= htmlspecialchars($exercise->difficulte ?? 'Non spécifiée') ?>
                             </p>
                         </div>
                         <div class="tp-item-actions">
@@ -215,14 +215,14 @@
     <div id="importModal" class="modal">
         <div class="modal-content import-modal">
             <span class="close" onclick="closeImportModal()">&times;</span>
-            <h2>Importer des donn├®es JSON</h2>
+            <h2>Importer des données JSON</h2>
 
             <div class="import-tabs">
                 <button class="import-tab active" onclick="switchImportTab('exercises')" data-tab="exercises">
                     Exercices de TP
                 </button>
                 <button class="import-tab" onclick="switchImportTab('attempts')" data-tab="attempts">
-                    Tentatives d'├®l├¿ves
+                    Tentatives d'élèves
                 </button>
             </div>
 
@@ -240,12 +240,12 @@
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <p><strong>Cliquez pour s├®lectionner</strong> ou glissez-d├®posez un fichier JSON</p>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
                         <p class="file-info">Format: exercices_tp.json</p>
                     </div>
                 </div>
                 <div id="exercisesPreview" class="file-preview" style="display: none;">
-                    <h3>Aper├ºu du fichier</h3>
+                    <h3>Aperçu du fichier</h3>
                     <div class="preview-content"></div>
                     <button class="btn-import" onclick="importExercises()">Importer les exercices</button>
                 </div>
@@ -265,12 +265,12 @@
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <p><strong>Cliquez pour s├®lectionner</strong> ou glissez-d├®posez un fichier JSON</p>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
                         <p class="file-info">Format: tentatives_eleves.json</p>
                     </div>
                 </div>
                 <div id="attemptsPreview" class="file-preview" style="display: none;">
-                    <h3>Aper├ºu du fichier</h3>
+                    <h3>Aperçu du fichier</h3>
                     <div class="preview-content"></div>
                     <button class="btn-import" onclick="importAttempts()">Importer les tentatives</button>
                 </div>
@@ -290,8 +290,8 @@
                     <li><a href="<?= BASE_URL ?>/index.php?action=dashboard">Tableau de bord</a></li>
                     <li><a href="<?= BASE_URL ?>/index.php?action=login">Connexion</a></li>
                     <li><a href="<?= BASE_URL ?>/index.php?action=signup">Inscription</a></li>
-                    <li><a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oubli├®</a></li>
-                    <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions l├®gales</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>
@@ -300,9 +300,9 @@
     <!-- Footer -->
     <footer class="main-footer">
         <div class="footer-content">
-            <p>&copy; 2024 StudTraj - Tous droits r├®serv├®s</p>
+            <p>&copy; 2024 StudTraj - Tous droits réservés</p>
             <ul class="footer-links">
-                <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions l├®gales</a></li>
+                <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a></li>
             </ul>
         </div>
     </footer>
@@ -323,8 +323,8 @@
         }
 
         function confirmLogout() {
-            if (confirm("Voulez-vous vraiment vous d├®connecter ?")) {
-                // Utilise la variable globale BASE_URL inject├®e c├┤t├® PHP
+            if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
+                // Utilise la variable globale BASE_URL injectée côté PHP
                 window.location.href = window.BASE_URL + '/index.php?action=logout';
             }
         }

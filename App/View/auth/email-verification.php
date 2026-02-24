@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
-    <meta name="description" content="V├®rification de votre email">
-    <title><?= htmlspecialchars($title ?? 'V├®rification Email - StudTraj') ?></title>
+    <meta name="description" content="Vérification de votre email">
+    <title><?= htmlspecialchars($title ?? 'Vérification Email - StudTraj') ?></title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <!-- SEO Meta Tags -->
     <meta name="robots" content="noindex, nofollow">
@@ -24,11 +24,11 @@
     <?php endif; ?>
 
     <div class="card verification-container">
-        <h2>V├®rification de l'email</h2>
-        <p>Entrez le code ├á 6 chiffres envoy├® par email</p>
+        <h2>Vérification de l'email</h2>
+        <p>Entrez le code à 6 chiffres envoyé par email</p>
 
         <form action="<?= BASE_URL ?>/index.php?action=emailverification" method="POST">
-            <label for="code">Code de v├®rification</label>
+            <label for="code">Code de vérification</label>
             <input type="number"
                    id="code"
                    name="code"
@@ -36,10 +36,10 @@
                    placeholder="000000"
                    maxlength="6"
                    required>
-            <button type="submit" class="btn-submit" name="verifier">V├®rifier</button>
+            <button type="submit" class="btn-submit" name="verifier">Vérifier</button>
         </form>
 
-        <p class="mt-3">Vous n'avez pas re├ºu le code ?</p>
+        <p class="mt-3">Vous n'avez pas reçu le code ?</p>
         <form action="<?= BASE_URL ?>/index.php?action=resendcode" method="POST">
             <button type="submit" class="btn-secondary" name="renvoyer_code">Renvoyer le code</button>
         </form>

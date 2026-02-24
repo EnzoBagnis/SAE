@@ -24,7 +24,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 
 $resources = Resource::getAllAccessibleResources($db, $user_id);
 
-// R├®cup├®ration des utilisateurs pour le partage
+// Récupération des utilisateurs pour le partage
 $all_users = [];
 try {
     $stmt_users = $db->prepare(
@@ -70,7 +70,7 @@ try {
             </div>
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
-        <!-- Bouton D├®connexion -->
+        <!-- Bouton Déconnexion -->
         <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">
             <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2">
@@ -78,14 +78,14 @@ try {
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
-            <span class="logout-text">D├®connexion</span>
+            <span class="logout-text">Déconnexion</span>
         </a>
     </div>
 </header>
 
 <!-- Menu burger mobile -->
 <nav class="burger-nav" id="burgerNav">
-    <!-- Bouton de fermeture positionn├® comme le bouton d'ouverture -->
+    <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
     <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()" aria-label="Fermer le menu">
         <span></span>
         <span></span>
@@ -101,7 +101,7 @@ try {
         </div>
         <ul class="burger-menu-list">
             <li><a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
-            <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">D├®connexion</a></li>
+            <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>
 </nav>
@@ -117,12 +117,12 @@ try {
                        placeholder="Rechercher..." onkeyup="filterResources()">
                 <select id="filterType" onchange="filterResources()">
                     <option value="all">Tout voir</option>
-                    <option value="owner">Mes cr├®ations</option>
-                    <option value="shared">Partag├®es avec moi</option>
+                    <option value="owner">Mes créations</option>
+                    <option value="shared">Partagées avec moi</option>
                 </select>
             </div>
 
-            <!-- Bouton Cr├®er (ne prend pas toute la largeur) -->
+            <!-- Bouton Créer (ne prend pas toute la largeur) -->
             <button onclick="openResourceModal('create')" class="btn-create-resource">
                 <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      stroke-width="2">
@@ -189,7 +189,7 @@ try {
                     </div>
                 <?php endforeach; ?>
             <?php else : ?>
-                <p style="padding:20px;">Aucune ressource trouv├®e.</p>
+                <p style="padding:20px;">Aucune ressource trouvée.</p>
             <?php endif; ?>
         </div>
     </main>
@@ -264,14 +264,14 @@ try {
 <div id="deleteConfirmModal" class="modal" style="z-index: 200;">
     <div class="modal-content" style="max-width: 400px; border-color: #f44336;">
         <h3 style="color: #f44336; margin-top:0;">ÔÜá´©Å Confirmation</h3>
-        <p>├ètes-vous s├╗r de vouloir supprimer cette ressource ?</p>
+        <p>Êtes-vous sûr de vouloir supprimer cette ressource ?</p>
         <p style="font-size:0.9em; color:#666;">
-            Cela supprimera d├®finitivement :
+            Cela supprimera définitivement :
         </p>
         <ul style="font-size:0.9em; color:#666; margin-bottom:15px;">
             <li>La ressource</li>
-            <li>Tous les exercices li├®s</li>
-            <li>Toutes les tentatives des ├®tudiants</li>
+            <li>Tous les exercices liés</li>
+            <li>Toutes les tentatives des étudiants</li>
         </ul>
         <div class="confirm-buttons">
             <button class="btn-confirm-no" onclick="closeDeleteModal()">Annuler</button>
@@ -296,25 +296,25 @@ try {
         hiddenId.value = '';
         document.getElementById('currentImageName').style.display = 'none';
 
-        // 1. On d├®coche tout par d├®faut
+        // 1. On décoche tout par défaut
         const checkboxes = document.querySelectorAll('.user-checkbox');
         checkboxes.forEach(cb => cb.checked = false);
 
         if (mode === 'edit' && btn) {
             document.getElementById('modalTitle').textContent = "Modifier la ressource";
-            document.getElementById('modalSubmitBtn').textContent = "Mettre ├á jour";
+            document.getElementById('modalSubmitBtn').textContent = "Mettre à jour";
             deleteBtn.style.display = 'block';
 
             const card = btn.closest('.resource-card');
-            console.log("ID de la ressource cliqu├®e :", card.dataset.id);
-            console.log("Liste des utilisateurs partag├®s re├ºue :", card.dataset.sharedUsers);
+            console.log("ID de la ressource cliquée :", card.dataset.id);
+            console.log("Liste des utilisateurs partagés reçue :", card.dataset.sharedUsers);
             hiddenId.value = card.dataset.id;
             document.getElementById('resourceName').value = card.dataset.name;
             document.getElementById('resourceDesc').value = card.dataset.description;
 
-            // 2. ON COCHE LES UTILISATEURS D├ëJ├Ç PARTAG├ëS
+            // 2. ON COCHE LES UTILISATEURS DÉJÀ PARTAGÉS
             if (card.dataset.sharedUsers) {
-                // On transforme la cha├«ne "1,5,8" en tableau ["1", "5", "8"]
+                // On transforme la chaîne "1,5,8" en tableau ["1", "5", "8"]
                 const sharedIds = card.dataset.sharedUsers.split(',');
 
                 checkboxes.forEach(cb => {
@@ -331,7 +331,7 @@ try {
             }
         } else {
             document.getElementById('modalTitle').textContent = "Nouvelle Ressource";
-            document.getElementById('modalSubmitBtn').textContent = "Cr├®er la ressource";
+            document.getElementById('modalSubmitBtn').textContent = "Créer la ressource";
             deleteBtn.style.display = 'none';
         }
         modal.style.display = "block";
@@ -382,14 +382,14 @@ try {
         }
     }
     function filterUsersInModal() {
-        // 1. On r├®cup├¿re la valeur saisie
+        // 1. On récupère la valeur saisie
         let input = document.getElementById('userSearch').value.toLowerCase();
 
-        // 2. On r├®cup├¿re tous les labels (lignes d'utilisateurs)
+        // 2. On récupère tous les labels (lignes d'utilisateurs)
         let userItems = document.querySelectorAll('.user-item');
 
         userItems.forEach(item => {
-            // 3. On r├®cup├¿re le nom de l'utilisateur ├á l'int├®rieur
+            // 3. On récupère le nom de l'utilisateur à l'intérieur
             let name = item.querySelector('.user-name').textContent.toLowerCase();
 
             // 4. On affiche ou on cache selon la correspondance

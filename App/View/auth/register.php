@@ -8,9 +8,9 @@
 
     <!-- SEO Meta Tags -->
     <meta name="description"
-          content="Cr├®ez votre compte StudTraj gratuitement et commencez ├á suivre
-                   votre trajectoire ├®tudiante. Inscription simple et rapide.">
-    <meta name="keywords" content="inscription studtraj, cr├®er compte ├®tudiant, inscription gratuite">
+          content="Créez votre compte StudTraj gratuitement et commencez à suivre
+                   votre trajectoire étudiante. Inscription simple et rapide.">
+    <meta name="keywords" content="inscription studtraj, créer compte étudiant, inscription gratuite">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="<?= BASE_URL ?>/index.php?action=signup">
 
@@ -21,7 +21,7 @@
 
 <div class="page-wrap">
 
-    <!-- Fl├¿che de retour ├á l'accueil -->
+    <!-- Flèche de retour à l'accueil -->
     <a href="<?= BASE_URL ?>/" class="back-arrow" title="Retour à l'accueil">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>

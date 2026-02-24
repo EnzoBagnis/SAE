@@ -27,7 +27,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Hub principal du site, vous pourrez y visionner les diff├®rents TD.">
+    <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="http://studtraj.alwaysdata.net/views/dashboard.php">
 </head>
@@ -49,13 +49,13 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
         <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
 
-    <!-- Nouveau conteneur pour regrouper Import + Profil + D├®connexion -->
+    <!-- Nouveau conteneur pour regrouper Import + Profil + Déconnexion -->
     <div class="header-right">
         <?php
         $current_resource_id = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : 'null';
         ?>
 
-        <!-- Bouton Importer (plac├® ├á gauche du profil) -->
+        <!-- Bouton Importer (placé à gauche du profil) -->
         <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
             <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2">
@@ -74,21 +74,21 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
 
-        <!-- Bouton D├®connexion -->
+        <!-- Bouton Déconnexion -->
         <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
-            <span class="logout-text">D├®connexion</span>
+            <span class="logout-text">Déconnexion</span>
         </a>
     </div>
 </header>
     <!-- Menu burger mobile -->
     <nav class="burger-nav" id="burgerNav">
 
-        <!-- Bouton de fermeture positionn├® comme le bouton d'ouverture -->
+        <!-- Bouton de fermeture positionné comme le bouton d'ouverture -->
         <button class="burger-menu burger-close-internal active" onclick="toggleBurgerMenu()"
                 aria-label="Fermer le menu">
             <span></span>
@@ -111,11 +111,11 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                 </li>
                 <li class="has-submenu">
                     <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
-                        Liste des ├ëtudiants
+                        Liste des Étudiants
                         <span class="submenu-arrow">Ôû╝</span>
                     </a>
                     <ul class="burger-submenu" id="burgerStudentList">
-                        <!-- Les ├®tudiants seront charg├®s ici dynamiquement -->
+                        <!-- Les étudiants seront chargés ici dynamiquement -->
                     </ul>
                 </li>
                 <li class="has-submenu">
@@ -124,7 +124,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                         <span class="submenu-arrow">Ôû╝</span>
                     </a>
                     <ul class="burger-submenu" id="burgerExerciseList">
-                        <!-- Les TP seront charg├®s ici dynamiquement -->
+                        <!-- Les TP seront chargés ici dynamiquement -->
                     </ul>
                 </li>
                 <li>
@@ -133,7 +133,7 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                         Importer
                     </a>
                 </li>
-                <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">D├®connexion</a></li>
+                <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
             </ul>
         </div>
     </nav>
@@ -141,10 +141,10 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     <div class="dashboard-container">
         <!-- Sidebar gauche - Design style mobile -->
         <aside class="sidebar sidebar-mobile-style">
-            <!-- S├®lecteur de vue c├┤te ├á c├┤te -->
+            <!-- Sélecteur de vue côte à côte -->
             <div class="view-selector-header">
                 <button class="view-tab active" id="btnStudents" onclick="switchListView('students')">
-                    Liste des ├ëtudiants
+                    Liste des Étudiants
                 </button>
                 <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
                     Liste des TP
@@ -153,14 +153,14 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
 
             <!-- Liste unique qui change selon le mode -->
             <div class="sidebar-list" id="sidebar-list">
-                <!-- Contenu dynamique : ├®tudiants ou exercices -->
+                <!-- Contenu dynamique : étudiants ou exercices -->
             </div>
         </aside>
 
         <!-- Zone principale de visualisation -->
         <main class="main-content">
             <div class="data-zone">
-                <p class="placeholder-message">Les donn├®es de l'├®tudiant seront affich├®es ici</p>
+                <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
             </div>
         </main>
     </div>
@@ -168,14 +168,14 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
     <div id="importModal" class="modal">
         <div class="modal-content import-modal">
             <span class="close" onclick="closeImportModal()">&times;</span>
-            <h2>Importer des donn├®es JSON</h2>
+            <h2>Importer des données JSON</h2>
 
             <div class="import-tabs">
                 <button class="import-tab active" onclick="switchImportTab('exercises')" data-tab="exercises">
                     Exercices de TP
                 </button>
                 <button class="import-tab" onclick="switchImportTab('attempts')" data-tab="attempts">
-                    Tentatives d'├®l├¿ves
+                    Tentatives d'élèves
                 </button>
             </div>
 
@@ -193,12 +193,12 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <p><strong>Cliquez pour s├®lectionner</strong> ou glissez-d├®posez un fichier JSON</p>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
                         <p class="file-info">Format: exercices_tp.json</p>
                     </div>
                 </div>
                 <div id="exercisesPreview" class="file-preview" style="display: none;">
-                    <h3>Aper├ºu du fichier</h3>
+                    <h3>Aperçu du fichier</h3>
                     <div class="preview-content"></div>
                     <button class="btn-import" onclick="importExercises()">Importer les exercices</button>
                 </div>
@@ -218,12 +218,12 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <p><strong>Cliquez pour s├®lectionner</strong> ou glissez-d├®posez un fichier JSON</p>
+                        <p><strong>Cliquez pour sélectionner</strong> ou glissez-déposez un fichier JSON</p>
                         <p class="file-info">Format: tentatives_eleves.json</p>
                     </div>
                 </div>
                 <div id="attemptsPreview" class="file-preview" style="display: none;">
-                    <h3>Aper├ºu du fichier</h3>
+                    <h3>Aperçu du fichier</h3>
                     <div class="preview-content"></div>
                     <button class="btn-import" onclick="importAttempts()">Importer les tentatives</button>
                 </div>
@@ -244,8 +244,8 @@ $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0,
                     <li><a href="<?= BASE_URL ?>/index.php?action=dashboard">Tableau de bord</a></li>
                     <li><a href="<?= BASE_URL ?>/index.php?action=login">Connexion</a></li>
                     <li><a href="<?= BASE_URL ?>/index.php?action=signup">Inscription</a></li>
-                    <li><a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oubli├®</a></li>
-                    <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions l├®gales</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=forgotpassword">Mot de passe oublié</a></li>
+                    <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a></li>
                 </ul>
             </div>
         </div>

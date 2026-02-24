@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/images/favicon.ico">
-    <title><?= htmlspecialchars($title ?? 'R├®initialiser le mot de passe - StudTraj') ?></title>
+    <title><?= htmlspecialchars($title ?? 'Réinitialiser le mot de passe - StudTraj') ?></title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <!-- SEO Meta Tags -->
     <meta name="robots" content="noindex, nofollow">
@@ -20,7 +20,7 @@
     <?php endif; ?>
 
     <form class="card" method="POST" action="<?= BASE_URL ?>/auth/reset-password" id="resetForm">
-        <h2>Cr├®er un nouveau mot de passe</h2>
+        <h2>Créer un nouveau mot de passe</h2>
         <p>Entrez votre nouveau mot de passe</p>
 
         <input type="hidden" name="token" value="<?= htmlspecialchars($token ?? '') ?>">
@@ -30,7 +30,7 @@
             <input type="password"
                    name="nouveau_mdp"
                    id="password"
-                   placeholder="Minimum 6 caract├¿res"
+                   placeholder="Minimum 6 caractères"
                    required>
             <button type="button" class="password-toggle" onclick="togglePassword('password')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -64,7 +64,7 @@
                 id="submitBtn"
                 class="btn-submit"
                 disabled>
-            R├®initialiser le mot de passe
+            Réinitialiser le mot de passe
         </button>
     </form>
 </div>
