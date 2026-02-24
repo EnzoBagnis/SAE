@@ -8,6 +8,9 @@ DirectoryIndex index.php
 # RewriteCond %{HTTPS} off
 # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# Redirect /index.html to / so the PHP router always handles the home page
+RewriteRule ^index\.html$ / [R=301,L]
+
 # Redirect all requests to index.php except for existing files/directories
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
