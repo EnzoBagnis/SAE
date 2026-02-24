@@ -16,7 +16,7 @@ class UserRepository extends AbstractRepository
      */
     protected function getTableName(): string
     {
-        return 'utilisateurs';
+        return 'teachers';
     }
 
     /**
@@ -35,7 +35,7 @@ class UserRepository extends AbstractRepository
      */
     public function findByEmail(string $email): ?User
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE mail = :mail");
+        $stmt = $this->pdo->prepare("SELECT * FROM teachers WHERE mail = :mail");
         $stmt->execute(['mail' => $email]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -50,7 +50,7 @@ class UserRepository extends AbstractRepository
      */
     public function findByResetToken(string $token): ?User
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE reset_token = :token");
+        $stmt = $this->pdo->prepare("SELECT * FROM teachers WHERE reset_token = :token");
         $stmt->execute(['token' => $token]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -65,7 +65,7 @@ class UserRepository extends AbstractRepository
      */
     public function emailExists(string $email): bool
     {
-        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM utilisateurs WHERE mail = :mail");
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM teachers WHERE mail = :mail");
         $stmt->execute(['mail' => $email]);
         return $stmt->fetchColumn() > 0;
     }
@@ -77,7 +77,7 @@ class UserRepository extends AbstractRepository
      */
     public function findAll(?int $limit = null, int $offset = 0): array
     {
-        $query = "SELECT * FROM utilisateurs ORDER BY date_creation DESC";
+        $query = "SELECT * FROM teachers ORDER BY surname DESC";
 
         if ($limit !== null) {
             $query .= " LIMIT {$limit} OFFSET {$offset}";
@@ -112,25 +112,23 @@ class UserRepository extends AbstractRepository
     private function insert(User $user): User
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO utilisateurs 
-            (nom, prenom, mail, mdp, code_verif, mail_verifie, date_creation, reset_token, reset_token_expiration)
+            INSERT INTO teachers 
+            (mail, name, surname, password, code_verif, account_status, reset_token, reset_expiration)
             VALUES 
-            (:nom, :prenom, :mail, :mdp, :code_verif, :mail_verifie, NOW(), :reset_token, :reset_token_expiration)
+            (:mail, :name, :surname, :password, :code_verif, :account_status, :reset_token, :reset_expiration)
         ");
 
         $resetTokenExpiration = $user->getResetTokenExpiration();
         $stmt->execute([
-            'nom' => $user->getLastName(),
-            'prenom' => $user->getFirstName(),
-            'mail' => $user->getEmail(),
-            'mdp' => $user->getPasswordHash(),
-            'code_verif' => $user->getVerificationCode(),
-            'mail_verifie' => $user->isVerified() ? 1 : 0,
-            'reset_token' => $user->getResetToken(),
-            'reset_token_expiration' => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d H:i:s') : null,
+            'mail'              => $user->getEmail(),
+            'name'              => $user->getFirstName(),
+            'surname'           => $user->getLastName(),
+            'password'          => $user->getPasswordHash(),
+            'code_verif'        => $user->getVerificationCode(),
+            'account_status'    => $user->isVerified() ? 1 : 0,
+            'reset_token'       => $user->getResetToken() ?? '',
+            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d') : null,
         ]);
-
-        $user->setId((int) $this->pdo->lastInsertId());
         return $user;
     }
 
@@ -143,44 +141,43 @@ class UserRepository extends AbstractRepository
     private function update(User $user): User
     {
         $stmt = $this->pdo->prepare("
-            UPDATE utilisateurs 
-            SET nom = :nom,
-                prenom = :prenom,
-                mail = :mail,
-                mdp = :mdp,
-                code_verif = :code_verif,
-                mail_verifie = :mail_verifie,
-                reset_token = :reset_token,
-                reset_token_expiration = :reset_token_expiration
-            WHERE id = :id
+            UPDATE teachers 
+            SET name             = :name,
+                surname          = :surname,
+                password         = :password,
+                code_verif       = :code_verif,
+                account_status   = :account_status,
+                reset_token      = :reset_token,
+                reset_expiration = :reset_expiration
+            WHERE mail = :mail
         ");
 
         $resetTokenExpiration = $user->getResetTokenExpiration();
         $stmt->execute([
-            'id' => $user->getId(),
-            'nom' => $user->getLastName(),
-            'prenom' => $user->getFirstName(),
-            'mail' => $user->getEmail(),
-            'mdp' => $user->getPasswordHash(),
-            'code_verif' => $user->getVerificationCode(),
-            'mail_verifie' => $user->isVerified() ? 1 : 0,
-            'reset_token' => $user->getResetToken(),
-            'reset_token_expiration' => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d H:i:s') : null,
+            'mail'              => $user->getEmail(),
+            'name'              => $user->getFirstName(),
+            'surname'           => $user->getLastName(),
+            'password'          => $user->getPasswordHash(),
+            'code_verif'        => $user->getVerificationCode(),
+            'account_status'    => $user->isVerified() ? 1 : 0,
+            'reset_token'       => $user->getResetToken() ?? '',
+            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d') : null,
         ]);
 
         return $user;
     }
 
     /**
-     * Delete user by ID
+     * Delete user by mail (overrides AbstractRepository::delete).
+     * In the teachers table, the PK is 'mail' (string), not 'id'.
      *
-     * @param int $id User ID
+     * @param mixed $id User mail address used as primary key
      * @return bool True if deleted
      */
-    public function delete(int $id): bool
+    public function delete($id): bool
     {
-        $stmt = $this->pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        $stmt = $this->pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
+        return $stmt->execute(['mail' => $id]);
     }
 
     /**
@@ -192,28 +189,20 @@ class UserRepository extends AbstractRepository
     protected function hydrate(array $data): User
     {
         $user = new User();
-        $user->setId($data['id'] ?? null);
-        $user->setLastName($data['nom'] ?? '');
-        $user->setFirstName($data['prenom'] ?? '');
+        $user->setLastName($data['surname'] ?? '');
+        $user->setFirstName($data['name'] ?? '');
         $user->setEmail($data['mail'] ?? '');
-        $user->setPasswordHash($data['mdp'] ?? '');
-        $user->setVerificationCode($data['code_verif'] ?? null);
-        $user->setIsVerified(($data['mail_verifie'] ?? 0) == 1);
+        $user->setPasswordHash($data['password'] ?? '');
+        $user->setVerificationCode(isset($data['code_verif']) ? (string) $data['code_verif'] : null);
+        $user->setIsVerified(($data['account_status'] ?? 0) == 1);
 
-        if (isset($data['date_creation'])) {
-            $user->setCreatedAt(new \DateTimeImmutable($data['date_creation']));
-        }
-
-        if (isset($data['reset_token_expiration']) && $data['reset_token_expiration']) {
+        if (!empty($data['reset_expiration']) && !empty($data['reset_token'])) {
             $user->setResetToken(
-                $data['reset_token'] ?? null,
-                new \DateTimeImmutable($data['reset_token_expiration'])
+                $data['reset_token'],
+                new \DateTimeImmutable($data['reset_expiration'])
             );
         }
 
         return $user;
     }
 }
-
-
-

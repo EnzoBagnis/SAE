@@ -165,12 +165,13 @@ abstract class AbstractRepository
     }
 
     /**
-     * Delete record by ID
+     * Delete record by primary key.
+     * Override in child classes when the PK is not an integer named 'id'.
      *
-     * @param int $id Record ID
+     * @param mixed $id Record primary key value
      * @return bool True if deleted
      */
-    public function delete(int $id): bool
+    public function delete($id): bool
     {
         $table = $this->getTableName();
         $stmt = $this->pdo->prepare("DELETE FROM {$table} WHERE id = :id");
