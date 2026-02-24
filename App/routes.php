@@ -36,6 +36,7 @@ $router->get('/resources', App\Controller\ResourcesController::class, 'index');
 $router->get('/resources/{id}', App\Controller\ResourcesController::class, 'show');
 
 // Admin routes
+$router->get('/admin', App\Controller\AdminController::class, 'loginForm');
 $router->get('/admin/login', App\Controller\AdminController::class, 'loginForm');
 $router->post('/admin/login', App\Controller\AdminController::class, 'login');
 $router->get('/admin/dashboard', App\Controller\AdminController::class, 'dashboard');
