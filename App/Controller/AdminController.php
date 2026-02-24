@@ -75,12 +75,14 @@ class AdminController extends AbstractController
 
         $pdo = DatabaseConnection::getInstance()->getConnection();
 
+        // Utilisateurs vérifiés (account_status = 1)
         $verifiedUsers = $pdo->query(
-            "SELECT mail, name, surname FROM teachers ORDER BY surname ASC"
+            "SELECT mail, name, surname FROM teachers WHERE account_status = 1 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
+        // Utilisateurs en attente de vérification (account_status = 0)
         $pendingUsers = $pdo->query(
-            "SELECT id, nom, prenom, mail, mail_verifie FROM pending_registrations ORDER BY id ASC"
+            "SELECT mail, name, surname, account_status FROM teachers WHERE account_status = 0 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->renderView('admin/admin-dashboard', [
@@ -130,24 +132,19 @@ class AdminController extends AbstractController
             return;
         }
 
-        $table = $this->getQuery('table') ?? 'V';
-        $id    = $this->getQuery('id') ?? '';
+        $id = $this->getQuery('id') ?? '';
 
         if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            if ($table === 'P') {
-                $stmt = $pdo->prepare("DELETE FROM pending_registrations WHERE id = :id");
-            } else {
-                $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :id");
-            }
-            $stmt->execute(['id' => $id]);
+            $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
+            $stmt->execute(['mail' => $id]);
         }
 
         $this->redirect('/admin/dashboard');
     }
 
     /**
-     * Validate a pending user
+     * Validate a pending user (set account_status to 1)
      *
      * @return void
      */
@@ -158,34 +155,13 @@ class AdminController extends AbstractController
             return;
         }
 
-        $id = $this->getQuery('id') ?? '';
+        $mail = $this->getQuery('id') ?? '';
 
-        if (!empty($id)) {
+        if (!empty($mail)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
 
-            // Fetch pending user
-            $stmt = $pdo->prepare("SELECT * FROM pending_registrations WHERE id = :id");
-            $stmt->execute(['id' => $id]);
-            $pending = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-            if ($pending) {
-                // Move to verified users
-                $ins = $pdo->prepare("
-                    INSERT INTO teachers (mail, name, surname, password, code_verif, account_status, reset_token)
-                    VALUES (:mail, :name, :surname, :password, :code_verif, 1, '')
-                ");
-                $ins->execute([
-                    'mail'       => $pending['mail'],
-                    'name'       => $pending['prenom'],
-                    'surname'    => $pending['nom'],
-                    'password'   => $pending['mdp'],
-                    'code_verif' => $pending['code_verif'] ?? null,
-                ]);
-
-                // Delete from pending
-                $del = $pdo->prepare("DELETE FROM pending_registrations WHERE id = :id");
-                $del->execute(['id' => $id]);
-            }
+            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 1 WHERE mail = :mail AND account_status = 0");
+            $stmt->execute(['mail' => $mail]);
         }
 
         $this->redirect('/admin/dashboard');
@@ -219,7 +195,7 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Ban a user
+     * Ban a user (delete from teachers)
      *
      * @return void
      */
@@ -230,19 +206,12 @@ class AdminController extends AbstractController
             return;
         }
 
-        // La table liste_noire n'existe pas dans le schéma actuel.
-        // On se contente de supprimer l'utilisateur de sa table d'origine.
-        $table = $this->getQuery('table') ?? 'V';
-        $id    = $this->getPost('id') ?? '';
+        $id = $this->getPost('id') ?? '';
 
         if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            if ($table === 'P') {
-                $del = $pdo->prepare("DELETE FROM pending_registrations WHERE id = :id");
-            } else {
-                $del = $pdo->prepare("DELETE FROM teachers WHERE mail = :id");
-            }
-            $del->execute(['id' => $id]);
+            $del = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
+            $del->execute(['mail' => $id]);
         }
 
         $this->redirect('/admin/dashboard');

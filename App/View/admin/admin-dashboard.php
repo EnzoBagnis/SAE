@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<!-- Bandeau sup├®rieur -->
+<!-- Bandeau supérieur -->
 <header class="top-menu">
     <div class="logo">
         <h1>StudTraj</h1>
@@ -34,7 +34,7 @@
                 <?php
                 $errors = [
                     'cannot_delete_self' => 'Vous ne pouvez pas supprimer votre propre compte',
-                    'delete_failed' => '├ëchec de la suppression de l\'utilisateur',
+                    'delete_failed' => 'Échec de la suppression de l\'utilisateur',
                     'user_not_found' => 'Utilisateur introuvable'
                 ];
                 echo htmlspecialchars($errors[$_GET['error']] ?? 'Une erreur est survenue');
@@ -46,7 +46,7 @@
             <div class="alert alert-success">
                 <?php
                 if ($_GET['success'] === 'deleted') {
-                    echo 'Utilisateur supprim├® avec succ├¿s';
+                    echo 'Utilisateur supprimé avec succès';
                 }
                 ?>
             </div>
@@ -58,41 +58,25 @@
         <div class="tabs">
             <button class="tab-btn <?= ($currentTab ?? 'verified') === 'verified' ? 'active' : '' ?>"
                     onclick="showTab('verified')">
-                Utilisateurs v├®rifi├®s (<?= count($verifiedUsers ?? []) ?>)
+                Utilisateurs vérifiés (<?= count($verifiedUsers ?? []) ?>)
             </button>
             <button class="tab-btn <?= ($currentTab ?? '') === 'pending' ? 'active' : '' ?>"
                     onclick="showTab('pending')">
-                En attente de v├®rification (<?= count($pendingUsers ?? []) ?>)
+                En attente de vérification (<?= count($pendingUsers ?? []) ?>)
             </button>
             <button class="tab-btn <?= ($currentTab ?? '') === 'blocked' ? 'active' : '' ?>"
                     onclick="showTab('blocked')">
-                Utilisateurs bloqu├®s (<?= count($blockedUsers ?? []) ?>)
+                Utilisateurs bloqués (<?= count($blockedUsers ?? []) ?>)
             </button>
         </div>
-        <!-- Barre de recherche
-        <div class="search-container">
-            <form action="search.php" method="GET" class="search-bar">
-                <input type="text" name="query" placeholder="Rechercher quelque chose..." id="searchInput">
-                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </form>
-        </div>
-         -->
 
-
-
-
-
-
-
-
-        <!-- Tableau des utilisateurs v├®rifi├®s -->
+        <!-- Tableau des utilisateurs vérifiés -->
         <div id="verified-tab" class="tab-content <?= ($currentTab ?? 'verified') === 'verified' ? 'active' : '' ?>">
             <table class="user-table">
                 <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nom</th>
-                    <th>Pr├®nom</th>
+                    <th>Prénom</th>
                     <th>Email</th>
                     <th>Actions</th>
                 </tr>
@@ -101,36 +85,34 @@
 
                 <?php if (empty($verifiedUsers)) : ?>
                     <tr>
-                        <?php echo"<script>console.log(" . json_encode($verifiedUsers) . ");</script>" ?>
-                        <td colspan="5" class="text-center">Aucun utilisateur v├®rifi├®</td>
+                        <td colspan="4" class="text-center">Aucun utilisateur vérifié</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($verifiedUsers as $user) : ?>
                         <tr>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
-                            <td><?= htmlspecialchars($user['nom']) ?></td>
-                            <td><?= htmlspecialchars($user['prenom']) ?></td>
+                            <td><?= htmlspecialchars($user['surname']) ?></td>
+                            <td><?= htmlspecialchars($user['name']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
                                 <button class="btn-edit"
                                     onclick="openEditPopup('V',
-                                        '<?= htmlspecialchars($user['id']) ?>',
-                                        '<?= htmlspecialchars($user['nom']) ?>',
-                                        '<?= htmlspecialchars($user['prenom']) ?>',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
+                                        '<?= htmlspecialchars($user['surname']) ?>',
+                                        '<?= htmlspecialchars($user['name']) ?>',
                                         '<?= htmlspecialchars($user['mail']) ?>',
                                         '', '', '')">
                                     Modifier
                                 </button>
 
-                                <a href="<?= BASE_URL ?>/admin/delete-user?table=V&id=<?=
-                                    urlencode($user['id']) ?>"
+                                <a href="<?= BASE_URL ?>/admin/delete-user?id=<?=
+                                    urlencode($user['mail']) ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('├ètes-vous s├╗r de vouloir supprimer cet utilisateur ?')">
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
                                 <button class="btn-ban"
                                     onclick="openEditPopup('B',
-                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
                                         '', '',
                                         '<?= htmlspecialchars($user['mail']) ?>',
                                         '',
@@ -151,10 +133,9 @@
             <table class="user-table">
                 <thead>
                 <tr>
-                    <th>V├®rif├®</th>
-                    <th>ID</th>
+                    <th>Statut</th>
                     <th>Nom</th>
-                    <th>Pr├®nom</th>
+                    <th>Prénom</th>
                     <th>Email</th>
                     <th>Actions</th>
                 </tr>
@@ -167,38 +148,30 @@
                 <?php else : ?>
                     <?php foreach ($pendingUsers as $user) : ?>
                         <tr>
-                            <td><?php switch ($user['verifie']) {
-                                case 0:
-                                    echo "Demande envoy├®e";
-                                    break;
-                                case 1:
-                                    echo "Email v├®rifi├®";
-                                    break;
-                                } ?></td>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
-                            <td><?= htmlspecialchars($user['nom']) ?></td>
-                            <td><?= htmlspecialchars($user['prenom']) ?></td>
+                            <td>En attente</td>
+                            <td><?= htmlspecialchars($user['surname']) ?></td>
+                            <td><?= htmlspecialchars($user['name']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
                             <td class="actions">
                                 <button class="btn-edit"
                                     onclick="openEditPopup('P',
-                                        '<?= htmlspecialchars($user['id']) ?>',
-                                        '<?= htmlspecialchars($user['nom']) ?>',
-                                        '<?= htmlspecialchars($user['prenom']) ?>',
                                         '<?= htmlspecialchars($user['mail']) ?>',
-                                        '<?= htmlspecialchars($user['verifie']) ?>',
+                                        '<?= htmlspecialchars($user['surname']) ?>',
+                                        '<?= htmlspecialchars($user['name']) ?>',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
+                                        '<?= htmlspecialchars($user['account_status']) ?>',
                                         '', '')">
                                     Modifier
                                 </button>
-                                <a href="<?= BASE_URL ?>/admin/delete-user?table=P&id=<?=
-                                    urlencode($user['id']) ?>"
+                                <a href="<?= BASE_URL ?>/admin/delete-user?id=<?=
+                                    urlencode($user['mail']) ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('├ètes-vous s├╗r de vouloir supprimer cet utilisateur ?')">
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
                                 <button class="btn-ban"
                                     onclick="openEditPopup('B',
-                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '<?= htmlspecialchars($user['mail']) ?>',
                                         '', '',
                                         '<?= htmlspecialchars($user['mail']) ?>',
                                         '',
@@ -206,16 +179,14 @@
                                         '')">
                                     Bloquer
                                 </button>
-                                <?php if ($user['verifie'] == 1) : ?>
-                                    <a href="<?= BASE_URL ?>/admin/validate-user?id=<?=
-                                        urlencode($user['id']) ?>"
-                                       class="btn-validate"
-                                       onclick="return confirm(
-                                           '├ètes-vous s├╗r de vouloir valider cet utilisateur ?'
-                                       )">
-                                        Valider
-                                    </a>
-                                <?php endif; ?>
+                                <a href="<?= BASE_URL ?>/admin/validate-user?id=<?=
+                                    urlencode($user['mail']) ?>"
+                                   class="btn-validate"
+                                   onclick="return confirm(
+                                       'Êtes-vous sûr de vouloir valider cet utilisateur ?'
+                                   )">
+                                    Valider
+                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -224,15 +195,13 @@
             </table>
         </div>
 
-        <!-- Tableau des utilisateurs bloqu├®s -->
+        <!-- Tableau des utilisateurs bloqués -->
         <div id="blocked-tab" class="tab-content <?= ($currentTab ?? '') === 'blocked' ? 'active' : '' ?>">
             <table class="user-table">
                 <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Email</th>
                     <th>Date de ban</th>
-                    <!--<th>Dur├®e de bannissement</th>-->
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -240,38 +209,19 @@
 
                 <?php if (empty($blockedUsers)) : ?>
                     <tr>
-                        <?php echo"<script>console.log(" . json_encode($blockedUsers) . ");</script>" ?>
-                        <td colspan="5" class="text-center">Aucun utilisateur v├®rifi├®</td>
+                        <td colspan="3" class="text-center">Aucun utilisateur bloqué</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($blockedUsers as $user) : ?>
                         <tr>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
                             <td><?= htmlspecialchars($user['mail']) ?></td>
-                            <td><?= htmlspecialchars($user['date_de_ban']) ?></td>
-                            <!--<td><?php if ($user['ban_def'] == 1) : ?>
-                                Permanent
-                                    <?php else : ?>
-                                        <?= htmlspecialchars($user['duree_ban']) ?>
-                                    <?php endif; ?>
-                            </td>-->
+                            <td><?= htmlspecialchars($user['date_de_ban'] ?? '') ?></td>
                             <td class="actions">
-                                <button class="btn-edit"
-                                    onclick="openEditPopup('B',
-                                        '<?= htmlspecialchars($user['id']) ?>',
-                                        '', '',
-                                        '<?= htmlspecialchars($user['mail']) ?>',
-                                        '',
-                                        '<?= htmlspecialchars($user['date_de_ban']) ?>',
-                                        '<?= htmlspecialchars($user['duree_ban']) ?>')">
-                                    Modifier
-                                </button>
-
-                                <a href="<?= BASE_URL ?>/admin/delete-user?table=B&id=<?=
+                                <a href="<?= BASE_URL ?>/admin/delete-user?id=<?=
                                     urlencode($user['mail']) ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('├ètes-vous s├╗r d├®bloquer cet utilisateur ?')">
-                                D├®bloquer
+                                   onclick="return confirm('Êtes-vous sûr de débloquer cet utilisateur ?')">
+                                Débloquer
                                 </a>
                             </td>
                         </tr>
@@ -289,9 +239,9 @@
 
 <div id="editVerifie" class="popup-container">
     <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/admin/edit-user">
+    <form id="editUserFormVerifie" class="card" method="POST" action="<?= BASE_URL ?>/admin/edit-user">
         <div class="form-group">
-            <label for="idVerifie">id</label>
+            <label for="idVerifie">Email (identifiant)</label>
             <input type="text" id="idVerifie" name="id" readonly>
         </div>
             <div class="form-group">
@@ -299,12 +249,12 @@
                 <input type="text" id="editNomVerifie" name="nom" required>
             </div>
         <div class="form-group">
-            <label for="editPrenomVerifie">Pr├®nom</label>
+            <label for="editPrenomVerifie">Prénom</label>
             <input type="text" id="editPrenomVerifie" name="prenom" required>
         </div>
         <div class="form-group">
             <label for="editEmailVerifie">Email</label>
-            <input type="email" id="editEmailVerifie" name="email" required>
+            <input type="email" id="editEmailVerifie" name="email" readonly>
         </div>
         <div class="form-actions">
             <button type="submit" class="btn-submit" name="ok">Valider</button>
@@ -315,9 +265,9 @@
 
 <div id="editPending" class="popup-container">
     <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/admin/edit-user">
+    <form id="editUserFormPending" class="card" method="POST" action="<?= BASE_URL ?>/admin/edit-user">
         <div class="form-group">
-            <label for="idPending">id</label>
+            <label for="idPending">Email (identifiant)</label>
             <input type="text" id="idPending" name="id" readonly>
         </div>
         <div class="form-group">
@@ -325,16 +275,16 @@
             <input type="text" id="editNomPending" name="nom" required>
         </div>
         <div class="form-group">
-            <label for="editPrenomPending">Pr├®nom</label>
+            <label for="editPrenomPending">Prénom</label>
             <input type="text" id="editPrenomPending" name="prenom" required>
         </div>
         <div class="form-group">
             <label for="editEmailPending">Email</label>
-            <input type="email" id="editEmailPending" name="email" required>
+            <input type="email" id="editEmailPending" name="email" readonly>
         </div>
         <div class="form-group">
-            <label for="verifiePending">Verifie</label>
-            <input type="int" id="verifiePending" name="nom" readonly>
+            <label for="verifiePending">Statut</label>
+            <input type="text" id="verifiePending" name="statut" readonly>
         </div>
         <div class="form-actions">
             <button type="submit" class="btn-submit" name="ok">Valider</button>
@@ -344,10 +294,10 @@
 </div>
 
 <div id="editBlocked" class="popup-container">
-    <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/admin/ban-user?table=V">
+    <h2>Bloquer l'utilisateur</h2>
+    <form id="editUserFormBlocked" class="card" method="POST" action="<?= BASE_URL ?>/admin/ban-user">
         <div class="form-group">
-            <label for="idBlocked">id</label>
+            <label for="idBlocked">Email (identifiant)</label>
             <input type="text" id="idBlocked" name="id" readonly>
         </div>
         <div class="form-group">
@@ -356,16 +306,10 @@
         </div>
         <div class="form-group">
             <label for="editDateBanBlocked">Date de ban</label>
-            <input type="int" id="editDateBanBlocked" name="date_de_ban" readonly>
+            <input type="text" id="editDateBanBlocked" name="date_de_ban" readonly>
         </div>
-        <!-- Possibilit├® de modifier la dur├®e de ban dans le futur
         <div class="form-group">
-            <label for="editDureeBanBlocked">Dur├®e de ban</label>
-            <input type="int" id="editDureeBanBlocked" name="duree_de_ban" required>
-        </div>
-        -->
-        <div class="form-group">
-            <label for="ban_def">Bloquage d├®finitif</label>
+            <label for="ban_def">Blocage définitif</label>
             <input type="checkbox" id="ban_def" name="ban_def" value="1" checked disabled>
         </div>
         <div class="form-actions">
@@ -377,25 +321,15 @@
 
 <script>
     function showTab(tabName) {
-        // Cacher tous les contenus
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
         });
-
-        // D├®sactiver tous les boutons
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-
-        // Afficher le contenu s├®lectionn├®
         document.getElementById(tabName + '-tab').classList.add('active');
         fetch('<?= BASE_URL ?>/admin/switch-user');
-
-        // Activer le bouton s├®lectionn├®
         event.target.classList.add('active');
-    }
-    function test() {
-        console.log("test");
     }
 
     function setValue(id, v, table) {
@@ -418,13 +352,10 @@
                 table = "Blocked";
                 break;
         }
-        switch (verifie) {
-            case '0':
-                verifie = "Demande envoy├®e";
-                break;
-            case '1':
-                verifie = "Email v├®rifi├®";
-                break;
+        if (verifie === '0') {
+            verifie = "En attente";
+        } else if (verifie === '1') {
+            verifie = "Vérifié";
         }
         setValue('table', table, table);
         setValue('verifie', verifie, table);
@@ -436,25 +367,16 @@
         setValue('editDureeBan', duree_ban, table);
 
         document.getElementById('editPopupOverlay').style.display = 'block';
-        //document.getElementById('editPopup').style.display = 'block';
-        console.log("test");
-        console.log(nom, prenom, email);
     }
 
     function closeEditPopup() {
         document.getElementById('editPopupOverlay').style.display = 'none';
-        const popups = ['editVerifie', 'editPending', 'editBlocked', 'blockUser'];
+        const popups = ['editVerifie', 'editPending', 'editBlocked'];
         popups.forEach(id => {
             const popup = document.getElementById(id);
             if (popup) popup.style.display = 'none';
         });
     }
-
-    // R├®cup├¿re la date locale au format ISO (AAAA-MM-JJTHH:mm:ss...)
-    // Puis on ne garde que les 10 premiers caract├¿res (AAAA-MM-JJ)
-    const dateDuJour = new Date().toISOString().split('T')[0];
-
-    document.getElementById('date_fixe').textContent = dateDuJour;
 </script>
 </body>
 </html>
