@@ -225,12 +225,6 @@
                                    onclick="return confirm('Êtes-vous sûr de vouloir débloquer cet utilisateur ?')">
                                     Débloquer
                                 </a>
-                                <a href="<?= BASE_URL ?>/admin/delete-user?id=<?=
-                                    urlencode($user['mail']) ?>"
-                                   class="btn-delete"
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cet utilisateur ?')">
-                                    Supprimer
-                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

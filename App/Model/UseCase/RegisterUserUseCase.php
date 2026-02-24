@@ -63,6 +63,14 @@ class RegisterUserUseCase
 
         // Check if email already exists in teachers
         if ($this->userRepository->emailExists($data['email'])) {
+            // Check if the existing account is blocked
+            $existingUser = $this->userRepository->findByEmail($data['email']);
+            if ($existingUser && $existingUser->isBlocked()) {
+                return [
+                    'success' => false,
+                    'message' => 'Votre compte a été bloqué. Contactez un administrateur.',
+                ];
+            }
             return [
                 'success' => false,
                 'message' => 'Cet email est déjà enregistré',
@@ -103,4 +111,3 @@ class RegisterUserUseCase
         ];
     }
 }
-
