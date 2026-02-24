@@ -48,7 +48,7 @@ class AdminController extends AbstractController
         $password = $this->getPost('mdp') ?? '';
 
         $expectedId  = \Core\Config\EnvLoader::get('ADMIN_ID', 'admin');
-        $expectedPwd = \Core\Config\EnvLoader::get('ADMIN_PASSWORD', '');
+        $expectedPwd = \Core\Config\EnvLoader::get('ADMIN_PASS', '');
 
         if ($adminId === $expectedId && $password === $expectedPwd) {
             session_start();
