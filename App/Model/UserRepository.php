@@ -118,7 +118,6 @@ class UserRepository extends AbstractRepository
             (:mail, :name, :surname, :password, :code_verif, :account_status, :reset_token, :reset_expiration)
         ");
 
-        $resetTokenExpiration = $user->getResetTokenExpiration();
         $stmt->execute([
             'mail'              => $user->getEmail(),
             'name'              => $user->getFirstName(),
@@ -127,7 +126,6 @@ class UserRepository extends AbstractRepository
             'code_verif'        => $user->getVerificationCode(),
             'account_status'    => $user->isVerified() ? 1 : 0,
             'reset_token'       => $user->getResetToken() ?? '',
-            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d') : null,
         ]);
         return $user;
     }
