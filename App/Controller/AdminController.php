@@ -25,7 +25,7 @@ class AdminController extends AbstractController
     public function loginForm(): void
     {
         if ($this->isAdminLoggedIn()) {
-            $this->redirect('/admin/dashboard');
+            $this->redirect(BASE_URL . '/admin/dashboard');
             return;
         }
 
@@ -53,7 +53,7 @@ class AdminController extends AbstractController
         if ($adminId === $expectedId && $password === $expectedPwd) {
             session_start();
             $_SESSION[self::SESSION_KEY] = true;
-            $this->redirect('/admin/dashboard');
+            $this->redirect(BASE_URL . '/admin/dashboard');
         } else {
             $this->renderView('admin/admin-login', [
                 'error_message' => 'Identifiants incorrects.',
@@ -69,7 +69,7 @@ class AdminController extends AbstractController
     public function dashboard(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
@@ -109,7 +109,7 @@ class AdminController extends AbstractController
         }
         unset($_SESSION[self::SESSION_KEY]);
         session_destroy();
-        $this->redirect('/admin/login');
+        $this->redirect(BASE_URL . '/admin/login');
     }
 
     /**
@@ -133,7 +133,7 @@ class AdminController extends AbstractController
     public function deleteUser(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
@@ -145,7 +145,7 @@ class AdminController extends AbstractController
             $stmt->execute(['mail' => $id]);
         }
 
-        $this->redirect('/admin/dashboard');
+        $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
@@ -156,7 +156,7 @@ class AdminController extends AbstractController
     public function validateUser(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
@@ -169,7 +169,7 @@ class AdminController extends AbstractController
             $stmt->execute(['mail' => $mail]);
         }
 
-        $this->redirect('/admin/dashboard');
+        $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
@@ -180,7 +180,7 @@ class AdminController extends AbstractController
     public function editUser(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
@@ -196,7 +196,7 @@ class AdminController extends AbstractController
             $stmt->execute(['surname' => $nom, 'name' => $prenom, 'mail' => $mail]);
         }
 
-        $this->redirect('/admin/dashboard');
+        $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
@@ -207,7 +207,7 @@ class AdminController extends AbstractController
     public function banUser(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
@@ -219,7 +219,7 @@ class AdminController extends AbstractController
             $stmt->execute(['mail' => $id]);
         }
 
-        $this->redirect('/admin/dashboard');
+        $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
@@ -230,7 +230,7 @@ class AdminController extends AbstractController
     public function unbanUser(): void
     {
         if (!$this->isAdminLoggedIn()) {
-            $this->redirect('/admin/login');
+            $this->redirect(BASE_URL . '/admin/login');
             return;
         }
 
@@ -238,11 +238,11 @@ class AdminController extends AbstractController
 
         if (!empty($mail)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 1 WHERE mail = :mail AND account_status = 2");
+            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 1 WHERE mail = :mail");
             $stmt->execute(['mail' => $mail]);
         }
 
-        $this->redirect('/admin/dashboard');
+        $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
