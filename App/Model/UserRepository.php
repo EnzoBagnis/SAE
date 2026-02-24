@@ -112,11 +112,14 @@ class UserRepository extends AbstractRepository
     private function insert(User $user): User
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO teachers 
-            (mail, name, surname, password, code_verif, account_status, reset_token, reset_expiration)
-            VALUES 
-            (:mail, :name, :surname, :password, :code_verif, :account_status, :reset_token, :reset_expiration)
-        ");
+        INSERT INTO teachers 
+        (mail, name, surname, password, code_verif, account_status, reset_token, reset_expiration)
+        VALUES 
+        (:mail, :name, :surname, :password, :code_verif, :account_status, :reset_token, :reset_expiration)
+    ");
+
+        // On récupère l'expiration pour la formater comme dans la méthode update()
+        $resetTokenExpiration = $user->getResetTokenExpiration();
 
         $stmt->execute([
             'mail'              => $user->getEmail(),
@@ -126,7 +129,9 @@ class UserRepository extends AbstractRepository
             'code_verif'        => $user->getVerificationCode(),
             'account_status'    => $user->isVerified() ? 1 : 0,
             'reset_token'       => $user->getResetToken() ?? '',
+            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d H:i:s') : null, // <--- Il manquait cette ligne
         ]);
+
         return $user;
     }
 
