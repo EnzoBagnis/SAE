@@ -76,27 +76,17 @@ class AdminController extends AbstractController
         $pdo = DatabaseConnection::getInstance()->getConnection();
 
         $verifiedUsers = $pdo->query(
-            "SELECT id, nom, prenom, mail FROM utilisateurs ORDER BY nom ASC"
+            "SELECT mail, name, surname FROM teachers ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $pendingUsers = $pdo->query(
-            "SELECT id, nom, prenom, mail, verifie FROM inscription_en_attente ORDER BY id ASC"
+            "SELECT id, nom, prenom, mail, mail_verifie FROM pending_registrations ORDER BY id ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
-
-        $blockedUsers = $pdo->query(
-            "SELECT mail, date_de_ban, ban_def, duree_ban FROM liste_noire ORDER BY date_de_ban DESC"
-        )->fetchAll(\PDO::FETCH_ASSOC);
-
-        // Add index as pseudo-id for blocked users display
-        foreach ($blockedUsers as $i => &$bu) {
-            $bu['id'] = $i + 1;
-        }
-        unset($bu);
 
         $this->renderView('admin/admin-dashboard', [
             'verifiedUsers' => $verifiedUsers,
             'pendingUsers'  => $pendingUsers,
-            'blockedUsers'  => $blockedUsers,
+            'blockedUsers'  => [],
         ]);
     }
 
@@ -145,12 +135,10 @@ class AdminController extends AbstractController
 
         if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            if ($table === 'B') {
-                $stmt = $pdo->prepare("DELETE FROM liste_noire WHERE mail = :id");
-            } elseif ($table === 'P') {
-                $stmt = $pdo->prepare("DELETE FROM inscription_en_attente WHERE id = :id");
+            if ($table === 'P') {
+                $stmt = $pdo->prepare("DELETE FROM pending_registrations WHERE id = :id");
             } else {
-                $stmt = $pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
+                $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :id");
             }
             $stmt->execute(['id' => $id]);
         }
@@ -176,31 +164,27 @@ class AdminController extends AbstractController
             $pdo = DatabaseConnection::getInstance()->getConnection();
 
             // Fetch pending user
-            $stmt = $pdo->prepare("SELECT * FROM inscription_en_attente WHERE id = :id");
+            $stmt = $pdo->prepare("SELECT * FROM pending_registrations WHERE id = :id");
             $stmt->execute(['id' => $id]);
             $pending = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             if ($pending) {
                 // Move to verified users
                 $ins = $pdo->prepare("
-                    INSERT INTO utilisateurs (nom, prenom, mail, mdp, code_verif, mail_verifie, date_creation)
-                    VALUES (:nom, :prenom, :mail, :mdp, :code_verif, 1, NOW())
+                    INSERT INTO teachers (mail, name, surname, password, code_verif, account_status, reset_token)
+                    VALUES (:mail, :name, :surname, :password, :code_verif, 1, '')
                 ");
                 $ins->execute([
-                    'nom'        => $pending['nom'],
-                    'prenom'     => $pending['prenom'],
                     'mail'       => $pending['mail'],
-                    'mdp'        => $pending['mdp'],
+                    'name'       => $pending['prenom'],
+                    'surname'    => $pending['nom'],
+                    'password'   => $pending['mdp'],
                     'code_verif' => $pending['code_verif'] ?? null,
                 ]);
 
                 // Delete from pending
-                $del = $pdo->prepare("DELETE FROM inscription_en_attente WHERE id = :id");
+                $del = $pdo->prepare("DELETE FROM pending_registrations WHERE id = :id");
                 $del->execute(['id' => $id]);
-
-                // Send notification
-                $emailService = new EmailService();
-                $emailService->sendVerificationCode($pending['mail'], $pending['prenom'] ?? '', '');
             }
         }
 
@@ -219,17 +203,16 @@ class AdminController extends AbstractController
             return;
         }
 
-        $id     = $this->getPost('id') ?? '';
+        $mail   = $this->getPost('id') ?? '';
         $nom    = $this->getPost('nom') ?? '';
         $prenom = $this->getPost('prenom') ?? '';
-        $email  = $this->getPost('email') ?? '';
 
-        if (!empty($id)) {
+        if (!empty($mail)) {
             $pdo  = DatabaseConnection::getInstance()->getConnection();
             $stmt = $pdo->prepare("
-                UPDATE utilisateurs SET nom = :nom, prenom = :prenom, mail = :mail WHERE id = :id
+                UPDATE teachers SET surname = :surname, name = :name WHERE mail = :mail
             ");
-            $stmt->execute(['nom' => $nom, 'prenom' => $prenom, 'mail' => $email, 'id' => $id]);
+            $stmt->execute(['surname' => $nom, 'name' => $prenom, 'mail' => $mail]);
         }
 
         $this->redirect('/admin/dashboard');
@@ -247,30 +230,19 @@ class AdminController extends AbstractController
             return;
         }
 
-        $table   = $this->getQuery('table') ?? 'V';
-        $id      = $this->getPost('id') ?? '';
-        $email   = $this->getPost('email') ?? '';
-        $ban_def = $this->getPost('ban_def') ?? 1;
+        // La table liste_noire n'existe pas dans le schéma actuel.
+        // On se contente de supprimer l'utilisateur de sa table d'origine.
+        $table = $this->getQuery('table') ?? 'V';
+        $id    = $this->getPost('id') ?? '';
 
-        if (!empty($email)) {
+        if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-
-            // Insert into blacklist
-            $stmt = $pdo->prepare("
-                INSERT INTO liste_noire (mail, date_de_ban, ban_def)
-                VALUES (:mail, NOW(), :ban_def)
-                ON DUPLICATE KEY UPDATE date_de_ban = NOW(), ban_def = :ban_def
-            ");
-            $stmt->execute(['mail' => $email, 'ban_def' => $ban_def]);
-
-            // Remove from original table
-            if ($table === 'V') {
-                $del = $pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
-                $del->execute(['id' => $id]);
-            } elseif ($table === 'P') {
-                $del = $pdo->prepare("DELETE FROM inscription_en_attente WHERE id = :id");
-                $del->execute(['id' => $id]);
+            if ($table === 'P') {
+                $del = $pdo->prepare("DELETE FROM pending_registrations WHERE id = :id");
+            } else {
+                $del = $pdo->prepare("DELETE FROM teachers WHERE mail = :id");
             }
+            $del->execute(['id' => $id]);
         }
 
         $this->redirect('/admin/dashboard');
