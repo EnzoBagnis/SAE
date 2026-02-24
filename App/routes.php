@@ -33,6 +33,8 @@ $router->get('/exercises/{id}', App\Controller\ExercisesController::class, 'show
 
 // Resource routes
 $router->get('/resources', App\Controller\ResourcesController::class, 'index');
+$router->get('/resources/create', App\Controller\ResourcesController::class, 'create');
+$router->post('/resources/create', App\Controller\ResourcesController::class, 'store');
 $router->get('/resources/{id}', App\Controller\ResourcesController::class, 'show');
 
 // Admin routes

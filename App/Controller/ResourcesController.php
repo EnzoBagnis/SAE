@@ -72,6 +72,55 @@ class ResourcesController extends AbstractController
     }
 
     /**
+     * Show the resource creation form.
+     *
+     * @return void
+     */
+    public function create(): void
+    {
+        $this->authService->requireAuth('/auth/login');
+        $this->renderView('resources/create');
+    }
+
+    /**
+     * Handle resource creation form submission.
+     *
+     * @return void
+     */
+    public function store(): void
+    {
+        $this->authService->requireAuth('/auth/login');
+
+        $email = $this->authService->getUserEmail();
+        if ($email === null) {
+            $this->redirect('/auth/login');
+            return;
+        }
+
+        $name        = trim($this->getPost('resource_name', ''));
+        $description = trim($this->getPost('description', ''));
+        $imagePath   = trim($this->getPost('image_path', ''));
+
+        if ($name === '') {
+            $this->renderView('resources/create', ['error' => 'Le nom de la ressource est obligatoire.']);
+            return;
+        }
+
+        $resource = new \App\Model\Entity\Resource();
+        $resource->setOwnerMail($email);
+        $resource->setResourceName($name);
+        $resource->setDescription($description !== '' ? $description : null);
+        $resource->setImagePath($imagePath !== '' ? $imagePath : null);
+
+        try {
+            $this->getRepository()->save($resource);
+            $this->redirect('/resources');
+        } catch (\Exception $e) {
+            $this->renderView('resources/create', ['error' => 'Erreur lors de la création : ' . $e->getMessage()]);
+        }
+    }
+
+    /**
      * Show resource details
      *
      * @param int $resourceId Resource ID
