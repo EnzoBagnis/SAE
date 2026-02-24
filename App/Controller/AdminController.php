@@ -73,7 +73,7 @@ class AdminController extends AbstractController
             return;
         }
 
-        $pdo = DatabaseConnection::getConnection();
+        $pdo = DatabaseConnection::getInstance()->getConnection();
 
         $verifiedUsers = $pdo->query(
             "SELECT id, nom, prenom, mail FROM utilisateurs ORDER BY nom ASC"
@@ -144,7 +144,7 @@ class AdminController extends AbstractController
         $id    = $this->getQuery('id') ?? '';
 
         if (!empty($id)) {
-            $pdo = DatabaseConnection::getConnection();
+            $pdo = DatabaseConnection::getInstance()->getConnection();
             if ($table === 'B') {
                 $stmt = $pdo->prepare("DELETE FROM liste_noire WHERE mail = :id");
             } elseif ($table === 'P') {
@@ -173,7 +173,7 @@ class AdminController extends AbstractController
         $id = $this->getQuery('id') ?? '';
 
         if (!empty($id)) {
-            $pdo = DatabaseConnection::getConnection();
+            $pdo = DatabaseConnection::getInstance()->getConnection();
 
             // Fetch pending user
             $stmt = $pdo->prepare("SELECT * FROM inscription_en_attente WHERE id = :id");
@@ -225,7 +225,7 @@ class AdminController extends AbstractController
         $email  = $this->getPost('email') ?? '';
 
         if (!empty($id)) {
-            $pdo  = DatabaseConnection::getConnection();
+            $pdo  = DatabaseConnection::getInstance()->getConnection();
             $stmt = $pdo->prepare("
                 UPDATE utilisateurs SET nom = :nom, prenom = :prenom, mail = :mail WHERE id = :id
             ");
@@ -253,7 +253,7 @@ class AdminController extends AbstractController
         $ban_def = $this->getPost('ban_def') ?? 1;
 
         if (!empty($email)) {
-            $pdo = DatabaseConnection::getConnection();
+            $pdo = DatabaseConnection::getInstance()->getConnection();
 
             // Insert into blacklist
             $stmt = $pdo->prepare("
