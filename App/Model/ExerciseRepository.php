@@ -87,6 +87,37 @@ class ExerciseRepository extends AbstractRepository
     }
 
     /**
+     * Find exercises by resource ID with attempt statistics.
+     * Returns exercises with total_attempts, successful_attempts and success_rate.
+     *
+     * @param int $resourceId Resource ID
+     * @return array Array of associative arrays with exercise data + stats
+     */
+    public function findByResourceIdWithStats(int $resourceId): array
+    {
+        $query = "SELECT e.*,
+                        COUNT(a.attempt_id) AS total_attempts,
+                        SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) AS successful_attempts
+                  FROM exercices e
+                  LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
+                  WHERE e.ressource_id = :resource_id
+                  GROUP BY e.exercice_id
+                  ORDER BY e.exercice_name ASC";
+
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute(['resource_id' => $resourceId]);
+        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        foreach ($results as &$row) {
+            $row['success_rate'] = $row['total_attempts'] > 0
+                ? round(($row['successful_attempts'] / $row['total_attempts']) * 100, 1)
+                : null;
+        }
+
+        return $results;
+    }
+
+    /**
      * Find exercises by dataset ID
      *
      * @param int $datasetId Dataset ID

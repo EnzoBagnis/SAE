@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Core\Controller\AbstractController;
 use App\Model\ResourceRepository;
+use App\Model\ExerciseRepository;
 use App\Model\AuthenticationService;
 use Core\Service\SessionService;
 
@@ -158,8 +159,16 @@ class ResourcesController extends AbstractController
             return;
         }
 
+        $exerciseRepo = new ExerciseRepository();
+        try {
+            $exercises = $exerciseRepo->findByResourceIdWithStats($resourceId);
+        } catch (\Exception $e) {
+            $exercises = [];
+        }
+
         $this->renderView('resources/details', [
-            'resource' => $resource,
+            'resource'  => $resource,
+            'exercises' => $exercises,
         ]);
     }
 
