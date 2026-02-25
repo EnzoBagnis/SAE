@@ -78,7 +78,7 @@ class ResourceRepository extends AbstractRepository
     }
 
     /**
-     * Find a resource by its ID.
+     * Find a resource by its ID, with owner name joined from the teachers table.
      *
      * @param int $resourceId Resource ID
      * @return Resource|null Resource entity or null
@@ -86,11 +86,22 @@ class ResourceRepository extends AbstractRepository
     public function findById(int $resourceId): ?Resource
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM ressources WHERE ressource_id = :id"
+            "SELECT r.*,
+                    t.name    AS owner_firstname,
+                    t.surname AS owner_lastname
+             FROM ressources r
+             LEFT JOIN teachers t ON r.owner_mail = t.mail
+             WHERE r.ressource_id = :id"
         );
         $stmt->execute(['id' => $resourceId]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $data ? $this->hydrate($data) : null;
+        if (!$data) {
+            return null;
+        }
+        $resource = $this->hydrate($data);
+        $resource->setOwnerFirstname($data['owner_firstname'] ?? null);
+        $resource->setOwnerLastname($data['owner_lastname'] ?? null);
+        return $resource;
     }
 
     /**

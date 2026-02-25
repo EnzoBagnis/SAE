@@ -18,6 +18,12 @@ class Resource
     /** @var string|null Comma-separated list of teacher mails this resource is shared with */
     private ?string $sharedMails = null;
 
+    /** @var string|null First name of the resource owner (joined from teachers table) */
+    private ?string $ownerFirstname = null;
+
+    /** @var string|null Last name of the resource owner (joined from teachers table) */
+    private ?string $ownerLastname = null;
+
     // Getters and Setters
 
     public function getResourceId(): ?int
@@ -99,5 +105,60 @@ class Resource
     public function setSharedMails(?string $sharedMails): void
     {
         $this->sharedMails = $sharedMails;
+    }
+
+    /**
+     * Get the first name of the resource owner.
+     * Populated via JOIN with the teachers table.
+     *
+     * @return string|null Owner first name or null
+     */
+    public function getOwnerFirstname(): ?string
+    {
+        return $this->ownerFirstname;
+    }
+
+    /**
+     * Set the first name of the resource owner.
+     *
+     * @param string|null $ownerFirstname Owner first name
+     * @return void
+     */
+    public function setOwnerFirstname(?string $ownerFirstname): void
+    {
+        $this->ownerFirstname = $ownerFirstname;
+    }
+
+    /**
+     * Get the last name of the resource owner.
+     * Populated via JOIN with the teachers table.
+     *
+     * @return string|null Owner last name or null
+     */
+    public function getOwnerLastname(): ?string
+    {
+        return $this->ownerLastname;
+    }
+
+    /**
+     * Set the last name of the resource owner.
+     *
+     * @param string|null $ownerLastname Owner last name
+     * @return void
+     */
+    public function setOwnerLastname(?string $ownerLastname): void
+    {
+        $this->ownerLastname = $ownerLastname;
+    }
+
+    /**
+     * Get the full name of the resource owner.
+     * Combines first name (name) and last name (surname) from the teachers table.
+     *
+     * @return string Owner full name, or empty string if not available
+     */
+    public function getOwnerFullName(): string
+    {
+        return trim(($this->ownerFirstname ?? '') . ' ' . ($this->ownerLastname ?? ''));
     }
 }
