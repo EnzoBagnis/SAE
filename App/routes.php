@@ -17,6 +17,12 @@ $router->post('/auth/login', App\Controller\LoginController::class, 'login');
 $router->get('/auth/register', App\Controller\RegisterController::class, 'index');
 $router->post('/auth/register', App\Controller\RegisterController::class, 'register');
 
+$router->get('/auth/verify-email', App\Controller\VerifyEmailController::class, 'index');
+$router->post('/auth/verify-email', App\Controller\VerifyEmailController::class, 'verify');
+$router->post('/auth/resend-code', App\Controller\VerifyEmailController::class, 'resend');
+
+$router->get('/auth/pending-approval', App\Controller\RegisterController::class, 'pendingApproval');
+
 $router->get('/auth/logout', App\Controller\LogoutController::class, 'logout');
 
 $router->get('/auth/forgot-password', App\Controller\ForgotPasswordController::class, 'index');
@@ -50,4 +56,3 @@ $router->post('/admin/edit-user', App\Controller\AdminController::class, 'editUs
 $router->post('/admin/ban-user', App\Controller\AdminController::class, 'banUser');
 $router->get('/admin/unban-user', App\Controller\AdminController::class, 'unbanUser');
 $router->get('/admin/switch-user', App\Controller\AdminController::class, 'switchUser');
-

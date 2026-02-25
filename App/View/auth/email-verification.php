@@ -27,7 +27,7 @@
         <h2>Vérification de l'email</h2>
         <p>Entrez le code à 6 chiffres envoyé par email</p>
 
-        <form action="<?= BASE_URL ?>/index.php?action=emailverification" method="POST">
+        <form action="<?= BASE_URL ?>/auth/verify-email" method="POST">
             <label for="code">Code de vérification</label>
             <input type="number"
                    id="code"
@@ -40,7 +40,7 @@
         </form>
 
         <p class="mt-3">Vous n'avez pas reçu le code ?</p>
-        <form action="<?= BASE_URL ?>/index.php?action=resendcode" method="POST">
+        <form action="<?= BASE_URL ?>/auth/resend-code" method="POST">
             <button type="submit" class="btn-secondary" name="renvoyer_code">Renvoyer le code</button>
         </form>
     </div>

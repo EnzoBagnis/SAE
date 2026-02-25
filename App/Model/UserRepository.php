@@ -97,10 +97,12 @@ class UserRepository extends AbstractRepository
      */
     public function save(User $user): User
     {
-        if ($user->getId() === null) {
-            return $this->insert($user);
+        // The PK in teachers is 'mail', not an auto-increment id.
+        // Use emailExists() to decide between insert and update.
+        if ($this->emailExists($user->getEmail())) {
+            return $this->update($user);
         }
-        return $this->update($user);
+        return $this->insert($user);
     }
 
     /**

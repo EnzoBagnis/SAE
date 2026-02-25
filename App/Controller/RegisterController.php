@@ -59,9 +59,13 @@ class RegisterController extends AbstractController
         ]);
 
         if ($result['success']) {
-            $this->renderView('auth/pending-approval', [
-                'message' => $result['message'],
-            ]);
+            // Store email in session so the verify-email page can use it
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['pending_verification_email'] = $this->getPost('email');
+            $this->redirect(BASE_URL . '/auth/verify-email');
+            return;
         } else {
             $this->renderView('auth/register', [
                 'error' => $result['message'],
@@ -72,4 +76,3 @@ class RegisterController extends AbstractController
         }
     }
 }
-
