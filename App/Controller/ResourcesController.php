@@ -172,10 +172,16 @@ class ResourcesController extends AbstractController
             error_log('[ResourcesController::show] exercises error: ' . $e->getMessage());
         }
 
-        $this->renderView('resources/details', [
-            'resource'  => $resource,
-            'exercises' => $exercises,
-        ]);
+        try {
+            $this->renderView('resources/details', [
+                'resource'  => $resource,
+                'exercises' => $exercises,
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::show] renderView error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            http_response_code(500);
+            $this->renderView('errors/500');
+        }
     }
 
     /**

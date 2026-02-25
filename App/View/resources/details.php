@@ -93,8 +93,8 @@ $title = 'StudTraj - ' . $resTitle;
         <span></span><span></span><span></span>
     </button>
     <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
-        <a href="<?= BASE_URL ?>/index.php?action=exercises">Exercices</a>
+        <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
+        <a href="<?= BASE_URL ?>/exercises">Exercices</a>
     </nav>
     <div class="header-right">
         <button onclick="openImportModal(<?= (int)$resource->getResourceId() ?>)" class="btn-import-trigger">
@@ -110,7 +110,7 @@ $title = 'StudTraj - ' . $resTitle;
             <div class="user-avatar"><?= htmlspecialchars($initials) ?></div>
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
-        <a href="<?= BASE_URL ?>/index.php?action=logout" class="btn-logout">
+        <a href="<?= BASE_URL ?>/auth/logout" class="btn-logout">
             <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -132,8 +132,8 @@ $title = 'StudTraj - ' . $resTitle;
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
         <ul class="burger-menu-list">
-            <li><a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
-            <li><a href="<?= BASE_URL ?>/index.php?action=exercises" class="burger-link">Exercices</a></li>
+            <li><a href="<?= BASE_URL ?>/resources" class="burger-link active">Ressources</a></li>
+            <li><a href="<?= BASE_URL ?>/exercises" class="burger-link">Exercices</a></li>
             <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>
@@ -141,7 +141,7 @@ $title = 'StudTraj - ' . $resTitle;
 
 <div class="main-content">
     <div style="padding: 20px 20px 0;">
-        <a href="<?= BASE_URL ?>/index.php?action=resources_list"
+        <a href="<?= BASE_URL ?>/resources"
            style="color:#666; text-decoration:none; font-size:.9em;">
             &larr; Retour aux ressources
         </a>
@@ -199,8 +199,8 @@ $title = 'StudTraj - ' . $resTitle;
                         <?php endif; ?>
                     </div>
                     <div class="tp-item-actions">
-                        <a href="<?= BASE_URL ?>/index.php?action=exercises&resource_id=<?= (int)$resource->getResourceId() ?>"
-                           class="btn">Voir les TPs</a>
+                        <a href="<?= BASE_URL ?>/exercises/<?= (int)$exercise['exercice_id'] ?>"
+                           class="btn">Voir le TP</a>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -296,7 +296,7 @@ $title = 'StudTraj - ' . $resTitle;
     }
     function confirmLogout() {
         if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-            window.location.href = window.BASE_URL + '/index.php?action=logout';
+            window.location.href = window.BASE_URL + '/auth/logout';
         }
     }
 </script>

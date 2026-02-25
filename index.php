@@ -5,8 +5,29 @@
  * Main entry point for the application using Core/App architecture
  */
 
+// Start output buffering immediately to prevent "headers already sent" issues
+ob_start();
+
 // Bootstrap the application
 require_once __DIR__ . '/App/bootstrap.php';
+
+// Catch fatal errors (E_ERROR, E_PARSE, etc.) that set_exception_handler cannot catch
+register_shutdown_function(function (): void {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        error_log('[FATAL] ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']);
+        if (!headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: text/html; charset=utf-8');
+        }
+        $errorView = __DIR__ . '/App/View/errors/500.php';
+        if (file_exists($errorView)) {
+            require $errorView;
+        } else {
+            echo '<h1>Erreur interne du serveur</h1>';
+        }
+    }
+});
 
 // Global exception handler — catches any uncaught exception/error and returns a proper 500
 set_exception_handler(function (\Throwable $e): void {

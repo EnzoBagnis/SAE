@@ -18,38 +18,33 @@ class DatabaseConnection
      */
     private function __construct()
     {
-        $host = EnvLoader::get('DB_HOST', 'localhost');
+        $host   = EnvLoader::get('DB_HOST', 'localhost');
         $dbname = EnvLoader::get('DB_NAME');
-        $user = EnvLoader::get('DB_USER');
-        $pass = EnvLoader::get('DB_PASS', '');
-
-        // Log loaded configuration (without password)
-        error_log("INFO: DB Config - Host: {$host}, Database: {$dbname}, User: {$user}");
+        $user   = EnvLoader::get('DB_USER');
+        $pass   = EnvLoader::get('DB_PASS', '');
 
         if (empty($dbname)) {
-            error_log("CRITICAL: DB_NAME est vide ou non défini dans le fichier .env");
+            error_log("CRITICAL: DB_NAME not defined in .env");
             throw new \RuntimeException("Configuration manquante: DB_NAME non défini dans .env");
         }
 
         if (empty($user)) {
-            error_log("CRITICAL: DB_USER est vide ou non défini dans le fichier .env");
+            error_log("CRITICAL: DB_USER not defined in .env");
             throw new \RuntimeException("Configuration manquante: DB_USER non défini dans .env");
         }
 
         $dsn = "mysql:host={$host};dbname={$dbname};charset=utf8mb4";
 
         $options = [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-            \PDO::ATTR_EMULATE_PREPARES => false,
+            \PDO::ATTR_EMULATE_PREPARES   => false,
         ];
 
         try {
             $this->pdo = new \PDO($dsn, $user, $pass, $options);
-            error_log("INFO: Connexion à la base de données réussie");
         } catch (\PDOException $e) {
-            error_log("CRITICAL: Database Connection Error - " . $e->getMessage());
-            error_log("CRITICAL: DSN utilisé: mysql:host={$host};dbname={$dbname}");
+            error_log("CRITICAL: DB connection failed — " . $e->getMessage());
             throw new \RuntimeException(
                 "Erreur de connexion à la base de données. Vérifiez les logs pour plus de détails."
             );

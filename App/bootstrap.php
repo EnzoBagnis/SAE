@@ -80,9 +80,12 @@ if ($env === 'development') {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 } else {
-    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+    error_reporting(E_ALL);
     ini_set('display_errors', '0');
     ini_set('log_errors', '1');
+    // Log file path for AlwaysData
+    $logFile = BASE_PATH . '/logs/php_errors.log';
+    ini_set('error_log', $logFile);
 }
 
 // Set timezone

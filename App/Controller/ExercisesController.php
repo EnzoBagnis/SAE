@@ -48,6 +48,36 @@ class ExercisesController extends AbstractController
             ]);
         }
     }
+
+    /**
+     * Show exercise details.
+     *
+     * @param int $exerciseId Exercise ID
+     * @return void
+     */
+    public function show(int $exerciseId): void
+    {
+        $this->authService->requireAuth('/auth/login');
+
+        try {
+            $exerciseRepo = new ExerciseRepository();
+            $exercise = $exerciseRepo->findById($exerciseId);
+        } catch (\Throwable $e) {
+            error_log('[ExercisesController::show] findById error: ' . $e->getMessage());
+            $exercise = null;
+        }
+
+        if (!$exercise) {
+            http_response_code(404);
+            $this->renderView('errors/404');
+            return;
+        }
+
+        $this->renderView('exercises/list', [
+            'exercises' => [$exercise],
+            'total'     => 1,
+        ]);
+    }
 }
 
 
