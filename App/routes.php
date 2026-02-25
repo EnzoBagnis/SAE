@@ -21,7 +21,7 @@ $router->get('/auth/verify-email', App\Controller\VerifyEmailController::class, 
 $router->post('/auth/verify-email', App\Controller\VerifyEmailController::class, 'verify');
 $router->post('/auth/resend-code', App\Controller\VerifyEmailController::class, 'resend');
 
-$router->get('/auth/pending-approval', App\Controller\RegisterController::class, 'pendingApproval');
+$router->get('/auth/pending-approval', App\Controller\VerifyEmailController::class, 'pendingApproval');
 
 $router->get('/auth/logout', App\Controller\LogoutController::class, 'logout');
 

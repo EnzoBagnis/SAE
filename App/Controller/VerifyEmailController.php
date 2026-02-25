@@ -142,4 +142,15 @@ class VerifyEmailController extends AbstractController
             'success_message' => 'Un nouveau code a été envoyé à votre adresse email.',
         ]);
     }
+
+    /**
+     * Show the pending admin approval page.
+     * Displayed after the email has been successfully verified.
+     *
+     * @return void
+     */
+    public function pendingApproval(): void
+    {
+        $this->renderView('auth/pending-approval');
+    }
 }

@@ -52,10 +52,10 @@ class RegisterController extends AbstractController
         }
 
         $result = $this->registerUseCase->execute([
-            'email' => $this->getPost('email'),
-            'password' => $this->getPost('password'),
+            'email'      => $this->getPost('email'),
+            'password'   => $this->getPost('password'),
             'first_name' => $this->getPost('first_name'),
-            'last_name' => $this->getPost('last_name'),
+            'last_name'  => $this->getPost('last_name'),
         ]);
 
         if ($result['success']) {
@@ -66,13 +66,13 @@ class RegisterController extends AbstractController
             $_SESSION['pending_verification_email'] = $this->getPost('email');
             $this->redirect(BASE_URL . '/auth/verify-email');
             return;
-        } else {
-            $this->renderView('auth/register', [
-                'error' => $result['message'],
-                'email' => $this->getPost('email'),
-                'first_name' => $this->getPost('first_name'),
-                'last_name' => $this->getPost('last_name'),
-            ]);
         }
+
+        $this->renderView('auth/register', [
+            'error'      => $result['message'],
+            'email'      => $this->getPost('email'),
+            'first_name' => $this->getPost('first_name'),
+            'last_name'  => $this->getPost('last_name'),
+        ]);
     }
 }
