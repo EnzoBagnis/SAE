@@ -213,7 +213,7 @@ $errorMsg = htmlspecialchars($_GET['error'] ?? '');
                                    value="<?= htmlspecialchars($t['mail']) ?>"
                                    class="teacher-checkbox">
                             <span class="user-name">
-                                <?= htmlspecialchars(($t['firstname'] ?? '') . ' ' . ($t['lastname'] ?? '')) ?>
+                                <?= htmlspecialchars(($t['name'] ?? '') . ' ' . ($t['surname'] ?? '')) ?>
                                 <small style="color:#888;">(<?= htmlspecialchars($t['mail']) ?>)</small>
                             </span>
                         </label>

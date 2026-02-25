@@ -196,12 +196,12 @@ class ResourceRepository extends AbstractRepository
      * Get all teacher emails except the given one (for sharing).
      *
      * @param string $excludeEmail Email to exclude (current user)
-     * @return array<array{mail: string, firstname: string, lastname: string}> List of teachers
+     * @return array<array{mail: string, name: string, surname: string}> List of teachers
      */
     public function findAllTeachersExcept(string $excludeEmail): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT mail, firstname, lastname FROM teachers WHERE mail != :mail ORDER BY lastname ASC"
+            "SELECT mail, name, surname FROM teachers WHERE mail != :mail ORDER BY surname ASC"
         );
         $stmt->execute(['mail' => $excludeEmail]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);

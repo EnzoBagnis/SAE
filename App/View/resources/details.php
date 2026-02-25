@@ -3,8 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$user_firstname = $_SESSION['prenom'] ?? 'Utilisateur';
-$user_lastname  = $_SESSION['nom'] ?? '';
+$user_firstname = $_SESSION['user_firstname'] ?? 'Utilisateur';
+$user_lastname  = $_SESSION['user_lastname']  ?? '';
 $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
 $resTitle = isset($resource) ? htmlspecialchars($resource->getResourceName()) : 'Ressource';
 $title = 'StudTraj - ' . $resTitle;
