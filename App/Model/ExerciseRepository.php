@@ -7,7 +7,10 @@ use App\Model\Entity\Exercise;
 
 /**
  * Exercise Repository
- * Handles exercise data persistence
+ * Handles exercise data persistence against the `exercices` table.
+ *
+ * Real schema:
+ *   exercice_id (PK), ressource_id, exercice_name, extention, date
  */
 class ExerciseRepository extends AbstractRepository
 {
@@ -16,7 +19,7 @@ class ExerciseRepository extends AbstractRepository
      */
     protected function getTableName(): string
     {
-        return 'exercises';
+        return 'exercices';
     }
 
     /**
@@ -28,26 +31,26 @@ class ExerciseRepository extends AbstractRepository
     }
 
     /**
-     * Find all exercises, optionally filtered by resource
+     * Find all exercises that have at least one attempt, optionally filtered by resource.
      *
      * @param int|null $resourceId Resource ID filter
-     * @return array Array of Exercise entities
+     * @return Exercise[] Array of Exercise entities
      */
     public function findAll(?int $resourceId = null): array
     {
         if ($resourceId === null) {
-            $query = "SELECT DISTINCT e.* 
-                     FROM exercises e 
-                     INNER JOIN attempts a ON e.exercise_id = a.exercise_id 
-                     ORDER BY e.exo_name ASC";
+            $query = "SELECT DISTINCT e.*
+                      FROM exercices e
+                      INNER JOIN attempts a ON e.exercice_id = a.exercice_id
+                      ORDER BY e.exercice_name ASC";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute();
         } else {
-            $query = "SELECT DISTINCT e.* 
-                     FROM exercises e 
-                     INNER JOIN attempts a ON e.exercise_id = a.exercise_id 
-                     WHERE e.resource_id = :resource_id 
-                     ORDER BY e.exo_name ASC";
+            $query = "SELECT DISTINCT e.*
+                      FROM exercices e
+                      INNER JOIN attempts a ON e.exercice_id = a.exercice_id
+                      WHERE e.ressource_id = :resource_id
+                      ORDER BY e.exercice_name ASC";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute(['resource_id' => $resourceId]);
         }
@@ -57,27 +60,30 @@ class ExerciseRepository extends AbstractRepository
     }
 
     /**
-     * Find exercise by ID
+     * Find an exercise by its primary key.
      *
      * @param int $exerciseId Exercise ID
      * @return Exercise|null Exercise entity or null
      */
     public function findById(int $exerciseId): ?Exercise
     {
-        return $this->findByField('exercise_id', $exerciseId);
+        $stmt = $this->pdo->prepare("SELECT * FROM exercices WHERE exercice_id = :id");
+        $stmt->execute(['id' => $exerciseId]);
+        $data = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $data ? $this->hydrate($data) : null;
     }
 
     /**
-     * Find exercises by resource ID
+     * Find exercises belonging to a resource.
      *
      * @param int $resourceId Resource ID
-     * @return array Array of Exercise entities
+     * @return Exercise[] Array of Exercise entities
      */
     public function findByResourceId(int $resourceId): array
     {
-        $query = "SELECT * FROM exercises 
-                 WHERE resource_id = :resource_id 
-                 ORDER BY exo_name ASC";
+        $query = "SELECT * FROM exercices
+                  WHERE ressource_id = :resource_id
+                  ORDER BY exercice_name ASC";
 
         $stmt = $this->pdo->prepare($query);
         $stmt->execute(['resource_id' => $resourceId]);
@@ -88,16 +94,18 @@ class ExerciseRepository extends AbstractRepository
 
     /**
      * Find exercises by resource ID with attempt statistics.
-     * Returns exercises with total_attempts, successful_attempts and success_rate.
+     * Returns raw associative arrays with total_attempts, successful_attempts and success_rate.
      *
      * @param int $resourceId Resource ID
-     * @return array Array of associative arrays with exercise data + stats
+     * @return array<array{exercice_id:int, ressource_id:int, exercice_name:string,
+     *                     extention:string, date:string,
+     *                     total_attempts:int, successful_attempts:int, success_rate:float|null}> Stats rows
      */
     public function findByResourceIdWithStats(int $resourceId): array
     {
         $query = "SELECT e.*,
-                        COUNT(a.attempt_id) AS total_attempts,
-                        SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) AS successful_attempts
+                         COUNT(a.attempt_id)                                    AS total_attempts,
+                         SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END)        AS successful_attempts
                   FROM exercices e
                   LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
                   WHERE e.ressource_id = :resource_id
@@ -109,7 +117,9 @@ class ExerciseRepository extends AbstractRepository
         $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         foreach ($results as &$row) {
-            $row['success_rate'] = $row['total_attempts'] > 0
+            $row['total_attempts']      = (int) $row['total_attempts'];
+            $row['successful_attempts'] = (int) $row['successful_attempts'];
+            $row['success_rate']        = $row['total_attempts'] > 0
                 ? round(($row['successful_attempts'] / $row['total_attempts']) * 100, 1)
                 : null;
         }
@@ -118,29 +128,7 @@ class ExerciseRepository extends AbstractRepository
     }
 
     /**
-     * Find exercises by dataset ID
-     *
-     * @param int $datasetId Dataset ID
-     * @return array Array of Exercise entities
-     */
-    public function findByDatasetId(int $datasetId): array
-    {
-        $query = "SELECT e.*, GROUP_CONCAT(tc.test_case_id) as has_test_cases
-                 FROM exercises e
-                 LEFT JOIN test_cases tc ON e.exercise_id = tc.exercise_id
-                 WHERE e.dataset_id = :dataset_id
-                 GROUP BY e.exercise_id
-                 ORDER BY e.exo_name";
-
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute(['dataset_id' => $datasetId]);
-
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        return array_map(fn($row) => $this->hydrate($row), $results);
-    }
-
-    /**
-     * Count exercises, optionally filtered by resource
+     * Count exercises, optionally filtered by resource.
      *
      * @param int|null $resourceId Resource ID filter
      * @return int Exercise count
@@ -148,15 +136,15 @@ class ExerciseRepository extends AbstractRepository
     public function count(?int $resourceId = null): int
     {
         if ($resourceId === null) {
-            $query = "SELECT COUNT(DISTINCT e.exercise_id) 
-                     FROM exercises e 
-                     INNER JOIN attempts a ON e.exercise_id = a.exercise_id";
+            $query = "SELECT COUNT(DISTINCT e.exercice_id)
+                      FROM exercices e
+                      INNER JOIN attempts a ON e.exercice_id = a.exercice_id";
             $stmt = $this->pdo->query($query);
         } else {
-            $query = "SELECT COUNT(DISTINCT e.exercise_id) 
-                     FROM exercises e 
-                     INNER JOIN attempts a ON e.exercise_id = a.exercise_id 
-                     WHERE e.resource_id = :resource_id";
+            $query = "SELECT COUNT(DISTINCT e.exercice_id)
+                      FROM exercices e
+                      INNER JOIN attempts a ON e.exercice_id = a.exercice_id
+                      WHERE e.ressource_id = :resource_id";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute(['resource_id' => $resourceId]);
         }
@@ -165,110 +153,31 @@ class ExerciseRepository extends AbstractRepository
     }
 
     /**
-     * Save exercise (insert or update)
+     * Delete an exercise by ID.
      *
-     * @param Exercise $exercise Exercise entity
-     * @return Exercise Saved exercise
-     */
-    public function save(Exercise $exercise): Exercise
-    {
-        if ($exercise->getExerciseId() === null) {
-            return $this->insert($exercise);
-        }
-        return $this->update($exercise);
-    }
-
-    /**
-     * Insert new exercise
-     *
-     * @param Exercise $exercise Exercise entity
-     * @return Exercise Inserted exercise
-     */
-    private function insert(Exercise $exercise): Exercise
-    {
-        $query = "INSERT INTO exercises 
-                 (resource_id, exo_name, funcname, solution, description, difficulte, date_creation, dataset_id) 
-                 VALUES 
-                 (:resource_id, :exo_name, :funcname, :solution, :description, :difficulte, NOW(), :dataset_id)";
-
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute([
-            'resource_id' => $exercise->getResourceId(),
-            'exo_name' => $exercise->getExoName(),
-            'funcname' => $exercise->getFuncname(),
-            'solution' => $exercise->getSolution(),
-            'description' => $exercise->getDescription(),
-            'difficulte' => $exercise->getDifficulte(),
-            'dataset_id' => $exercise->getDatasetId(),
-        ]);
-
-        $exercise->setExerciseId((int) $this->pdo->lastInsertId());
-        return $exercise;
-    }
-
-    /**
-     * Update existing exercise
-     *
-     * @param Exercise $exercise Exercise entity
-     * @return Exercise Updated exercise
-     */
-    private function update(Exercise $exercise): Exercise
-    {
-        $query = "UPDATE exercises 
-                 SET resource_id = :resource_id,
-                     exo_name = :exo_name,
-                     funcname = :funcname,
-                     solution = :solution,
-                     description = :description,
-                     difficulte = :difficulte,
-                     dataset_id = :dataset_id
-                 WHERE exercise_id = :exercise_id";
-
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute([
-            'exercise_id' => $exercise->getExerciseId(),
-            'resource_id' => $exercise->getResourceId(),
-            'exo_name' => $exercise->getExoName(),
-            'funcname' => $exercise->getFuncname(),
-            'solution' => $exercise->getSolution(),
-            'description' => $exercise->getDescription(),
-            'difficulte' => $exercise->getDifficulte(),
-            'dataset_id' => $exercise->getDatasetId(),
-        ]);
-
-        return $exercise;
-    }
-
-    /**
-     * Delete exercise by ID
-     *
-     * @param int $exerciseId Exercise ID
+     * @param mixed $exerciceId Exercise ID
      * @return bool True if deleted
      */
-    public function delete(int $exerciseId): bool
+    public function delete(mixed $exerciceId): bool
     {
-        $stmt = $this->pdo->prepare("DELETE FROM exercises WHERE exercise_id = :id");
-        return $stmt->execute(['id' => $exerciseId]);
+        $stmt = $this->pdo->prepare("DELETE FROM exercices WHERE exercice_id = :id");
+        return $stmt->execute(['id' => (int) $exerciceId]);
     }
 
     /**
-     * Hydrate exercise from database row
+     * Hydrate an Exercise entity from a database row.
      *
-     * @param array $data Database row data
-     * @return Exercise Exercise entity
+     * @param array $data Database row
+     * @return Exercise Hydrated entity
      */
     protected function hydrate(array $data): Exercise
     {
         $exercise = new Exercise();
-        $exercise->setExerciseId($data['exercise_id'] ?? null);
-        $exercise->setResourceId($data['resource_id'] ?? 0);
-        $exercise->setExoName($data['exo_name'] ?? '');
-        $exercise->setFuncname($data['funcname'] ?? null);
-        $exercise->setSolution($data['solution'] ?? null);
-        $exercise->setDescription($data['description'] ?? null);
-        $exercise->setDifficulte($data['difficulte'] ?? null);
-        $exercise->setDateCreation($data['date_creation'] ?? null);
-        $exercise->setDatasetId($data['dataset_id'] ?? null);
+        $exercise->setExerciseId($data['exercice_id']   ?? null);
+        $exercise->setResourceId((int) ($data['ressource_id'] ?? 0));
+        $exercise->setExoName($data['exercice_name']    ?? '');
+        $exercise->setExtention($data['extention']      ?? null);
+        $exercise->setDate($data['date']                ?? null);
         return $exercise;
     }
 }
