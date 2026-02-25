@@ -37,5 +37,6 @@ Options -Indexes
 
 # Custom Error Pages
 ErrorDocument 404 /index.php
-ErrorDocument 500 /index.php
+# NOTE: ErrorDocument 500 intentionally removed — redirecting to index.php on 500
+# would cause an infinite loop if index.php itself triggers the error.
 

@@ -5,23 +5,6 @@
  * Initializes autoloader and configuration
  */
 
-// Error reporting for development - Display errors directly
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-ini_set('log_errors', '0'); // Disable logging to file
-error_reporting(E_ALL);
-
-// Custom error handler to display errors
-set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    echo "<b>PHP Error [$errno]:</b> $errstr in <b>$errfile</b> on line <b>$errline</b><br>";
-    return true; // Prevent default handler
-});
-
-// Custom exception handler
-set_exception_handler(function($exception) {
-    echo "<b>Uncaught Exception:</b> " . $exception->getMessage() . " in <b>" . $exception->getFile() . "</b> on line <b>" . $exception->getLine() . "</b><br>";
-    echo "<pre>" . $exception->getTraceAsString() . "</pre>";
-});
 
 // Define base path
 define('BASE_PATH', __DIR__ . '/..');

@@ -65,19 +65,22 @@ class ResourcesController extends AbstractController
 
         try {
             $ownedResources = $this->getRepository()->findByOwnerMail($email);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::index] findByOwnerMail: ' . $e->getMessage());
             $ownedResources = [];
         }
 
         try {
             $sharedResources = $this->getRepository()->findSharedWithMail($email);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::index] findSharedWithMail: ' . $e->getMessage());
             $sharedResources = [];
         }
 
         try {
             $allTeachers = $this->getRepository()->findAllTeachersExcept($email);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::index] findAllTeachersExcept: ' . $e->getMessage());
             $allTeachers = [];
         }
 
@@ -129,7 +132,8 @@ class ResourcesController extends AbstractController
             if (!empty($sharedMails) && is_array($sharedMails)) {
                 $this->getRepository()->syncSharing($resource->getResourceId(), $sharedMails);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::store] ' . $e->getMessage());
             $this->redirect('/resources?error=' . urlencode('Erreur lors de la création : ' . $e->getMessage()));
             return;
         }
@@ -149,7 +153,8 @@ class ResourcesController extends AbstractController
 
         try {
             $resource = $this->getRepository()->findById($resourceId);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::show] findById error: ' . $e->getMessage());
             $resource = null;
         }
 
@@ -159,11 +164,12 @@ class ResourcesController extends AbstractController
             return;
         }
 
-        $exerciseRepo = new ExerciseRepository();
+        $exercises = [];
         try {
+            $exerciseRepo = new ExerciseRepository();
             $exercises = $exerciseRepo->findByResourceIdWithStats($resourceId);
-        } catch (\Exception $e) {
-            $exercises = [];
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::show] exercises error: ' . $e->getMessage());
         }
 
         $this->renderView('resources/details', [
@@ -191,7 +197,8 @@ class ResourcesController extends AbstractController
 
         try {
             $resource = $this->getRepository()->findById($resourceId);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::update] findById: ' . $e->getMessage());
             $resource = null;
         }
 
@@ -227,7 +234,8 @@ class ResourcesController extends AbstractController
             // Sync sharing list
             $sharedMails = $_POST['shared_teachers'] ?? [];
             $this->getRepository()->syncSharing($resourceId, is_array($sharedMails) ? $sharedMails : []);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::update] save: ' . $e->getMessage());
             $this->redirect('/resources?error=' . urlencode('Erreur lors de la mise à jour : ' . $e->getMessage()));
             return;
         }
@@ -253,7 +261,8 @@ class ResourcesController extends AbstractController
 
         try {
             $resource = $this->getRepository()->findById($resourceId);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('[ResourcesController::delete] findById: ' . $e->getMessage());
             $resource = null;
         }
 
@@ -269,7 +278,7 @@ class ResourcesController extends AbstractController
 
         try {
             $this->getRepository()->delete($resourceId);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Suppression échouée silencieusement — on redirige quand même
             error_log('[ResourcesController::delete] ' . $e->getMessage());
         }

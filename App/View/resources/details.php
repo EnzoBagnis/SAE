@@ -22,7 +22,7 @@ $title = 'StudTraj - ' . $resTitle;
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/dashboard.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
     <script type="module" src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
-    <script type="module" src="<?= BASE_URL ?>/public/js/dashboard-main.js"></script>
+    <script>window.BASE_URL = '<?= BASE_URL ?>';</script>
     <meta name="description" content="Détails de la ressource <?= $resTitle ?>.">
     <meta name="robots" content="noindex, nofollow">
     <style>
