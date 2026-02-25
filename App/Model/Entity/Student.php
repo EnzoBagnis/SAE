@@ -8,22 +8,11 @@ namespace App\Model\Entity;
  */
 class Student
 {
-    private ?int $studentId = null;
     private string $studentIdentifier;
     private string $nomFictif;
     private string $prenomFictif;
-    private int $datasetId;
-    private ?string $nomDataset = null;
 
-    public function getStudentId(): ?int
-    {
-        return $this->studentId;
-    }
 
-    public function setStudentId(?int $studentId): void
-    {
-        $this->studentId = $studentId;
-    }
 
     public function getStudentIdentifier(): string
     {
@@ -83,12 +72,9 @@ class Student
     public function toArray(): array
     {
         return [
-            'student_id' => $this->studentId,
             'student_identifier' => $this->studentIdentifier,
             'nom_fictif' => $this->nomFictif,
-            'prenom_fictif' => $this->prenomFictif,
-            'dataset_id' => $this->datasetId,
-            'nom_dataset' => $this->nomDataset
+            'prenom_fictif' => $this->prenomFictif
         ];
     }
 }
