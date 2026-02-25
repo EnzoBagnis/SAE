@@ -107,34 +107,32 @@
                 <?php else : ?>
                     <?php foreach ($verifiedUsers as $user) : ?>
                         <tr>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
-                            <td><?= htmlspecialchars($user['nom']) ?></td>
-                            <td><?= htmlspecialchars($user['prenom']) ?></td>
-                            <td><?= htmlspecialchars($user['mail']) ?></td>
+                            <td><?= htmlspecialchars($user['id'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['nom'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['prenom'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['mail'] ?? '') ?></td>
                             <td class="actions">
                                 <button class="btn-edit"
                                     onclick="openEditPopup('V',
-                                        '<?= htmlspecialchars($user['id']) ?>',
-                                        '<?= htmlspecialchars($user['nom']) ?>',
-                                        '<?= htmlspecialchars($user['prenom']) ?>',
-                                        '<?= htmlspecialchars($user['mail']) ?>',
-                                        '', '', '')">
+                                        '<?= htmlspecialchars($user['id'] ?? '') ?>',
+                                        '<?= htmlspecialchars($user['nom'] ?? '') ?>',
+                                        '<?= htmlspecialchars($user['prenom'] ?? '') ?>',
+                                        '<?= htmlspecialchars($user['mail'] ?? '') ?>',
+                                        '')">
                                     Modifier
                                 </button>
 
                                 <a href="<?= BASE_URL ?>/admin/delete-user?table=V&id=<?=
-                                    urlencode($user['id']) ?>"
+                                    urlencode($user['id'] ?? '') ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('Ètes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
                                 <button class="btn-ban"
                                     onclick="openEditPopup('B',
-                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '<?= htmlspecialchars($user['id'] ?? '') ?>',
                                         '', '',
-                                        '<?= htmlspecialchars($user['mail']) ?>',
-                                        '',
-                                        '<?php echo date('Y-m-d'); ?>',
+                                        '<?= htmlspecialchars($user['mail'] ?? '') ?>',
                                         '')">
                                     Bloquer
                                 </button>
@@ -167,7 +165,7 @@
                 <?php else : ?>
                     <?php foreach ($pendingUsers as $user) : ?>
                         <tr>
-                            <td><?php switch ($user['verifie']) {
+                            <td><?php switch ($user['verifie'] ?? '') {
                                 case 0:
                                     echo "Demande envoyée";
                                     break;
@@ -175,40 +173,37 @@
                                     echo "Email vérifié";
                                     break;
                                 } ?></td>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
-                            <td><?= htmlspecialchars($user['nom']) ?></td>
-                            <td><?= htmlspecialchars($user['prenom']) ?></td>
-                            <td><?= htmlspecialchars($user['mail']) ?></td>
+                            <td><?= htmlspecialchars($user['id'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['nom'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['prenom'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['mail'] ?? '') ?></td>
                             <td class="actions">
                                 <button class="btn-edit"
                                     onclick="openEditPopup('P',
-                                        '<?= htmlspecialchars($user['id']) ?>',
-                                        '<?= htmlspecialchars($user['nom']) ?>',
-                                        '<?= htmlspecialchars($user['prenom']) ?>',
-                                        '<?= htmlspecialchars($user['mail']) ?>',
-                                        '<?= htmlspecialchars($user['verifie']) ?>',
-                                        '', '')">
+                                        '<?= htmlspecialchars($user['id'] ?? '') ?>',
+                                        '<?= htmlspecialchars($user['nom'] ?? '') ?>',
+                                        '<?= htmlspecialchars($user['prenom'] ?? '') ?>',
+                                        '<?= htmlspecialchars($user['mail'] ?? '') ?>',
+                                        '<?= htmlspecialchars($user['verifie'] ?? '') ?>')">
                                     Modifier
                                 </button>
                                 <a href="<?= BASE_URL ?>/admin/delete-user?table=P&id=<?=
-                                    urlencode($user['id']) ?>"
+                                    urlencode($user['id'] ?? '') ?>"
                                    class="btn-delete"
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                                     Supprimer
                                 </a>
                                 <button class="btn-ban"
                                     onclick="openEditPopup('B',
-                                        '<?= htmlspecialchars($user['id']) ?>',
+                                        '<?= htmlspecialchars($user['id'] ?? '') ?>',
                                         '', '',
-                                        '<?= htmlspecialchars($user['mail']) ?>',
-                                        '',
-                                        '<?php echo date('Y-m-d'); ?>',
+                                        '<?= htmlspecialchars($user['mail'] ?? '') ?>',
                                         '')">
                                     Bloquer
                                 </button>
-                                <?php if ($user['verifie'] == 1) : ?>
+                                <?php if (($user['verifie'] ?? '') == 1) : ?>
                                     <a href="<?= BASE_URL ?>/admin/validate-user?id=<?=
-                                        urlencode($user['id']) ?>"
+                                        urlencode($user['id'] ?? '') ?>"
                                        class="btn-validate"
                                        onclick="return confirm(
                                            'Ètes-vous sûr de vouloir valider cet utilisateur ?'
@@ -230,9 +225,9 @@
                 <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
                     <th>Email</th>
-                    <th>Date de ban</th>
-                    <!--<th>Durée de bannissement</th>-->
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -240,38 +235,21 @@
 
                 <?php if (empty($blockedUsers)) : ?>
                     <tr>
-                        <?php echo"<script>console.log(" . json_encode($blockedUsers) . ");</script>" ?>
-                        <td colspan="5" class="text-center">Aucun utilisateur vérifié</td>
+                        <td colspan="5" class="text-center">Aucun utilisateur bloqué</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($blockedUsers as $user) : ?>
                         <tr>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
-                            <td><?= htmlspecialchars($user['mail']) ?></td>
-                            <td><?= htmlspecialchars($user['date_de_ban']) ?></td>
-                            <!--<td><?php if ($user['ban_def'] == 1) : ?>
-                                Permanent
-                                    <?php else : ?>
-                                        <?= htmlspecialchars($user['duree_ban']) ?>
-                                    <?php endif; ?>
-                            </td>-->
+                            <td><?= htmlspecialchars($user['id'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['nom'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['prenom'] ?? '') ?></td>
+                            <td><?= htmlspecialchars($user['mail'] ?? '') ?></td>
                             <td class="actions">
-                                <button class="btn-edit"
-                                    onclick="openEditPopup('B',
-                                        '<?= htmlspecialchars($user['id']) ?>',
-                                        '', '',
-                                        '<?= htmlspecialchars($user['mail']) ?>',
-                                        '',
-                                        '<?= htmlspecialchars($user['date_de_ban']) ?>',
-                                        '<?= htmlspecialchars($user['duree_ban']) ?>')">
-                                    Modifier
-                                </button>
-
                                 <a href="<?= BASE_URL ?>/admin/delete-user?table=B&id=<?=
-                                    urlencode($user['mail']) ?>"
+                                    urlencode($user['mail'] ?? '') ?>"
                                    class="btn-delete"
-                                   onclick="return confirm('Êtes-vous sûr débloquer cet utilisateur ?')">
-                                Débloquer
+                                   onclick="return confirm('Êtes-vous sûr de vouloir débloquer cet utilisateur ?')">
+                                    Débloquer
                                 </a>
                             </td>
                         </tr>
@@ -344,32 +322,18 @@
 </div>
 
 <div id="editBlocked" class="popup-container">
-    <h2>Modifier l'utilisateur</h2>
-    <form id="editUserForm" class="card" method="POST" action="<?= BASE_URL ?>/admin/ban-user?table=V">
+    <h2>Bloquer l'utilisateur</h2>
+    <form id="editBlockedForm" class="card" method="POST" action="<?= BASE_URL ?>/admin/ban-user">
         <div class="form-group">
-            <label for="idBlocked">id</label>
+            <label for="idBlocked">Email (identifiant)</label>
             <input type="text" id="idBlocked" name="id" readonly>
         </div>
         <div class="form-group">
             <label for="editEmailBlocked">Email</label>
             <input type="email" id="editEmailBlocked" name="email" readonly>
         </div>
-        <div class="form-group">
-            <label for="editDateBanBlocked">Date de ban</label>
-            <input type="int" id="editDateBanBlocked" name="date_de_ban" readonly>
-        </div>
-        <!-- Possibilité de modifier la durée de ban dans le futur
-        <div class="form-group">
-            <label for="editDureeBanBlocked">Durée de ban</label>
-            <input type="int" id="editDureeBanBlocked" name="duree_de_ban" required>
-        </div>
-        -->
-        <div class="form-group">
-            <label for="ban_def">Bloquage définitif</label>
-            <input type="checkbox" id="ban_def" name="ban_def" value="1" checked disabled>
-        </div>
         <div class="form-actions">
-            <button type="submit" class="btn-submit" name="ok">Valider</button>
+            <button type="submit" class="btn-submit" name="ok">Confirmer le blocage</button>
             <button type="button" class="btn-cancel" onclick="closeEditPopup()">Annuler</button>
         </div>
     </form>
@@ -377,25 +341,11 @@
 
 <script>
     function showTab(tabName) {
-        // Cacher tous les contenus
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-
-        // Désactiver tous les boutons
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        // Afficher le contenu sélectionné
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabName + '-tab').classList.add('active');
         fetch('<?= BASE_URL ?>/admin/switch-user');
-
-        // Activer le bouton sélectionné
         event.target.classList.add('active');
-    }
-    function test() {
-        console.log("test");
     }
 
     function setValue(id, v, table) {
@@ -403,7 +353,7 @@
         if (el) el.value = v ?? '';
     }
 
-    function openEditPopup(table, id, nom, prenom, email, verifie, date_de_ban, duree_ban) {
+    function openEditPopup(table, id, nom, prenom, email, verifie) {
         switch (table) {
             case 'V':
                 document.getElementById('editVerifie').style.display = 'block';
@@ -419,42 +369,25 @@
                 break;
         }
         switch (verifie) {
-            case '0':
-                verifie = "Demande envoyée";
-                break;
-            case '1':
-                verifie = "Email vérifié";
-                break;
+            case '0': verifie = "Demande envoyée"; break;
+            case '1': verifie = "Email vérifié"; break;
         }
-        setValue('table', table, table);
-        setValue('verifie', verifie, table);
         setValue('id', id, table);
         setValue('editNom', nom, table);
         setValue('editPrenom', prenom, table);
         setValue('editEmail', email, table);
-        setValue('editDateBan', date_de_ban, table);
-        setValue('editDureeBan', duree_ban, table);
+        setValue('verifie', verifie, table);
 
         document.getElementById('editPopupOverlay').style.display = 'block';
-        //document.getElementById('editPopup').style.display = 'block';
-        console.log("test");
-        console.log(nom, prenom, email);
     }
 
     function closeEditPopup() {
         document.getElementById('editPopupOverlay').style.display = 'none';
-        const popups = ['editVerifie', 'editPending', 'editBlocked', 'blockUser'];
-        popups.forEach(id => {
+        ['editVerifie', 'editPending', 'editBlocked'].forEach(id => {
             const popup = document.getElementById(id);
             if (popup) popup.style.display = 'none';
         });
     }
-
-    // Récupère la date locale au format ISO (AAAA-MM-JJTHH:mm:ss...)
-    // Puis on ne garde que les 10 premiers caractères (AAAA-MM-JJ)
-    const dateDuJour = new Date().toISOString().split('T')[0];
-
-    document.getElementById('date_fixe').textContent = dateDuJour;
 </script>
 </body>
 </html>

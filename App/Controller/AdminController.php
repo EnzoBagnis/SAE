@@ -77,17 +77,21 @@ class AdminController extends AbstractController
 
         // Utilisateurs vérifiés (account_status = 1)
         $verifiedUsers = $pdo->query(
-            "SELECT mail, name, surname FROM teachers WHERE account_status = 1 ORDER BY surname ASC"
+            "SELECT mail AS id, surname AS nom, name AS prenom, mail, account_status AS verifie
+             FROM teachers WHERE account_status = 1 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         // Utilisateurs en attente de vérification (account_status = 0)
         $pendingUsers = $pdo->query(
-            "SELECT mail, name, surname, account_status FROM teachers WHERE account_status = 0 ORDER BY surname ASC"
+            "SELECT mail AS id, surname AS nom, name AS prenom, mail, account_status AS verifie
+             FROM teachers WHERE account_status = 0 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         // Utilisateurs bloqués (account_status = 2)
         $blockedUsers = $pdo->query(
-            "SELECT mail, name, surname FROM teachers WHERE account_status = 2 ORDER BY surname ASC"
+            "SELECT mail AS id, surname AS nom, name AS prenom, mail,
+                    account_status AS verifie
+             FROM teachers WHERE account_status = 2 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->renderView('admin/admin-dashboard', [
