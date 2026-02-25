@@ -103,13 +103,17 @@ class ExerciseRepository extends AbstractRepository
      */
     public function findByResourceIdWithStats(int $resourceId): array
     {
-        $query = "SELECT e.*,
-                         COUNT(a.attempt_id)                                    AS total_attempts,
-                         SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END)        AS successful_attempts
+        $query = "SELECT e.exercice_id,
+                         e.ressource_id,
+                         e.exercice_name,
+                         e.extention,
+                         e.date,
+                         COUNT(a.attempt_id)                             AS total_attempts,
+                         SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) AS successful_attempts
                   FROM exercices e
                   LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
                   WHERE e.ressource_id = :resource_id
-                  GROUP BY e.exercice_id
+                  GROUP BY e.exercice_id, e.ressource_id, e.exercice_name, e.extention, e.date
                   ORDER BY e.exercice_name ASC";
 
         $stmt = $this->pdo->prepare($query);

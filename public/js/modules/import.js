@@ -216,3 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.id === 'importModal') closeImportModal();
     });
 });
+
+// Exposition globale des fonctions appelées via onclick dans le HTML
+// (nécessaire car ce fichier est chargé en tant que module ES)
+window.openImportModal   = openImportModal;
+window.closeImportModal  = closeImportModal;
+window.switchImportTab   = switchImportTab;
+window.handleFileSelect  = handleFileSelect;
+window.importAttempts    = importAttempts;
+window.importExercises   = importExercises;
