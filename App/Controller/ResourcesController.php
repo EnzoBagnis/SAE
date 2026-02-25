@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use Core\Controller\AbstractController;
 use App\Model\ResourceRepository;
-use App\Model\ExerciseRepository;
+use App\Model\ExerciseRepository; // Added: needed for show() to load exercises with stats
 use App\Model\AuthenticationService;
 use Core\Service\SessionService;
 

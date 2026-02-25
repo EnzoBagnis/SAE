@@ -9,8 +9,8 @@ use App\Model\Entity\Exercise;
  * Exercise Repository
  * Handles exercise data persistence against the `exercices` table.
  *
- * Real schema:
- *   exercice_id (PK), ressource_id, exercice_name, extention, date
+ * Schema: exercice_id (PK), ressource_id, exercice_name, extention, date
+ * Attempts: attempts (attempt_id, exercice_id, user, correct, ...)
  */
 class ExerciseRepository extends AbstractRepository
 {

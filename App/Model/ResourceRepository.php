@@ -9,10 +9,9 @@ use App\Model\Entity\Resource;
  * Resource Repository
  * Handles resource data persistence against the `ressources` table.
  *
- * Real schema:
- *   ressource_id (PK), owner_mail, ressource_name, ressource_description, image_path
- * Access control:
- *   ressources_access (ressource_id, teacher_mail)
+ * Schema: ressource_id, owner_mail, ressource_name, ressource_description, image_path
+ * Access: ressources_access (ressource_id, teacher_mail)
+ * Owner info: joined from teachers (name=firstname, surname=lastname)
  */
 class ResourceRepository extends AbstractRepository
 {

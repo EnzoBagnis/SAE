@@ -1,4 +1,5 @@
 <?php
+// Page de détails d'une ressource - v2 (schema BD: exercices, ressources, teachers)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
