@@ -33,7 +33,7 @@ class ResourceRepository extends AbstractRepository
     }
 
     /**
-     * Find resources owned by a given teacher email.
+     * Find resources owned by a given teacher email, including shared teacher mails list.
      *
      * @param string $email Owner email
      * @return Resource[] Array of Resource entities
@@ -41,10 +41,14 @@ class ResourceRepository extends AbstractRepository
     public function findByOwnerMail(string $email): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT *, 'owner' AS access_type
-             FROM ressources
-             WHERE owner_mail = :mail
-             ORDER BY ressource_id DESC"
+            "SELECT r.*,
+                    'owner' AS access_type,
+                    GROUP_CONCAT(ra.teacher_mail) AS shared_mails
+             FROM ressources r
+             LEFT JOIN ressources_access ra ON r.ressource_id = ra.ressource_id
+             WHERE r.owner_mail = :mail
+             GROUP BY r.ressource_id
+             ORDER BY r.ressource_id DESC"
         );
         $stmt->execute(['mail' => $email]);
         return array_map(fn($row) => $this->hydrate($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
@@ -59,10 +63,14 @@ class ResourceRepository extends AbstractRepository
     public function findSharedWithMail(string $email): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT r.*, 'shared' AS access_type
+            "SELECT r.*,
+                    'shared' AS access_type,
+                    GROUP_CONCAT(ra2.teacher_mail) AS shared_mails
              FROM ressources r
              INNER JOIN ressources_access ra ON r.ressource_id = ra.ressource_id
+             LEFT JOIN ressources_access ra2 ON r.ressource_id = ra2.ressource_id
              WHERE ra.teacher_mail = :mail
+             GROUP BY r.ressource_id
              ORDER BY r.ressource_id DESC"
         );
         $stmt->execute(['mail' => $email]);
@@ -174,6 +182,49 @@ class ResourceRepository extends AbstractRepository
     }
 
     /**
+     * Get all teacher emails except the given one (for sharing).
+     *
+     * @param string $excludeEmail Email to exclude (current user)
+     * @return array<array{mail: string, firstname: string, lastname: string}> List of teachers
+     */
+    public function findAllTeachersExcept(string $excludeEmail): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT mail, firstname, lastname FROM teachers WHERE mail != :mail ORDER BY lastname ASC"
+        );
+        $stmt->execute(['mail' => $excludeEmail]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Sync the sharing list for a resource (replaces all existing access entries).
+     *
+     * @param int      $resourceId   Resource ID
+     * @param string[] $teacherMails List of teacher emails to share with
+     * @return void
+     */
+    public function syncSharing(int $resourceId, array $teacherMails): void
+    {
+        $this->pdo->prepare(
+            "DELETE FROM ressources_access WHERE ressource_id = :id"
+        )->execute(['id' => $resourceId]);
+
+        if (empty($teacherMails)) {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "INSERT IGNORE INTO ressources_access (ressource_id, teacher_mail) VALUES (:id, :mail)"
+        );
+        foreach ($teacherMails as $mail) {
+            $mail = trim($mail);
+            if ($mail !== '') {
+                $stmt->execute(['id' => $resourceId, 'mail' => $mail]);
+            }
+        }
+    }
+
+    /**
      * Hydrate a Resource entity from a database row.
      *
      * @param array $data Database row
@@ -185,9 +236,10 @@ class ResourceRepository extends AbstractRepository
         $resource->setResourceId(isset($data['ressource_id']) ? (int) $data['ressource_id'] : null);
         $resource->setOwnerMail($data['owner_mail'] ?? '');
         $resource->setResourceName($data['ressource_name'] ?? '');
-        $resource->setDescription($data['ressource_description'] !== '' ? $data['ressource_description'] : null);
-        $resource->setImagePath($data['image_path'] !== '' ? $data['image_path'] : null);
+        $resource->setDescription(($data['ressource_description'] ?? '') !== '' ? $data['ressource_description'] : null);
+        $resource->setImagePath(($data['image_path'] ?? '') !== '' ? $data['image_path'] : null);
         $resource->setAccessType($data['access_type'] ?? 'owner');
+        $resource->setSharedMails($data['shared_mails'] ?? null);
         return $resource;
     }
 }

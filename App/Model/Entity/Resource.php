@@ -15,6 +15,8 @@ class Resource
     private ?string $description = null;
     private ?string $imagePath = null;
     private string $accessType = 'owner';
+    /** @var string|null Comma-separated list of teacher mails this resource is shared with */
+    private ?string $sharedMails = null;
 
     // Getters and Setters
 
@@ -76,5 +78,26 @@ class Resource
     public function setAccessType(string $accessType): void
     {
         $this->accessType = $accessType;
+    }
+
+    /**
+     * Get the comma-separated list of teacher mails this resource is shared with.
+     *
+     * @return string|null Comma-separated mails or null
+     */
+    public function getSharedMails(): ?string
+    {
+        return $this->sharedMails;
+    }
+
+    /**
+     * Set the comma-separated list of shared teacher mails.
+     *
+     * @param string|null $sharedMails Comma-separated mails
+     * @return void
+     */
+    public function setSharedMails(?string $sharedMails): void
+    {
+        $this->sharedMails = $sharedMails;
     }
 }
