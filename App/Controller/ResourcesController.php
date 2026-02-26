@@ -164,21 +164,21 @@ class ResourcesController extends AbstractController
             return;
         }
 
-        $exercises = [];
-        try {
-            $exerciseRepo = new ExerciseRepository();
-            $exercises = $exerciseRepo->findByResourceIdWithStats($resourceId);
-        } catch (\Throwable $e) {
-            error_log('[ResourcesController::show] exercises error: ' . $e->getMessage());
-        }
+        // Use session keys from the current auth system
+        $session = new \Core\Service\SessionService();
+        $firstname = $session->get('user_firstname', '');
+        $lastname  = $session->get('user_lastname', '');
 
         try {
-            $this->renderView('resources/details', [
-                'resource'  => $resource,
-                'exercises' => $exercises,
+            $this->renderView('user/dashboard', [
+                'resource'       => $resource,
+                'resource_id'    => $resourceId,
+                'user_firstname' => $firstname,
+                'user_lastname'  => $lastname,
+                'title'          => 'StudTraj - ' . htmlspecialchars($resource->getResourceName()),
             ]);
         } catch (\Throwable $e) {
-            error_log('[ResourcesController::show] renderView error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            error_log('[ResourcesController::show] renderView error: ' . $e->getMessage());
             http_response_code(500);
             $this->renderView('errors/500');
         }

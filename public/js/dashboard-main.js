@@ -72,7 +72,7 @@ function setupEventListeners() {
 
     // Check if ChartModule is available
     if (typeof ChartModule !== 'undefined') {
-        const resourceId = Utils.getUrlParameter('resource_id');
+        const resourceId = window.RESOURCE_ID || Utils.getUrlParameter('resource_id');
 
         // Expose switchListView to global for HTML onclick attributes
         window.switchListView = function(viewType, loadContent = true) {
@@ -86,7 +86,7 @@ function setupEventListeners() {
 
                 if (loadContent) {
                     // Load global student stats
-                    fetch(`${window.BASE_URL}/index.php?action=students_stats&resource_id=${resourceId || ''}`)
+                    fetch(`${window.BASE_URL}/api/dashboard/students-stats?resource_id=${resourceId || ''}`)
                         .then(r => r.json())
                         .then(resp => {
                             if(resp.success) {
@@ -148,7 +148,7 @@ function setupEventListeners() {
                      dataZone.appendChild(chartsWrapper);
 
                      // Fetch and render success rate chart
-                     fetch(`${window.BASE_URL}/index.php?action=exercises_stats&resource_id=${resourceId || ''}`)
+                     fetch(`${window.BASE_URL}/api/dashboard/students-stats?resource_id=${resourceId || ''}`)
                          .then(r => r.json())
                          .then(resp => {
                              if(resp.success) {
@@ -161,7 +161,7 @@ function setupEventListeners() {
                          });
 
                      // Fetch and render completion chart
-                     fetch(`${window.BASE_URL}/index.php?action=exercise_completion_stats&resource_id=${resourceId || ''}`)
+                     fetch(`${window.BASE_URL}/api/dashboard/students-stats?resource_id=${resourceId || ''}`)
                          .then(r => r.json())
                          .then(resp => {
                              if(resp.success) {

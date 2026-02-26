@@ -13,8 +13,11 @@ export class StudentContentManager {
         this.resourceId = this.getResourceIdFromUrl();
     }
 
-    // Récupérer l'ID de la ressource depuis l'URL
+    // Récupérer l'ID de la ressource depuis window.RESOURCE_ID (injecté PHP) ou l'URL
     getResourceIdFromUrl() {
+        if (window.RESOURCE_ID !== undefined && window.RESOURCE_ID !== null) {
+            return window.RESOURCE_ID;
+        }
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('resource_id');
     }
@@ -49,9 +52,9 @@ export class StudentContentManager {
 
         try {
             // Construire l'URL avec le resource_id si disponible
-            let url = `${window.BASE_URL}/index.php?action=student&id=${studentId}`;
+            let url = `${window.BASE_URL}/api/dashboard/student/${encodeURIComponent(studentId)}`;
             if (this.resourceId) {
-                url += `&resource_id=${this.resourceId}`;
+                url += `?resource_id=${this.resourceId}`;
             }
 
             const response = await fetch(url);
@@ -168,7 +171,7 @@ export class StudentContentManager {
         dataZone.innerHTML = '<div class="loading-spinner">⏳ Chargement des tentatives...</div>';
 
         try {
-            let url = `${window.BASE_URL}/index.php?action=exercise&id=${exerciseId}`;
+            let url = `${window.BASE_URL}/api/dashboard/exercises?exercise_id=${exerciseId}`;
             if (this.resourceId) {
                 url += `&resource_id=${this.resourceId}`;
             }

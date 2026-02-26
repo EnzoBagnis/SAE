@@ -21,6 +21,16 @@ abstract class AbstractRepository
     }
 
     /**
+     * Expose the PDO connection for raw queries in controllers.
+     *
+     * @return \PDO
+     */
+    public function getPdo(): \PDO
+    {
+        return $this->pdo;
+    }
+
+    /**
      * Magic method handler for dynamic findBy methods
      * Supports patterns:
      * - findBy{Field}($value)

@@ -48,6 +48,12 @@ $router->post('/resources/{id}/delete', App\Controller\ResourcesController::clas
 $router->post('/api/import/exercises', App\Controller\ImportController::class, 'exercises');
 $router->post('/api/import/attempts', App\Controller\ImportController::class, 'attempts');
 
+// Dashboard API routes (JSON endpoints consumed by dashboard-main.js)
+$router->get('/api/dashboard/students', App\Controller\DashboardApiController::class, 'students');
+$router->get('/api/dashboard/student/{id}', App\Controller\DashboardApiController::class, 'student');
+$router->get('/api/dashboard/exercises', App\Controller\DashboardApiController::class, 'exercises');
+$router->get('/api/dashboard/students-stats', App\Controller\DashboardApiController::class, 'studentsStats');
+
 // Admin routes
 $router->get('/admin', App\Controller\AdminController::class, 'loginForm');
 $router->get('/admin/login', App\Controller\AdminController::class, 'loginForm');
