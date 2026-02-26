@@ -36,7 +36,7 @@ class ExerciseRepository extends AbstractRepository
      * @param int|null $resourceId Resource ID filter
      * @return Exercise[] Array of Exercise entities
      */
-    public function findAll(?int $resourceId = null): array
+    public function findAllWithAttempts(?int $resourceId = null): array
     {
         if ($resourceId === null) {
             $query = "SELECT DISTINCT e.*
@@ -260,4 +260,3 @@ class ExerciseRepository extends AbstractRepository
         return $exercise;
     }
 }
-

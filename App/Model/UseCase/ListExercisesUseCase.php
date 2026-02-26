@@ -31,7 +31,7 @@ class ListExercisesUseCase
     public function execute(?int $resourceId = null): array
     {
         try {
-            $exercises = $this->exerciseRepository->findAll($resourceId);
+            $exercises = $this->exerciseRepository->findAllWithAttempts($resourceId);
 
             // Convert entities to arrays for response
             $exercisesData = array_map(fn($exercise) => $exercise->toArray(), $exercises);
