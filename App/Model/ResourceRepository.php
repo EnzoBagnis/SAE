@@ -89,7 +89,7 @@ class ResourceRepository extends AbstractRepository
                     t.name    AS owner_firstname,
                     t.surname AS owner_lastname
              FROM ressources r
-             LEFT JOIN teachers t ON r.owner_mail = t.mail
+             LEFT JOIN teachers t ON CAST(r.owner_mail AS CHAR) = t.mail
              WHERE r.ressource_id = :id"
         );
         $stmt->execute(['id' => $resourceId]);
