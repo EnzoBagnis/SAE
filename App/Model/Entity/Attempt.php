@@ -4,128 +4,193 @@ namespace App\Model\Entity;
 
 /**
  * Attempt Entity
- * Represents a student's attempt at an exercise
+ * Represents a student's attempt at an exercise.
+ * Maps to the `attempts` table.
+ *
+ * Schema: attempt_id (PK), exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2
  */
 class Attempt
 {
     private ?int $attemptId = null;
-    private int $studentId;
-    private int $exerciseId;
-    private ?string $submissionDate = null;
-    private ?string $extension = null;
+    private int $exerciceId = 0;
+    private string $user = '';
     private int $correct = 0;
-    private ?string $aes2 = null;
-    private ?string $code = null;
+    private string $evalSet = '';
+    private string $upload = '';
+    private string $aes0 = '';
+    private string $aes1 = '';
+    private string $aes2 = '';
 
-    // Getters and Setters
-
+    /**
+     * @return int|null
+     */
     public function getAttemptId(): ?int
     {
         return $this->attemptId;
     }
 
+    /**
+     * @param int|null $attemptId
+     * @return void
+     */
     public function setAttemptId(?int $attemptId): void
     {
         $this->attemptId = $attemptId;
     }
 
-    public function getStudentId(): int
+    /**
+     * @return int
+     */
+    public function getExerciceId(): int
     {
-        return $this->studentId;
+        return $this->exerciceId;
     }
 
-    public function setStudentId(int $studentId): void
+    /**
+     * @param int $exerciceId
+     * @return void
+     */
+    public function setExerciceId(int $exerciceId): void
     {
-        $this->studentId = $studentId;
+        $this->exerciceId = $exerciceId;
     }
 
-    public function getExerciseId(): int
+    /**
+     * @return string
+     */
+    public function getUser(): string
     {
-        return $this->exerciseId;
+        return $this->user;
     }
 
-    public function setExerciseId(int $exerciseId): void
+    /**
+     * @param string $user
+     * @return void
+     */
+    public function setUser(string $user): void
     {
-        $this->exerciseId = $exerciseId;
+        $this->user = $user;
     }
 
-    public function getSubmissionDate(): ?string
-    {
-        return $this->submissionDate;
-    }
-
-    public function setSubmissionDate(?string $submissionDate): void
-    {
-        $this->submissionDate = $submissionDate;
-    }
-
-    public function getExtension(): ?string
-    {
-        return $this->extension;
-    }
-
-    public function setExtension(?string $extension): void
-    {
-        $this->extension = $extension;
-    }
-
+    /**
+     * @return int
+     */
     public function getCorrect(): int
     {
         return $this->correct;
     }
 
+    /**
+     * @param int $correct
+     * @return void
+     */
     public function setCorrect(int $correct): void
     {
         $this->correct = $correct;
     }
 
-    public function getAes2(): ?string
+    /**
+     * @return string
+     */
+    public function getEvalSet(): string
+    {
+        return $this->evalSet;
+    }
+
+    /**
+     * @param string $evalSet
+     * @return void
+     */
+    public function setEvalSet(string $evalSet): void
+    {
+        $this->evalSet = $evalSet;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUpload(): string
+    {
+        return $this->upload;
+    }
+
+    /**
+     * @param string $upload
+     * @return void
+     */
+    public function setUpload(string $upload): void
+    {
+        $this->upload = $upload;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAes0(): string
+    {
+        return $this->aes0;
+    }
+
+    /**
+     * @param string $aes0
+     * @return void
+     */
+    public function setAes0(string $aes0): void
+    {
+        $this->aes0 = $aes0;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAes1(): string
+    {
+        return $this->aes1;
+    }
+
+    /**
+     * @param string $aes1
+     * @return void
+     */
+    public function setAes1(string $aes1): void
+    {
+        $this->aes1 = $aes1;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAes2(): string
     {
         return $this->aes2;
     }
 
-    public function setAes2(?string $aes2): void
+    /**
+     * @param string $aes2
+     * @return void
+     */
+    public function setAes2(string $aes2): void
     {
         $this->aes2 = $aes2;
     }
 
-    public function getCode(): ?string
-    {
-        return $this->code;
-    }
-
-    public function setCode(?string $code): void
-    {
-        $this->code = $code;
-    }
-
     /**
-     * Check if attempt is successful
+     * Convert to array representation.
      *
-     * @param int $totalTestCases Total number of test cases
-     * @return bool True if all test cases passed
-     */
-    public function isSuccessful(int $totalTestCases): bool
-    {
-        return $this->correct === $totalTestCases;
-    }
-
-    /**
-     * Convert to array
-     *
-     * @return array Attempt data as array
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
         return [
             'attempt_id' => $this->attemptId,
-            'student_id' => $this->studentId,
-            'exercise_id' => $this->exerciseId,
-            'submission_date' => $this->submissionDate,
-            'extension' => $this->extension,
-            'correct' => $this->correct,
-            'aes2' => $this->aes2,
-            'code' => $this->code,
+            'exercice_id' => $this->exerciceId,
+            'user'        => $this->user,
+            'correct'     => $this->correct,
+            'eval_set'    => $this->evalSet,
+            'upload'      => $this->upload,
+            'aes0'        => $this->aes0,
+            'aes1'        => $this->aes1,
+            'aes2'        => $this->aes2,
         ];
     }
 }

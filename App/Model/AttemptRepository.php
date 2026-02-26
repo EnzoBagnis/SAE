@@ -7,7 +7,9 @@ use App\Model\Entity\Attempt;
 
 /**
  * Attempt Repository
- * Handles attempt data persistence
+ * Handles attempt data persistence against the `attempts` table.
+ *
+ * Schema: attempt_id (PK), exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2
  */
 class AttemptRepository extends AbstractRepository
 {
@@ -28,158 +30,124 @@ class AttemptRepository extends AbstractRepository
     }
 
     /**
-     * Find attempts by student ID
+     * Find attempts by exercise ID.
      *
-     * @param int $studentId Student ID
-     * @return array Array of Attempt entities
+     * @param int $exerciceId Exercise ID
+     * @return Attempt[] Array of Attempt entities
      */
-    public function findByStudentId(int $studentId): array
+    public function findByExerciceId(int $exerciceId): array
     {
-        $query = "SELECT * FROM attempts 
-                 WHERE student_id = :student_id 
-                 ORDER BY submission_date DESC";
-
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute(['student_id' => $studentId]);
-
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        return array_map(fn($row) => $this->hydrate($row), $results);
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM attempts WHERE exercice_id = :exercice_id ORDER BY attempt_id DESC"
+        );
+        $stmt->execute(['exercice_id' => $exerciceId]);
+        return array_map(fn($row) => $this->hydrate($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /**
-     * Find attempts by exercise ID
+     * Find attempts by student identifier.
      *
-     * @param int $exerciseId Exercise ID
-     * @return array Array of Attempt entities
+     * @param string $user Student identifier (user field)
+     * @return Attempt[] Array of Attempt entities
      */
-    public function findByExerciseId(int $exerciseId): array
+    public function findByUser(string $user): array
     {
-        $query = "SELECT * FROM attempts 
-                 WHERE exercise_id = :exercise_id 
-                 ORDER BY submission_date DESC";
-
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute(['exercise_id' => $exerciseId]);
-
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        return array_map(fn($row) => $this->hydrate($row), $results);
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM attempts WHERE user = :user ORDER BY attempt_id DESC"
+        );
+        $stmt->execute(['user' => $user]);
+        return array_map(fn($row) => $this->hydrate($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /**
-     * Find attempts by student and exercise
+     * Bulk insert attempts with a single transaction.
+     * Each item in $rows must contain: exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2.
      *
-     * @param int $studentId Student ID
-     * @param int $exerciseId Exercise ID
-     * @return array Array of Attempt entities
+     * @param array<array<string,mixed>> $rows Rows to insert
+     * @return array{inserted:int, errors:list<string>} Result summary
      */
-    public function findByStudentAndExercise(int $studentId, int $exerciseId): array
+    public function bulkInsert(array $rows): array
     {
-        $query = "SELECT * FROM attempts 
-                 WHERE student_id = :student_id AND exercise_id = :exercise_id 
-                 ORDER BY submission_date DESC";
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO attempts (exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2)
+             VALUES (:exercice_id, :user, :correct, :eval_set, :upload, :aes0, :aes1, :aes2)"
+        );
 
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute([
-            'student_id' => $studentId,
-            'exercise_id' => $exerciseId
-        ]);
+        $inserted = 0;
+        $errors   = [];
 
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        return array_map(fn($row) => $this->hydrate($row), $results);
+        $this->pdo->beginTransaction();
+        try {
+            foreach ($rows as $index => $row) {
+                try {
+                    $stmt->execute([
+                        'exercice_id' => (int) ($row['exercice_id'] ?? 0),
+                        'user'        => (string) ($row['user'] ?? ''),
+                        'correct'     => (int) ($row['correct'] ?? 0),
+                        'eval_set'    => (string) ($row['eval_set'] ?? ''),
+                        'upload'      => (string) ($row['upload'] ?? ''),
+                        'aes0'        => (string) ($row['aes0'] ?? ''),
+                        'aes1'        => (string) ($row['aes1'] ?? ''),
+                        'aes2'        => (string) ($row['aes2'] ?? ''),
+                    ]);
+                    $inserted++;
+                } catch (\Throwable $e) {
+                    $errors[] = "Tentative #$index: " . $e->getMessage();
+                }
+            }
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+
+        return ['inserted' => $inserted, 'errors' => $errors];
     }
 
     /**
-     * Save attempt (insert or update)
+     * Save attempt (insert only – no update logic needed for imports).
      *
      * @param Attempt $attempt Attempt entity
-     * @return Attempt Saved attempt
+     * @return Attempt Saved attempt with new ID
      */
     public function save(Attempt $attempt): Attempt
     {
-        if ($attempt->getAttemptId() === null) {
-            return $this->insert($attempt);
-        }
-        return $this->update($attempt);
-    }
-
-    /**
-     * Insert new attempt
-     *
-     * @param Attempt $attempt Attempt entity
-     * @return Attempt Inserted attempt
-     */
-    private function insert(Attempt $attempt): Attempt
-    {
-        $stmt = $this->pdo->prepare("
-            INSERT INTO attempts 
-            (student_id, exercise_id, submission_date, extension, correct, aes2, code)
-            VALUES 
-            (:student_id, :exercise_id, NOW(), :extension, :correct, :aes2, :code)
-        ");
-
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO attempts (exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2)
+             VALUES (:exercice_id, :user, :correct, :eval_set, :upload, :aes0, :aes1, :aes2)"
+        );
         $stmt->execute([
-            'student_id' => $attempt->getStudentId(),
-            'exercise_id' => $attempt->getExerciseId(),
-            'extension' => $attempt->getExtension(),
-            'correct' => $attempt->getCorrect(),
-            'aes2' => $attempt->getAes2(),
-            'code' => $attempt->getCode(),
+            'exercice_id' => $attempt->getExerciceId(),
+            'user'        => $attempt->getUser(),
+            'correct'     => $attempt->getCorrect(),
+            'eval_set'    => $attempt->getEvalSet(),
+            'upload'      => $attempt->getUpload(),
+            'aes0'        => $attempt->getAes0(),
+            'aes1'        => $attempt->getAes1(),
+            'aes2'        => $attempt->getAes2(),
         ]);
-
         $attempt->setAttemptId((int) $this->pdo->lastInsertId());
         return $attempt;
     }
 
     /**
-     * Update existing attempt
+     * Hydrate an Attempt entity from a database row.
      *
-     * @param Attempt $attempt Attempt entity
-     * @return Attempt Updated attempt
-     */
-    private function update(Attempt $attempt): Attempt
-    {
-        $stmt = $this->pdo->prepare("
-            UPDATE attempts 
-            SET student_id = :student_id,
-                exercise_id = :exercise_id,
-                extension = :extension,
-                correct = :correct,
-                aes2 = :aes2,
-                code = :code
-            WHERE attempt_id = :attempt_id
-        ");
-
-        $stmt->execute([
-            'attempt_id' => $attempt->getAttemptId(),
-            'student_id' => $attempt->getStudentId(),
-            'exercise_id' => $attempt->getExerciseId(),
-            'extension' => $attempt->getExtension(),
-            'correct' => $attempt->getCorrect(),
-            'aes2' => $attempt->getAes2(),
-            'code' => $attempt->getCode(),
-        ]);
-
-        return $attempt;
-    }
-
-    /**
-     * Hydrate attempt from database row
-     *
-     * @param array $data Database row data
-     * @return Attempt Attempt entity
+     * @param array<string,mixed> $data Database row
+     * @return Attempt Hydrated entity
      */
     protected function hydrate(array $data): Attempt
     {
         $attempt = new Attempt();
-        $attempt->setAttemptId($data['attempt_id'] ?? null);
-        $attempt->setStudentId($data['student_id'] ?? 0);
-        $attempt->setExerciseId($data['exercise_id'] ?? 0);
-        $attempt->setSubmissionDate($data['submission_date'] ?? null);
-        $attempt->setExtension($data['extension'] ?? null);
-        $attempt->setCorrect($data['correct'] ?? 0);
-        $attempt->setAes2($data['aes2'] ?? null);
-        $attempt->setCode($data['code'] ?? null);
+        $attempt->setAttemptId((int) ($data['attempt_id'] ?? 0));
+        $attempt->setExerciceId((int) ($data['exercice_id'] ?? 0));
+        $attempt->setUser((string) ($data['user'] ?? ''));
+        $attempt->setCorrect((int) ($data['correct'] ?? 0));
+        $attempt->setEvalSet((string) ($data['eval_set'] ?? ''));
+        $attempt->setUpload((string) ($data['upload'] ?? ''));
+        $attempt->setAes0((string) ($data['aes0'] ?? ''));
+        $attempt->setAes1((string) ($data['aes1'] ?? ''));
+        $attempt->setAes2((string) ($data['aes2'] ?? ''));
         return $attempt;
     }
 }
-

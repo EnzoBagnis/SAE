@@ -44,6 +44,10 @@ $router->get('/resources/{id}', App\Controller\ResourcesController::class, 'show
 $router->post('/resources/{id}/update', App\Controller\ResourcesController::class, 'update');
 $router->post('/resources/{id}/delete', App\Controller\ResourcesController::class, 'delete');
 
+// Import API routes (replaces api_import_exercises.php and api_import_attempts.php)
+$router->post('/api/import/exercises', App\Controller\ImportController::class, 'exercises');
+$router->post('/api/import/attempts', App\Controller\ImportController::class, 'attempts');
+
 // Admin routes
 $router->get('/admin', App\Controller\AdminController::class, 'loginForm');
 $router->get('/admin/login', App\Controller\AdminController::class, 'loginForm');

@@ -157,6 +157,79 @@ class ExerciseRepository extends AbstractRepository
     }
 
     /**
+     * Find an exercise by resource ID and name (case-sensitive).
+     *
+     * @param int    $ressourceId Resource ID
+     * @param string $name        Exercise name
+     * @return Exercise|null Exercise entity or null
+     */
+    public function findByRessourceIdAndName(int $ressourceId, string $name): ?Exercise
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM exercices WHERE ressource_id = :ressource_id AND exercice_name = :name LIMIT 1"
+        );
+        $stmt->execute(['ressource_id' => $ressourceId, 'name' => $name]);
+        $data = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $data ? $this->hydrate($data) : null;
+    }
+
+    /**
+     * Find an exercise by name globally (returns the most recent one).
+     *
+     * @param string $name Exercise name
+     * @return Exercise|null Exercise entity or null
+     */
+    public function findByName(string $name): ?Exercise
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM exercices WHERE exercice_name = :name ORDER BY exercice_id DESC LIMIT 1"
+        );
+        $stmt->execute(['name' => $name]);
+        $data = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $data ? $this->hydrate($data) : null;
+    }
+
+    /**
+     * Insert a new exercise row.
+     *
+     * @param int    $ressourceId  Resource ID
+     * @param string $exerciceName Exercise name
+     * @param string $extention    File extension
+     * @param string $date         Date (Y-m-d)
+     * @return int New exercise ID
+     */
+    public function insertExercice(int $ressourceId, string $exerciceName, string $extention, string $date): int
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO exercices (ressource_id, exercice_name, extention, date)
+             VALUES (:ressource_id, :exercice_name, :extention, :date)"
+        );
+        $stmt->execute([
+            'ressource_id'  => $ressourceId,
+            'exercice_name' => $exerciceName,
+            'extention'     => $extention,
+            'date'          => $date,
+        ]);
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * Update extention and date of an existing exercise.
+     *
+     * @param int    $exerciceId Exercise ID
+     * @param string $extention  New file extension
+     * @param string $date       New date (Y-m-d)
+     * @return void
+     */
+    public function updateExtentionAndDate(int $exerciceId, string $extention, string $date): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE exercices SET extention = :extention, date = :date WHERE exercice_id = :id"
+        );
+        $stmt->execute(['extention' => $extention, 'date' => $date, 'id' => $exerciceId]);
+    }
+
+    /**
      * Delete an exercise by ID.
      *
      * @param mixed $exerciceId Exercise ID
