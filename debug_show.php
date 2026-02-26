@@ -65,7 +65,60 @@ try {
         echo "   - " . ($ex['exercice_name'] ?? '?') . " (id=" . ($ex['exercice_id'] ?? '?') . ")\n";
     }
 } catch (\Throwable $e) {
-    echo "   ERROR: " . $e->getMessage() . "\n   " . $e->getTraceAsString() . "\n";
+    echo "   ERROR CLASS  : " . get_class($e) . "\n";
+    echo "   ERROR MSG    : " . $e->getMessage() . "\n";
+    echo "   FILE:LINE    : " . $e->getFile() . ":" . $e->getLine() . "\n";
+    echo "   TRACE:\n" . $e->getTraceAsString() . "\n";
+}
+
+// Step 3b: Raw SQL test directly on PDO
+echo "\n3b. Testing raw SQL query directly...\n";
+try {
+    // Test 1: simple SELECT without GROUP BY
+    $stmt = $pdo->prepare("SELECT exercice_id, ressource_id, exercice_name, extention, `date` FROM exercices WHERE ressource_id = :id");
+    $stmt->execute(['id' => $resourceId]);
+    $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    echo "   Simple SELECT: OK - " . count($rows) . " row(s)\n";
+    foreach ($rows as $r) {
+        echo "   - id={$r['exercice_id']} name={$r['exercice_name']}\n";
+    }
+} catch (\Throwable $e) {
+    echo "   Simple SELECT ERROR: " . $e->getMessage() . "\n";
+}
+
+try {
+    // Test 2: with GROUP BY on exercice_id only
+    $stmt = $pdo->prepare(
+        "SELECT e.exercice_id, e.ressource_id, e.exercice_name, e.extention, e.`date`,
+                COUNT(a.attempt_id) AS total_attempts,
+                SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) AS successful_attempts
+         FROM exercices e
+         LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
+         WHERE e.ressource_id = :id
+         GROUP BY e.exercice_id"
+    );
+    $stmt->execute(['id' => $resourceId]);
+    $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    echo "   GROUP BY exercice_id: OK - " . count($rows) . " row(s)\n";
+} catch (\Throwable $e) {
+    echo "   GROUP BY exercice_id ERROR: " . $e->getMessage() . "\n";
+}
+
+try {
+    // Test 3: MariaDB sql_mode
+    $mode = $pdo->query("SELECT @@sql_mode")->fetchColumn();
+    echo "   @@sql_mode: $mode\n";
+} catch (\Throwable $e) {
+    echo "   sql_mode ERROR: " . $e->getMessage() . "\n";
+}
+
+try {
+    // Test 4: ORDER BY exercice_name on TEXT column
+    $stmt = $pdo->prepare("SELECT exercice_id, exercice_name FROM exercices WHERE ressource_id = :id ORDER BY exercice_name ASC");
+    $stmt->execute(['id' => $resourceId]);
+    echo "   ORDER BY exercice_name (TEXT): OK\n";
+} catch (\Throwable $e) {
+    echo "   ORDER BY TEXT ERROR: " . $e->getMessage() . "\n";
 }
 
 // Step 4: Session check
