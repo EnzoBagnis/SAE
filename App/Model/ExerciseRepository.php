@@ -103,17 +103,19 @@ class ExerciseRepository extends AbstractRepository
      */
     public function findByResourceIdWithStats(int $resourceId): array
     {
+        // GROUP BY on exercice_id (PK) only — exercice_name and extention are TEXT columns
+        // which cannot be used in GROUP BY on MariaDB. The PK functionally determines all other columns.
         $query = "SELECT e.exercice_id,
                          e.ressource_id,
                          e.exercice_name,
                          e.extention,
-                         e.date,
+                         e.`date`,
                          COUNT(a.attempt_id)                             AS total_attempts,
                          SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) AS successful_attempts
                   FROM exercices e
                   LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
                   WHERE e.ressource_id = :resource_id
-                  GROUP BY e.exercice_id, e.ressource_id, e.exercice_name, e.extention, e.date
+                  GROUP BY e.exercice_id
                   ORDER BY e.exercice_name ASC";
 
         $stmt = $this->pdo->prepare($query);
@@ -201,7 +203,7 @@ class ExerciseRepository extends AbstractRepository
     public function insertExercice(int $ressourceId, string $exerciceName, string $extention, string $date): int
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO exercices (ressource_id, exercice_name, extention, date)
+            "INSERT INTO exercices (ressource_id, exercice_name, extention, `date`)
              VALUES (:ressource_id, :exercice_name, :extention, :date)"
         );
         $stmt->execute([
@@ -224,7 +226,7 @@ class ExerciseRepository extends AbstractRepository
     public function updateExtentionAndDate(int $exerciceId, string $extention, string $date): void
     {
         $stmt = $this->pdo->prepare(
-            "UPDATE exercices SET extention = :extention, date = :date WHERE exercice_id = :id"
+            "UPDATE exercices SET extention = :extention, `date` = :date WHERE exercice_id = :id"
         );
         $stmt->execute(['extention' => $extention, 'date' => $date, 'id' => $exerciceId]);
     }
