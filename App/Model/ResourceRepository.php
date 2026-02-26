@@ -163,15 +163,52 @@ class ResourceRepository extends AbstractRepository
     }
 
     /**
-     * Delete a resource by ID.
+     * Delete a resource and all its related data (exercises, attempts, access).
+     * Deletion order respects FK dependencies:
+     *   1. attempts linked to the resource's exercises
+     *   2. exercices of the resource
+     *   3. ressources_access entries
+     *   4. the resource itself
      *
      * @param int $resourceId Resource ID
      * @return bool True if deleted
      */
     public function delete(mixed $resourceId): bool
     {
-        $stmt = $this->pdo->prepare("DELETE FROM ressources WHERE ressource_id = :id");
-        return $stmt->execute(['id' => (int) $resourceId]);
+        $id = (int) $resourceId;
+
+        $this->pdo->beginTransaction();
+        try {
+            // 1. Delete attempts linked to exercises of this resource
+            $this->pdo->prepare(
+                "DELETE a FROM attempts a
+                 INNER JOIN exercices e ON a.exercice_id = e.exercice_id
+                 WHERE e.ressource_id = :id"
+            )->execute(['id' => $id]);
+
+            // 2. Delete exercises of this resource
+            $this->pdo->prepare(
+                "DELETE FROM exercices WHERE ressource_id = :id"
+            )->execute(['id' => $id]);
+
+            // 3. Delete sharing access entries
+            $this->pdo->prepare(
+                "DELETE FROM ressources_access WHERE ressource_id = :id"
+            )->execute(['id' => $id]);
+
+            // 4. Delete the resource itself
+            $stmt = $this->pdo->prepare(
+                "DELETE FROM ressources WHERE ressource_id = :id"
+            );
+            $stmt->execute(['id' => $id]);
+
+            $this->pdo->commit();
+            return $stmt->rowCount() > 0;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            error_log('[ResourceRepository::delete] ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
