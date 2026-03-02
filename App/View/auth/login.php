@@ -28,6 +28,10 @@
         </svg>
     </a>
 
+    <?php if (isset($success_message)) : ?>
+        <div class="success"><?= htmlspecialchars($success_message) ?></div>
+    <?php endif; ?>
+
     <?php if (isset($error)) : ?>
         <div class="error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>

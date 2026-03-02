@@ -85,7 +85,7 @@ class ForgotPasswordController extends AbstractController
 
         $user = $this->userRepository->findByResetToken($token);
 
-        if (!$user || $user->getResetTokenExpiration() < date('Y-m-d H:i:s')) {
+        if (!$user || !$user->isResetTokenValid()) {
             $this->renderView('auth/forgot-password', [
                 'error_message' => 'Ce lien est invalide ou a expiré.',
             ]);
@@ -144,6 +144,8 @@ class ForgotPasswordController extends AbstractController
         $user->changePassword($newPassword);
         $this->userRepository->save($user);
 
-        $this->redirect('/auth/login');
+        $this->renderView('auth/login', [
+            'success_message' => 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez vous connecter.',
+        ]);
     }
 }
