@@ -68,8 +68,8 @@ class EmailService
         string $firstName,
         string $resetToken
     ): bool {
-        $baseUrl = EnvLoader::get('BASE_URL', 'https://studtraj.alwaysdata.net');
-        $resetUrl = $baseUrl . "/index.php?action=resetpassword&token={$resetToken}";
+        $baseUrl = rtrim(EnvLoader::get('BASE_URL', 'https://studtraj.alwaysdata.net'), '/');
+        $resetUrl = $baseUrl . "/auth/reset-password?token={$resetToken}";
 
         $subject = 'Réinitialisation de mot de passe - StudTraj';
         $body = "
