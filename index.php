@@ -60,8 +60,27 @@ set_exception_handler(function (\Throwable $e): void {
 
 // Initialize router
 use Core\Router\Router;
+use Core\Service\Container;
 
 $router = new Router();
+
+// ---------------------------------------------------------------------------
+// Service Container — register controllers that require dependency injection.
+// Controllers not registered here are still instantiated via `new` (fallback).
+// ---------------------------------------------------------------------------
+$container = new Container();
+
+$container->set(
+    App\Controller\ResourcesController::class,
+    function () {
+        return new App\Controller\ResourcesController(
+            new App\Model\ResourceRepository(),
+            new App\Model\AuthenticationService(new Core\Service\SessionService())
+        );
+    }
+);
+
+$router->setContainer($container);
 
 // Load application routes
 require_once __DIR__ . '/App/routes.php';

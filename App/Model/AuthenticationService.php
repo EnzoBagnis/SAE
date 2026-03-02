@@ -3,22 +3,23 @@
 namespace App\Model;
 
 use App\Model\Entity\User;
-use Core\Service\SessionService;
+use Core\Service\SessionServiceInterface;
 
 /**
  * Authentication Service
- * Handles user authentication and session management
+ * Handles user authentication and session management.
+ * Implements AuthenticationServiceInterface for dependency inversion.
  */
-class AuthenticationService
+class AuthenticationService implements AuthenticationServiceInterface
 {
-    private SessionService $sessionService;
+    private SessionServiceInterface $sessionService;
 
     /**
      * Constructor
      *
-     * @param SessionService $sessionService Session service
+     * @param SessionServiceInterface $sessionService Session service
      */
-    public function __construct(SessionService $sessionService)
+    public function __construct(SessionServiceInterface $sessionService)
     {
         $this->sessionService = $sessionService;
     }
@@ -81,6 +82,26 @@ class AuthenticationService
     }
 
     /**
+     * Get authenticated user's first name
+     *
+     * @return string|null First name or null if not authenticated
+     */
+    public function getUserFirstName(): ?string
+    {
+        return $this->sessionService->get('user_firstname');
+    }
+
+    /**
+     * Get authenticated user's last name
+     *
+     * @return string|null Last name or null if not authenticated
+     */
+    public function getUserLastName(): ?string
+    {
+        return $this->sessionService->get('user_lastname');
+    }
+
+    /**
      * Require authentication (redirect if not authenticated)
      *
      * @param string $redirectUrl Redirect URL if not authenticated
@@ -94,4 +115,3 @@ class AuthenticationService
         }
     }
 }
-

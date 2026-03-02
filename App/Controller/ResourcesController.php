@@ -3,19 +3,20 @@
 namespace App\Controller;
 
 use Core\Controller\AbstractController;
-use App\Model\ResourceRepository;
-use App\Model\ExerciseRepository; // Added: needed for show() to load exercises with stats
-use App\Model\AuthenticationService;
-use Core\Service\SessionService;
+use App\Model\ResourceRepositoryInterface;
+use App\Model\AuthenticationServiceInterface;
 
 /**
  * Resources Controller
+ *
  * Handles resource management (list, create, update, delete, share).
+ * Depends on interfaces for repository and authentication, enabling
+ * testability and respecting the Dependency Inversion Principle.
  */
 class ResourcesController extends AbstractController
 {
-    private ?ResourceRepository $resourceRepository = null;
-    private AuthenticationService $authService;
+    private ResourceRepositoryInterface $resourceRepository;
+    private AuthenticationServiceInterface $authService;
 
     /** Allowed MIME types for resource images */
     private const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -28,23 +29,16 @@ class ResourcesController extends AbstractController
 
     /**
      * Constructor
-     */
-    public function __construct()
-    {
-        $this->authService = new AuthenticationService(new SessionService());
-    }
-
-    /**
-     * Get ResourceRepository instance (lazy initialization).
      *
-     * @return ResourceRepository
+     * @param ResourceRepositoryInterface    $resourceRepository Resource repository
+     * @param AuthenticationServiceInterface $authService        Authentication service
      */
-    private function getRepository(): ResourceRepository
-    {
-        if ($this->resourceRepository === null) {
-            $this->resourceRepository = new ResourceRepository();
-        }
-        return $this->resourceRepository;
+    public function __construct(
+        ResourceRepositoryInterface $resourceRepository,
+        AuthenticationServiceInterface $authService
+    ) {
+        $this->resourceRepository = $resourceRepository;
+        $this->authService        = $authService;
     }
 
     /**
@@ -64,21 +58,21 @@ class ResourcesController extends AbstractController
         }
 
         try {
-            $ownedResources = $this->getRepository()->findByOwnerMail($email);
+            $ownedResources = $this->resourceRepository->findByOwnerMail($email);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::index] findByOwnerMail: ' . $e->getMessage());
             $ownedResources = [];
         }
 
         try {
-            $sharedResources = $this->getRepository()->findSharedWithMail($email);
+            $sharedResources = $this->resourceRepository->findSharedWithMail($email);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::index] findSharedWithMail: ' . $e->getMessage());
             $sharedResources = [];
         }
 
         try {
-            $allTeachers = $this->getRepository()->findAllTeachersExcept($email);
+            $allTeachers = $this->resourceRepository->findAllTeachersExcept($email);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::index] findAllTeachersExcept: ' . $e->getMessage());
             $allTeachers = [];
@@ -125,12 +119,12 @@ class ResourcesController extends AbstractController
         $resource->setImagePath($imagePath);
 
         try {
-            $this->getRepository()->save($resource);
+            $this->resourceRepository->save($resource);
 
             // Sync sharing list
             $sharedMails = $_POST['shared_teachers'] ?? [];
             if (!empty($sharedMails) && is_array($sharedMails)) {
-                $this->getRepository()->syncSharing($resource->getResourceId(), $sharedMails);
+                $this->resourceRepository->syncSharing($resource->getResourceId(), $sharedMails);
             }
         } catch (\Throwable $e) {
             error_log('[ResourcesController::store] ' . $e->getMessage());
@@ -152,7 +146,7 @@ class ResourcesController extends AbstractController
         $this->authService->requireAuth('/auth/login');
 
         try {
-            $resource = $this->getRepository()->findById($resourceId);
+            $resource = $this->resourceRepository->findById($resourceId);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::show] findById error: ' . $e->getMessage());
             $resource = null;
@@ -164,10 +158,9 @@ class ResourcesController extends AbstractController
             return;
         }
 
-        // Use session keys from the current auth system
-        $session = new \Core\Service\SessionService();
-        $firstname = $session->get('user_firstname', '');
-        $lastname  = $session->get('user_lastname', '');
+        // Retrieve user names via the authentication service (no direct session access)
+        $firstname = $this->authService->getUserFirstName() ?? '';
+        $lastname  = $this->authService->getUserLastName() ?? '';
 
         try {
             $this->renderView('user/dashboard', [
@@ -202,7 +195,7 @@ class ResourcesController extends AbstractController
         }
 
         try {
-            $resource = $this->getRepository()->findById($resourceId);
+            $resource = $this->resourceRepository->findById($resourceId);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::update] findById: ' . $e->getMessage());
             $resource = null;
@@ -235,11 +228,11 @@ class ResourcesController extends AbstractController
         $resource->setImagePath($imagePath);
 
         try {
-            $this->getRepository()->save($resource);
+            $this->resourceRepository->save($resource);
 
             // Sync sharing list
             $sharedMails = $_POST['shared_teachers'] ?? [];
-            $this->getRepository()->syncSharing($resourceId, is_array($sharedMails) ? $sharedMails : []);
+            $this->resourceRepository->syncSharing($resourceId, is_array($sharedMails) ? $sharedMails : []);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::update] save: ' . $e->getMessage());
             $this->redirect('/resources?error=' . urlencode('Erreur lors de la mise à jour : ' . $e->getMessage()));
@@ -266,7 +259,7 @@ class ResourcesController extends AbstractController
         }
 
         try {
-            $resource = $this->getRepository()->findById($resourceId);
+            $resource = $this->resourceRepository->findById($resourceId);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::delete] findById: ' . $e->getMessage());
             $resource = null;
@@ -283,7 +276,7 @@ class ResourcesController extends AbstractController
         }
 
         try {
-            $this->getRepository()->delete($resourceId);
+            $this->resourceRepository->delete($resourceId);
         } catch (\Throwable $e) {
             // Suppression échouée silencieusement — on redirige quand même
             error_log('[ResourcesController::delete] ' . $e->getMessage());

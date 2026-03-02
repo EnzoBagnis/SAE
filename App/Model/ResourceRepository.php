@@ -13,7 +13,7 @@ use App\Model\Entity\Resource;
  * Access: ressources_access (ressource_id, teacher_mail)
  * Owner info: joined from teachers (name=firstname, surname=lastname)
  */
-class ResourceRepository extends AbstractRepository
+class ResourceRepository extends AbstractRepository implements ResourceRepositoryInterface
 {
     /**
      * {@inheritdoc}
@@ -173,7 +173,7 @@ class ResourceRepository extends AbstractRepository
      * @param int $resourceId Resource ID
      * @return bool True if deleted
      */
-    public function delete(mixed $resourceId): bool
+    public function delete($resourceId): bool
     {
         $id = (int) $resourceId;
 

@@ -2,15 +2,30 @@
 
 namespace Core\Router;
 
+use Core\Service\Container;
+
 /**
  * Router Class
- * Handles URL routing without business logic
+ * Handles URL routing without business logic.
+ * Supports an optional service container for dependency injection.
  */
 class Router
 {
     private array $routes = [];
     private array $middleware = [];
     private $notFoundHandler = null;
+    private ?Container $container = null;
+
+    /**
+     * Set the service container for controller resolution.
+     *
+     * @param Container $container Service container
+     * @return void
+     */
+    public function setContainer(Container $container): void
+    {
+        $this->container = $container;
+    }
 
     /**
      * Add route for any HTTP method
@@ -176,7 +191,9 @@ class Router
     }
 
     /**
-     * Execute controller action
+     * Execute controller action.
+     * Resolves the controller via the service container if registered,
+     * otherwise falls back to direct instantiation (backward compatibility).
      *
      * @param string $controllerClass Controller class name
      * @param string $action Action method name
@@ -189,7 +206,12 @@ class Router
             throw new \RuntimeException("Contrôleur non trouvé : {$controllerClass}");
         }
 
-        $controller = new $controllerClass();
+        // Resolve via container if registered, otherwise fallback to `new`
+        if ($this->container !== null && $this->container->has($controllerClass)) {
+            $controller = $this->container->get($controllerClass);
+        } else {
+            $controller = new $controllerClass();
+        }
 
         if (!method_exists($controller, $action)) {
             throw new \RuntimeException("Action non trouvée : {$action} dans {$controllerClass}");
