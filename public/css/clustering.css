@@ -1,0 +1,325 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Clustering — Cartographie des codes (t-SNE + KMeans)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Zone principale ─────────────────────────────────────────────────────── */
+.clustering-zone {
+    padding: 24px;
+    animation: fadeInClustering 0.3s ease;
+}
+
+@keyframes fadeInClustering {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.clustering-header {
+    margin-bottom: 24px;
+}
+
+.clustering-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 8px 0;
+}
+
+.clustering-subtitle {
+    color: #666;
+    font-size: 0.92rem;
+    margin: 0;
+}
+
+/* ─── Contrôles ───────────────────────────────────────────────────────────── */
+.clustering-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #f8f9fc;
+    border-radius: 10px;
+    border: 1px solid #e8eaf0;
+}
+
+.clustering-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.clustering-control-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+}
+
+.clustering-control-group select,
+.clustering-control-group input[type="number"] {
+    padding: 8px 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #fff;
+    min-width: 200px;
+    transition: border-color 0.2s;
+}
+
+.clustering-control-group select:focus,
+.clustering-control-group input[type="number"]:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.clustering-control-group input[type="number"] {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.btn-generate-clusters {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.btn-generate-clusters:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.btn-generate-clusters:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-generate-clusters:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ─── Loading ─────────────────────────────────────────────────────────────── */
+.clustering-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #555;
+}
+
+.clustering-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #4f46e5;
+    border-radius: 50%;
+    animation: clusteringSpin 0.8s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes clusteringSpin {
+    to { transform: rotate(360deg); }
+}
+
+.clustering-loading p {
+    margin: 4px 0;
+    font-size: 0.95rem;
+}
+
+.clustering-loading-hint {
+    color: #999;
+    font-size: 0.85rem !important;
+    font-style: italic;
+}
+
+/* ─── Erreur ──────────────────────────────────────────────────────────────── */
+.clustering-error {
+    padding: 16px 20px;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 8px;
+    color: #c53030;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.clustering-error p {
+    margin: 0;
+}
+
+/* ─── Résultat ────────────────────────────────────────────────────────────── */
+.clustering-result {
+    animation: fadeInClustering 0.4s ease;
+}
+
+/* Stats globales */
+.clustering-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.clustering-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 28px;
+    background: linear-gradient(135deg, #f0f4ff, #e8ecff);
+    border-radius: 10px;
+    border: 1px solid #d0d5f0;
+    min-width: 160px;
+}
+
+.clustering-stat-card .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #4f46e5;
+    line-height: 1;
+}
+
+.clustering-stat-card .stat-label {
+    font-size: 0.82rem;
+    color: #666;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Conteneur du graphique */
+.clustering-chart-container {
+    background: #fff;
+    border: 1px solid #e8eaf0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    overflow-x: auto;
+}
+
+.clustering-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* ─── Détails des clusters ────────────────────────────────────────────────── */
+.clustering-cluster-details h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 16px 0;
+}
+
+.cluster-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.cluster-card {
+    background: #fff;
+    border: 1px solid #e8eaf0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: box-shadow 0.2s;
+}
+
+.cluster-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.cluster-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.cluster-card-header strong {
+    font-size: 1rem;
+    color: #1a1a2e;
+}
+
+.cluster-count {
+    font-size: 0.82rem;
+    color: #888;
+    background: #f0f2f5;
+    padding: 2px 10px;
+    border-radius: 12px;
+}
+
+.cluster-card-body {
+    font-size: 0.88rem;
+    color: #555;
+}
+
+.cluster-success-rate {
+    margin-bottom: 8px;
+}
+
+.cluster-success-rate strong {
+    color: #2ca02c;
+}
+
+.cluster-users-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+}
+
+.cluster-user {
+    display: inline-block;
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-family: monospace;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .clustering-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .clustering-control-group select,
+    .clustering-control-group input[type="number"] {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .btn-generate-clusters {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .clustering-stats {
+        flex-direction: column;
+    }
+
+    .clustering-stat-card {
+        min-width: unset;
+    }
+
+    .cluster-cards {
+        grid-template-columns: 1fr;
+    }
+}
+

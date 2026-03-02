@@ -66,3 +66,6 @@ $router->post('/admin/edit-user', App\Controller\AdminController::class, 'editUs
 $router->post('/admin/ban-user', App\Controller\AdminController::class, 'banUser');
 $router->get('/admin/unban-user', App\Controller\AdminController::class, 'unbanUser');
 $router->get('/admin/switch-user', App\Controller\AdminController::class, 'switchUser');
+
+// Clustering API route (Python pipeline: Doc2Vec + KMeans + t-SNE)
+$router->post('/api/clustering/generate', App\Controller\ClusteringController::class, 'generate');

@@ -27,6 +27,7 @@ $current_resource_id = $resource_id ?? 'null';
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/dashboard.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/charts.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/clustering.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
@@ -116,6 +117,9 @@ $current_resource_id = $resource_id ?? 'null';
             <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
                 Liste des TP
             </button>
+            <button class="view-tab" id="btnClustering" onclick="switchListView('clustering')">
+                🗺 Cartographie
+            </button>
         </div>
         <div class="sidebar-list" id="sidebar-list"></div>
     </aside>
@@ -123,6 +127,57 @@ $current_resource_id = $resource_id ?? 'null';
     <main class="main-content">
         <div class="data-zone">
             <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
+        </div>
+
+        <!-- Zone Cartographie des codes (clustering t-SNE + KMeans) -->
+        <div class="clustering-zone" id="clusteringZone" style="display:none;">
+            <div class="clustering-header">
+                <h2>🗺 Cartographie des codes</h2>
+                <p class="clustering-subtitle">
+                    Visualisez les stratégies et regroupements des tentatives d'élèves via Doc2Vec + KMeans + t-SNE.
+                </p>
+            </div>
+
+            <div class="clustering-controls">
+                <div class="clustering-control-group">
+                    <label for="clusteringExerciseSelect">Exercice :</label>
+                    <select id="clusteringExerciseSelect">
+                        <option value="">-- Tous les exercices de la ressource --</option>
+                    </select>
+                </div>
+                <div class="clustering-control-group">
+                    <label for="clusteringNClusters">Nombre de clusters :</label>
+                    <input type="number" id="clusteringNClusters" value="8" min="2" max="20" step="1">
+                </div>
+                <button class="btn-generate-clusters" id="btnGenerateClusters" onclick="generateClustering()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                    Générer les clusters
+                </button>
+            </div>
+
+            <!-- État de chargement -->
+            <div class="clustering-loading" id="clusteringLoading" style="display:none;">
+                <div class="clustering-spinner"></div>
+                <p>Analyse en cours... Entraînement du modèle Doc2Vec, clustering KMeans et réduction t-SNE.</p>
+                <p class="clustering-loading-hint">Cela peut prendre quelques secondes.</p>
+            </div>
+
+            <!-- Erreur -->
+            <div class="clustering-error" id="clusteringError" style="display:none;">
+                <p id="clusteringErrorMsg"></p>
+            </div>
+
+            <!-- Résultat -->
+            <div class="clustering-result" id="clusteringResult" style="display:none;">
+                <div class="clustering-stats" id="clusteringStats"></div>
+                <div class="clustering-chart-container">
+                    <img id="clusteringImage" src="" alt="Graphique t-SNE + KMeans" class="clustering-image">
+                </div>
+                <div class="clustering-cluster-details" id="clusteringClusterDetails"></div>
+            </div>
         </div>
     </main>
 </div>
@@ -195,5 +250,6 @@ $current_resource_id = $resource_id ?? 'null';
         }
     }
 </script>
+<script src="<?= BASE_URL ?>/public/js/clustering.js"></script>
 </body>
 </html>
