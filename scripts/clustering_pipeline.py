@@ -2,9 +2,9 @@
 # -*- coding: UTF-8 -*-
 
 """
-Pipeline de clustering : Doc2Vec + KMeans + t-SNE
+Pipeline de clustering : TF-IDF + KMeans + t-SNE
 Charge les tentatives depuis la BDD MySQL, filtre par exercice,
-vectorise avec Doc2Vec, clusterise avec KMeans, réduit avec t-SNE,
+vectorise avec TF-IDF, clusterise avec KMeans, réduit avec t-SNE,
 et renvoie un graphique PNG encodé en base64 (JSON sur stdout).
 
 Usage:
@@ -22,7 +22,6 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-# Ajouter le dossier scripts au path pour importer aes2vec
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -102,7 +101,7 @@ def load_attempts_from_db(db_host, db_name, db_user, db_pass, exercise_id=None, 
 def run_pipeline(data, n_clusters=8, perplexity=30):
     """
     Pipeline principal :
-    1. Vectorisation Doc2Vec (via aes2vec)
+    1. Vectorisation TF-IDF
     2. Clustering KMeans
     3. Réduction t-SNE
     4. Génération du graphique
@@ -111,6 +110,7 @@ def run_pipeline(data, n_clusters=8, perplexity=30):
     import numpy as np
     from sklearn.cluster import KMeans
     from sklearn.manifold import TSNE
+    from sklearn.feature_extraction.text import TfidfVectorizer
     import matplotlib
     matplotlib.use('Agg')  # Backend non-interactif
     import matplotlib.pyplot as plt
@@ -131,59 +131,31 @@ def run_pipeline(data, n_clusters=8, perplexity=30):
             'error': f'Pas assez de tentatives avec des données AES ({len(filtered_data)} valides, minimum 5).'
         }
 
-    # ── Étape 1 : Vectorisation Doc2Vec ──────────────────────────────────────
-    # On force eval_set='training' pour toutes les données afin d'entraîner le modèle
-    # puis on infère les vecteurs sur les mêmes données
-    for d in filtered_data:
-        d['eval_set'] = 'training'
+    # ── Étape 1 : Vectorisation TF-IDF ──────────────────────────────────────
+    # On utilise uniquement le champ 'aes2' pour la vectorisation
+    documents = [d['aes2'] for d in filtered_data]
 
-    from aes2vec import learnModel, inferVectors
+    vectorizer = TfidfVectorizer(
+        max_features=1000,  # Limiter à 1000 caractéristiques pour réduire la mémoire
+        stop_words='french',  # Enlever les stop words français
+        ngram_range=(1, 2),   # Unigrams et bigrams
+        norm='l2',            # Normalisation L2
+    )
+    tfidf_matrix = vectorizer.fit_transform(documents)
 
-    # S'assurer que le dossier utils existe pour les fichiers .cor
-    utils_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'utils')
-    os.makedirs(utils_dir, exist_ok=True)
-
-    # Changer le répertoire de travail vers scripts/ pour les fichiers .cor
-    original_cwd = os.getcwd()
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-    try:
-        model = learnModel(
-            filtered_data,
-            selectionfield='eval_set',
-            selectionsets=['training'],
-            valuefield='aes2',
-            vsize=50,       # Réduit de 100 → 50 (2x plus rapide, qualité suffisante)
-            cwindow=3,      # Réduit de 5 → 3
-            niter=20        # Réduit de 100 → 20 epochs (5x plus rapide)
-        )
-
-        # Inférer les vecteurs (on utilise les mêmes données)
-        vectors = inferVectors(
-            model,
-            filtered_data,
-            selectionfield='eval_set',
-            selectionsets=['training'],
-            valuefield='aes2'
-        )
-    finally:
-        os.chdir(original_cwd)
-
-    if len(vectors) == 0:
+    if tfidf_matrix.shape[0] < 5:
         return {
             'success': False,
-            'error': 'La vectorisation n\'a produit aucun vecteur.'
+            'error': f'Pas assez de données après vectorisation TF-IDF ({tfidf_matrix.shape[0]} trouvées, minimum 5).'
         }
 
-    vectors_array = np.array(vectors)
-
     # ── Étape 2 : Clustering KMeans ──────────────────────────────────────────
-    actual_clusters = min(n_clusters, len(vectors_array))
+    actual_clusters = min(n_clusters, tfidf_matrix.shape[0])
     kmeans = KMeans(n_clusters=actual_clusters, random_state=42, n_init=3)  # Réduit de 10 → 3
-    labels = kmeans.fit_predict(vectors_array)
+    labels = kmeans.fit_predict(tfidf_matrix)
 
     # ── Étape 3 : Réduction t-SNE ───────────────────────────────────────────
-    actual_perplexity = min(perplexity, max(1, len(vectors_array) - 1))
+    actual_perplexity = min(perplexity, max(1, tfidf_matrix.shape[0] - 1))
     tsne = TSNE(
         n_components=2,
         perplexity=actual_perplexity,
@@ -193,7 +165,7 @@ def run_pipeline(data, n_clusters=8, perplexity=30):
         learning_rate='auto',
         init='pca',         # Init PCA bien plus rapide que 'random'
     )
-    coords_2d = tsne.fit_transform(vectors_array)
+    coords_2d = tsne.fit_transform(tfidf_matrix.toarray())
 
     # ── Étape 4 : Génération du graphique ────────────────────────────────────
     fig, ax = plt.subplots(figsize=(12, 8))

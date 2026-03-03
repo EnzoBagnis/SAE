@@ -1,8 +1,5 @@
 # Dépendances Python pour le pipeline de clustering (scripts/clustering_pipeline.py)
-gensim>=4.0.0
-smart_open>=5.0.0
 scikit-learn>=1.0.0
 matplotlib>=3.5.0
 numpy>=1.21.0
 mysql-connector-python>=8.0.0
-
