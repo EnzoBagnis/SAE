@@ -134,6 +134,21 @@ class ClusteringController extends AbstractController
             return $envPython;
         }
 
+        // Sur Linux : python3 système en priorité (évite le virtualenv lourd)
+        if (PHP_OS_FAMILY !== 'Windows' && $this->commandExists('python3')) {
+            return 'python3';
+        }
+
+        // Virtualenv du projet (Windows XAMPP)
+        $venvPython = realpath(__DIR__ . '/../../scripts/venv/Scripts/python.exe');
+        if ($venvPython && file_exists($venvPython)) {
+            return $venvPython;
+        }
+        $venvPythonLinux = realpath(__DIR__ . '/../../scripts/venv/bin/python');
+        if ($venvPythonLinux && file_exists($venvPythonLinux)) {
+            return $venvPythonLinux;
+        }
+
         // Try common paths on Windows (XAMPP context)
         $candidates = ['python', 'python3', 'py'];
 
