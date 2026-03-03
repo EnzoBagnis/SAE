@@ -153,9 +153,9 @@ def run_pipeline(data, n_clusters=8, perplexity=30):
             selectionfield='eval_set',
             selectionsets=['training'],
             valuefield='aes2',
-            vsize=100,
-            cwindow=5,
-            niter=100  # Réduit pour la vitesse en production
+            vsize=50,       # Réduit de 100 → 50 (2x plus rapide, qualité suffisante)
+            cwindow=3,      # Réduit de 5 → 3
+            niter=20        # Réduit de 100 → 20 epochs (5x plus rapide)
         )
 
         # Inférer les vecteurs (on utilise les mêmes données)
@@ -179,7 +179,7 @@ def run_pipeline(data, n_clusters=8, perplexity=30):
 
     # ── Étape 2 : Clustering KMeans ──────────────────────────────────────────
     actual_clusters = min(n_clusters, len(vectors_array))
-    kmeans = KMeans(n_clusters=actual_clusters, random_state=42, n_init=10)
+    kmeans = KMeans(n_clusters=actual_clusters, random_state=42, n_init=3)  # Réduit de 10 → 3
     labels = kmeans.fit_predict(vectors_array)
 
     # ── Étape 3 : Réduction t-SNE ───────────────────────────────────────────
@@ -188,7 +188,10 @@ def run_pipeline(data, n_clusters=8, perplexity=30):
         n_components=2,
         perplexity=actual_perplexity,
         random_state=42,
-        max_iter=1000
+        max_iter=300,       # Réduit de 1000 → 300 (3x plus rapide)
+        n_iter_without_progress=100,
+        learning_rate='auto',
+        init='pca',         # Init PCA bien plus rapide que 'random'
     )
     coords_2d = tsne.fit_transform(vectors_array)
 
@@ -310,4 +313,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
