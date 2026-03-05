@@ -101,8 +101,9 @@ class ResourcesController extends AbstractController
     {
         $this->authService->requireAuth('/auth/login');
 
-        $email = $this->authService->getUserEmail();
-        if ($email === null) {
+        $userId = $this->authService->getUserId();
+        $email  = $this->authService->getUserEmail();
+        if ($userId === null || $email === null) {
             $this->redirect('/auth/login');
             return;
         }
@@ -119,7 +120,7 @@ class ResourcesController extends AbstractController
         $imagePath = $this->handleImageUpload();
 
         $resource = new \App\Model\Entity\Resource();
-        $resource->setOwnerMail($email);
+        $resource->setOwnerUserId($userId);
         $resource->setResourceName($name);
         $resource->setDescription($description !== '' ? $description : null);
         $resource->setImagePath($imagePath);
@@ -127,10 +128,10 @@ class ResourcesController extends AbstractController
         try {
             $this->getRepository()->save($resource);
 
-            // Sync sharing list
-            $sharedMails = $_POST['shared_teachers'] ?? [];
-            if (!empty($sharedMails) && is_array($sharedMails)) {
-                $this->getRepository()->syncSharing($resource->getResourceId(), $sharedMails);
+            // Sync sharing list (values are now user IDs)
+            $sharedTeachers = $_POST['shared_teachers'] ?? [];
+            if (!empty($sharedTeachers) && is_array($sharedTeachers)) {
+                $this->getRepository()->syncSharing($resource->getResourceId(), $sharedTeachers);
             }
         } catch (\Throwable $e) {
             error_log('[ResourcesController::store] ' . $e->getMessage());
@@ -237,9 +238,9 @@ class ResourcesController extends AbstractController
         try {
             $this->getRepository()->save($resource);
 
-            // Sync sharing list
-            $sharedMails = $_POST['shared_teachers'] ?? [];
-            $this->getRepository()->syncSharing($resourceId, is_array($sharedMails) ? $sharedMails : []);
+            // Sync sharing list (values are now user IDs)
+            $sharedTeachers = $_POST['shared_teachers'] ?? [];
+            $this->getRepository()->syncSharing($resourceId, is_array($sharedTeachers) ? $sharedTeachers : []);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::update] save: ' . $e->getMessage());
             $this->redirect('/resources?error=' . urlencode('Erreur lors de la mise à jour : ' . $e->getMessage()));

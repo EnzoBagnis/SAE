@@ -7,10 +7,9 @@ use App\Model\Entity\Exercise;
 
 /**
  * Exercise Repository
- * Handles exercise data persistence against the `exercices` table.
+ * Handles exercise data persistence against the `exercises` table.
  *
- * Schema: exercice_id (PK), ressource_id, exercice_name, extention, date
- * Attempts: attempts (attempt_id, exercice_id, user, correct, ...)
+ * Schema: exercise_id (PK), resource_id, exo_name, funcname, solution, description, difficulte, date_creation
  */
 class ExerciseRepository extends AbstractRepository
 {
@@ -19,7 +18,7 @@ class ExerciseRepository extends AbstractRepository
      */
     protected function getTableName(): string
     {
-        return 'exercices';
+        return 'exercises';
     }
 
     /**
@@ -40,17 +39,17 @@ class ExerciseRepository extends AbstractRepository
     {
         if ($resourceId === null) {
             $query = "SELECT DISTINCT e.*
-                      FROM exercices e
-                      INNER JOIN attempts a ON e.exercice_id = a.exercice_id
-                      ORDER BY e.exercice_name ASC";
+                      FROM exercises e
+                      INNER JOIN attempts a ON e.exercise_id = a.exercise_id
+                      ORDER BY e.exo_name ASC";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute();
         } else {
             $query = "SELECT DISTINCT e.*
-                      FROM exercices e
-                      INNER JOIN attempts a ON e.exercice_id = a.exercice_id
-                      WHERE e.ressource_id = :resource_id
-                      ORDER BY e.exercice_name ASC";
+                      FROM exercises e
+                      INNER JOIN attempts a ON e.exercise_id = a.exercise_id
+                      WHERE e.resource_id = :resource_id
+                      ORDER BY e.exo_name ASC";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute(['resource_id' => $resourceId]);
         }
@@ -67,7 +66,7 @@ class ExerciseRepository extends AbstractRepository
      */
     public function findById(int $exerciseId): ?Exercise
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM exercices WHERE exercice_id = :id");
+        $stmt = $this->pdo->prepare("SELECT * FROM exercises WHERE exercise_id = :id");
         $stmt->execute(['id' => $exerciseId]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
@@ -81,9 +80,9 @@ class ExerciseRepository extends AbstractRepository
      */
     public function findByResourceId(int $resourceId): array
     {
-        $query = "SELECT * FROM exercices
-                  WHERE ressource_id = :resource_id
-                  ORDER BY exercice_name ASC";
+        $query = "SELECT * FROM exercises
+                  WHERE resource_id = :resource_id
+                  ORDER BY exo_name ASC";
 
         $stmt = $this->pdo->prepare($query);
         $stmt->execute(['resource_id' => $resourceId]);
@@ -103,22 +102,18 @@ class ExerciseRepository extends AbstractRepository
      */
     public function findByResourceIdWithStats(int $resourceId): array
     {
-        // GROUP BY on exercice_id (PK) only — exercice_name and extention are TEXT columns
-        // which cannot be used in GROUP BY on MariaDB. The PK functionally determines all other columns.
-        // JOIN corrections to get readable funcname instead of raw hash stored in exercice_name.
-        $query = "SELECT e.exercice_id,
-                         e.ressource_id,
-                         e.exercice_name,
-                         COALESCE(c.funcname, e.exercice_name) AS display_name,
-                         e.extention,
-                         e.`date`,
+        $query = "SELECT e.exercise_id,
+                         e.resource_id,
+                         e.exo_name,
+                         COALESCE(e.funcname, e.exo_name) AS display_name,
+                         e.difficulte,
+                         e.date_creation,
                          COUNT(a.attempt_id)                             AS total_attempts,
                          SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) AS successful_attempts
-                  FROM exercices e
-                  LEFT JOIN corrections c ON e.exercice_name = c.exo_name
-                  LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
-                  WHERE e.ressource_id = :resource_id
-                  GROUP BY e.exercice_id
+                  FROM exercises e
+                  LEFT JOIN attempts a ON e.exercise_id = a.exercise_id
+                  WHERE e.resource_id = :resource_id
+                  GROUP BY e.exercise_id
                   ORDER BY display_name ASC";
 
         $stmt = $this->pdo->prepare($query);
@@ -131,8 +126,7 @@ class ExerciseRepository extends AbstractRepository
             $row['success_rate']        = $row['total_attempts'] > 0
                 ? round(($row['successful_attempts'] / $row['total_attempts']) * 100, 1)
                 : null;
-            // Use readable funcname if available, fallback to raw hash
-            $row['display_name'] = $row['display_name'] ?? $row['exercice_name'];
+            $row['display_name'] = $row['display_name'] ?? $row['exo_name'];
         }
 
         return $results;
@@ -147,15 +141,15 @@ class ExerciseRepository extends AbstractRepository
     public function count(?int $resourceId = null): int
     {
         if ($resourceId === null) {
-            $query = "SELECT COUNT(DISTINCT e.exercice_id)
-                      FROM exercices e
-                      INNER JOIN attempts a ON e.exercice_id = a.exercice_id";
+            $query = "SELECT COUNT(DISTINCT e.exercise_id)
+                      FROM exercises e
+                      INNER JOIN attempts a ON e.exercise_id = a.exercise_id";
             $stmt = $this->pdo->query($query);
         } else {
-            $query = "SELECT COUNT(DISTINCT e.exercice_id)
-                      FROM exercices e
-                      INNER JOIN attempts a ON e.exercice_id = a.exercice_id
-                      WHERE e.ressource_id = :resource_id";
+            $query = "SELECT COUNT(DISTINCT e.exercise_id)
+                      FROM exercises e
+                      INNER JOIN attempts a ON e.exercise_id = a.exercise_id
+                      WHERE e.resource_id = :resource_id";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute(['resource_id' => $resourceId]);
         }
@@ -173,9 +167,9 @@ class ExerciseRepository extends AbstractRepository
     public function findByRessourceIdAndName(int $ressourceId, string $name): ?Exercise
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM exercices WHERE ressource_id = :ressource_id AND exercice_name = :name LIMIT 1"
+            "SELECT * FROM exercises WHERE resource_id = :resource_id AND exo_name = :name LIMIT 1"
         );
-        $stmt->execute(['ressource_id' => $ressourceId, 'name' => $name]);
+        $stmt->execute(['resource_id' => $ressourceId, 'name' => $name]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
     }
@@ -189,7 +183,7 @@ class ExerciseRepository extends AbstractRepository
     public function findByName(string $name): ?Exercise
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM exercices WHERE exercice_name = :name ORDER BY exercice_id DESC LIMIT 1"
+            "SELECT * FROM exercises WHERE exo_name = :name ORDER BY exercise_id DESC LIMIT 1"
         );
         $stmt->execute(['name' => $name]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -208,32 +202,14 @@ class ExerciseRepository extends AbstractRepository
     public function insertExercice(int $ressourceId, string $exerciceName, string $extention, string $date): int
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO exercices (ressource_id, exercice_name, extention, `date`)
-             VALUES (:ressource_id, :exercice_name, :extention, :date)"
+            "INSERT INTO exercises (resource_id, exo_name)
+             VALUES (:resource_id, :exo_name)"
         );
         $stmt->execute([
-            'ressource_id'  => $ressourceId,
-            'exercice_name' => $exerciceName,
-            'extention'     => $extention,
-            'date'          => $date,
+            'resource_id' => $ressourceId,
+            'exo_name'    => $exerciceName,
         ]);
         return (int) $this->pdo->lastInsertId();
-    }
-
-    /**
-     * Update extention and date of an existing exercise.
-     *
-     * @param int    $exerciceId Exercise ID
-     * @param string $extention  New file extension
-     * @param string $date       New date (Y-m-d)
-     * @return void
-     */
-    public function updateExtentionAndDate(int $exerciceId, string $extention, string $date): void
-    {
-        $stmt = $this->pdo->prepare(
-            "UPDATE exercices SET extention = :extention, `date` = :date WHERE exercice_id = :id"
-        );
-        $stmt->execute(['extention' => $extention, 'date' => $date, 'id' => $exerciceId]);
     }
 
     /**
@@ -244,7 +220,7 @@ class ExerciseRepository extends AbstractRepository
      */
     public function delete(mixed $exerciceId): bool
     {
-        $stmt = $this->pdo->prepare("DELETE FROM exercices WHERE exercice_id = :id");
+        $stmt = $this->pdo->prepare("DELETE FROM exercises WHERE exercise_id = :id");
         return $stmt->execute(['id' => (int) $exerciceId]);
     }
 
@@ -257,11 +233,14 @@ class ExerciseRepository extends AbstractRepository
     protected function hydrate(array $data): Exercise
     {
         $exercise = new Exercise();
-        $exercise->setExerciseId($data['exercice_id']   ?? null);
-        $exercise->setResourceId((int) ($data['ressource_id'] ?? 0));
-        $exercise->setExoName($data['exercice_name']    ?? '');
-        $exercise->setExtention($data['extention']      ?? null);
-        $exercise->setDate($data['date']                ?? null);
+        $exercise->setExerciseId($data['exercise_id'] ?? null);
+        $exercise->setResourceId((int) ($data['resource_id'] ?? 0));
+        $exercise->setExoName($data['exo_name'] ?? '');
+        $exercise->setFuncname($data['funcname'] ?? null);
+        $exercise->setSolution($data['solution'] ?? null);
+        $exercise->setDescription($data['description'] ?? null);
+        $exercise->setDifficulte($data['difficulte'] ?? null);
+        $exercise->setDateCreation($data['date_creation'] ?? null);
         return $exercise;
     }
 }

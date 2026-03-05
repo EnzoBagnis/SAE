@@ -10,7 +10,12 @@ use Core\Config\DatabaseConnection;
 
 /**
  * Admin Controller
- * Handles admin authentication and dashboard
+ * Handles admin authentication and dashboard.
+ *
+ * Real DB tables:
+ *   - utilisateurs (id, nom, prenom, mdp, mail, code_verif, reset_token, reset_expiration)
+ *   - inscriptions_en_attente (id, nom, prenom, mdp, mail, verifie, code_verif, date_creation)
+ *   - utilisateurs_bloques (id, mail, duree_ban, date_de_ban, ban_def, old_id, old_table)
  */
 class AdminController extends AbstractController
 {
@@ -75,23 +80,22 @@ class AdminController extends AbstractController
 
         $pdo = DatabaseConnection::getInstance()->getConnection();
 
-        // Utilisateurs vérifiés (account_status = 1)
+        // Utilisateurs validés (dans la table utilisateurs)
         $verifiedUsers = $pdo->query(
-            "SELECT mail AS id, surname AS nom, name AS prenom, mail, account_status AS verifie
-             FROM teachers WHERE account_status = 1 ORDER BY surname ASC"
+            "SELECT id, nom, prenom, mail, 1 AS verifie
+             FROM utilisateurs ORDER BY nom ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
-        // Utilisateurs en attente de vérification (account_status = 0)
+        // Utilisateurs en attente de validation (inscriptions_en_attente, verifie = 1 = email vérifié mais pas encore accepté)
         $pendingUsers = $pdo->query(
-            "SELECT mail AS id, surname AS nom, name AS prenom, mail, account_status AS verifie
-             FROM teachers WHERE account_status = 0 ORDER BY surname ASC"
+            "SELECT id, nom, prenom, mail, verifie
+             FROM inscriptions_en_attente WHERE verifie = 1 ORDER BY date_creation DESC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
-        // Utilisateurs bloqués (account_status = 2)
+        // Utilisateurs bloqués
         $blockedUsers = $pdo->query(
-            "SELECT mail AS id, surname AS nom, name AS prenom, mail,
-                    account_status AS verifie
-             FROM teachers WHERE account_status = 2 ORDER BY surname ASC"
+            "SELECT ub.id, ub.mail, ub.duree_ban, ub.date_de_ban, ub.ban_def
+             FROM utilisateurs_bloques ub ORDER BY ub.date_de_ban DESC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->renderView('admin/admin-dashboard', [
@@ -145,15 +149,15 @@ class AdminController extends AbstractController
 
         if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
-            $stmt->execute(['mail' => $id]);
+            $stmt = $pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
+            $stmt->execute(['id' => (int) $id]);
         }
 
         $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
-     * Validate a pending user (set account_status to 1)
+     * Validate a pending user: move from inscriptions_en_attente to utilisateurs.
      *
      * @return void
      */
@@ -164,13 +168,34 @@ class AdminController extends AbstractController
             return;
         }
 
-        $mail = $this->getQuery('id') ?? '';
+        $id = $this->getQuery('id') ?? '';
 
-        if (!empty($mail)) {
+        if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
 
-            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 1 WHERE mail = :mail AND account_status = 0");
-            $stmt->execute(['mail' => $mail]);
+            // Get the pending registration
+            $stmt = $pdo->prepare("SELECT * FROM inscriptions_en_attente WHERE id = :id");
+            $stmt->execute(['id' => (int) $id]);
+            $pending = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if ($pending) {
+                // Insert into utilisateurs
+                $insert = $pdo->prepare(
+                    "INSERT INTO utilisateurs (nom, prenom, mdp, mail, code_verif)
+                     VALUES (:nom, :prenom, :mdp, :mail, :code_verif)"
+                );
+                $insert->execute([
+                    'nom'        => $pending['nom'],
+                    'prenom'     => $pending['prenom'],
+                    'mdp'        => $pending['mdp'],
+                    'mail'       => $pending['mail'],
+                    'code_verif' => $pending['code_verif'],
+                ]);
+
+                // Delete from inscriptions_en_attente
+                $delete = $pdo->prepare("DELETE FROM inscriptions_en_attente WHERE id = :id");
+                $delete->execute(['id' => (int) $id]);
+            }
         }
 
         $this->redirect(BASE_URL . '/admin/dashboard');
@@ -188,23 +213,23 @@ class AdminController extends AbstractController
             return;
         }
 
-        $mail   = $this->getPost('id') ?? '';
+        $id     = $this->getPost('id') ?? '';
         $nom    = $this->getPost('nom') ?? '';
         $prenom = $this->getPost('prenom') ?? '';
 
-        if (!empty($mail)) {
+        if (!empty($id)) {
             $pdo  = DatabaseConnection::getInstance()->getConnection();
-            $stmt = $pdo->prepare("
-                UPDATE teachers SET surname = :surname, name = :name WHERE mail = :mail
-            ");
-            $stmt->execute(['surname' => $nom, 'name' => $prenom, 'mail' => $mail]);
+            $stmt = $pdo->prepare(
+                "UPDATE utilisateurs SET nom = :nom, prenom = :prenom WHERE id = :id"
+            );
+            $stmt->execute(['nom' => $nom, 'prenom' => $prenom, 'id' => (int) $id]);
         }
 
         $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
-     * Ban a user (set account_status to 2)
+     * Ban a user: move from utilisateurs to utilisateurs_bloques.
      *
      * @return void
      */
@@ -219,15 +244,34 @@ class AdminController extends AbstractController
 
         if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 2 WHERE mail = :mail");
-            $stmt->execute(['mail' => $id]);
+
+            // Get user info
+            $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE id = :id");
+            $stmt->execute(['id' => (int) $id]);
+            $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if ($user) {
+                // Insert into utilisateurs_bloques
+                $insert = $pdo->prepare(
+                    "INSERT INTO utilisateurs_bloques (mail, duree_ban, ban_def, old_id, old_table)
+                     VALUES (:mail, 0, 1, :old_id, 'utilisateurs')"
+                );
+                $insert->execute([
+                    'mail'   => $user['mail'],
+                    'old_id' => $user['id'],
+                ]);
+
+                // Delete from utilisateurs
+                $delete = $pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
+                $delete->execute(['id' => (int) $id]);
+            }
         }
 
         $this->redirect(BASE_URL . '/admin/dashboard');
     }
 
     /**
-     * Unban a user (set account_status back to 1)
+     * Unban a user: remove from utilisateurs_bloques and restore to utilisateurs if possible.
      *
      * @return void
      */
@@ -238,12 +282,12 @@ class AdminController extends AbstractController
             return;
         }
 
-        $mail = $this->getQuery('id') ?? '';
+        $id = $this->getQuery('id') ?? '';
 
-        if (!empty($mail)) {
+        if (!empty($id)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
-            $stmt->execute(['mail' => $mail]);
+            $stmt = $pdo->prepare("DELETE FROM utilisateurs_bloques WHERE id = :id");
+            $stmt->execute(['id' => (int) $id]);
         }
 
         $this->redirect(BASE_URL . '/admin/dashboard');

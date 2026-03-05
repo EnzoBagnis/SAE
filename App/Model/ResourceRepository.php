@@ -7,90 +7,103 @@ use App\Model\Entity\Resource;
 
 /**
  * Resource Repository
- * Handles resource data persistence against the `ressources` table.
+ * Handles resource data persistence against the `resources` table.
  *
- * Schema: ressource_id, owner_mail, ressource_name, ressource_description, image_path
- * Access: ressources_access (ressource_id, teacher_mail)
- * Owner info: joined from teachers (name=firstname, surname=lastname)
+ * Schema: resource_id, owner_user_id, resource_name, description, image_path, date_creation
+ * Access: resource_professors_access (resource_id, user_id)
  */
 class ResourceRepository extends AbstractRepository
 {
-    /**
-     * {@inheritdoc}
-     */
     protected function getTableName(): string
     {
-        return 'ressources';
+        return 'resources';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getEntityClass(): string
     {
         return Resource::class;
     }
 
     /**
-     * Find resources owned by a given teacher email, including shared teacher mails list.
-     *
-     * @param string $email Owner email
-     * @return Resource[] Array of Resource entities
+     * Find resources owned by a given user ID.
      */
-    public function findByOwnerMail(string $email): array
+    public function findByOwnerUserId(int $userId): array
     {
         $stmt = $this->pdo->prepare(
             "SELECT r.*,
                     'owner' AS access_type,
-                    GROUP_CONCAT(ra.teacher_mail) AS shared_mails
-             FROM ressources r
-             LEFT JOIN ressources_access ra ON r.ressource_id = ra.ressource_id
-             WHERE r.owner_mail = :mail
-             GROUP BY r.ressource_id
-             ORDER BY r.ressource_id DESC"
+                    GROUP_CONCAT(ra.user_id) AS shared_user_ids
+             FROM resources r
+             LEFT JOIN resource_professors_access ra ON r.resource_id = ra.resource_id
+             WHERE r.owner_user_id = :uid
+             GROUP BY r.resource_id
+             ORDER BY r.resource_id DESC"
         );
-        $stmt->execute(['mail' => $email]);
+        $stmt->execute(['uid' => $userId]);
         return array_map(fn($row) => $this->hydrate($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /**
-     * Find resources shared with a given teacher email via ressources_access.
-     *
-     * @param string $email Teacher email
-     * @return Resource[] Array of Resource entities
+     * @deprecated Use findByOwnerUserId()
      */
-    public function findSharedWithMail(string $email): array
+    public function findByOwnerMail(string $email): array
+    {
+        // Resolve email to user ID
+        $stmt = $this->pdo->prepare("SELECT id FROM utilisateurs WHERE mail = :mail");
+        $stmt->execute(['mail' => $email]);
+        $userId = $stmt->fetchColumn();
+        if (!$userId) {
+            return [];
+        }
+        return $this->findByOwnerUserId((int) $userId);
+    }
+
+    /**
+     * Find resources shared with a given user ID via resource_professors_access.
+     */
+    public function findSharedWithUserId(int $userId): array
     {
         $stmt = $this->pdo->prepare(
             "SELECT r.*,
                     'shared' AS access_type,
-                    GROUP_CONCAT(ra2.teacher_mail) AS shared_mails
-             FROM ressources r
-             INNER JOIN ressources_access ra ON r.ressource_id = ra.ressource_id
-             LEFT JOIN ressources_access ra2 ON r.ressource_id = ra2.ressource_id
-             WHERE ra.teacher_mail = :mail
-             GROUP BY r.ressource_id
-             ORDER BY r.ressource_id DESC"
+                    GROUP_CONCAT(ra2.user_id) AS shared_user_ids
+             FROM resources r
+             INNER JOIN resource_professors_access ra ON r.resource_id = ra.resource_id
+             LEFT JOIN resource_professors_access ra2 ON r.resource_id = ra2.resource_id
+             WHERE ra.user_id = :uid
+             GROUP BY r.resource_id
+             ORDER BY r.resource_id DESC"
         );
-        $stmt->execute(['mail' => $email]);
+        $stmt->execute(['uid' => $userId]);
         return array_map(fn($row) => $this->hydrate($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /**
-     * Find a resource by its ID, with owner name joined from the teachers table.
-     *
-     * @param int $resourceId Resource ID
-     * @return Resource|null Resource entity or null
+     * @deprecated Use findSharedWithUserId()
+     */
+    public function findSharedWithMail(string $email): array
+    {
+        $stmt = $this->pdo->prepare("SELECT id FROM utilisateurs WHERE mail = :mail");
+        $stmt->execute(['mail' => $email]);
+        $userId = $stmt->fetchColumn();
+        if (!$userId) {
+            return [];
+        }
+        return $this->findSharedWithUserId((int) $userId);
+    }
+
+    /**
+     * Find a resource by its ID, with owner name joined from the utilisateurs table.
      */
     public function findById(int $resourceId): ?Resource
     {
         $stmt = $this->pdo->prepare(
             "SELECT r.*,
-                    t.name    AS owner_firstname,
-                    t.surname AS owner_lastname
-             FROM ressources r
-             LEFT JOIN teachers t ON CAST(r.owner_mail AS CHAR) = t.mail
-             WHERE r.ressource_id = :id"
+                    u.prenom AS owner_firstname,
+                    u.nom    AS owner_lastname
+             FROM resources r
+             LEFT JOIN utilisateurs u ON r.owner_user_id = u.id
+             WHERE r.resource_id = :id"
         );
         $stmt->execute(['id' => $resourceId]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -105,9 +118,6 @@ class ResourceRepository extends AbstractRepository
 
     /**
      * Save resource (insert or update).
-     *
-     * @param Resource $resource Resource entity
-     * @return Resource Saved resource
      */
     public function save(Resource $resource): Resource
     {
@@ -116,62 +126,42 @@ class ResourceRepository extends AbstractRepository
             : $this->update($resource);
     }
 
-    /**
-     * Insert a new resource.
-     *
-     * @param Resource $resource Resource entity
-     * @return Resource Inserted resource with new ID set
-     */
     private function insert(Resource $resource): Resource
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO ressources (owner_mail, ressource_name, ressource_description, image_path)
-            VALUES (:owner_mail, :ressource_name, :ressource_description, :image_path)
+            INSERT INTO resources (owner_user_id, resource_name, description, image_path)
+            VALUES (:owner_user_id, :resource_name, :description, :image_path)
         ");
         $stmt->execute([
-            'owner_mail'           => $resource->getOwnerMail(),
-            'ressource_name'       => $resource->getResourceName(),
-            'ressource_description' => $resource->getDescription() ?? '',
-            'image_path'           => $resource->getImagePath() ?? '',
+            'owner_user_id' => $resource->getOwnerUserId(),
+            'resource_name' => $resource->getResourceName(),
+            'description'   => $resource->getDescription() ?? '',
+            'image_path'    => $resource->getImagePath() ?? '',
         ]);
         $resource->setResourceId((int) $this->pdo->lastInsertId());
         return $resource;
     }
 
-    /**
-     * Update an existing resource.
-     *
-     * @param Resource $resource Resource entity
-     * @return Resource Updated resource
-     */
     private function update(Resource $resource): Resource
     {
         $stmt = $this->pdo->prepare("
-            UPDATE ressources
-            SET ressource_name        = :ressource_name,
-                ressource_description = :ressource_description,
-                image_path            = :image_path
-            WHERE ressource_id = :ressource_id
+            UPDATE resources
+            SET resource_name = :resource_name,
+                description   = :description,
+                image_path    = :image_path
+            WHERE resource_id = :resource_id
         ");
         $stmt->execute([
-            'ressource_id'         => $resource->getResourceId(),
-            'ressource_name'       => $resource->getResourceName(),
-            'ressource_description' => $resource->getDescription() ?? '',
-            'image_path'           => $resource->getImagePath() ?? '',
+            'resource_id'   => $resource->getResourceId(),
+            'resource_name' => $resource->getResourceName(),
+            'description'   => $resource->getDescription() ?? '',
+            'image_path'    => $resource->getImagePath() ?? '',
         ]);
         return $resource;
     }
 
     /**
-     * Delete a resource and all its related data (exercises, attempts, access).
-     * Deletion order respects FK dependencies:
-     *   1. attempts linked to the resource's exercises
-     *   2. exercices of the resource
-     *   3. ressources_access entries
-     *   4. the resource itself
-     *
-     * @param int $resourceId Resource ID
-     * @return bool True if deleted
+     * Delete a resource and all its related data.
      */
     public function delete(mixed $resourceId): bool
     {
@@ -182,23 +172,23 @@ class ResourceRepository extends AbstractRepository
             // 1. Delete attempts linked to exercises of this resource
             $this->pdo->prepare(
                 "DELETE a FROM attempts a
-                 INNER JOIN exercices e ON a.exercice_id = e.exercice_id
-                 WHERE e.ressource_id = :id"
+                 INNER JOIN exercises e ON a.exercise_id = e.exercise_id
+                 WHERE e.resource_id = :id"
             )->execute(['id' => $id]);
 
             // 2. Delete exercises of this resource
             $this->pdo->prepare(
-                "DELETE FROM exercices WHERE ressource_id = :id"
+                "DELETE FROM exercises WHERE resource_id = :id"
             )->execute(['id' => $id]);
 
             // 3. Delete sharing access entries
             $this->pdo->prepare(
-                "DELETE FROM ressources_access WHERE ressource_id = :id"
+                "DELETE FROM resource_professors_access WHERE resource_id = :id"
             )->execute(['id' => $id]);
 
             // 4. Delete the resource itself
             $stmt = $this->pdo->prepare(
-                "DELETE FROM ressources WHERE ressource_id = :id"
+                "DELETE FROM resources WHERE resource_id = :id"
             );
             $stmt->execute(['id' => $id]);
 
@@ -212,81 +202,81 @@ class ResourceRepository extends AbstractRepository
     }
 
     /**
-     * Check if a teacher owns a resource.
-     *
-     * @param int    $resourceId Resource ID
-     * @param string $email      Teacher email
-     * @return bool True if the teacher owns the resource
+     * Check if a user owns a resource.
      */
     public function isOwner(int $resourceId, string $email): bool
     {
         $stmt = $this->pdo->prepare(
-            "SELECT COUNT(*) FROM ressources
-             WHERE ressource_id = :id AND owner_mail = :mail"
+            "SELECT COUNT(*) FROM resources r
+             INNER JOIN utilisateurs u ON r.owner_user_id = u.id
+             WHERE r.resource_id = :id AND u.mail = :mail"
         );
         $stmt->execute(['id' => $resourceId, 'mail' => $email]);
         return $stmt->fetchColumn() > 0;
     }
 
     /**
-     * Get all teacher emails except the given one (for sharing).
-     *
-     * @param string $excludeEmail Email to exclude (current user)
-     * @return array<array{mail: string, name: string, surname: string}> List of teachers
+     * Check if a user (by ID) owns a resource.
+     */
+    public function isOwnerById(int $resourceId, int $userId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM resources
+             WHERE resource_id = :id AND owner_user_id = :uid"
+        );
+        $stmt->execute(['id' => $resourceId, 'uid' => $userId]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * Get all teachers except the given one (for sharing).
      */
     public function findAllTeachersExcept(string $excludeEmail): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT mail, name, surname FROM teachers WHERE mail != :mail ORDER BY surname ASC"
+            "SELECT id, mail, prenom AS name, nom AS surname FROM utilisateurs WHERE mail != :mail ORDER BY nom ASC"
         );
         $stmt->execute(['mail' => $excludeEmail]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
-     * Sync the sharing list for a resource (replaces all existing access entries).
+     * Sync the sharing list for a resource.
      *
-     * @param int      $resourceId   Resource ID
-     * @param string[] $teacherMails List of teacher emails to share with
-     * @return void
+     * @param int   $resourceId Resource ID
+     * @param int[] $userIds    List of user IDs to share with
      */
-    public function syncSharing(int $resourceId, array $teacherMails): void
+    public function syncSharing(int $resourceId, array $userIds): void
     {
         $this->pdo->prepare(
-            "DELETE FROM ressources_access WHERE ressource_id = :id"
+            "DELETE FROM resource_professors_access WHERE resource_id = :id"
         )->execute(['id' => $resourceId]);
 
-        if (empty($teacherMails)) {
+        if (empty($userIds)) {
             return;
         }
 
         $stmt = $this->pdo->prepare(
-            "INSERT IGNORE INTO ressources_access (ressource_id, teacher_mail) VALUES (:id, :mail)"
+            "INSERT IGNORE INTO resource_professors_access (resource_id, user_id) VALUES (:id, :uid)"
         );
-        foreach ($teacherMails as $mail) {
-            $mail = trim($mail);
-            if ($mail !== '') {
-                $stmt->execute(['id' => $resourceId, 'mail' => $mail]);
+        foreach ($userIds as $uid) {
+            $uid = (int) $uid;
+            if ($uid > 0) {
+                $stmt->execute(['id' => $resourceId, 'uid' => $uid]);
             }
         }
     }
 
-    /**
-     * Hydrate a Resource entity from a database row.
-     *
-     * @param array $data Database row
-     * @return Resource Hydrated Resource entity
-     */
     protected function hydrate(array $data): Resource
     {
         $resource = new Resource();
-        $resource->setResourceId(isset($data['ressource_id']) ? (int) $data['ressource_id'] : null);
-        $resource->setOwnerMail($data['owner_mail'] ?? '');
-        $resource->setResourceName($data['ressource_name'] ?? '');
-        $resource->setDescription(($data['ressource_description'] ?? '') !== '' ? $data['ressource_description'] : null);
+        $resource->setResourceId(isset($data['resource_id']) ? (int) $data['resource_id'] : null);
+        $resource->setOwnerUserId(isset($data['owner_user_id']) ? (int) $data['owner_user_id'] : null);
+        $resource->setResourceName($data['resource_name'] ?? '');
+        $resource->setDescription(($data['description'] ?? '') !== '' ? $data['description'] : null);
         $resource->setImagePath(($data['image_path'] ?? '') !== '' ? $data['image_path'] : null);
         $resource->setAccessType($data['access_type'] ?? 'owner');
-        $resource->setSharedMails($data['shared_mails'] ?? null);
+        $resource->setSharedUserIds($data['shared_user_ids'] ?? null);
         return $resource;
     }
 }

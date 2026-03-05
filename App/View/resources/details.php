@@ -176,7 +176,7 @@ $title = 'StudTraj - ' . $resTitle;
                 <div class="tp-item">
                     <div class="tp-item-info">
                         <h3>
-                            <?= htmlspecialchars($exercise['exercice_name'] ?? 'Exercice sans titre') ?>
+                            <?= htmlspecialchars($exercise['display_name'] ?? $exercise['exo_name'] ?? 'Exercice sans titre') ?>
                             <?php if ($exercise['total_attempts'] > 0) : ?>
                                 <?php
                                     $rate = $exercise['success_rate'];
@@ -190,10 +190,10 @@ $title = 'StudTraj - ' . $resTitle;
                             <?php endif; ?>
                         </h3>
                         <p>
-                            <?php if (!empty($exercise['extention'])) : ?>
-                                Extension : <code><?= htmlspecialchars($exercise['extention']) ?></code>
+                            <?php if (!empty($exercise['difficulte'])) : ?>
+                                Difficulté : <code><?= htmlspecialchars($exercise['difficulte']) ?></code>
                             <?php endif; ?>
-                            &nbsp;·&nbsp; Date : <?= htmlspecialchars($exercise['date'] ?? '') ?>
+                            &nbsp;·&nbsp; Date : <?= htmlspecialchars($exercise['date_creation'] ?? '') ?>
                         </p>
                         <?php if ($exercise['total_attempts'] > 0) : ?>
                             <p style="font-size:0.85em; color:#999;">
@@ -202,7 +202,7 @@ $title = 'StudTraj - ' . $resTitle;
                         <?php endif; ?>
                     </div>
                     <div class="tp-item-actions">
-                        <a href="<?= BASE_URL ?>/exercises/<?= (int)$exercise['exercice_id'] ?>"
+                        <a href="<?= BASE_URL ?>/exercises/<?= (int)$exercise['exercise_id'] ?>"
                            class="btn">Voir le TP</a>
                     </div>
                 </div>

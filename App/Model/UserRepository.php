@@ -7,21 +7,15 @@ use App\Model\Entity\User;
 
 /**
  * User Repository
- * Handles user data persistence
+ * Handles user data persistence against the `utilisateurs` table.
  */
 class UserRepository extends AbstractRepository
 {
-    /**
-     * {@inheritdoc}
-     */
     protected function getTableName(): string
     {
-        return 'teachers';
+        return 'utilisateurs';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getEntityClass(): string
     {
         return User::class;
@@ -29,177 +23,152 @@ class UserRepository extends AbstractRepository
 
     /**
      * Find user by email
-     *
-     * @param string $email User email
-     * @return User|null User entity or null
      */
     public function findByEmail(string $email): ?User
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM teachers WHERE mail = :mail");
+        $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE mail = :mail");
         $stmt->execute(['mail' => $email]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $data ? $this->hydrate($data) : null;
+    }
 
+    /**
+     * Find user by ID
+     */
+    public function findById(int $id): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
     }
 
     /**
      * Find user by reset token
-     *
-     * @param string $token Reset token
-     * @return User|null User entity or null
      */
     public function findByResetToken(string $token): ?User
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM teachers WHERE reset_token = :token");
+        $stmt = $this->pdo->prepare("SELECT * FROM utilisateurs WHERE reset_token = :token");
         $stmt->execute(['token' => $token]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
-
         return $data ? $this->hydrate($data) : null;
     }
 
     /**
      * Check if email exists
-     *
-     * @param string $email User email
-     * @return bool True if email exists
      */
     public function emailExists(string $email): bool
     {
-        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM teachers WHERE mail = :mail");
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM utilisateurs WHERE mail = :mail");
         $stmt->execute(['mail' => $email]);
         return $stmt->fetchColumn() > 0;
     }
 
     /**
      * Find all users
-     *
-     * @return array Array of User entities
      */
     public function findAll(?int $limit = null, int $offset = 0): array
     {
-        $query = "SELECT * FROM teachers ORDER BY surname DESC";
-
+        $query = "SELECT * FROM utilisateurs ORDER BY nom DESC";
         if ($limit !== null) {
             $query .= " LIMIT {$limit} OFFSET {$offset}";
         }
-
         $stmt = $this->pdo->query($query);
         $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
         return array_map(fn($row) => $this->hydrate($row), $data);
     }
 
     /**
      * Save user (insert or update)
-     *
-     * @param User $user User entity
-     * @return User Saved user
      */
     public function save(User $user): User
     {
-        // The PK in teachers is 'mail', not an auto-increment id.
-        // Use emailExists() to decide between insert and update.
-        if ($this->emailExists($user->getEmail())) {
+        if ($user->getId() !== null) {
             return $this->update($user);
+        }
+        if ($this->emailExists($user->getEmail())) {
+            // User already exists by email, find and update
+            $existing = $this->findByEmail($user->getEmail());
+            if ($existing) {
+                $user->setId($existing->getId());
+                return $this->update($user);
+            }
         }
         return $this->insert($user);
     }
 
-    /**
-     * Insert new user
-     *
-     * @param User $user User entity
-     * @return User Inserted user
-     */
     private function insert(User $user): User
     {
         $stmt = $this->pdo->prepare("
-        INSERT INTO teachers 
-        (mail, name, surname, password, code_verif, account_status, reset_token, reset_expiration)
-        VALUES 
-        (:mail, :name, :surname, :password, :code_verif, :account_status, :reset_token, :reset_expiration)
-    ");
+            INSERT INTO utilisateurs 
+            (nom, prenom, mdp, mail, code_verif, reset_token, reset_expiration)
+            VALUES 
+            (:nom, :prenom, :mdp, :mail, :code_verif, :reset_token, :reset_expiration)
+        ");
 
-        $resetTokenExpiration = $user->getResetTokenExpiration();
+        $resetExpiration = $user->getResetTokenExpiration();
 
         $stmt->execute([
-            'mail'              => $user->getEmail(),
-            'name'              => $user->getFirstName(),
-            'surname'           => $user->getLastName(),
-            'password'          => $user->getPasswordHash(),
-            'code_verif'        => $user->getVerificationCode(),
-            'account_status'    => $user->getAccountStatus(),
-            'reset_token'       => $user->getResetToken() ?? '',
-            // reset_expiration is DATE NOT NULL — use '0000-00-00' as empty placeholder
-            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d') : '0000-00-00',
+            'nom'              => $user->getLastName(),
+            'prenom'           => $user->getFirstName(),
+            'mdp'              => $user->getPasswordHash(),
+            'mail'             => $user->getEmail(),
+            'code_verif'       => (int) ($user->getVerificationCode() ?? 0),
+            'reset_token'      => $user->getResetToken(),
+            'reset_expiration' => $resetExpiration ? $resetExpiration->format('Y-m-d H:i:s') : null,
         ]);
 
+        $user->setId((int) $this->pdo->lastInsertId());
         return $user;
     }
 
-    /**
-     * Update existing user
-     *
-     * @param User $user User entity
-     * @return User Updated user
-     */
     private function update(User $user): User
     {
         $stmt = $this->pdo->prepare("
-            UPDATE teachers 
-            SET name             = :name,
-                surname          = :surname,
-                password         = :password,
+            UPDATE utilisateurs 
+            SET nom              = :nom,
+                prenom           = :prenom,
+                mdp              = :mdp,
                 code_verif       = :code_verif,
-                account_status   = :account_status,
                 reset_token      = :reset_token,
                 reset_expiration = :reset_expiration
-            WHERE mail = :mail
+            WHERE id = :id
         ");
 
-        $resetTokenExpiration = $user->getResetTokenExpiration();
+        $resetExpiration = $user->getResetTokenExpiration();
         $stmt->execute([
-            'mail'              => $user->getEmail(),
-            'name'              => $user->getFirstName(),
-            'surname'           => $user->getLastName(),
-            'password'          => $user->getPasswordHash(),
-            'code_verif'        => $user->getVerificationCode(),
-            'account_status'    => $user->getAccountStatus(),
-            'reset_token'       => $user->getResetToken() ?? '',
-            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d') : null,
+            'id'               => $user->getId(),
+            'nom'              => $user->getLastName(),
+            'prenom'           => $user->getFirstName(),
+            'mdp'              => $user->getPasswordHash(),
+            'code_verif'       => (int) ($user->getVerificationCode() ?? 0),
+            'reset_token'      => $user->getResetToken(),
+            'reset_expiration' => $resetExpiration ? $resetExpiration->format('Y-m-d H:i:s') : null,
         ]);
 
         return $user;
     }
 
     /**
-     * Delete user by mail (overrides AbstractRepository::delete).
-     * In the teachers table, the PK is 'mail' (string), not 'id'.
-     *
-     * @param mixed $id User mail address used as primary key
-     * @return bool True if deleted
+     * Delete user by ID
      */
     public function delete($id): bool
     {
-        $stmt = $this->pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
-        return $stmt->execute(['mail' => $id]);
+        $stmt = $this->pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
+        return $stmt->execute(['id' => (int) $id]);
     }
 
-    /**
-     * Hydrate user from database row
-     *
-     * @param array $data Database row data
-     * @return User User entity
-     */
     protected function hydrate(array $data): User
     {
         $user = new User();
-        $user->setLastName($data['surname'] ?? '');
-        $user->setFirstName($data['name'] ?? '');
+        $user->setId(isset($data['id']) ? (int) $data['id'] : null);
+        $user->setLastName($data['nom'] ?? '');
+        $user->setFirstName($data['prenom'] ?? '');
         $user->setEmail($data['mail'] ?? '');
-        $user->setPasswordHash($data['password'] ?? '');
+        $user->setPasswordHash($data['mdp'] ?? '');
         $user->setVerificationCode(isset($data['code_verif']) ? (string) $data['code_verif'] : null);
-        $user->setAccountStatus((int) ($data['account_status'] ?? 0));
+        // utilisateurs table has no account_status column; treat all as active (1)
+        $user->setAccountStatus(1);
 
         if (!empty($data['reset_expiration']) && !empty($data['reset_token'])) {
             $user->setResetToken(

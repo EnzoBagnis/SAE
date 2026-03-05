@@ -12,9 +12,11 @@ use App\Model\ExerciseRepository;
  *
  * Expected JSON structure per attempt:
  * {
- *   "exercice_id":   1,          // or "exercice_name" / "exercise_name" / "name"
- *   "user":          "etudiant1",
+ *   "exercise_id":   1,          // or "exo_name" / "exercice_name" / "name"
+ *   "student_id":    1,          // or "user" / "student" / "eleve"
  *   "correct":       1,
+ *   "submission_date": "2025-01-01 12:00:00",
+ *   "extension":     "py",
  *   "eval_set":      "...",
  *   "upload":        "...",
  *   "aes0":          "...",
@@ -49,51 +51,61 @@ class ImportAttemptsUseCase
     public function execute(array $attempts, ?int $ressourceId): array
     {
         // Build a cache: exercice_name -> exercice_id (within the given resource if provided)
-        $exerciceCache = [];
+        $exerciseCache = [];
 
         $rows   = [];
         $errors = [];
 
         foreach ($attempts as $index => $item) {
             try {
-                // 1. Resolve exercice_id
-                $exerciceId = isset($item['exercice_id']) ? (int) $item['exercice_id'] : null;
+                // 1. Resolve exercise_id
+                $exerciseId = isset($item['exercise_id']) ? (int) $item['exercise_id'] : null;
+                if (!$exerciseId && isset($item['exercice_id'])) {
+                    $exerciseId = (int) $item['exercice_id'];
+                }
 
-                if (!$exerciceId) {
+                if (!$exerciseId) {
                     // Try to resolve by name
-                    $exerciceName = trim(
-                        $item['exercice_name']
+                    $exerciseName = trim(
+                        $item['exo_name']
+                        ?? $item['exercice_name']
                         ?? $item['exercise_name']
-                        ?? $item['exo_name']
                         ?? $item['name']
                         ?? ''
                     );
 
-                    if ($exerciceName === '') {
-                        throw new \InvalidArgumentException("exercice_id ou exercice_name manquant");
+                    if ($exerciseName === '') {
+                        throw new \InvalidArgumentException("exercise_id ou exo_name manquant");
                     }
 
-                    $cacheKey = $exerciceName . '_' . ($ressourceId ?? 'global');
+                    $cacheKey = $exerciseName . '_' . ($ressourceId ?? 'global');
 
-                    if (!isset($exerciceCache[$cacheKey])) {
+                    if (!isset($exerciseCache[$cacheKey])) {
                         $exercise = $ressourceId !== null
-                            ? $this->exerciseRepository->findByRessourceIdAndName($ressourceId, $exerciceName)
-                            : $this->exerciseRepository->findByName($exerciceName);
+                            ? $this->exerciseRepository->findByRessourceIdAndName($ressourceId, $exerciseName)
+                            : $this->exerciseRepository->findByName($exerciseName);
 
                         if ($exercise === null) {
                             throw new \RuntimeException(
-                                "Exercice introuvable : \"$exerciceName\""
+                                "Exercice introuvable : \"$exerciseName\""
                                 . ($ressourceId !== null ? " (ressource $ressourceId)" : '')
                             );
                         }
 
-                        $exerciceCache[$cacheKey] = $exercise->getExerciseId();
+                        $exerciseCache[$cacheKey] = $exercise->getExerciseId();
                     }
 
-                    $exerciceId = $exerciceCache[$cacheKey];
+                    $exerciseId = $exerciseCache[$cacheKey];
                 }
 
-                // 2. Normalize the correct flag (handles booleans, strings, integers)
+                // 2. Resolve student_id
+                $studentId = (int) ($item['student_id'] ?? $item['user'] ?? $item['student'] ?? $item['eleve'] ?? 0);
+
+                if ($studentId <= 0) {
+                    throw new \InvalidArgumentException("student_id manquant ou invalide");
+                }
+
+                // 3. Normalize the correct flag (handles booleans, strings, integers)
                 $correct = $item['correct'] ?? false;
                 if (is_string($correct)) {
                     $correct = filter_var($correct, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
@@ -101,16 +113,18 @@ class ImportAttemptsUseCase
                     $correct = $correct ? 1 : 0;
                 }
 
-                // 3. Normalize AES fields (may be already-encoded JSON or raw values)
+                // 4. Build row for bulk insert
                 $rows[] = [
-                    'exercice_id' => $exerciceId,
-                    'user'        => (string) ($item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''),
-                    'correct'     => $correct,
-                    'eval_set'    => $this->normalizeJsonField($item['eval_set'] ?? null),
-                    'upload'      => (string) ($item['upload'] ?? $item['code'] ?? ''),
-                    'aes0'        => $this->normalizeJsonField($item['aes0'] ?? null),
-                    'aes1'        => $this->normalizeJsonField($item['aes1'] ?? null),
-                    'aes2'        => $this->normalizeJsonField($item['aes2'] ?? null),
+                    'student_id'      => $studentId,
+                    'exercise_id'     => $exerciseId,
+                    'submission_date' => (string) ($item['submission_date'] ?? $item['date'] ?? date('Y-m-d H:i:s')),
+                    'extension'       => (string) ($item['extension'] ?? $item['extention'] ?? ''),
+                    'correct'         => $correct,
+                    'upload'          => (string) ($item['upload'] ?? $item['code'] ?? ''),
+                    'eval_set'        => $this->normalizeJsonField($item['eval_set'] ?? null),
+                    'aes0'            => $this->normalizeJsonField($item['aes0'] ?? null),
+                    'aes1'            => $this->normalizeJsonField($item['aes1'] ?? null),
+                    'aes2'            => $this->normalizeJsonField($item['aes2'] ?? null),
                 ];
             } catch (\Throwable $e) {
                 $errors[] = "Tentative #$index: " . $e->getMessage();

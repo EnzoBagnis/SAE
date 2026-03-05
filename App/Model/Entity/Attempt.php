@@ -7,16 +7,18 @@ namespace App\Model\Entity;
  * Represents a student's attempt at an exercise.
  * Maps to the `attempts` table.
  *
- * Schema: attempt_id (PK), exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2
+ * Schema: attempt_id (PK), student_id, exercise_id, submission_date, extension, correct, upload, eval_set, aes0, aes1, aes2
  */
 class Attempt
 {
     private ?int $attemptId = null;
-    private int $exerciceId = 0;
-    private string $user = '';
+    private int $studentId = 0;
+    private int $exerciseId = 0;
+    private string $submissionDate = '';
+    private string $extension = '';
     private int $correct = 0;
-    private string $evalSet = '';
     private string $upload = '';
+    private string $evalSet = '';
     private string $aes0 = '';
     private string $aes1 = '';
     private string $aes2 = '';
@@ -41,35 +43,101 @@ class Attempt
     /**
      * @return int
      */
-    public function getExerciceId(): int
+    public function getStudentId(): int
     {
-        return $this->exerciceId;
+        return $this->studentId;
     }
 
     /**
-     * @param int $exerciceId
+     * @param int $studentId
      * @return void
+     */
+    public function setStudentId(int $studentId): void
+    {
+        $this->studentId = $studentId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getExerciseId(): int
+    {
+        return $this->exerciseId;
+    }
+
+    /**
+     * @param int $exerciseId
+     * @return void
+     */
+    public function setExerciseId(int $exerciseId): void
+    {
+        $this->exerciseId = $exerciseId;
+    }
+
+    /**
+     * @deprecated Use getExerciseId()
+     */
+    public function getExerciceId(): int
+    {
+        return $this->exerciseId;
+    }
+
+    /**
+     * @deprecated Use setExerciseId()
      */
     public function setExerciceId(int $exerciceId): void
     {
-        $this->exerciceId = $exerciceId;
+        $this->exerciseId = $exerciceId;
+    }
+
+    /**
+     * @deprecated Use getStudentId()
+     */
+    public function getUser(): string
+    {
+        return (string) $this->studentId;
+    }
+
+    /**
+     * @deprecated Use setStudentId()
+     */
+    public function setUser(string $user): void
+    {
+        $this->studentId = (int) $user;
     }
 
     /**
      * @return string
      */
-    public function getUser(): string
+    public function getSubmissionDate(): string
     {
-        return $this->user;
+        return $this->submissionDate;
     }
 
     /**
-     * @param string $user
+     * @param string $submissionDate
      * @return void
      */
-    public function setUser(string $user): void
+    public function setSubmissionDate(string $submissionDate): void
     {
-        $this->user = $user;
+        $this->submissionDate = $submissionDate;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExtension(): string
+    {
+        return $this->extension;
+    }
+
+    /**
+     * @param string $extension
+     * @return void
+     */
+    public function setExtension(string $extension): void
+    {
+        $this->extension = $extension;
     }
 
     /**
@@ -182,15 +250,17 @@ class Attempt
     public function toArray(): array
     {
         return [
-            'attempt_id' => $this->attemptId,
-            'exercice_id' => $this->exerciceId,
-            'user'        => $this->user,
-            'correct'     => $this->correct,
-            'eval_set'    => $this->evalSet,
-            'upload'      => $this->upload,
-            'aes0'        => $this->aes0,
-            'aes1'        => $this->aes1,
-            'aes2'        => $this->aes2,
+            'attempt_id'      => $this->attemptId,
+            'student_id'      => $this->studentId,
+            'exercise_id'     => $this->exerciseId,
+            'submission_date' => $this->submissionDate,
+            'extension'       => $this->extension,
+            'correct'         => $this->correct,
+            'eval_set'        => $this->evalSet,
+            'upload'          => $this->upload,
+            'aes0'            => $this->aes0,
+            'aes1'            => $this->aes1,
+            'aes2'            => $this->aes2,
         ];
     }
 }
