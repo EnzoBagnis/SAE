@@ -45,7 +45,7 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
                     GROUP_CONCAT(ra.teacher_mail) AS shared_mails
              FROM ressources r
              LEFT JOIN ressources_access ra ON r.ressource_id = ra.ressource_id
-             WHERE r.owner_mail = :mail
+             WHERE r.mail = :mail
              GROUP BY r.ressource_id
              ORDER BY r.ressource_id DESC"
         );
@@ -64,11 +64,11 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
         $stmt = $this->pdo->prepare(
             "SELECT r.*,
                     'shared' AS access_type,
-                    GROUP_CONCAT(ra2.teacher_mail) AS shared_mails
+                    GROUP_CONCAT(ra2.mail) AS shared_mails
              FROM ressources r
              INNER JOIN ressources_access ra ON r.ressource_id = ra.ressource_id
              LEFT JOIN ressources_access ra2 ON r.ressource_id = ra2.ressource_id
-             WHERE ra.teacher_mail = :mail
+             WHERE ra.mail = :mail
              GROUP BY r.ressource_id
              ORDER BY r.ressource_id DESC"
         );
@@ -89,7 +89,7 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
                     t.name    AS owner_firstname,
                     t.surname AS owner_lastname
              FROM ressources r
-             LEFT JOIN teachers t ON CAST(r.owner_mail AS CHAR) = t.mail
+             LEFT JOIN teachers t ON CAST(r.mail AS CHAR) = t.mail
              WHERE r.ressource_id = :id"
         );
         $stmt->execute(['id' => $resourceId]);
@@ -125,11 +125,11 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
     private function insert(Resource $resource): Resource
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO ressources (owner_mail, ressource_name, ressource_description, image_path)
-            VALUES (:owner_mail, :ressource_name, :ressource_description, :image_path)
+            INSERT INTO ressources (mail, ressource_name, ressource_description, image_path)
+            VALUES (:mail, :ressource_name, :ressource_description, :image_path)
         ");
         $stmt->execute([
-            'owner_mail'           => $resource->getOwnerMail(),
+            'mail'           => $resource->getOwnerMail(),
             'ressource_name'       => $resource->getResourceName(),
             'ressource_description' => $resource->getDescription() ?? '',
             'image_path'           => $resource->getImagePath() ?? '',
@@ -281,7 +281,7 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
     {
         $resource = new Resource();
         $resource->setResourceId(isset($data['ressource_id']) ? (int) $data['ressource_id'] : null);
-        $resource->setOwnerMail($data['owner_mail'] ?? '');
+        $resource->setOwnerMail($data['mail'] ?? '');
         $resource->setResourceName($data['ressource_name'] ?? '');
         $resource->setDescription(($data['ressource_description'] ?? '') !== '' ? $data['ressource_description'] : null);
         $resource->setImagePath(($data['image_path'] ?? '') !== '' ? $data['image_path'] : null);
