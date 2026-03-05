@@ -179,23 +179,17 @@ class ExerciseRepository extends AbstractRepository implements
         $stmt = $this->pdo->prepare(
             "SELECT * FROM exercices WHERE ressource_id = :ressource_id AND exercice_name = :name LIMIT 1"
         );
-        $stmt->execute(['ressource_id' => $ressourceId, 'name' => $name]);
+        $stmt->execute(['ressource_id' => $ressourceId, 'name' => mb_substr($name, 0, 20)]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
     }
 
-    /**
-     * Find an exercise by name globally (returns the most recent one).
-     *
-     * @param string $name Exercise name
-     * @return Exercise|null Exercise entity or null
-     */
     public function findByName(string $name): ?Exercise
     {
         $stmt = $this->pdo->prepare(
             "SELECT * FROM exercices WHERE exercice_name = :name ORDER BY exercice_id DESC LIMIT 1"
         );
-        $stmt->execute(['name' => $name]);
+        $stmt->execute(['name' => mb_substr($name, 0, 20)]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
     }
@@ -217,8 +211,8 @@ class ExerciseRepository extends AbstractRepository implements
         );
         $stmt->execute([
             'ressource_id'  => $ressourceId,
-            'exercice_name' => $exerciceName,
-            'extention'     => $extention,
+            'exercice_name' => mb_substr($exerciceName, 0, 20),
+            'extention'     => mb_substr($extention, 0, 20),
             'date'          => $date,
         ]);
         return (int) $this->pdo->lastInsertId();

@@ -65,14 +65,14 @@ class ImportAttemptsUseCase
                 $exerciceId = isset($item['exercice_id']) ? (int) $item['exercice_id'] : null;
 
                 if (!$exerciceId) {
-                    // Try to resolve by name
-                    $exerciceName = trim(
+                    // Try to resolve by name (truncated to varchar(20))
+                    $exerciceName = mb_substr(trim(
                         $item['exercice_name']
                         ?? $item['exercise_name']
                         ?? $item['exo_name']
                         ?? $item['name']
                         ?? ''
-                    );
+                    ), 0, 20);
 
                     if ($exerciceName === '') {
                         throw new \InvalidArgumentException("exercice_id ou exercice_name manquant");
@@ -106,16 +106,16 @@ class ImportAttemptsUseCase
                     $correct = $correct ? 1 : 0;
                 }
 
-                // 3. Normalize AES fields (may be already-encoded JSON or raw values)
+                // 3. Stocker les champs en respectant les contraintes varchar(20) de la BD
                 $rows[] = [
                     'exercice_id' => $exerciceId,
-                    'user_id'     => (string) ($item['user_id'] ?? $item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''),
+                    'user_id'     => mb_substr((string) ($item['user_id'] ?? $item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''), 0, 20),
                     'correct'     => $correct,
-                    'eval_set'    => $this->normalizeJsonField($item['eval_set'] ?? null),
-                    'upload'      => (string) ($item['upload'] ?? $item['code'] ?? ''),
-                    'aes0'        => $this->normalizeJsonField($item['aes0'] ?? null),
-                    'aes1'        => $this->normalizeJsonField($item['aes1'] ?? null),
-                    'aes2'        => $this->normalizeJsonField($item['aes2'] ?? null),
+                    'eval_set'    => mb_substr((string) ($item['eval_set'] ?? ''), 0, 20),
+                    'upload'      => mb_substr((string) ($item['upload'] ?? $item['code'] ?? ''), 0, 20),
+                    'aes0'        => mb_substr($this->normalizeScalarField($item['aes0'] ?? null), 0, 20),
+                    'aes1'        => mb_substr($this->normalizeScalarField($item['aes1'] ?? null), 0, 20),
+                    'aes2'        => mb_substr($this->normalizeScalarField($item['aes2'] ?? null), 0, 20),
                 ];
             } catch (\Throwable $e) {
                 $errors[] = "Tentative #$index: " . $e->getMessage();
@@ -133,39 +133,24 @@ class ImportAttemptsUseCase
     }
 
     /**
-     * Normalize a field that should be stored as a JSON string in the database.
-     * Handles arrays, objects, already-encoded JSON strings, and plain strings.
+     * Normalize a scalar field for storage in a varchar(20) column.
+     * Converts booleans to '0'/'1', numeric values to string, arrays to empty string.
      *
-     * @param array|string|int|float|bool|null $value Raw value from the JSON payload
-     * @return string Normalized string value (JSON-encoded if needed)
+     * @param mixed $value Raw value from the JSON payload
+     * @return string Normalized string value, max 20 chars
      */
-    private function normalizeJsonField($value): string
+    private function normalizeScalarField(mixed $value): string
     {
         if ($value === null) {
             return '';
         }
-
-        // Arrays / objects are re-encoded to JSON string
-        if (!is_string($value)) {
-            return (string) json_encode($value, JSON_UNESCAPED_UNICODE);
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
         }
-
-        $value = trim($value);
-        if ($value === '') {
+        if (is_array($value) || is_object($value)) {
+            // Tableau/objet : prendre la première valeur scalaire ou vide
             return '';
         }
-
-        // If the string looks like a JSON object or array and is valid JSON, keep as-is
-        if (
-            (str_starts_with($value, '{') && str_ends_with($value, '}')) ||
-            (str_starts_with($value, '[') && str_ends_with($value, ']'))
-        ) {
-            json_decode($value);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                return $value;
-            }
-        }
-
-        return $value;
+        return mb_substr((string) $value, 0, 20);
     }
 }

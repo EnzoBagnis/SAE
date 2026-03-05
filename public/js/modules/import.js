@@ -127,10 +127,15 @@ async function importAttempts() {
                 throw new Error(result?.error || `Erreur serveur ${response.status}`);
             }
 
-            totalAdded += (result?.added_count || chunk.length);
+            totalAdded += (result?.added_count ?? result?.inserted ?? 0);
+
+            // Afficher les erreurs partielles s'il y en a
+            if (result?.errors && result.errors.length > 0) {
+                console.warn(`Erreurs sur ce paquet (${result.errors.length}) :`, result.errors);
+            }
         }
 
-        showImportStatus(`✓ Import réussi ! ${totalAdded} lignes traitées.`, 'success');
+        showImportStatus(`✓ Import réussi ! ${totalAdded} tentative(s) insérée(s).`, 'success');
         setTimeout(() => window.location.reload(), 2000);
 
     } catch (error) {

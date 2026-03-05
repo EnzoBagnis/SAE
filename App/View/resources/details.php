@@ -288,9 +288,9 @@ $title = 'StudTraj - ' . $resTitle;
 <!-- Footer -->
 <footer class="main-footer">
     <div class="footer-content">
-        <p>&copy; 2024 StudTraj - Tous droits réservés</p>
+        <p>&copy; <?= date('Y') ?> StudTraj - Tous droits réservés</p>
         <ul class="footer-links">
-            <li><a href="<?= BASE_URL ?>/index.php?action=mentions">Mentions légales</a></li>
+            <li><a href="<?= BASE_URL ?>/mentions-legales">Mentions légales</a></li>
         </ul>
     </div>
 </footer>

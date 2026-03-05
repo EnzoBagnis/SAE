@@ -48,19 +48,19 @@ class ImportExercisesUseCase
         foreach ($exercises as $index => $item) {
             try {
                 // Normalize the exercise name from various possible keys
-                $exerciceName = trim(
+                $exerciceName = mb_substr(trim(
                     $item['exercice_name']
                     ?? $item['name']
                     ?? $item['title']
                     ?? $item['exo_name']
                     ?? ''
-                );
+                ), 0, 20);
 
                 if ($exerciceName === '') {
                     throw new \InvalidArgumentException("Nom de l'exercice manquant");
                 }
 
-                $extention = $item['extention'] ?? $item['extension'] ?? 'py';
+                $extention = mb_substr($item['extention'] ?? $item['extension'] ?? 'py', 0, 20);
                 $date      = $item['date'] ?? date('Y-m-d');
 
                 // Validate date format

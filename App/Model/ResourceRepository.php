@@ -129,10 +129,10 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
             VALUES (:mail, :ressource_name, :ressource_description, :image_path)
         ");
         $stmt->execute([
-            'mail'           => $resource->getOwnerMail(),
-            'ressource_name'       => $resource->getResourceName(),
+            'mail'                  => $resource->getOwnerMail(),
+            'ressource_name'        => mb_substr($resource->getResourceName(), 0, 20),
             'ressource_description' => $resource->getDescription() ?? '',
-            'image_path'           => $resource->getImagePath() ?? '',
+            'image_path'            => $resource->getImagePath() ?? '',
         ]);
         $resource->setResourceId((int) $this->pdo->lastInsertId());
         return $resource;
@@ -154,10 +154,10 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
             WHERE ressource_id = :ressource_id
         ");
         $stmt->execute([
-            'ressource_id'         => $resource->getResourceId(),
-            'ressource_name'       => $resource->getResourceName(),
+            'ressource_id'          => $resource->getResourceId(),
+            'ressource_name'        => mb_substr($resource->getResourceName(), 0, 20),
             'ressource_description' => $resource->getDescription() ?? '',
-            'image_path'           => $resource->getImagePath() ?? '',
+            'image_path'            => $resource->getImagePath() ?? '',
         ]);
         return $resource;
     }
