@@ -53,7 +53,7 @@ class AttemptRepository extends AbstractRepository
     public function findByUser(string $user): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM attempts WHERE user = :user ORDER BY attempt_id DESC"
+            "SELECT * FROM attempts WHERE `user` = :user ORDER BY attempt_id DESC"
         );
         $stmt->execute(['user' => $user]);
         return array_map(fn($row) => $this->hydrate($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
@@ -69,7 +69,7 @@ class AttemptRepository extends AbstractRepository
     public function bulkInsert(array $rows): array
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO attempts (exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2)
+            "INSERT INTO attempts (exercice_id, `user`, correct, eval_set, upload, aes0, aes1, aes2)
              VALUES (:exercice_id, :user, :correct, :eval_set, :upload, :aes0, :aes1, :aes2)"
         );
 
@@ -113,7 +113,7 @@ class AttemptRepository extends AbstractRepository
     public function save(Attempt $attempt): Attempt
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO attempts (exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2)
+            "INSERT INTO attempts (exercice_id, `user`, correct, eval_set, upload, aes0, aes1, aes2)
              VALUES (:exercice_id, :user, :correct, :eval_set, :upload, :aes0, :aes1, :aes2)"
         );
         $stmt->execute([
