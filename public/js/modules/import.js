@@ -8,8 +8,12 @@ let currentAttemptsData = null;
 function openImportModal(resourceId = null) {
     const modal = document.getElementById('importModal');
     if (modal) {
-        if (resourceId) modal.dataset.resourceId = resourceId;
-        else delete modal.dataset.resourceId;
+        // Ne stocker que si c'est un vrai ID (pas null/undefined/0)
+        if (resourceId && resourceId !== 'null' && parseInt(resourceId) > 0) {
+            modal.dataset.resourceId = parseInt(resourceId);
+        } else {
+            delete modal.dataset.resourceId;
+        }
         modal.style.display = 'block';
         switchImportTab('exercises');
     }
@@ -80,7 +84,9 @@ async function importAttempts() {
     }
 
     const modal = document.getElementById('importModal');
-    let resourceId = modal?.dataset.resourceId || new URLSearchParams(window.location.search).get('id');
+    let resourceId = modal?.dataset.resourceId || new URLSearchParams(window.location.search).get('id') || window.RESOURCE_ID;
+    // S'assurer que resourceId est un entier valide
+    resourceId = (resourceId && resourceId !== 'null' && parseInt(resourceId) > 0) ? parseInt(resourceId) : null;
 
     // CONFIGURATION : On envoie par paquets de 50 pour être sûr que Alwaysdata accepte
     const CHUNK_SIZE = 50;
@@ -145,14 +151,27 @@ async function importExercises() {
 
     let list = Array.isArray(currentExercisesData) ? currentExercisesData : (currentExercisesData.exercises || []);
     const modal = document.getElementById('importModal');
-    const resourceId = modal?.dataset.resourceId;
+    const rawResourceId = modal?.dataset.resourceId || new URLSearchParams(window.location.search).get('resource_id') || window.RESOURCE_ID;
+    const resourceId = (rawResourceId && rawResourceId !== 'null' && parseInt(rawResourceId) > 0) ? parseInt(rawResourceId) : null;
+
+    if (!resourceId) {
+        showImportStatus('Erreur : aucun identifiant de ressource trouvé. Rechargez la page.', 'error');
+        return;
+    }
 
     const CHUNK_SIZE = 50;
     showImportStatus(`Importation des exercices...`, 'warning');
 
     try {
+        let totalInserted = 0;
+        let totalUpdated  = 0;
+
         for (let i = 0; i < list.length; i += CHUNK_SIZE) {
             const chunk = list.slice(i, i + CHUNK_SIZE);
+            const progress = Math.min(i + CHUNK_SIZE, list.length);
+
+            showImportStatus(`Import : ${progress} / ${list.length} <span class="loading-spinner"></span>`, 'warning');
+
             const payload = {
                 exercises: chunk.map(ex => ({ ...ex, resource_id: resourceId || ex.resource_id }))
             };
@@ -163,11 +182,30 @@ async function importExercises() {
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error("Erreur lors de l'envoi d'un paquet d'exercices.");
+            // Lire le corps de la réponse pour obtenir le vrai message d'erreur
+            const text = await response.text();
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                console.error('Réponse serveur (non-JSON) :', text);
+                throw new Error(`Le serveur a renvoyé une réponse invalide. Voir la console pour les détails.`);
+            }
+
+            if (!response.ok) {
+                const errMsg = result?.error || result?.message || `Erreur serveur ${response.status}`;
+                console.error('Erreur import exercices :', result);
+                throw new Error(errMsg);
+            }
+
+            totalInserted += (result?.inserted || 0);
+            totalUpdated  += (result?.updated  || 0);
         }
-        showImportStatus(`✓ Import terminé avec succès !`, 'success');
+
+        showImportStatus(`✓ Import terminé ! ${totalInserted} ajouté(s), ${totalUpdated} mis à jour.`, 'success');
         setTimeout(() => window.location.reload(), 2000);
     } catch (error) {
+        console.error('Erreur import exercices :', error);
         showImportStatus(`Erreur : ${error.message}`, 'error');
     }
 }

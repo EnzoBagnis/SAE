@@ -41,6 +41,7 @@ class ImportController extends AbstractController
     public function exercises(): void
     {
         ob_start();
+        header('Content-Type: application/json; charset=utf-8');
 
         set_time_limit(300);
         ini_set('memory_limit', '512M');
@@ -149,6 +150,7 @@ class ImportController extends AbstractController
     public function attempts(): void
     {
         ob_start();
+        header('Content-Type: application/json; charset=utf-8');
 
         set_time_limit(300);
         ini_set('memory_limit', '512M');
