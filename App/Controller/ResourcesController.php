@@ -127,10 +127,10 @@ class ResourcesController extends AbstractController
         try {
             $this->getRepository()->save($resource);
 
-            // Sync sharing list
+            // Sync sharing list (preserve owner)
             $sharedMails = $_POST['shared_teachers'] ?? [];
             if (!empty($sharedMails) && is_array($sharedMails)) {
-                $this->getRepository()->syncSharing($resource->getResourceId(), $sharedMails);
+                $this->getRepository()->syncSharing($resource->getResourceId(), $sharedMails, $email);
             }
         } catch (\Throwable $e) {
             error_log('[ResourcesController::store] ' . $e->getMessage());
@@ -213,7 +213,7 @@ class ResourcesController extends AbstractController
             return;
         }
 
-        if ($resource->getOwnerMail() !== $email) {
+        if (!$this->getRepository()->isOwner($resourceId, $email)) {
             $this->redirect('/resources?error=Action+non+autorisée.');
             return;
         }
@@ -237,9 +237,9 @@ class ResourcesController extends AbstractController
         try {
             $this->getRepository()->save($resource);
 
-            // Sync sharing list
+            // Sync sharing list (preserve owner access)
             $sharedMails = $_POST['shared_teachers'] ?? [];
-            $this->getRepository()->syncSharing($resourceId, is_array($sharedMails) ? $sharedMails : []);
+            $this->getRepository()->syncSharing($resourceId, is_array($sharedMails) ? $sharedMails : [], $email);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::update] save: ' . $e->getMessage());
             $this->redirect('/resources?error=' . urlencode('Erreur lors de la mise à jour : ' . $e->getMessage()));
@@ -277,7 +277,7 @@ class ResourcesController extends AbstractController
             return;
         }
 
-        if ($resource->getOwnerMail() !== $email) {
+        if (!$this->getRepository()->isOwner($resourceId, $email)) {
             $this->redirect('/resources?error=Action+non+autorisée.');
             return;
         }
@@ -285,7 +285,6 @@ class ResourcesController extends AbstractController
         try {
             $this->getRepository()->delete($resourceId);
         } catch (\Throwable $e) {
-            // Suppression échouée silencieusement — on redirige quand même
             error_log('[ResourcesController::delete] ' . $e->getMessage());
         }
 
