@@ -129,8 +129,9 @@ class UserRepository extends AbstractRepository
             'password'          => $user->getPasswordHash(),
             'code_verif'        => $user->getVerificationCode(),
             'account_status'    => $user->getAccountStatus(),
-            'reset_token'       => $user->getResetToken(),
-            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d H:i:s') : null,
+            'reset_token'       => $user->getResetToken() ?? '',
+            // reset_expiration is DATE NOT NULL — use '0000-00-00' as empty placeholder
+            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d') : '0000-00-00',
         ]);
 
         return $user;
@@ -164,8 +165,8 @@ class UserRepository extends AbstractRepository
             'password'          => $user->getPasswordHash(),
             'code_verif'        => $user->getVerificationCode(),
             'account_status'    => $user->getAccountStatus(),
-            'reset_token'       => $user->getResetToken(),
-            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d H:i:s') : null,
+            'reset_token'       => $user->getResetToken() ?? '',
+            'reset_expiration'  => $resetTokenExpiration ? $resetTokenExpiration->format('Y-m-d') : null,
         ]);
 
         return $user;

@@ -127,10 +127,10 @@ class ResourcesController extends AbstractController
         try {
             $this->getRepository()->save($resource);
 
-            // Sync sharing list (preserve owner)
+            // Sync sharing list
             $sharedMails = $_POST['shared_teachers'] ?? [];
             if (!empty($sharedMails) && is_array($sharedMails)) {
-                $this->getRepository()->syncSharing($resource->getResourceId(), $sharedMails, $email);
+                $this->getRepository()->syncSharing($resource->getResourceId(), $sharedMails);
             }
         } catch (\Throwable $e) {
             error_log('[ResourcesController::store] ' . $e->getMessage());
@@ -237,9 +237,9 @@ class ResourcesController extends AbstractController
         try {
             $this->getRepository()->save($resource);
 
-            // Sync sharing list (preserve owner access)
+            // Sync sharing list
             $sharedMails = $_POST['shared_teachers'] ?? [];
-            $this->getRepository()->syncSharing($resourceId, is_array($sharedMails) ? $sharedMails : [], $email);
+            $this->getRepository()->syncSharing($resourceId, is_array($sharedMails) ? $sharedMails : []);
         } catch (\Throwable $e) {
             error_log('[ResourcesController::update] save: ' . $e->getMessage());
             $this->redirect('/resources?error=' . urlencode('Erreur lors de la mise à jour : ' . $e->getMessage()));
