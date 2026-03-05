@@ -2,28 +2,30 @@
 
 namespace App\Model\UseCase;
 
-use App\Model\UserRepository;
+use App\Model\UseCase\Ports\UserRegistrationPort;
 use App\Model\Entity\User;
 use App\Model\EmailService;
 
 /**
- * Register User Use Case
- * Handles user registration process.
+ * Register User Use Case.
+ *
  * Inserts directly into the `teachers` table with account_status=0 (pending approval).
+ * Depends on {@see UserRegistrationPort} for persistence, following the
+ * Dependency Inversion Principle.
  */
 class RegisterUserUseCase
 {
-    private UserRepository $userRepository;
+    private UserRegistrationPort $userRepository;
     private EmailService $emailService;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param UserRepository $userRepository User repository
-     * @param EmailService $emailService Email service
+     * @param UserRegistrationPort $userRepository Port for user persistence operations.
+     * @param EmailService         $emailService   Email service for verification emails.
      */
     public function __construct(
-        UserRepository $userRepository,
+        UserRegistrationPort $userRepository,
         EmailService $emailService
     ) {
         $this->userRepository = $userRepository;
@@ -47,10 +49,10 @@ class RegisterUserUseCase
             ];
         }
 
-        if (empty($data['password']) || strlen($data['password']) < 8) {
+        if (empty($data['password']) || !$this->isPasswordValid($data['password'])) {
             return [
                 'success' => false,
-                'message' => 'Le mot de passe doit contenir au moins 8 caractères',
+                'message' => 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule et un caractère spécial',
             ];
         }
 
@@ -109,5 +111,41 @@ class RegisterUserUseCase
             'success' => true,
             'message' => 'Inscription réussie. Veuillez vérifier votre email.',
         ];
+    }
+
+    /**
+     * Validate password strength.
+     *
+     * A valid password must:
+     * - Be at least 12 characters long
+     * - Contain at least one uppercase letter
+     * - Contain at least one lowercase letter
+     * - Contain at least one special character
+     *
+     * @param string $password Password to validate.
+     * @return bool True if the password meets all requirements.
+     */
+    private function isPasswordValid(string $password): bool
+    {
+        if (strlen($password) < 12) {
+            return false;
+        }
+
+        // At least one uppercase letter
+        if (!preg_match('/[A-Z]/', $password)) {
+            return false;
+        }
+
+        // At least one lowercase letter
+        if (!preg_match('/[a-z]/', $password)) {
+            return false;
+        }
+
+        // At least one special character
+        if (!preg_match('/[\W_]/', $password)) {
+            return false;
+        }
+
+        return true;
     }
 }

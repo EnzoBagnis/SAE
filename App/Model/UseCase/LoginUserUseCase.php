@@ -2,29 +2,32 @@
 
 namespace App\Model\UseCase;
 
-use App\Model\UserRepository;
+use App\Model\UseCase\Ports\UserAuthFinderPort;
 use App\Model\AuthenticationService;
 
 /**
- * Login User Use Case
- * Handles user authentication
+ * Login User Use Case.
+ *
+ * Handles user authentication by looking up the user via
+ * a {@see UserAuthFinderPort} abstraction and delegating
+ * session creation to the AuthenticationService.
  */
 class LoginUserUseCase
 {
-    private UserRepository $userRepository;
+    private UserAuthFinderPort $userFinder;
     private AuthenticationService $authService;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param UserRepository $userRepository User repository
-     * @param AuthenticationService $authService Authentication service
+     * @param UserAuthFinderPort    $userFinder  Port for finding users by email.
+     * @param AuthenticationService $authService Authentication service.
      */
     public function __construct(
-        UserRepository $userRepository,
+        UserAuthFinderPort $userFinder,
         AuthenticationService $authService
     ) {
-        $this->userRepository = $userRepository;
+        $this->userFinder = $userFinder;
         $this->authService = $authService;
     }
 
@@ -45,7 +48,7 @@ class LoginUserUseCase
         }
 
         // Find user by email
-        $user = $this->userRepository->findByEmail($data['email']);
+        $user = $this->userFinder->findByEmail($data['email']);
 
         if (!$user) {
             return [

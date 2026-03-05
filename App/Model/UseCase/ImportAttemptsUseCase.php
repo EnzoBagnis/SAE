@@ -2,15 +2,18 @@
 
 namespace App\Model\UseCase;
 
-use App\Model\AttemptRepository;
-use App\Model\ExerciseRepository;
+use App\Model\UseCase\Ports\AttemptBulkInserterPort;
+use App\Model\UseCase\Ports\ExerciseLookupPort;
 
 /**
- * ImportAttemptsUseCase
- * Handles the business logic for importing student attempts from a JSON payload
- * into the `attempts` table.
+ * ImportAttemptsUseCase.
  *
- * Expected JSON structure per attempt:
+ * Handles the import of attempts into the `attempts` table.
+ * Depends on {@see AttemptBulkInserterPort} for persistence and
+ * {@see ExerciseLookupPort} for exercise resolution,
+ * following the Dependency Inversion Principle.
+ *
+ * Expected attempt data format:
  * {
  *   "exercice_id":   1,          // or "exercice_name" / "exercise_name" / "name"
  *   "user":          "etudiant1",
@@ -24,16 +27,18 @@ use App\Model\ExerciseRepository;
  */
 class ImportAttemptsUseCase
 {
-    private AttemptRepository $attemptRepository;
-    private ExerciseRepository $exerciseRepository;
+    private AttemptBulkInserterPort $attemptRepository;
+    private ExerciseLookupPort $exerciseRepository;
 
     /**
-     * @param AttemptRepository  $attemptRepository  Attempt repository
-     * @param ExerciseRepository $exerciseRepository Exercise repository (for name-based lookup)
+     * Constructor.
+     *
+     * @param AttemptBulkInserterPort $attemptRepository  Port for bulk-inserting attempts.
+     * @param ExerciseLookupPort      $exerciseRepository Port for exercise name-based lookup.
      */
     public function __construct(
-        AttemptRepository $attemptRepository,
-        ExerciseRepository $exerciseRepository
+        AttemptBulkInserterPort $attemptRepository,
+        ExerciseLookupPort $exerciseRepository
     ) {
         $this->attemptRepository  = $attemptRepository;
         $this->exerciseRepository = $exerciseRepository;
@@ -164,4 +169,3 @@ class ImportAttemptsUseCase
         return $value;
     }
 }
-

@@ -4,12 +4,18 @@ namespace App\Model;
 
 use Core\Model\AbstractRepository;
 use App\Model\Entity\User;
+use App\Model\UseCase\Ports\UserAuthFinderPort;
+use App\Model\UseCase\Ports\UserRegistrationPort;
 
 /**
- * User Repository
- * Handles user data persistence
+ * User Repository.
+ *
+ * Concrete infrastructure implementation for user data persistence.
+ * Implements {@see UserAuthFinderPort} (consumed by LoginUserUseCase) and
+ * {@see UserRegistrationPort} (consumed by RegisterUserUseCase) so that
+ * the dependency direction follows the Dependency Inversion Principle.
  */
-class UserRepository extends AbstractRepository
+class UserRepository extends AbstractRepository implements UserAuthFinderPort, UserRegistrationPort
 {
     /**
      * {@inheritdoc}
@@ -28,7 +34,7 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Find user by email
+     * Find user by email.
      *
      * @param string $email User email
      * @return User|null User entity or null
@@ -43,7 +49,7 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Find user by reset token
+     * Find user by reset token.
      *
      * @param string $token Reset token
      * @return User|null User entity or null
@@ -58,7 +64,7 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Check if email exists
+     * Check if email exists.
      *
      * @param string $email User email
      * @return bool True if email exists
@@ -71,9 +77,11 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Find all users
+     * Find all users.
      *
-     * @return array Array of User entities
+     * @param int|null $limit  Maximum number of users to return
+     * @param int      $offset Offset for pagination
+     * @return User[] Array of User entities
      */
     public function findAll(?int $limit = null, int $offset = 0): array
     {
@@ -90,7 +98,7 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Save user (insert or update)
+     * Save user (insert or update).
      *
      * @param User $user User entity
      * @return User Saved user
@@ -106,7 +114,7 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Insert new user
+     * Insert new user.
      *
      * @param User $user User entity
      * @return User Inserted user
@@ -114,11 +122,11 @@ class UserRepository extends AbstractRepository
     private function insert(User $user): User
     {
         $stmt = $this->pdo->prepare("
-        INSERT INTO teachers 
-        (mail, name, surname, password, code_verif, account_status, reset_token, reset_expiration)
-        VALUES 
-        (:mail, :name, :surname, :password, :code_verif, :account_status, :reset_token, :reset_expiration)
-    ");
+            INSERT INTO teachers 
+            (mail, name, surname, password, code_verif, account_status, reset_token, reset_expiration)
+            VALUES 
+            (:mail, :name, :surname, :password, :code_verif, :account_status, :reset_token, :reset_expiration)
+        ");
 
         $resetTokenExpiration = $user->getResetTokenExpiration();
 
@@ -137,7 +145,7 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Update existing user
+     * Update existing user.
      *
      * @param User $user User entity
      * @return User Updated user
@@ -185,7 +193,7 @@ class UserRepository extends AbstractRepository
     }
 
     /**
-     * Hydrate user from database row
+     * Hydrate user from database row.
      *
      * @param array $data Database row data
      * @return User User entity

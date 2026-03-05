@@ -133,10 +133,10 @@ class ForgotPasswordController extends AbstractController
             return;
         }
 
-        if (strlen($newPassword) < 6) {
+        if (!$this->isPasswordValid($newPassword)) {
             $this->renderView('auth/reset-password', [
                 'token'         => $token,
-                'error_message' => 'Le mot de passe doit contenir au moins 6 caractères.',
+                'error_message' => 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule et un caractère spécial.',
             ]);
             return;
         }
@@ -147,5 +147,38 @@ class ForgotPasswordController extends AbstractController
         $this->renderView('auth/login', [
             'success_message' => 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez vous connecter.',
         ]);
+    }
+
+    /**
+     * Validate password strength.
+     *
+     * A valid password must:
+     * - Be at least 12 characters long
+     * - Contain at least one uppercase letter
+     * - Contain at least one lowercase letter
+     * - Contain at least one special character
+     *
+     * @param string $password Password to validate.
+     * @return bool True if the password meets all requirements.
+     */
+    private function isPasswordValid(string $password): bool
+    {
+        if (strlen($password) < 12) {
+            return false;
+        }
+
+        if (!preg_match('/[A-Z]/', $password)) {
+            return false;
+        }
+
+        if (!preg_match('/[a-z]/', $password)) {
+            return false;
+        }
+
+        if (!preg_match('/[\W_]/', $password)) {
+            return false;
+        }
+
+        return true;
     }
 }

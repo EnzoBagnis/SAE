@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8">
@@ -30,7 +30,8 @@
             <input type="password"
                    name="nouveau_mdp"
                    id="password"
-                   placeholder="Minimum 6 caractères"
+                   placeholder="Minimum 12 caractères"
+                   minlength="12"
                    required>
             <button type="button" class="password-toggle" onclick="togglePassword('password')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -40,6 +41,12 @@
                 </svg>
             </button>
         </div>
+        <ul id="password-rules" style="font-size:0.85em; margin:4px 0 8px 0; padding-left:1.2em; list-style:none;">
+            <li id="rule-length"  style="color:#c0392b;">✗ Au moins 12 caractères</li>
+            <li id="rule-upper"   style="color:#c0392b;">✗ Au moins une lettre majuscule</li>
+            <li id="rule-lower"   style="color:#c0392b;">✗ Au moins une lettre minuscule</li>
+            <li id="rule-special" style="color:#c0392b;">✗ Au moins un caractère spécial</li>
+        </ul>
 
         <label for="confirm_password">Confirmer le mot de passe</label>
         <div class="password-container">
@@ -71,14 +78,25 @@
 
 <script>
     const passwordInput = document.getElementById('password');
-    const confirmInput = document.getElementById('confirm_password');
-    const submitBtn = document.getElementById('submitBtn');
-    const errorMsg = document.getElementById('error_message');
+    const confirmInput  = document.getElementById('confirm_password');
+    const submitBtn     = document.getElementById('submitBtn');
+    const errorMsg      = document.getElementById('error_message');
 
+    const passwordRules = {
+        'rule-length':  (v) => v.length >= 12,
+        'rule-upper':   (v) => /[A-Z]/.test(v),
+        'rule-lower':   (v) => /[a-z]/.test(v),
+        'rule-special': (v) => /[\W_]/.test(v),
+    };
+
+    /**
+     * Toggle password visibility.
+     * @param {string} inputId - The ID of the password input to toggle.
+     */
     function togglePassword(inputId) {
-        const input = document.getElementById(inputId);
+        const input  = document.getElementById(inputId);
         const button = input.nextElementSibling;
-        const icon = button.querySelector('svg');
+        const icon   = button.querySelector('svg');
 
         if (input.type === "password") {
             input.type = "text";
@@ -94,24 +112,44 @@
         }
     }
 
+    /**
+     * Validate password rules and match, then update UI and submit button state.
+     */
     function validateForm() {
         const password = passwordInput.value;
-        const confirm = confirmInput.value;
+        const confirm  = confirmInput.value;
 
-        if(password === '' || confirm === '') {
+        // Check individual rules
+        let rulesValid = true;
+        for (const [id, check] of Object.entries(passwordRules)) {
+            const li = document.getElementById(id);
+            const ok = check(password);
+            li.style.color = ok ? '#27ae60' : '#c0392b';
+            li.textContent  = (ok ? '✓' : '✗') + ' ' + li.textContent.slice(2);
+            if (!ok) rulesValid = false;
+        }
+
+        if (password === '' && confirm === '') {
             submitBtn.disabled = true;
             errorMsg.style.display = 'none';
             return;
         }
 
-        if(password !== confirm) {
+        if (!rulesValid) {
             submitBtn.disabled = true;
-            errorMsg.textContent = 'Les mots de passe ne correspondent pas.';
+            errorMsg.textContent  = 'Le mot de passe ne respecte pas les exigences de sécurité.';
             errorMsg.style.display = 'block';
             return;
         }
 
-        submitBtn.disabled = false;
+        if (password !== confirm) {
+            submitBtn.disabled = true;
+            errorMsg.textContent  = 'Les mots de passe ne correspondent pas.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        submitBtn.disabled    = false;
         errorMsg.style.display = 'none';
     }
 

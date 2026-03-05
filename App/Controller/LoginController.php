@@ -9,8 +9,10 @@ use App\Model\AuthenticationService;
 use Core\Service\SessionService;
 
 /**
- * Login Controller
- * Handles user login
+ * Login Controller.
+ *
+ * Handles user login. Wires the LoginUserUseCase with a concrete
+ * UserRepository (which implements UserAuthFinderPort).
  */
 class LoginController extends AbstractController
 {

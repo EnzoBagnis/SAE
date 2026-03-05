@@ -4,15 +4,23 @@ namespace App\Model;
 
 use Core\Model\AbstractRepository;
 use App\Model\Entity\Exercise;
+use App\Model\UseCase\Ports\ExerciseImporterPort;
+use App\Model\UseCase\Ports\ExerciseLookupPort;
+use App\Model\UseCase\Ports\ExerciseListReaderPort;
 
 /**
- * Exercise Repository
- * Handles exercise data persistence against the `exercices` table.
+ * Exercise Repository.
  *
- * Schema: exercice_id (PK), ressource_id, exercice_name, extention, date
- * Attempts: attempts (attempt_id, exercice_id, user, correct, ...)
+ * Concrete infrastructure implementation for exercise data persistence.
+ * Implements {@see ExerciseImporterPort} (consumed by ImportExercisesUseCase),
+ * {@see ExerciseLookupPort} (consumed by ImportAttemptsUseCase), and
+ * {@see ExerciseListReaderPort} (consumed by ListExercisesUseCase) so that
+ * the dependency direction follows the Dependency Inversion Principle.
  */
-class ExerciseRepository extends AbstractRepository
+class ExerciseRepository extends AbstractRepository implements
+    ExerciseImporterPort,
+    ExerciseLookupPort,
+    ExerciseListReaderPort
 {
     /**
      * {@inheritdoc}
@@ -103,9 +111,6 @@ class ExerciseRepository extends AbstractRepository
      */
     public function findByResourceIdWithStats(int $resourceId): array
     {
-        // GROUP BY on exercice_id (PK) only — exercice_name and extention are TEXT columns
-        // which cannot be used in GROUP BY on MariaDB. The PK functionally determines all other columns.
-        // JOIN corrections to get readable funcname instead of raw hash stored in exercice_name.
         $query = "SELECT e.exercice_id,
                          e.ressource_id,
                          e.exercice_name,
@@ -131,7 +136,6 @@ class ExerciseRepository extends AbstractRepository
             $row['success_rate']        = $row['total_attempts'] > 0
                 ? round(($row['successful_attempts'] / $row['total_attempts']) * 100, 1)
                 : null;
-            // Use readable funcname if available, fallback to raw hash
             $row['display_name'] = $row['display_name'] ?? $row['exercice_name'];
         }
 

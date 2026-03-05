@@ -2,14 +2,16 @@
 
 namespace App\Model\UseCase;
 
-use App\Model\ExerciseRepository;
+use App\Model\UseCase\Ports\ExerciseImporterPort;
 
 /**
- * ImportExercisesUseCase
- * Handles the business logic for importing exercises from a JSON payload
- * into the `exercices` table.
+ * ImportExercisesUseCase.
  *
- * Expected JSON structure per exercise:
+ * Handles the import of exercises into the `exercices` table.
+ * Depends on {@see ExerciseImporterPort} for persistence,
+ * following the Dependency Inversion Principle.
+ *
+ * Expected exercise data format:
  * {
  *   "exercice_name": "...",    // or "name" / "title"
  *   "extention":     "py",     // optional, defaults to "py"
@@ -18,12 +20,14 @@ use App\Model\ExerciseRepository;
  */
 class ImportExercisesUseCase
 {
-    private ExerciseRepository $exerciseRepository;
+    private ExerciseImporterPort $exerciseRepository;
 
     /**
-     * @param ExerciseRepository $exerciseRepository Exercise repository
+     * Constructor.
+     *
+     * @param ExerciseImporterPort $exerciseRepository Port for exercise import persistence.
      */
-    public function __construct(ExerciseRepository $exerciseRepository)
+    public function __construct(ExerciseImporterPort $exerciseRepository)
     {
         $this->exerciseRepository = $exerciseRepository;
     }
@@ -93,4 +97,3 @@ class ImportExercisesUseCase
         ];
     }
 }
-

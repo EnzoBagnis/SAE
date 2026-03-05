@@ -2,22 +2,25 @@
 
 namespace App\Model\UseCase;
 
-use App\Model\ExerciseRepository;
+use App\Model\UseCase\Ports\ExerciseListReaderPort;
 
 /**
- * List Exercises Use Case
- * Handles listing exercises for a resource
+ * List Exercises Use Case.
+ *
+ * Handles listing exercises for a resource. Depends on
+ * {@see ExerciseListReaderPort} for read access, following the
+ * Dependency Inversion Principle.
  */
 class ListExercisesUseCase
 {
-    private ExerciseRepository $exerciseRepository;
+    private ExerciseListReaderPort $exerciseRepository;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param ExerciseRepository $exerciseRepository Exercise repository
+     * @param ExerciseListReaderPort $exerciseRepository Port for reading exercises.
      */
-    public function __construct(ExerciseRepository $exerciseRepository)
+    public function __construct(ExerciseListReaderPort $exerciseRepository)
     {
         $this->exerciseRepository = $exerciseRepository;
     }
@@ -53,4 +56,3 @@ class ListExercisesUseCase
         }
     }
 }
-

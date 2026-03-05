@@ -4,14 +4,16 @@ namespace App\Model;
 
 use Core\Model\AbstractRepository;
 use App\Model\Entity\Attempt;
+use App\Model\UseCase\Ports\AttemptBulkInserterPort;
 
 /**
- * Attempt Repository
- * Handles attempt data persistence against the `attempts` table.
+ * Attempt Repository.
  *
- * Schema: attempt_id (PK), exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2
+ * Concrete infrastructure implementation for attempt data persistence.
+ * Implements {@see AttemptBulkInserterPort} (consumed by ImportAttemptsUseCase)
+ * so that the dependency direction follows the Dependency Inversion Principle.
  */
-class AttemptRepository extends AbstractRepository
+class AttemptRepository extends AbstractRepository implements AttemptBulkInserterPort
 {
     /**
      * {@inheritdoc}

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
@@ -52,7 +52,8 @@
         <label for="password">Mot de passe</label>
         <div class="password-container">
             <input type="password" id="password" name="password"
-                   placeholder="Entrez votre mot de passe..." required>
+                   placeholder="Entrez votre mot de passe..." required
+                   minlength="12">
             <button type="button" class="password-toggle" onclick="togglePassword('password')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -60,9 +61,18 @@
                     <circle cx="12" cy="12" r="3"></circle>
                 </svg>
             </button>
-        </div><br>
+        </div>
+        <ul id="password-rules" style="font-size:0.85em; margin:4px 0 8px 0; padding-left:1.2em; list-style:none;">
+            <li id="rule-length"  style="color:#c0392b;">✗ Au moins 12 caractères</li>
+            <li id="rule-upper"   style="color:#c0392b;">✗ Au moins une lettre majuscule</li>
+            <li id="rule-lower"   style="color:#c0392b;">✗ Au moins une lettre minuscule</li>
+            <li id="rule-special" style="color:#c0392b;">✗ Au moins un caractère spécial</li>
+        </ul>
+        <p id="password-error" style="color:#c0392b; font-size:0.85em; display:none;">
+            Le mot de passe ne respecte pas les exigences.
+        </p><br>
 
-        <button type="submit" class="btn-submit">S'inscrire</button>
+        <button type="submit" class="btn-submit" id="submit-btn">S'inscrire</button>
 
         <div class="text-center mt-2">
             <a href="<?= BASE_URL ?>/auth/login">Déjà un compte ? Se connecter</a>
@@ -72,6 +82,10 @@
 </div>
 
 <script>
+    /**
+     * Toggle password visibility.
+     * @param {string} inputId - The ID of the password input to toggle.
+     */
     function togglePassword(inputId) {
         const input = document.getElementById(inputId);
         const button = input.nextElementSibling;
@@ -90,6 +104,48 @@
                 '<circle cx="12" cy="12" r="3"></circle>';
         }
     }
+
+    (function () {
+        const passwordInput = document.getElementById('password');
+        const submitBtn     = document.getElementById('submit-btn');
+        const errorMsg      = document.getElementById('password-error');
+
+        const rules = {
+            'rule-length':  (v) => v.length >= 12,
+            'rule-upper':   (v) => /[A-Z]/.test(v),
+            'rule-lower':   (v) => /[a-z]/.test(v),
+            'rule-special': (v) => /[\W_]/.test(v),
+        };
+
+        /**
+         * Validate password against all rules and update UI accordingly.
+         */
+        function validatePassword() {
+            const value = passwordInput.value;
+            let allValid = true;
+
+            for (const [id, check] of Object.entries(rules)) {
+                const li = document.getElementById(id);
+                const ok = check(value);
+                li.style.color = ok ? '#27ae60' : '#c0392b';
+                li.textContent  = (ok ? '✓' : '✗') + ' ' + li.textContent.slice(2);
+                if (!ok) allValid = false;
+            }
+
+            if (value.length > 0 && !allValid) {
+                errorMsg.style.display = 'block';
+            } else {
+                errorMsg.style.display = 'none';
+            }
+
+            submitBtn.disabled = !allValid;
+        }
+
+        passwordInput.addEventListener('input', validatePassword);
+
+        // Run once to initialise button state
+        validatePassword();
+    })();
 </script>
 </body>
 </html>
