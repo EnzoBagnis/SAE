@@ -9,8 +9,8 @@ use App\Model\Entity\Resource;
  * Resource Repository
  * Handles resource data persistence against the `ressources` table.
  *
- * Schema: ressource_id, owner_mail, ressource_name, ressource_description, image_path
- * Access: ressources_access (ressource_id, teacher_mail)
+ * Schema: ressource_id, mail, ressource_name, ressource_description, image_path
+ * Access: ressources_access (ressource_id, mail)
  * Owner info: joined from teachers (name=firstname, surname=lastname)
  */
 class ResourceRepository extends AbstractRepository implements ResourceRepositoryInterface
@@ -42,7 +42,7 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
         $stmt = $this->pdo->prepare(
             "SELECT r.*,
                     'owner' AS access_type,
-                    GROUP_CONCAT(ra.teacher_mail) AS shared_mails
+                    GROUP_CONCAT(ra.mail) AS shared_mails
              FROM ressources r
              LEFT JOIN ressources_access ra ON r.ressource_id = ra.ressource_id
              WHERE r.mail = :mail
@@ -222,7 +222,7 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
     {
         $stmt = $this->pdo->prepare(
             "SELECT COUNT(*) FROM ressources
-             WHERE ressource_id = :id AND owner_mail = :mail"
+             WHERE ressource_id = :id AND mail = :mail"
         );
         $stmt->execute(['id' => $resourceId, 'mail' => $email]);
         return $stmt->fetchColumn() > 0;
@@ -261,7 +261,7 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
         }
 
         $stmt = $this->pdo->prepare(
-            "INSERT IGNORE INTO ressources_access (ressource_id, teacher_mail) VALUES (:id, :mail)"
+            "INSERT IGNORE INTO ressources_access (ressource_id, mail) VALUES (:id, :mail)"
         );
         foreach ($teacherMails as $mail) {
             $mail = trim($mail);

@@ -109,7 +109,7 @@ class ImportAttemptsUseCase
                 // 3. Normalize AES fields (may be already-encoded JSON or raw values)
                 $rows[] = [
                     'exercice_id' => $exerciceId,
-                    'user'        => (string) ($item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''),
+                    'user_id'     => (string) ($item['user_id'] ?? $item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''),
                     'correct'     => $correct,
                     'eval_set'    => $this->normalizeJsonField($item['eval_set'] ?? null),
                     'upload'      => (string) ($item['upload'] ?? $item['code'] ?? ''),

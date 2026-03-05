@@ -7,7 +7,7 @@ namespace App\Model\Entity;
  * Represents a pedagogical resource in the system.
  * Maps to the `ressources` table.
  *
- * Schema: ressource_id, owner_mail, ressource_name, ressource_description, image_path
+ * Schema: ressource_id, mail, ressource_name, ressource_description, image_path
  */
 class Resource
 {

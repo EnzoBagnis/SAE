@@ -49,21 +49,21 @@ class AttemptRepository extends AbstractRepository implements AttemptBulkInserte
     /**
      * Find attempts by student identifier.
      *
-     * @param string $user Student identifier (user field)
+     * @param string $userId Student identifier (user_id field)
      * @return Attempt[] Array of Attempt entities
      */
-    public function findByUser(string $user): array
+    public function findByUser(string $userId): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM attempts WHERE user = :user ORDER BY attempt_id DESC"
+            "SELECT * FROM attempts WHERE user_id = :user_id ORDER BY attempt_id DESC"
         );
-        $stmt->execute(['user' => $user]);
+        $stmt->execute(['user_id' => $userId]);
         return array_map(fn($row) => $this->hydrate($row), $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /**
      * Bulk insert attempts with a single transaction.
-     * Each item in $rows must contain: exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2.
+     * Each item in $rows must contain: exercice_id, user_id, correct, eval_set, upload, aes0, aes1, aes2.
      *
      * @param array<array<string,mixed>> $rows Rows to insert
      * @return array{inserted:int, errors:list<string>} Result summary
@@ -71,8 +71,8 @@ class AttemptRepository extends AbstractRepository implements AttemptBulkInserte
     public function bulkInsert(array $rows): array
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO attempts (exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2)
-             VALUES (:exercice_id, :user, :correct, :eval_set, :upload, :aes0, :aes1, :aes2)"
+            "INSERT INTO attempts (exercice_id, user_id, correct, eval_set, upload, aes0, aes1, aes2)
+             VALUES (:exercice_id, :user_id, :correct, :eval_set, :upload, :aes0, :aes1, :aes2)"
         );
 
         $inserted = 0;
@@ -84,7 +84,7 @@ class AttemptRepository extends AbstractRepository implements AttemptBulkInserte
                 try {
                     $stmt->execute([
                         'exercice_id' => (int) ($row['exercice_id'] ?? 0),
-                        'user'        => (string) ($row['user'] ?? ''),
+                        'user_id'     => (string) ($row['user_id'] ?? $row['user'] ?? ''),
                         'correct'     => (int) ($row['correct'] ?? 0),
                         'eval_set'    => (string) ($row['eval_set'] ?? ''),
                         'upload'      => (string) ($row['upload'] ?? ''),
@@ -115,12 +115,12 @@ class AttemptRepository extends AbstractRepository implements AttemptBulkInserte
     public function save(Attempt $attempt): Attempt
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO attempts (exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2)
-             VALUES (:exercice_id, :user, :correct, :eval_set, :upload, :aes0, :aes1, :aes2)"
+            "INSERT INTO attempts (exercice_id, user_id, correct, eval_set, upload, aes0, aes1, aes2)
+             VALUES (:exercice_id, :user_id, :correct, :eval_set, :upload, :aes0, :aes1, :aes2)"
         );
         $stmt->execute([
             'exercice_id' => $attempt->getExerciceId(),
-            'user'        => $attempt->getUser(),
+            'user_id'     => $attempt->getUserId(),
             'correct'     => $attempt->getCorrect(),
             'eval_set'    => $attempt->getEvalSet(),
             'upload'      => $attempt->getUpload(),
@@ -143,7 +143,7 @@ class AttemptRepository extends AbstractRepository implements AttemptBulkInserte
         $attempt = new Attempt();
         $attempt->setAttemptId((int) ($data['attempt_id'] ?? 0));
         $attempt->setExerciceId((int) ($data['exercice_id'] ?? 0));
-        $attempt->setUser((string) ($data['user'] ?? ''));
+        $attempt->setUserId((string) ($data['user_id'] ?? ''));
         $attempt->setCorrect((int) ($data['correct'] ?? 0));
         $attempt->setEvalSet((string) ($data['eval_set'] ?? ''));
         $attempt->setUpload((string) ($data['upload'] ?? ''));

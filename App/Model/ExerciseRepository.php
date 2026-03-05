@@ -120,7 +120,7 @@ class ExerciseRepository extends AbstractRepository implements
                          COUNT(a.attempt_id)                             AS total_attempts,
                          SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END) AS successful_attempts
                   FROM exercices e
-                  LEFT JOIN corrections c ON e.exercice_name = c.exo_name
+                  LEFT JOIN corrections c ON e.exercice_name = c.exercice_name
                   LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
                   WHERE e.ressource_id = :resource_id
                   GROUP BY e.exercice_id

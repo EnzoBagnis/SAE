@@ -7,13 +7,13 @@ namespace App\Model\Entity;
  * Represents a student's attempt at an exercise.
  * Maps to the `attempts` table.
  *
- * Schema: attempt_id (PK), exercice_id, user, correct, eval_set, upload, aes0, aes1, aes2
+ * Schema: attempt_id (PK), exercice_id, user_id, correct, eval_set, upload, aes0, aes1, aes2
  */
 class Attempt
 {
     private ?int $attemptId = null;
     private int $exerciceId = 0;
-    private string $user = '';
+    private string $userId = '';
     private int $correct = 0;
     private string $evalSet = '';
     private string $upload = '';
@@ -58,18 +58,18 @@ class Attempt
     /**
      * @return string
      */
-    public function getUser(): string
+    public function getUserId(): string
     {
-        return $this->user;
+        return $this->userId;
     }
 
     /**
-     * @param string $user
+     * @param string $userId
      * @return void
      */
-    public function setUser(string $user): void
+    public function setUserId(string $userId): void
     {
-        $this->user = $user;
+        $this->userId = $userId;
     }
 
     /**
@@ -184,7 +184,7 @@ class Attempt
         return [
             'attempt_id' => $this->attemptId,
             'exercice_id' => $this->exerciceId,
-            'user'        => $this->user,
+            'user_id'     => $this->userId,
             'correct'     => $this->correct,
             'eval_set'    => $this->evalSet,
             'upload'      => $this->upload,
