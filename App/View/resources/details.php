@@ -24,8 +24,11 @@ $title = 'StudTraj - ' . $resTitle;
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/dashboard.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
-    <script type="module" src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
-    <script>window.BASE_URL = '<?= BASE_URL ?>';</script>
+    <script src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
+    <script>
+        window.BASE_URL    = '<?= BASE_URL ?>';
+        window.RESOURCE_ID = <?= (int)$resource->getResourceId() ?>;
+    </script>
     <meta name="description" content="Détails de la ressource <?= $resTitle ?>.">
     <meta name="robots" content="noindex, nofollow">
     <style>

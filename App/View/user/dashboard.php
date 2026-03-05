@@ -1,4 +1,4 @@
-﻿<?php
+﻿﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -32,12 +32,12 @@ $current_resource_id = $resource_id ?? 'null';
     <script src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
     <script src="<?= BASE_URL ?>/public/js/modules/charts.js"></script>
     <script src="<?= BASE_URL ?>/public/js/modules/detailedCharts.js"></script>
-    <script type="module" src="<?= BASE_URL ?>/public/js/dashboard-main.js"></script>
     <script>
-        // Inject server-side context for JS modules
-        window.BASE_URL     = '<?= BASE_URL ?>';
-        window.RESOURCE_ID  = <?= $resource_id !== null ? (int)$resource_id : 'null' ?>;
+        // Inject server-side context for JS modules — doit être AVANT dashboard-main.js
+        window.BASE_URL    = '<?= BASE_URL ?>';
+        window.RESOURCE_ID = <?= $resource_id !== null ? (int)$resource_id : 'null' ?>;
     </script>
+    <script type="module" src="<?= BASE_URL ?>/public/js/dashboard-main.js"></script>
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
     <meta name="robots" content="noindex, nofollow">
 </head>
