@@ -55,16 +55,16 @@ class DashboardApiController extends AbstractController
 
             if ($resourceId !== null) {
                 $stmt = $pdo->prepare(
-                    "SELECT DISTINCT a.user
+                    "SELECT DISTINCT a.`user`
                      FROM attempts a
                      INNER JOIN exercices e ON a.exercice_id = e.exercice_id
                      WHERE e.ressource_id = :rid
-                     ORDER BY a.user ASC"
+                     ORDER BY a.`user` ASC"
                 );
                 $stmt->execute(['rid' => $resourceId]);
             } else {
                 $stmt = $pdo->query(
-                    "SELECT DISTINCT user FROM attempts ORDER BY user ASC"
+                    "SELECT DISTINCT `user` FROM attempts ORDER BY `user` ASC"
                 );
             }
 
@@ -115,7 +115,7 @@ class DashboardApiController extends AbstractController
                     "SELECT a.*, e.exercice_name, e.ressource_id
                      FROM attempts a
                      INNER JOIN exercices e ON a.exercice_id = e.exercice_id
-                     WHERE a.user = :user AND e.ressource_id = :rid
+                     WHERE a.`user` = :user AND e.ressource_id = :rid
                      ORDER BY a.attempt_id DESC"
                 );
                 $stmt->execute(['user' => $identifier, 'rid' => $resourceId]);
@@ -124,7 +124,7 @@ class DashboardApiController extends AbstractController
                     "SELECT a.*, e.exercice_name
                      FROM attempts a
                      LEFT JOIN exercices e ON a.exercice_id = e.exercice_id
-                     WHERE a.user = :user
+                     WHERE a.`user` = :user
                      ORDER BY a.attempt_id DESC"
                 );
                 $stmt->execute(['user' => $identifier]);
@@ -208,10 +208,10 @@ class DashboardApiController extends AbstractController
 
                 // Fetch all attempts for this exercise grouped by student
                 $stmt2 = $pdo->prepare(
-                    "SELECT user,
+                    "SELECT `user`,
                             COUNT(*) AS total,
                             SUM(CASE WHEN correct=1 THEN 1 ELSE 0 END) AS correct_count
-                     FROM attempts WHERE exercice_id = :eid GROUP BY user ORDER BY user ASC"
+                     FROM attempts WHERE exercice_id = :eid GROUP BY `user` ORDER BY `user` ASC"
                 );
                 $stmt2->execute(['eid' => $exerciseId]);
                 $studentRows = $stmt2->fetchAll(\PDO::FETCH_ASSOC);
@@ -312,24 +312,24 @@ class DashboardApiController extends AbstractController
 
             if ($resourceId !== null) {
                 $stmt = $pdo->prepare(
-                    "SELECT a.user,
+                    "SELECT a.`user`,
                             COUNT(a.attempt_id)                              AS total_attempts,
                             SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END)  AS correct_attempts
                      FROM attempts a
                      INNER JOIN exercices e ON a.exercice_id = e.exercice_id
                      WHERE e.ressource_id = :rid
-                     GROUP BY a.user
-                     ORDER BY a.user ASC"
+                     GROUP BY a.`user`
+                     ORDER BY a.`user` ASC"
                 );
                 $stmt->execute(['rid' => $resourceId]);
             } else {
                 $stmt = $pdo->query(
-                    "SELECT a.user,
+                    "SELECT a.`user`,
                             COUNT(a.attempt_id)                              AS total_attempts,
                             SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END)  AS correct_attempts
                      FROM attempts a
-                     GROUP BY a.user
-                     ORDER BY a.user ASC"
+                     GROUP BY a.`user`
+                     ORDER BY a.`user` ASC"
                 );
             }
 
@@ -351,4 +351,3 @@ class DashboardApiController extends AbstractController
         }
     }
 }
-
