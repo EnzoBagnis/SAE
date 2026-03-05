@@ -44,7 +44,7 @@ def load_attempts_from_db(db_host, db_name, db_user, db_pass, exercise_id=None, 
 
     if exercise_id is not None:
         query = """
-            SELECT a.attempt_id, a.exercice_id, a.user, a.correct,
+            SELECT a.attempt_id, a.exercice_id, a.`user`, a.correct,
                    a.eval_set, a.upload, a.aes0, a.aes1, a.aes2,
                    e.exercice_name
             FROM attempts a
@@ -55,7 +55,7 @@ def load_attempts_from_db(db_host, db_name, db_user, db_pass, exercise_id=None, 
         cursor.execute(query, (exercise_id,))
     elif resource_id is not None:
         query = """
-            SELECT a.attempt_id, a.exercice_id, a.user, a.correct,
+            SELECT a.attempt_id, a.exercice_id, a.`user`, a.correct,
                    a.eval_set, a.upload, a.aes0, a.aes1, a.aes2,
                    e.exercice_name
             FROM attempts a
@@ -66,7 +66,7 @@ def load_attempts_from_db(db_host, db_name, db_user, db_pass, exercise_id=None, 
         cursor.execute(query, (resource_id,))
     else:
         query = """
-            SELECT a.attempt_id, a.exercice_id, a.user, a.correct,
+            SELECT a.attempt_id, a.exercice_id, a.`user`, a.correct,
                    a.eval_set, a.upload, a.aes0, a.aes1, a.aes2,
                    e.exercice_name
             FROM attempts a
