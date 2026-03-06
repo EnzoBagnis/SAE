@@ -1,4 +1,4 @@
-﻿﻿<?php
+﻿﻿﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -30,14 +30,66 @@ $current_resource_id = $resource_id ?? 'null';
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
-    <script src="<?= BASE_URL ?>/public/js/modules/charts.js"></script>
-    <script src="<?= BASE_URL ?>/public/js/modules/detailedCharts.js"></script>
     <script>
         // Inject server-side context for JS modules — doit être AVANT dashboard-main.js
         window.BASE_URL    = '<?= BASE_URL ?>';
         window.RESOURCE_ID = <?= $resource_id !== null ? (int)$resource_id : 'null' ?>;
     </script>
     <script type="module" src="<?= BASE_URL ?>/public/js/dashboard-main.js"></script>
+    <style>
+        /* Nouveau layout sans sidebar */
+        .dashboard-container { display: block; height: auto; overflow: visible; }
+        .viz-main-content {
+            padding: 1.5rem 2rem 5rem;
+            background: #f0f2f5;
+            min-height: calc(100vh - 80px);
+            margin-top: 80px;
+        }
+        .viz-data-zone {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            min-height: 400px;
+        }
+        /* Breadcrumb */
+        .viz-breadcrumb {
+            display: flex; align-items: center; flex-wrap: wrap;
+            gap: 2px; padding: 0.5rem 0 1rem;
+            font-size: 0.9rem; color: #7f8c8d;
+        }
+        .viz-bc-btn { background: none; border: none; color: #3498db; cursor: pointer; font-size: 0.9rem; padding: 0; text-decoration: underline; }
+        .viz-bc-btn:hover { color: #2980b9; }
+        .viz-bc-sep { color: #bdc3c7; }
+        .viz-bc-current { color: #2c3e50; font-weight: 600; }
+        /* Titres et hints */
+        .viz-title { color: #2c3e50; margin: 0 0 0.5rem; font-size: 1.4rem; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
+        .viz-hint { color: #7f8c8d; font-size: 0.88rem; margin: 0 0 1.5rem; }
+        /* Grilles de graphiques */
+        .viz-top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (max-width: 768px) { .viz-top-grid { grid-template-columns: 1fr; } }
+        .viz-chart-card { background: #f8f9fa; border-radius: 8px; padding: 1rem 1.25rem 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden; }
+        .viz-chart-full { grid-column: 1 / -1; max-width: 480px; margin: 0 auto; width: 100%; }
+        .viz-chart-title { color: #34495e; font-size: 1rem; margin: 0 0 0.75rem; font-weight: 600; }
+        .viz-no-data { color: #95a5a6; font-size: 0.9rem; text-align: center; padding: 1rem 0; }
+        /* Cartes de stats */
+        .viz-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .viz-stat-card { background: #f8f9fa; border-radius: 8px; padding: 1rem 1.25rem; border-left: 4px solid #3498db; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+        .viz-stat-value { font-size: 1.8rem; font-weight: bold; }
+        .viz-stat-label { color: #7f8c8d; font-size: 0.85rem; margin-top: 0.25rem; }
+        /* Grade badges */
+        .grade-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: bold; margin-left: 8px; }
+        .grade-a { background: #d5f5e3; color: #1e8449; }
+        .grade-b { background: #fef9e7; color: #b7950b; }
+        .grade-c { background: #fadbd8; color: #922b21; }
+        /* Loading */
+        .viz-loading { text-align: center; padding: 3rem; color: #7f8c8d; font-size: 1.1rem; }
+        /* En-tête ressource */
+        .viz-resource-header { background: #fff; border-radius: 10px; padding: 1rem 2rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); border-left: 4px solid #3498db; }
+        .viz-resource-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #3498db; font-weight: 600; }
+        .viz-resource-name { margin: 0.2rem 0 0; color: #2c3e50; font-size: 1.5rem; }
+        .viz-resource-desc { margin: 0.3rem 0 0; color: #7f8c8d; font-size: 0.9rem; }
+    </style>
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
     <meta name="robots" content="noindex, nofollow">
 </head>
@@ -84,18 +136,6 @@ $current_resource_id = $resource_id ?? 'null';
         </div>
         <ul class="burger-menu-list">
             <li><a href="<?= BASE_URL ?>/resources" class="burger-link">Ressources</a></li>
-            <li class="has-submenu">
-                <a href="#" class="burger-link" onclick="toggleStudentSubmenu(event)">
-                    Liste des Étudiants <span class="submenu-arrow">▼</span>
-                </a>
-                <ul class="burger-submenu" id="burgerStudentList"></ul>
-            </li>
-            <li class="has-submenu">
-                <a href="#" class="burger-link" onclick="toggleExerciseSubmenu(event)">
-                    Liste des TP <span class="submenu-arrow">▼</span>
-                </a>
-                <ul class="burger-submenu" id="burgerExerciseList"></ul>
-            </li>
             <li>
                 <a href="#" class="burger-link burger-import"
                    onclick="openImportModal(<?= $current_resource_id ?>); toggleBurgerMenu(); return false;">
@@ -107,24 +147,19 @@ $current_resource_id = $resource_id ?? 'null';
     </div>
 </nav>
 
-<div class="dashboard-container">
-    <aside class="sidebar sidebar-mobile-style">
-        <div class="view-selector-header">
-            <button class="view-tab active" id="btnStudents" onclick="switchListView('students')">
-                Liste des Étudiants
-            </button>
-            <button class="view-tab" id="btnExercises" onclick="switchListView('exercises')">
-                Liste des TP
-            </button>
-        </div>
-        <div class="sidebar-list" id="sidebar-list"></div>
-    </aside>
-
-    <main class="main-content">
-        <div class="data-zone">
-            <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
-        </div>
-    </main>
+<div class="viz-main-content">
+    <?php if (isset($resource)) : ?>
+    <div class="viz-resource-header">
+        <span class="viz-resource-label">Ressource</span>
+        <h1 class="viz-resource-name"><?= htmlspecialchars($resource->getResourceName()) ?></h1>
+        <?php if ($resource->getDescription()) : ?>
+            <p class="viz-resource-desc"><?= htmlspecialchars($resource->getDescription()) ?></p>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+    <div class="viz-data-zone">
+        <div class="viz-loading">⏳ Chargement des données…</div>
+    </div>
 </div>
 
 <!-- Modal Import -->
