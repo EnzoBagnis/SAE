@@ -174,6 +174,32 @@ $title = 'StudTraj - ' . $resTitle;
 
     <div class="tp-list-container">
         <h2>Travaux Pratiques</h2>
+
+        <!-- Barre de recherche spécifique à la ressource -->
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+            <select id="searchType" style="padding:8px;border:1px solid #ddd;border-radius:4px;">
+                <option value="exercises">Exercice</option>
+                <option value="students">Élève</option>
+            </select>
+            <input type="search" id="resourceSearchInput" placeholder="Rechercher un élève ou un exercice..."
+                   style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;" />
+            <button id="clearSearchBtn" style="padding:8px 12px;border-radius:4px;border:1px solid #ddd;background:#f5f5f5;">Effacer</button>
+        </div>
+
+        <div id="searchResults" style="margin-bottom:12px;display:none;">
+            <!-- Résultats pour les élèves -->
+            <div id="studentsResults" style="display:none;background:#fff;padding:10px;border:1px solid #eee;border-radius:6px;">
+                <strong>Étudiants trouvés :</strong>
+                <ul id="studentsList" style="list-style:none;padding-left:0;margin-top:8px;"></ul>
+            </div>
+
+            <!-- Message pour exercices (pour conservabilité) -->
+            <div id="exercisesResults" style="display:none;background:#fff;padding:10px;border:1px solid #eee;border-radius:6px;">
+                <strong>Exercices correspondants :</strong>
+                <ul id="exercisesList" style="list-style:none;padding-left:0;margin-top:8px;"></ul>
+            </div>
+        </div>
+
         <?php if (!empty($exercises)) : ?>
             <?php foreach ($exercises as $exercise) : ?>
                 <div class="tp-item">
@@ -285,26 +311,197 @@ $title = 'StudTraj - ' . $resTitle;
     </div>
 </div>
 
-<!-- Footer -->
-<footer class="main-footer">
-    <div class="footer-content">
-        <p>&copy; <?= date('Y') ?> StudTraj - Tous droits réservés</p>
-        <ul class="footer-links">
-            <li><a href="<?= BASE_URL ?>/mentions-legales">Mentions légales</a></li>
-        </ul>
+<!-- Student detail modal (ajax) -->
+<div id="studentDetailModal" class="modal" style="display:none;z-index:250;">
+    <div class="modal-content" style="max-width:800px;">
+        <span class="close" onclick="closeStudentModal()">&times;</span>
+        <h3 id="studentModalTitle">Détails étudiant</h3>
+        <div id="studentModalBody">Chargement...</div>
     </div>
-</footer>
+</div>
+
+<!-- Search JS -->
+<script>
+    (function(){
+        const input = document.getElementById('resourceSearchInput');
+        const typeSelect = document.getElementById('searchType');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        const studentsResults = document.getElementById('studentsResults');
+        const studentsList = document.getElementById('studentsList');
+        const exercisesResults = document.getElementById('exercisesResults');
+        const exercisesList = document.getElementById('exercisesList');
+        const searchResults = document.getElementById('searchResults');
+        const studentModal = document.getElementById('studentDetailModal');
+        const studentModalTitle = document.getElementById('studentModalTitle');
+        const studentModalBody = document.getElementById('studentModalBody');
+
+        // Debounce helper
+        function debounce(fn, delay){
+            let t;
+            return function(...args){
+                clearTimeout(t);
+                t = setTimeout(()=>fn.apply(this,args), delay);
+            };
+        }
+
+        // Lire les exercices déjà rendus côté serveur (DOM)
+        function collectExercisesFromDom(){
+            const nodes = Array.from(document.getElementsByClassName('tp-item'));
+            return nodes.map(n => ({
+                name: (n.querySelector('.tp-item-info h3')?.innerText || '').trim(),
+                desc: (n.querySelector('.tp-item-info p')?.innerText || '').trim(),
+                node: n
+            }));
+        }
+
+        const exercisesCache = collectExercisesFromDom();
+
+        async function searchHandler(){
+            const q = (input.value || '').trim().toLowerCase();
+            const type = typeSelect.value;
+
+            if (q === ''){
+                // Reset display
+                searchResults.style.display = 'none';
+                studentsResults.style.display = 'none';
+                exercisesResults.style.display = 'none';
+                // show all exercises DOM
+                exercisesCache.forEach(e => e.node.style.display = 'flex');
+                return;
+            }
+
+            searchResults.style.display = 'block';
+
+            if (type === 'exercises'){
+                // Client-side filter of exercices
+                const matches = [];
+                exercisesCache.forEach(e => {
+                    const hay = (e.name + ' ' + e.desc).toLowerCase();
+                    if (hay.indexOf(q) !== -1){
+                        e.node.style.display = 'flex';
+                        matches.push(e);
+                    } else {
+                        e.node.style.display = 'none';
+                    }
+                });
+
+                // Render quick list
+                exercisesList.innerHTML = '';
+                if (matches.length === 0){
+                    exercisesList.innerHTML = '<li style="color:#888;">Aucun exercice trouvé.</li>';
+                } else {
+                    matches.forEach(m => {
+                        const li = document.createElement('li');
+                        li.style.padding = '6px 0';
+                        li.textContent = m.name;
+                        exercisesList.appendChild(li);
+                    });
+                }
+
+                exercisesResults.style.display = 'block';
+                studentsResults.style.display = 'none';
+
+            } else {
+                // Students: fetch list from API and filter
+                studentsResults.style.display = 'block';
+                exercisesResults.style.display = 'none';
+                studentsList.innerHTML = '<li style="color:#666;">Chargement…</li>';
+
+                try{
+                    let url = `${window.BASE_URL}/api/dashboard/students?page=1&perPage=10000`;
+                    if (window.RESOURCE_ID) url += `&resource_id=${window.RESOURCE_ID}`;
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error('Échec API');
+                    const data = await resp.json();
+                    const students = (data.data && data.data.students) ? data.data.students : [];
+                    const filtered = students.filter(s => (s.title || '').toLowerCase().indexOf(q) !== -1);
+
+                    studentsList.innerHTML = '';
+                    if (filtered.length === 0){
+                        studentsList.innerHTML = '<li style="color:#888;">Aucun étudiant trouvé.</li>';
+                    } else {
+                        filtered.forEach(s => {
+                            const li = document.createElement('li');
+                            li.style.padding = '6px 0';
+                            li.style.cursor = 'pointer';
+                            li.textContent = s.title || s.identifier || s.id;
+                            li.dataset.studentId = s.id || s.identifier || s.title;
+                            li.addEventListener('click', () => openStudentDetails(li.dataset.studentId));
+                            studentsList.appendChild(li);
+                        });
+                    }
+                } catch(err){
+                    studentsList.innerHTML = '<li style="color:#e74c3c;">Erreur lors du chargement des étudiants.</li>';
+                    console.error(err);
+                }
+            }
+        }
+
+        const debouncedSearch = debounce(searchHandler, 300);
+
+        input.addEventListener('input', debouncedSearch);
+        typeSelect.addEventListener('change', debouncedSearch);
+        clearBtn.addEventListener('click', () => {
+            input.value = '';
+            debouncedSearch();
+        });
+
+        // Open student details (AJAX)
+        async function openStudentDetails(studentId){
+            studentModal.style.display = 'block';
+            studentModalTitle.textContent = `Étudiant : ${studentId}`;
+            studentModalBody.innerHTML = 'Chargement…';
+
+            try{
+                const url = `${window.BASE_URL}/api/dashboard/student/${encodeURIComponent(studentId)}` + (window.RESOURCE_ID ? `?resource_id=${window.RESOURCE_ID}` : '');
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error('Erreur API étudiant');
+                const json = await resp.json();
+                if (!json.success){
+                    studentModalBody.innerHTML = '<div style="color:#888;">Aucune donnée disponible.</div>';
+                    return;
+                }
+
+                const attempts = json.data.attempts || [];
+                let html = `<div style="max-height:400px;overflow:auto;">`;
+                if (attempts.length === 0){
+                    html += '<p style="color:#666;">Aucune tentative pour cet étudiant sur cette ressource.</p>';
+                } else {
+                    html += '<ul style="list-style:none;padding-left:0;">';
+                    attempts.forEach(a => {
+                        html += `<li style="padding:8px 0;border-bottom:1px solid #f0f0f0;">
+                                    <strong>${a.exercice_name || 'Exercice'}</strong>
+                                    <div style="font-size:.9em;color:#666;">Correct: ${a.correct ? 'Oui' : 'Non'}</div>
+                                  </li>`;
+                    });
+                    html += '</ul>';
+                }
+                html += '</div>';
+                studentModalBody.innerHTML = html;
+            } catch(e){
+                console.error(e);
+                studentModalBody.innerHTML = '<div style="color:#e74c3c;">Erreur lors du chargement.</div>';
+            }
+        }
+
+        window.closeStudentModal = function(){
+            studentModal.style.display = 'none';
+            studentModalBody.innerHTML = '';
+        };
+
+        // Close modal by clicking outside
+        studentModal.addEventListener('click', (e) => {
+            if (e.target === studentModal) closeStudentModal();
+        });
+
+    })();
+</script>
 
 <script>
-    function toggleBurgerMenu() {
-        document.getElementById('burgerNav').classList.toggle('active');
-        document.getElementById('burgerBtn').classList.toggle('open');
-    }
-    function confirmLogout() {
-        if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-            window.location.href = window.BASE_URL + '/auth/logout';
-        }
-    }
+// ─── Fermer la modale ────────────────────────────────────────────────────────
+function closeResourceModal() {
+    document.getElementById('resourceModal').style.display = 'none';
+}
 </script>
 </body>
 </html>
