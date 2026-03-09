@@ -5,11 +5,20 @@
  * Main entry point for the application using Core/App architecture
  */
 
+// DEBUG TEMPORAIRE — à retirer après diagnostic
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 // Start output buffering immediately to prevent "headers already sent" issues
 ob_start();
 
 // Bootstrap the application
 require_once __DIR__ . '/App/bootstrap.php';
+
+// FORCER le mode development pour voir les erreurs détaillées
+if (!defined('APP_ENV')) {
+    define('APP_ENV', 'development');
+}
 
 // Catch fatal errors (E_ERROR, E_PARSE, etc.) that set_exception_handler cannot catch
 register_shutdown_function(function (): void {
@@ -64,20 +73,11 @@ set_exception_handler(function (\Throwable $e): void {
         header('Content-Type: text/html; charset=utf-8');
     }
 
-    $env = defined('APP_ENV') ? APP_ENV : (\Core\Config\EnvLoader::get('APP_ENV', 'production'));
-    if ($env === 'development') {
-        echo '<h1>Erreur 500 – Exception non gérée</h1>';
-        echo '<p><b>' . htmlspecialchars(get_class($e)) . ':</b> ' . htmlspecialchars($msg) . '</p>';
-        echo '<p>dans <b>' . htmlspecialchars($file) . '</b> ligne <b>' . $line . '</b></p>';
-        echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
-    } else {
-        $errorView = __DIR__ . '/App/View/errors/500.php';
-        if (file_exists($errorView)) {
-            require $errorView;
-        } else {
-            echo '<h1>Erreur interne du serveur</h1><p>Une erreur est survenue. Veuillez réessayer.</p>';
-        }
-    }
+    // TOUJOURS afficher les détails pour le debug
+    echo '<h1>Erreur 500 – Exception non gérée</h1>';
+    echo '<p><b>' . htmlspecialchars(get_class($e)) . ':</b> ' . htmlspecialchars($msg) . '</p>';
+    echo '<p>dans <b>' . htmlspecialchars($file) . '</b> ligne <b>' . $line . '</b></p>';
+    echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
 });
 
 // Initialize router
@@ -121,4 +121,3 @@ $router->setNotFoundHandler(function() {
 
 // Dispatch the request
 $router->dispatch();
-
