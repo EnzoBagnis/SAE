@@ -36,6 +36,9 @@ $router->get('/dashboard', App\Controller\DashboardController::class, 'index');
 // IA route
 $router->get('/ia', App\Controller\IaController::class, 'index');
 
+// IA API route (clustering pipeline)
+$router->post('/api/ia/clustering', App\Controller\IaController::class, 'clustering');
+
 // Exercise routes
 $router->get('/exercises', App\Controller\ExercisesController::class, 'index');
 $router->get('/exercises/{id}', App\Controller\ExercisesController::class, 'show');
