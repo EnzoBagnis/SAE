@@ -1,173 +1,151 @@
 /**
  * resourceSearch.js
  * Barre de recherche dynamique (TP / Élève) dans la page de détail d'une ressource.
- * Consomme les endpoints /api/dashboard/exercises et /api/dashboard/students.
  */
 
 export class ResourceSearch {
-    /**
-     * @param {object} opts
-     * @param {string}      opts.baseUrl     - window.BASE_URL
-     * @param {number|null} opts.resourceId  - window.RESOURCE_ID (peut être null)
-     */
     constructor({ baseUrl = '', resourceId = null } = {}) {
         this.base = baseUrl;
         this.rid  = resourceId;
 
-        // ── DOM ────────────────────────────────────────────────────────────
         this.inputEl  = document.getElementById('resourceSearchInput');
         this.typeEl   = document.getElementById('resourceSearchType');
         this.clearBtn = document.getElementById('resourceClearBtn');
         this.resDiv   = document.getElementById('resourceSearchResults');
-        this.exDiv    = document.getElementById('rsr-exercises');
-        this.exList   = document.getElementById('rsr-exercises-list');
-        this.stDiv    = document.getElementById('rsr-students');
-        this.stList   = document.getElementById('rsr-students-list');
+        this.resLabel = document.getElementById('rsr-label');
+        this.resList  = document.getElementById('rsr-list');
         this.modal    = document.getElementById('rsrStudentModal');
         this.mTitle   = document.getElementById('rsrStudentModalTitle');
         this.mBody    = document.getElementById('rsrStudentModalBody');
 
-        if (!this.inputEl) {
-            console.warn('[ResourceSearch] Champ #resourceSearchInput introuvable — module désactivé.');
+        if (!this.inputEl || !this.resDiv || !this.resList) {
+            console.warn('[ResourceSearch] Éléments DOM introuvables — module désactivé.',
+                { input: !!this.inputEl, resDiv: !!this.resDiv, resList: !!this.resList });
             return;
         }
 
-        // Binder les méthodes pour garantir le bon contexte `this`
-        this._search          = this._search.bind(this);
-        this._searchExercises = this._searchExercises.bind(this);
-        this._searchStudents  = this._searchStudents.bind(this);
-        this._openStudentModal= this._openStudentModal.bind(this);
-        this._closeModal      = this._closeModal.bind(this);
-
         console.log('[ResourceSearch] Initialisé — RID:', this.rid, '| BASE:', this.base);
-        this._bindEvents();
-        this._exposeGlobals();
-    }
 
-    // ── événements ──────────────────────────────────────────────────────────
-    _bindEvents() {
-        const debounced = this._debounce(this._search, 300);
-
-        this.inputEl.addEventListener('input',  debounced);
-        this.inputEl.addEventListener('search', debounced); // bouton clear natif des navigateurs
-
+        const debounced = this._debounce(() => this._search(), 300);
+        this.inputEl.addEventListener('input', debounced);
         this.typeEl.addEventListener('change', () => {
             this.inputEl.placeholder = this.typeEl.value === 'exercises'
                 ? 'Rechercher un TP par nom…'
                 : 'Rechercher un étudiant par identifiant…';
             debounced();
         });
-
         this.clearBtn.addEventListener('click', () => {
             this.inputEl.value = '';
-            this._reset();
+            this.resDiv.style.display = 'none';
+            this.resList.innerHTML = '';
         });
-
         this.modal?.addEventListener('click', e => {
             if (e.target === this.modal) this._closeModal();
         });
-    }
 
-    // ── expose les fonctions nécessaires au HTML (onclick=…) ────────────────
-    _exposeGlobals() {
         window.closeRsrStudentModal = () => this._closeModal();
     }
 
-    // ── recherche principale ────────────────────────────────────────────────
     async _search() {
-        const q    = this.inputEl.value.trim().toLowerCase();
+        const q    = (this.inputEl.value || '').trim().toLowerCase();
         const type = this.typeEl.value;
 
-        if (!q) { this._reset(); return; }
+        console.log('[ResourceSearch] search —', { q, type });
+
+        if (!q) {
+            this.resDiv.style.display = 'none';
+            this.resList.innerHTML = '';
+            return;
+        }
 
         this.resDiv.style.display = 'block';
+        this.resLabel.textContent = type === 'exercises' ? 'Travaux Pratiques trouvés :' : 'Étudiants trouvés :';
+        this.resList.innerHTML    = '<li style="color:#888;padding:8px;font-style:italic;">Chargement…</li>';
 
         if (type === 'exercises') {
-            this._show(this.exDiv, this.stDiv);
-            this._setLoading(this.exList);
             await this._searchExercises(q);
         } else {
-            this._show(this.stDiv, this.exDiv);
-            this._setLoading(this.stList);
             await this._searchStudents(q);
         }
     }
 
-    // ── recherche TP ────────────────────────────────────────────────────────
     async _searchExercises(q) {
         let url = `${this.base}/api/dashboard/exercises`;
         if (this.rid) url += `?resource_id=${this.rid}`;
 
-        console.log('[ResourceSearch] Fetch exercises →', url);
+        console.log('[ResourceSearch] fetch →', url);
+        const data = await this._safeFetch(url);
 
-        const result = await this._safeFetch(url);
-        if (!result) {
-            this._appendEmpty(this.exList, '⚠ Impossible de charger les exercices (vérifiez la console).');
+        if (!data) {
+            this._setList([{ text: '⚠ Impossible de charger les exercices.', click: null }]);
             return;
         }
 
-        const exercises = result.exercises ?? [];
-        console.log('[ResourceSearch] Exercices reçus :', exercises.length, exercises.slice(0,2));
+        const exercises = data.exercises ?? [];
+        console.log('[ResourceSearch] exercises:', exercises.length);
 
         const matches = exercises.filter(e =>
-            `${e.funcname ?? ''} ${e.exo_name ?? ''} ${e.extention ?? ''}`
-                .toLowerCase().includes(q)
+            `${e.funcname ?? ''} ${e.exo_name ?? ''} ${e.extention ?? ''}`.toLowerCase().includes(q)
         );
 
-        this.exList.innerHTML = '';
         if (!matches.length) {
-            this._appendEmpty(this.exList, 'Aucun TP trouvé pour ce mot-clé.');
+            this._setList([{ text: 'Aucun TP trouvé.', click: null }]);
             return;
         }
 
-        matches.forEach(e => {
-            const id   = e.exercise_id ?? e.exercice_id;
-            const name = e.funcname || e.exo_name || 'TP sans titre';
-            const rate = e.success_rate != null ? ` — ${e.success_rate}% réussite` : '';
-            this.exList.appendChild(
-                this._liItem(`${name}${rate}`, () => {
-                    window.location.href = `${this.base}/exercises/${id}`;
-                })
-            );
-        });
+        this._setList(matches.map(e => ({
+            text:  `${e.funcname || e.exo_name || 'TP sans titre'}${e.success_rate != null ? ' — ' + e.success_rate + '% réussite' : ''}`,
+            click: () => { window.location.href = `${this.base}/exercises/${e.exercise_id ?? e.exercice_id}`; }
+        })));
     }
 
-    // ── recherche Élèves ────────────────────────────────────────────────────
     async _searchStudents(q) {
         let url = `${this.base}/api/dashboard/students?page=1&perPage=100000`;
         if (this.rid) url += `&resource_id=${this.rid}`;
 
-        console.log('[ResourceSearch] Fetch students →', url);
+        console.log('[ResourceSearch] fetch →', url);
+        const data = await this._safeFetch(url);
 
-        const result = await this._safeFetch(url);
-        if (!result) {
-            this._appendEmpty(this.stList, '⚠ Impossible de charger les étudiants (vérifiez la console).');
+        if (!data) {
+            this._setList([{ text: '⚠ Impossible de charger les étudiants.', click: null }]);
             return;
         }
 
-        const students = result.students ?? [];
-        console.log('[ResourceSearch] Étudiants reçus :', students.length, students.slice(0,2));
+        const students = data.students ?? [];
+        console.log('[ResourceSearch] students:', students.length);
 
         const matches = students.filter(s =>
             (s.title || s.identifier || s.id || '').toLowerCase().includes(q)
         );
 
-        this.stList.innerHTML = '';
         if (!matches.length) {
-            this._appendEmpty(this.stList, 'Aucun étudiant trouvé pour ce mot-clé.');
+            this._setList([{ text: 'Aucun étudiant trouvé.', click: null }]);
             return;
         }
 
-        matches.forEach(s => {
-            const label = s.title || s.identifier || s.id;
-            const sid   = s.id   || s.identifier || s.title;
-            this.stList.appendChild(
-                this._liItem(label, () => this._openStudentModal(sid))
-            );
+        this._setList(matches.map(s => ({
+            text:  s.title || s.identifier || s.id,
+            click: () => this._openStudentModal(s.id || s.identifier || s.title)
+        })));
+    }
+
+    _setList(items) {
+        this.resList.innerHTML = '';
+        items.forEach(({ text, click }) => {
+            const li = document.createElement('li');
+            li.textContent = text;
+            li.style.cssText = `padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:.9em;
+                                cursor:${click ? 'pointer' : 'default'};transition:background .15s;`;
+            if (click) {
+                li.style.color = '#3498db';
+                li.addEventListener('click', click);
+                li.addEventListener('mouseenter', () => { li.style.background = '#f0f7ff'; });
+                li.addEventListener('mouseleave', () => { li.style.background = ''; });
+            }
+            this.resList.appendChild(li);
         });
     }
 
-    // ── modale détail étudiant ───────────────────────────────────────────────
     async _openStudentModal(studentId) {
         if (!this.modal) return;
         this.modal.style.display = 'block';
@@ -187,7 +165,7 @@ export class ResourceSearch {
         const stats    = data.stats    ?? {};
 
         if (!attempts.length) {
-            this.mBody.innerHTML = '<p style="color:#666;padding:1rem;">Aucune tentative enregistrée pour cet étudiant dans cette ressource.</p>';
+            this.mBody.innerHTML = '<p style="color:#666;padding:1rem;">Aucune tentative pour cet étudiant.</p>';
             return;
         }
 
@@ -196,25 +174,24 @@ export class ResourceSearch {
 
         let html = `
             <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
-                <div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px 16px;text-align:center;min-width:90px;">
+                <div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;">
                     <div style="font-size:1.6rem;font-weight:700;">${stats.total_attempts ?? 0}</div>
                     <div style="font-size:.8rem;color:#777;">Tentatives</div>
                 </div>
-                <div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px 16px;text-align:center;min-width:90px;">
+                <div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;">
                     <div style="font-size:1.6rem;font-weight:700;">${stats.correct_attempts ?? 0}</div>
                     <div style="font-size:.8rem;color:#777;">Réussies</div>
                 </div>
-                <div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px 16px;text-align:center;min-width:90px;">
+                <div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;">
                     <div style="font-size:1.6rem;font-weight:700;color:${color};">${rate}%</div>
-                    <div style="font-size:.8rem;color:#777;">Taux de réussite</div>
+                    <div style="font-size:.8rem;color:#777;">Réussite</div>
                 </div>
             </div>
             <ul style="list-style:none;padding:0;max-height:360px;overflow-y:auto;">`;
 
         attempts.forEach(a => {
-            const icon = a.correct ? '✅' : '❌';
             html += `<li style="padding:9px 4px;border-bottom:1px solid #f0f0f0;font-size:.9em;">
-                        ${icon} <strong>${a.exercice_name || 'Exercice'}</strong>
+                        ${a.correct ? '✅' : '❌'} <strong>${a.exercice_name || 'Exercice'}</strong>
                      </li>`;
         });
 
@@ -225,69 +202,17 @@ export class ResourceSearch {
     _closeModal() {
         if (!this.modal) return;
         this.modal.style.display = 'none';
-        this.mBody.innerHTML     = '';
+        this.mBody.innerHTML = '';
     }
 
-    // ── utilitaires DOM ──────────────────────────────────────────────────────
-    _reset() {
-        this.resDiv.style.display = 'none';
-        this.exDiv.style.display  = 'none';
-        this.stDiv.style.display  = 'none';
-        this.exList.innerHTML     = '';
-        this.stList.innerHTML     = '';
-    }
-
-    _show(visible, hidden) {
-        visible.style.display = 'block';
-        hidden.style.display  = 'none';
-    }
-
-    _setLoading(ul) {
-        ul.innerHTML = '<li style="color:#888;padding:8px;font-style:italic;">Chargement…</li>';
-    }
-
-    _appendEmpty(ul, msg) {
-        ul.innerHTML = '';
-        ul.appendChild(this._liItem(msg));
-    }
-
-    _liItem(text, onClick = null) {
-        const li = document.createElement('li');
-        li.style.cssText = `padding:9px 10px;border-bottom:1px solid #f0f0f0;
-                            font-size:.9em;cursor:${onClick ? 'pointer' : 'default'};
-                            transition:background .15s;`;
-        li.textContent = text;
-        if (onClick) {
-            li.style.color = '#3498db';
-            li.addEventListener('click', onClick);
-            li.addEventListener('mouseenter', () => { li.style.background = '#f0f7ff'; });
-            li.addEventListener('mouseleave', () => { li.style.background = ''; });
-        }
-        return li;
-    }
-
-    // ── fetch sécurisé (ne throw jamais, retourne null en cas d'erreur) ──────
     async _safeFetch(url) {
         try {
             const resp = await fetch(url, { credentials: 'same-origin' });
-
-            if (!resp.ok) {
-                console.error('[ResourceSearch] HTTP', resp.status, url);
-                return null;
-            }
-
-            // Vérifier que la réponse est bien du JSON (pas une redirection HTML)
+            if (!resp.ok) { console.error('[ResourceSearch] HTTP', resp.status, url); return null; }
             const ct = resp.headers.get('content-type') || '';
-            if (!ct.includes('application/json')) {
-                console.error('[ResourceSearch] Réponse non-JSON (probablement redirection login). Content-Type:', ct);
-                return null;
-            }
-
+            if (!ct.includes('application/json')) { console.error('[ResourceSearch] non-JSON response', ct); return null; }
             const json = await resp.json();
-            if (!json.success) {
-                console.error('[ResourceSearch] success=false', json);
-                return null;
-            }
+            if (!json.success) { console.error('[ResourceSearch] success=false', json); return null; }
             return json.data;
         } catch (err) {
             console.error('[ResourceSearch] fetch error:', err);
@@ -295,10 +220,8 @@ export class ResourceSearch {
         }
     }
 
-    // ── debounce ─────────────────────────────────────────────────────────────
     _debounce(fn, ms) {
         let t;
         return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
     }
 }
-

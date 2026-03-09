@@ -180,16 +180,9 @@ $current_resource_id = $resource_id ?? 'null';
     <div id="resourceSearchResults"
          style="background:#fff;border-radius:10px;padding:14px 20px;margin-bottom:1rem;
                 box-shadow:0 1px 4px rgba(0,0,0,.06);display:none;">
-        <div id="rsr-exercises" style="display:none;">
-            <strong style="font-size:.9em;color:#444;">Travaux Pratiques trouvés :</strong>
-            <ul id="rsr-exercises-list"
-                style="list-style:none;padding:0;margin:8px 0 0;max-height:280px;overflow-y:auto;"></ul>
-        </div>
-        <div id="rsr-students" style="display:none;">
-            <strong style="font-size:.9em;color:#444;">Étudiants trouvés :</strong>
-            <ul id="rsr-students-list"
-                style="list-style:none;padding:0;margin:8px 0 0;max-height:280px;overflow-y:auto;"></ul>
-        </div>
+        <strong id="rsr-label" style="font-size:.9em;color:#444;display:block;margin-bottom:6px;"></strong>
+        <ul id="rsr-list"
+            style="list-style:none;padding:0;margin:0;max-height:280px;overflow-y:auto;"></ul>
     </div>
 
     <!-- Modale détail étudiant -->
