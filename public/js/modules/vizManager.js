@@ -357,12 +357,20 @@ export class VizManager {
             .attr('fill', d => VizManager.gradeColor(d.success_rate || 0))
             .attr('rx', 2)
             .style('cursor', 'pointer')
-            .on('mouseover', (event, d) => {
-                tooltip.style('visibility', 'visible')
-                    .html(`<strong>${htmlEscape(d.identifier || d.student_id)}</strong><br>Réussite : ${d.success_rate}%<br>Tentatives : ${d.total_attempts}`);
+            .on('mouseover', function(event, d) {
+                d3.select(this).attr('opacity', 0.75);
+                const rate = d.success_rate || 0;
+                const rateColor = VizManager.gradeColor(rate);
+                tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
+                    .html(`
+                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${htmlEscape(d.identifier || d.student_id)}</div>
+                        <div style="color:${rateColor};font-weight:600">Réussite : ${rate}%</div>
+                        <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
+                        <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
+                    `);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', () => tooltip.style('visibility', 'hidden'))
+            .on('mouseout', function() { d3.select(this).attr('opacity', 1); tooltip.style('visibility', 'hidden'); })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
                 const dataZone = document.querySelector('.viz-data-zone');
@@ -421,12 +429,20 @@ export class VizManager {
             .attr('fill', d => d.success_rate != null ? VizManager.gradeColor(d.success_rate) : '#95a5a6')
             .attr('rx', 2)
             .style('cursor', 'pointer')
-            .on('mouseover', (event, d) => {
-                tooltip.style('visibility', 'visible')
-                    .html(`<strong>${htmlEscape(d.funcname || d.exo_name)}</strong><br>Réussite : ${d.success_rate != null ? d.success_rate + '%' : 'N/A'}<br>Tentatives : ${d.total_attempts}`);
+            .on('mouseover', function(event, d) {
+                d3.select(this).attr('opacity', 0.75);
+                const rate = d.success_rate != null ? d.success_rate : null;
+                const rateColor = rate != null ? VizManager.gradeColor(rate) : '#95a5a6';
+                tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
+                    .html(`
+                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${htmlEscape(d.funcname || d.exo_name)}</div>
+                        <div style="color:${rateColor};font-weight:600">Réussite : ${rate != null ? rate + '%' : 'N/A'}</div>
+                        <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
+                        <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
+                    `);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', () => tooltip.style('visibility', 'hidden'))
+            .on('mouseout', function() { d3.select(this).attr('opacity', 1); tooltip.style('visibility', 'hidden'); })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
                 const dataZone = document.querySelector('.viz-data-zone');
@@ -694,12 +710,19 @@ export class VizManager {
             .attr('fill', d => VizManager.gradeColor(d.rate))
             .attr('rx', 2)
             .style('cursor', 'pointer')
-            .on('mouseover', (event, d) => {
-                tooltip.style('visibility', 'visible')
-                    .html(`<strong>${htmlEscape(d.name)}</strong><br>Réussite : ${d.rate}%<br>${d.correct}/${d.total} tentatives`);
+            .on('mouseover', function(event, d) {
+                d3.select(this).attr('opacity', 0.75);
+                const rateColor = VizManager.gradeColor(d.rate);
+                tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
+                    .html(`
+                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${htmlEscape(d.name)}</div>
+                        <div style="color:${rateColor};font-weight:600">Réussite : ${d.rate}%</div>
+                        <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.correct}/${d.total} tentatives réussies</div>
+                        <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
+                    `);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', () => tooltip.style('visibility', 'hidden'))
+            .on('mouseout', function() { d3.select(this).attr('opacity', 1); tooltip.style('visibility', 'hidden'); })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
                 const dataZone = document.querySelector('.viz-data-zone');
@@ -818,12 +841,20 @@ export class VizManager {
             .attr('stroke', '#fff')
             .attr('stroke-width', 2)
             .style('cursor', 'pointer')
-            .on('mouseover', (event, d) => {
-                tooltip.style('visibility', 'visible')
-                    .html(`<strong>${htmlEscape(d.identifier)}</strong><br>Réussite : ${d.success_rate}%<br>Tentatives : ${d.total_attempts}`);
+            .on('mouseover', function(event, d) {
+                d3.select(this).attr('r', 9);
+                const rate = d.success_rate || 0;
+                const rateColor = VizManager.gradeColor(rate);
+                tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
+                    .html(`
+                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${htmlEscape(d.identifier)}</div>
+                        <div style="color:${rateColor};font-weight:600">Réussite : ${rate}%</div>
+                        <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
+                        <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
+                    `);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', () => tooltip.style('visibility', 'hidden'))
+            .on('mouseout', function() { d3.select(this).attr('r', 6); tooltip.style('visibility', 'hidden'); })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
                 const dataZone = document.querySelector('.viz-data-zone');
@@ -935,14 +966,18 @@ export class VizManager {
             .attr('class', 'viz-tooltip')
             .style('position', 'absolute')
             .style('visibility', 'hidden')
-            .style('background', 'rgba(0,0,0,0.85)')
+            .style('background', 'rgba(15,15,15,0.93)')
             .style('color', '#fff')
-            .style('padding', '8px 12px')
-            .style('border-radius', '4px')
+            .style('padding', '10px 14px')
+            .style('border-radius', '6px')
             .style('font-size', '12px')
+            .style('font-family', 'system-ui, sans-serif')
             .style('pointer-events', 'none')
             .style('z-index', '9999')
-            .style('box-shadow', '0 2px 8px rgba(0,0,0,0.4)');
+            .style('min-width', '160px')
+            .style('line-height', '1.5')
+            .style('box-shadow', '0 4px 16px rgba(0,0,0,0.5)')
+            .style('border-left', '3px solid #27ae60');
     }
 
     _renderGradeLegend(svg, x, y) {
