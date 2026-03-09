@@ -401,7 +401,15 @@ function generateClusters() {
             perplexity: perplexity,
         })
     })
-    .then(r => r.json())
+    .then(r => {
+        const contentType = r.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            return r.text().then(text => {
+                throw new Error('Le serveur a renvoyé du HTML au lieu de JSON (HTTP ' + r.status + '). Vérifiez les logs PHP.');
+            });
+        }
+        return r.json();
+    })
     .then(res => {
         loading.classList.remove('visible');
         btn.disabled = false;
