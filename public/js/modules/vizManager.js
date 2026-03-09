@@ -329,7 +329,7 @@ export class VizManager {
 
         const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
 
-        const margin = { top: 10, right: 20, bottom: 20, left: 50 };
+        const margin = { top: 10, right: 100, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
         const w = vw - margin.left - margin.right;
         const h = vh - margin.top - margin.bottom;
@@ -406,7 +406,7 @@ export class VizManager {
 
         const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
 
-        const margin = { top: 10, right: 20, bottom: 20, left: 50 };
+        const margin = { top: 10, right: 100, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
         const w = vw - margin.left - margin.right;
         const h = vh - margin.top - margin.bottom;
@@ -818,7 +818,7 @@ export class VizManager {
         }
 
         const sorted = [...students].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
-        const margin = { top: 10, right: 20, bottom: 20, left: 50 };
+        const margin = { top: 10, right: 100, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
         const w = vw - margin.left - margin.right;
         const h = vh - margin.top - margin.bottom;
