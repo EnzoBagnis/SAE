@@ -166,7 +166,7 @@ $current_resource_id = $resource_id ?? 'null';
             <option value="exercises">Travaux Pratiques</option>
             <option value="students">Élève</option>
         </select>
-        <input type="search" id="resourceSearchInput"
+        <input type="text" id="resourceSearchInput"
                placeholder="Rechercher un TP ou un étudiant par mot-clé…"
                style="flex:1;min-width:200px;padding:8px 10px;border:1px solid #ddd;
                       border-radius:4px;font-size:.9em;" />
