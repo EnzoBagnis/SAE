@@ -1006,15 +1006,16 @@ export class VizManager {
 
     _renderGradeLegend(svg, x, y) {
         const items = [
-            { color: '#27ae60', label: 'Bon (≥70%)' },
-            { color: '#f39c12', label: 'Moyen (40-70%)' },
-            { color: '#e74c3c', label: 'Faible (<40%)' },
+            { color: '#27ae60', label: 'Fort', sub: '≥ 70%' },
+            { color: '#f39c12', label: 'Moyen', sub: '40 – 70%' },
+            { color: '#e74c3c', label: 'Faible', sub: '< 40%' },
         ];
         const g = svg.append('g').attr('transform', `translate(${x},${y})`);
         items.forEach((item, i) => {
-            const row = g.append('g').attr('transform', `translate(0,${i * 20})`);
+            const row = g.append('g').attr('transform', `translate(0,${i * 26})`);
             row.append('rect').attr('width', 12).attr('height', 12).attr('fill', item.color).attr('rx', 2);
-            row.append('text').attr('x', 17).attr('y', 10).style('font-size', '10px').style('fill', '#555').text(item.label);
+            row.append('text').attr('x', 17).attr('y', 10).style('font-size', '11px').style('font-weight', '600').style('fill', item.color).text(item.label);
+            row.append('text').attr('x', 17).attr('y', 21).style('font-size', '9px').style('fill', '#888').text(item.sub);
         });
     }
 }
