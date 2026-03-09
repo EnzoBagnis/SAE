@@ -86,13 +86,13 @@ def load_attempts_from_db(conn, exercise_id):
             a.eval_set,
             a.correct,
             a.student_id,
-            a.exercise_id,
-            e.exo_name AS exercise_name,
+            a.exercice_id,
+            e.exercice_name AS exercise_name,
             s.student_identifier AS user_id
         FROM attempts a
-        JOIN exercises e ON a.exercise_id = e.exercise_id
+        JOIN exercices e ON a.exercice_id = e.exercice_id
         JOIN students s  ON a.student_id  = s.student_id
-        WHERE a.exercise_id = %s
+        WHERE a.exercice_id = %s
           AND a.aes2 IS NOT NULL
           AND a.aes2 != ''
         ORDER BY a.attempt_id
@@ -268,4 +268,3 @@ if __name__ == '__main__':
         }
 
     print(json.dumps(result, ensure_ascii=False))
-
