@@ -41,6 +41,7 @@ $errorMsg = htmlspecialchars($_GET['error'] ?? '');
     </button>
     <nav class="nav-menu">
         <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
+        <a href="<?= BASE_URL ?>/ia">IA</a>
     </nav>
     <div class="header-right">
         <div class="user-profile">
@@ -70,6 +71,7 @@ $errorMsg = htmlspecialchars($_GET['error'] ?? '');
         </div>
         <ul class="burger-menu-list">
             <li><a href="<?= BASE_URL ?>/resources" class="burger-link active">Ressources</a></li>
+            <li><a href="<?= BASE_URL ?>/ia" class="burger-link">IA</a></li>
             <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>

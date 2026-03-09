@@ -1,4 +1,4 @@
-﻿﻿<?php
+﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -49,6 +49,7 @@ $current_resource_id = $resource_id ?? 'null';
     </button>
     <nav class="nav-menu">
         <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
+        <a href="<?= BASE_URL ?>/ia">IA</a>
     </nav>
     <div class="header-right">
         <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">

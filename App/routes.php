@@ -33,6 +33,9 @@ $router->post('/auth/reset-password', App\Controller\ForgotPasswordController::c
 // Dashboard routes (protected)
 $router->get('/dashboard', App\Controller\DashboardController::class, 'index');
 
+// IA route
+$router->get('/ia', App\Controller\IaController::class, 'index');
+
 // Exercise routes
 $router->get('/exercises', App\Controller\ExercisesController::class, 'index');
 $router->get('/exercises/{id}', App\Controller\ExercisesController::class, 'show');
