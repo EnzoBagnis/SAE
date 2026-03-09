@@ -193,32 +193,17 @@ class IaController extends AbstractController
             $projectRoot = realpath(__DIR__ . '/../../');
             $scriptPath  = $projectRoot . '/scripts/clustering_pipeline.py';
 
-            // Chercher le venv Python dans plusieurs emplacements possibles
-            $possiblePythonPaths = [
-                // Linux : venv dans scripts/
-                $projectRoot . '/scripts/venv/bin/python3',
-                $projectRoot . '/scripts/venv/bin/python',
-                // Linux : venv à la racine du projet
-                $projectRoot . '/venv/bin/python3',
-                $projectRoot . '/venv/bin/python',
-                // Linux : venv dans le home (Alwaysdata / hébergeur)
-                '/home/studtraj/venv/bin/python3',
-                '/home/studtraj/www/venv/bin/python3',
-                '/home/studtraj/www/SAE/scripts/venv/bin/python3',
-                // Windows : venv dans scripts/
-                $projectRoot . '/scripts/venv/Scripts/python.exe',
-                // Windows : venv externe
-                'C:\\xampp\\htdocs\\BUT3\\venv\\Scripts\\python.exe',
-                // python3 système (peut avoir les modules)
-                'python3',
-            ];
+            // Résolution du binaire Python : on privilégie un venv local,
+            // puis /usr/bin/python3 (Alwaysdata), puis python3/python du PATH.
+            $pythonPath = $this->findPython($projectRoot);
 
-            $pythonPath = 'python'; // fallback ultime
-            foreach ($possiblePythonPaths as $candidate) {
-                if (file_exists($candidate)) {
-                    $pythonPath = $candidate;
-                    break;
-                }
+            if ($pythonPath === null) {
+                $this->jsonError(
+                    'Aucun interpréteur Python avec gensim trouvé. '
+                    . 'Vérifiez que gensim est installé : python3 -m pip install --user gensim',
+                    500
+                );
+                return;
             }
 
             if (!file_exists($scriptPath)) {
@@ -233,13 +218,26 @@ class IaController extends AbstractController
                 escapeshellarg($scriptPath)
             );
 
+            // Passer les variables d'environnement nécessaires pour que
+            // Python trouve les packages installés via pip --user
+            $env = null;
+            if (PHP_OS_FAMILY !== 'Windows') {
+                $home = getenv('HOME') ?: '/home/studtraj';
+                $env = [
+                    'HOME'            => $home,
+                    'PYTHONUSERBASE'  => $home . '/.local',
+                    'PATH'            => getenv('PATH') ?: '/usr/local/bin:/usr/bin:/bin',
+                    'PYTHONDONTWRITEBYTECODE' => '1',
+                ];
+            }
+
             $descriptors = [
                 0 => ['pipe', 'r'],  // stdin
                 1 => ['pipe', 'w'],  // stdout
                 2 => ['pipe', 'w'],  // stderr
             ];
 
-            $process = proc_open($cmd, $descriptors, $pipes);
+            $process = proc_open($cmd, $descriptors, $pipes, null, $env);
 
             if (!is_resource($process)) {
                 $this->jsonError('Impossible de lancer le script Python (commande: ' . $cmd . ')', 500);
@@ -289,5 +287,78 @@ class IaController extends AbstractController
         } catch (\Throwable $e) {
             $this->jsonError('Erreur serveur : ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Trouve un exécutable Python capable d'importer gensim.
+     * Teste les venv locaux, puis /usr/bin/python3, puis python3/python du PATH.
+     * Passe PYTHONUSERBASE pour que les packages pip --user soient visibles.
+     */
+    private function findPython(string $projectRoot): ?string
+    {
+        // Candidats avec chemin absolu (file_exists testable)
+        $absoluteCandidates = [
+            // Venv dans scripts/
+            $projectRoot . '/scripts/venv/bin/python3',
+            $projectRoot . '/scripts/venv/bin/python',
+            $projectRoot . '/scripts/venv/Scripts/python.exe',
+            // Venv à la racine du projet
+            $projectRoot . '/venv/bin/python3',
+            $projectRoot . '/venv/bin/python',
+            // Venv dans le home (Alwaysdata)
+            '/home/studtraj/venv/bin/python3',
+            '/home/studtraj/www/venv/bin/python3',
+            '/home/studtraj/www/SAE/scripts/venv/bin/python3',
+            // Python système (chemin absolu)
+            '/usr/bin/python3',
+            // Windows
+            'C:\\xampp\\htdocs\\BUT3\\venv\\Scripts\\python.exe',
+        ];
+
+        // D'abord tester les chemins absolus qui existent sur le disque
+        foreach ($absoluteCandidates as $candidate) {
+            if (file_exists($candidate) && $this->pythonHasGensim($candidate)) {
+                return $candidate;
+            }
+        }
+
+        // Ensuite tester les commandes du PATH (pas testables avec file_exists)
+        foreach (['python3', 'python'] as $candidate) {
+            if ($this->pythonHasGensim($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Vérifie qu'un exécutable Python donné peut importer gensim.
+     * Injecte PYTHONUSERBASE pour couvrir les installations pip --user.
+     */
+    private function pythonHasGensim(string $pythonBin): bool
+    {
+        $home = getenv('HOME') ?: '/home/studtraj';
+        $envPrefix = '';
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $envPrefix = sprintf(
+                'HOME=%s PYTHONUSERBASE=%s ',
+                escapeshellarg($home),
+                escapeshellarg($home . '/.local')
+            );
+        }
+
+        $cmd = sprintf(
+            '%s%s -c %s 2>&1',
+            $envPrefix,
+            escapeshellarg($pythonBin),
+            escapeshellarg('import gensim')
+        );
+
+        $output = [];
+        $exitCode = -1;
+        exec($cmd, $output, $exitCode);
+
+        return $exitCode === 0;
     }
 }
