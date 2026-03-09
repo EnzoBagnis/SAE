@@ -107,40 +107,6 @@ $errorMsg = htmlspecialchars($_GET['error'] ?? '');
             </button>
         </div>
 
-        <!-- ═══════════════════════════════════════
-             RECHERCHE GLOBALE (Élève / TP)
-             ═══════════════════════════════════════ -->
-        <div style="margin:0 20px 24px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
-            <h3 style="margin:0 0 12px;font-size:1em;color:#555;">Recherche globale</h3>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                <select id="globalSearchType" style="padding:8px 10px;border:1px solid #ddd;border-radius:4px;font-size:.9em;">
-                    <option value="exercises">Travaux Pratiques</option>
-                    <option value="students">Élève</option>
-                </select>
-                <input type="search" id="globalSearchInput"
-                       placeholder="Entrez un mot-clé ou un nom…"
-                       style="flex:1;min-width:200px;padding:8px 10px;border:1px solid #ddd;border-radius:4px;font-size:.9em;" />
-                <button id="globalClearBtn"
-                        style="padding:8px 14px;border-radius:4px;border:1px solid #ddd;background:#f5f5f5;font-size:.9em;cursor:pointer;">
-                    Effacer
-                </button>
-            </div>
-            <!-- Résultats -->
-            <div id="globalSearchResults" style="margin-top:12px;display:none;">
-                <!-- Résultats TP -->
-                <div id="globalExercisesResults" style="display:none;">
-                    <strong style="font-size:.9em;color:#444;">Travaux Pratiques trouvés :</strong>
-                    <ul id="globalExercisesList"
-                        style="list-style:none;padding:0;margin:8px 0 0;max-height:260px;overflow-y:auto;"></ul>
-                </div>
-                <!-- Résultats Élèves -->
-                <div id="globalStudentsResults" style="display:none;">
-                    <strong style="font-size:.9em;color:#444;">Étudiants trouvés :</strong>
-                    <ul id="globalStudentsList"
-                        style="list-style:none;padding:0;margin:8px 0 0;max-height:260px;overflow-y:auto;"></ul>
-                </div>
-            </div>
-        </div>
 
         <!-- Grille des ressources -->
         <div class="resources-grid" id="resourcesGrid">
@@ -197,6 +163,47 @@ $errorMsg = htmlspecialchars($_GET['error'] ?? '');
             <?php else : ?>
                 <p style="padding:20px;color:#777;">Aucune ressource trouvée.</p>
             <?php endif; ?>
+        </div>
+    </main>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SECTION RECHERCHE DANS LES RESSOURCES
+     ═══════════════════════════════════════ -->
+<div class="dashboard-container" style="margin-top:0;">
+    <main class="main-content">
+        <h2 style="padding:20px 20px 0;">Recherche dans les ressources</h2>
+
+        <!-- ── Barre de recherche globale (Élève / TP) ── -->
+        <div style="margin:12px 20px 24px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <select id="globalSearchType" style="padding:8px 10px;border:1px solid #ddd;border-radius:4px;font-size:.9em;">
+                    <option value="exercises">Travaux Pratiques</option>
+                    <option value="students">Élève</option>
+                </select>
+                <input type="search" id="globalSearchInput"
+                       placeholder="Rechercher un TP ou un étudiant par mot-clé…"
+                       style="flex:1;min-width:200px;padding:8px 10px;border:1px solid #ddd;border-radius:4px;font-size:.9em;" />
+                <button id="globalClearBtn"
+                        style="padding:8px 14px;border-radius:4px;border:1px solid #ddd;background:#f5f5f5;font-size:.9em;cursor:pointer;">
+                    Effacer
+                </button>
+            </div>
+            <!-- Résultats -->
+            <div id="globalSearchResults" style="margin-top:12px;display:none;">
+                <!-- Résultats TP -->
+                <div id="globalExercisesResults" style="display:none;">
+                    <strong style="font-size:.9em;color:#444;">Travaux Pratiques trouvés :</strong>
+                    <ul id="globalExercisesList"
+                        style="list-style:none;padding:0;margin:8px 0 0;max-height:260px;overflow-y:auto;"></ul>
+                </div>
+                <!-- Résultats Élèves -->
+                <div id="globalStudentsResults" style="display:none;">
+                    <strong style="font-size:.9em;color:#444;">Étudiants trouvés :</strong>
+                    <ul id="globalStudentsList"
+                        style="list-style:none;padding:0;margin:8px 0 0;max-height:260px;overflow-y:auto;"></ul>
+                </div>
+            </div>
         </div>
     </main>
 </div>
