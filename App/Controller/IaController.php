@@ -69,7 +69,8 @@ class IaController extends AbstractController
 
     /**
      * API endpoint : POST /api/ia/clustering
-     * Appelle le script Python clustering_pipeline.py et renvoie le JSON résultat.
+     * PHP extrait les données de la BD, les passe au script Python via stdin.
+     * Le script Python fait Doc2Vec → KMeans → t-SNE → image base64.
      */
     public function clustering(): void
     {
@@ -91,43 +92,96 @@ class IaController extends AbstractController
             return;
         }
 
-        // Chemin du script Python et du venv
+        // ── Extraire les données depuis la BD (PHP a déjà la connexion) ──
+        $pdo = DatabaseConnection::getInstance()->getConnection();
+
+        $stmt = $pdo->prepare("
+            SELECT
+                a.attempt_id,
+                a.aes2,
+                a.eval_set,
+                a.correct,
+                a.student_id,
+                a.exercice_id,
+                e.exercice_name AS exercise_name,
+                COALESCE(s.student_identifier, CONCAT('student_', a.student_id)) AS user_id
+            FROM attempts a
+            JOIN exercices e ON a.exercice_id = e.exercice_id
+            LEFT JOIN students s ON a.student_id = s.student_id
+            WHERE a.exercice_id = :eid
+              AND a.aes2 IS NOT NULL
+              AND a.aes2 != ''
+            ORDER BY a.attempt_id
+        ");
+        $stmt->execute(['eid' => $exerciseId]);
+        $attempts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($attempts) < 5) {
+            $this->jsonError('Pas assez de tentatives avec AES pour cet exercice (' . count($attempts) . ' trouvées, minimum 5).');
+            return;
+        }
+
+        // Préparer le payload JSON à envoyer au script Python via stdin
+        $payload = json_encode([
+            'attempts'    => $attempts,
+            'n_clusters'  => $nClusters,
+            'perplexity'  => $perplexity,
+            'exercise_id' => $exerciseId,
+        ], JSON_UNESCAPED_UNICODE);
+
+        // ── Chemins Python ──
         $projectRoot = realpath(__DIR__ . '/../../');
         $scriptPath  = $projectRoot . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'clustering_pipeline.py';
         $pythonPath  = $projectRoot . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'venv' . DIRECTORY_SEPARATOR . 'Scripts' . DIRECTORY_SEPARATOR . 'python.exe';
 
-        // Fallback si pas sur Windows
         if (!file_exists($pythonPath)) {
             $pythonPath = $projectRoot . '/scripts/venv/bin/python3';
         }
-        // Fallback système
         if (!file_exists($pythonPath)) {
             $pythonPath = 'python';
         }
-
         if (!file_exists($scriptPath)) {
             $this->jsonError('Script clustering_pipeline.py introuvable', 500);
             return;
         }
 
-        // Construire la commande
+        // ── Exécuter via proc_open pour pouvoir écrire sur stdin ──
         $cmd = sprintf(
-            '%s %s --exercise_id %d --n_clusters %d --perplexity %d 2>&1',
+            '%s %s --from-stdin 2>&1',
             escapeshellarg($pythonPath),
-            escapeshellarg($scriptPath),
-            $exerciseId,
-            $nClusters,
-            $perplexity
+            escapeshellarg($scriptPath)
         );
 
-        // Exécuter
-        $output = [];
-        $exitCode = 0;
-        exec($cmd, $output, $exitCode);
+        $descriptors = [
+            0 => ['pipe', 'r'],  // stdin
+            1 => ['pipe', 'w'],  // stdout
+            2 => ['pipe', 'w'],  // stderr
+        ];
 
-        $rawOutput = implode("\n", $output);
+        $process = proc_open($cmd, $descriptors, $pipes);
 
-        // Chercher le JSON dans la sortie (ignorer les warnings éventuels)
+        if (!is_resource($process)) {
+            $this->jsonError('Impossible de lancer le script Python', 500);
+            return;
+        }
+
+        // Écrire les données sur stdin et fermer
+        fwrite($pipes[0], $payload);
+        fclose($pipes[0]);
+
+        // Lire stdout
+        $stdout = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+
+        // Lire stderr
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+
+        proc_close($process);
+
+        $rawOutput = $stdout . $stderr;
+
+        // Chercher le JSON dans la sortie
         $jsonStart = strpos($rawOutput, '{');
         if ($jsonStart === false) {
             $this->jsonError('Le script Python n\'a pas renvoyé de JSON valide. Sortie: ' . substr($rawOutput, 0, 500), 500);
