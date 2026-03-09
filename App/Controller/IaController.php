@@ -125,6 +125,145 @@ class IaController extends AbstractController
     }
 
     /**
+     * API endpoint : POST /api/ia/macro
+     * Vue Macro : t-SNE global sur TOUTES les tentatives, centroïdes par TD.
+     */
+    public function macro(): void
+    {
+        if (!$this->authService->isAuthenticated()) {
+            $this->jsonError('Non authentifié', 401);
+            return;
+        }
+
+        if (!$this->isPost()) {
+            $this->jsonError('Méthode non autorisée', 405);
+            return;
+        }
+
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $perplexity = (int)($input['perplexity'] ?? 30);
+            $resourceId = isset($input['resource_id']) ? (int)$input['resource_id'] : null;
+
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+
+            // Extraire TOUTES les tentatives avec AES (filtrées éventuellement par ressource)
+            $sql = "
+                SELECT
+                    a.attempt_id,
+                    a.aes2,
+                    a.eval_set,
+                    a.correct,
+                    a.user_id,
+                    a.exercice_id,
+                    e.exercice_name AS exercise_name
+                FROM attempts a
+                JOIN exercices e ON a.exercice_id = e.exercice_id
+                WHERE a.aes2 IS NOT NULL AND a.aes2 != ''
+            ";
+            $params = [];
+
+            if ($resourceId) {
+                $sql .= " AND e.ressource_id = :rid";
+                $params['rid'] = $resourceId;
+            }
+
+            $sql .= " ORDER BY a.attempt_id";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $attempts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($attempts) < 5) {
+                $this->jsonError('Pas assez de tentatives avec AES pour la vue globale (' . count($attempts) . ' trouvées, minimum 5).');
+                return;
+            }
+
+            $payload = json_encode([
+                'mode'       => 'global',
+                'attempts'   => $attempts,
+                'perplexity' => $perplexity,
+            ], JSON_UNESCAPED_UNICODE);
+
+            $result = $this->runPythonPipeline($payload);
+            $this->jsonResponse($result);
+
+        } catch (\Throwable $e) {
+            $this->jsonError('Erreur serveur : ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * API endpoint : POST /api/ia/micro
+     * Vue Micro : clustering K-Means + t-SNE pour UN exercice, avec trajectoires.
+     */
+    public function micro(): void
+    {
+        if (!$this->authService->isAuthenticated()) {
+            $this->jsonError('Non authentifié', 401);
+            return;
+        }
+
+        if (!$this->isPost()) {
+            $this->jsonError('Méthode non autorisée', 405);
+            return;
+        }
+
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $exerciseId = (int)($input['exercise_id'] ?? 0);
+            $nClusters  = (int)($input['n_clusters']  ?? 8);
+            $perplexity = (int)($input['perplexity']  ?? 30);
+
+            if ($exerciseId <= 0) {
+                $this->jsonError('exercise_id invalide');
+                return;
+            }
+
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+
+            $stmt = $pdo->prepare("
+                SELECT
+                    a.attempt_id,
+                    a.aes2,
+                    a.eval_set,
+                    a.correct,
+                    a.user_id,
+                    a.exercice_id,
+                    a.submission_date,
+                    e.exercice_name AS exercise_name
+                FROM attempts a
+                JOIN exercices e ON a.exercice_id = e.exercice_id
+                WHERE a.exercice_id = :eid
+                  AND a.aes2 IS NOT NULL
+                  AND a.aes2 != ''
+                ORDER BY a.user_id, a.attempt_id
+            ");
+            $stmt->execute(['eid' => $exerciseId]);
+            $attempts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($attempts) < 5) {
+                $this->jsonError('Pas assez de tentatives avec AES pour cet exercice (' . count($attempts) . ' trouvées, minimum 5).');
+                return;
+            }
+
+            $payload = json_encode([
+                'mode'        => 'micro',
+                'attempts'    => $attempts,
+                'n_clusters'  => $nClusters,
+                'perplexity'  => $perplexity,
+                'exercise_id' => $exerciseId,
+            ], JSON_UNESCAPED_UNICODE);
+
+            $result = $this->runPythonPipeline($payload);
+            $this->jsonResponse($result);
+
+        } catch (\Throwable $e) {
+            $this->jsonError('Erreur serveur : ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * API endpoint : POST /api/ia/clustering
      * PHP extrait les données de la BD, les passe au script Python via stdin.
      * Le script Python fait Doc2Vec → KMeans → t-SNE → image base64.
@@ -287,6 +426,100 @@ class IaController extends AbstractController
         } catch (\Throwable $e) {
             $this->jsonError('Erreur serveur : ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Exécute le script Python clustering_pipeline.py avec un payload JSON via stdin.
+     * Retourne le résultat décodé (array).
+     */
+    private function runPythonPipeline(string $payload): array
+    {
+        $projectRoot = realpath(__DIR__ . '/../../');
+        $scriptPath  = $projectRoot . '/scripts/clustering_pipeline.py';
+
+        $pythonPath = $this->findPython($projectRoot);
+
+        if ($pythonPath === null) {
+            return [
+                'success' => false,
+                'message' => 'Aucun interpréteur Python avec gensim trouvé. '
+                    . 'Vérifiez que gensim est installé : python3 -m pip install --user gensim',
+            ];
+        }
+
+        if (!file_exists($scriptPath)) {
+            return [
+                'success' => false,
+                'message' => 'Script clustering_pipeline.py introuvable : ' . $scriptPath,
+            ];
+        }
+
+        $cmd = sprintf(
+            '%s %s --from-stdin',
+            escapeshellarg($pythonPath),
+            escapeshellarg($scriptPath)
+        );
+
+        $env = null;
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $home = getenv('HOME') ?: '/home/studtraj';
+            $env = [
+                'HOME'            => $home,
+                'PYTHONUSERBASE'  => $home . '/.local',
+                'PATH'            => getenv('PATH') ?: '/usr/local/bin:/usr/bin:/bin',
+                'PYTHONDONTWRITEBYTECODE' => '1',
+            ];
+        }
+
+        $descriptors = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $process = proc_open($cmd, $descriptors, $pipes, null, $env);
+
+        if (!is_resource($process)) {
+            return [
+                'success' => false,
+                'message' => 'Impossible de lancer le script Python (commande: ' . $cmd . ')',
+            ];
+        }
+
+        fwrite($pipes[0], $payload);
+        fclose($pipes[0]);
+
+        $stdout = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+
+        $exitCode = proc_close($process);
+
+        // Chercher le JSON dans stdout puis stderr
+        $jsonStr = null;
+        foreach ([$stdout, $stderr, $stdout . $stderr] as $output) {
+            $jsonStart = strpos($output, '{');
+            if ($jsonStart !== false) {
+                $candidate = substr($output, $jsonStart);
+                $decoded = json_decode($candidate, true);
+                if ($decoded !== null) {
+                    $jsonStr = $candidate;
+                    break;
+                }
+            }
+        }
+
+        if ($jsonStr === null) {
+            $rawOutput = trim($stdout . "\n" . $stderr);
+            return [
+                'success' => false,
+                'message' => 'Le script Python n\'a pas renvoyé de JSON valide (exit code: ' . $exitCode . '). Sortie: ' . substr($rawOutput, 0, 800),
+            ];
+        }
+
+        return json_decode($jsonStr, true);
     }
 
     /**

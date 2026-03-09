@@ -4,19 +4,14 @@
 clustering_pipeline.py
 Pipeline Data Science : Doc2Vec -> KMeans -> t-SNE -> scatter plot base64
 
-Deux modes d'utilisation :
+Trois modes d'utilisation :
   1) --from-stdin : reçoit les données JSON depuis stdin (envoyé par PHP)
+     Le champ "mode" dans le JSON détermine le comportement :
+       - "micro"  (défaut) : clustering + t-SNE pour UN exercice, renvoie coordonnées individuelles
+       - "global" : t-SNE global sur TOUS les exercices, renvoie centroïdes par TD
   2) --exercise_id <ID> : se connecte directement à MySQL (usage CLI autonome)
 
-Renvoie un JSON sur stdout :
-{
-    "success": true,
-    "image_base64": "data:image/png;base64,...",
-    "n_points": 123,
-    "clusters": [0,1,2,...],
-    "students": ["stu1","stu2",...],
-    "exercise_name": "exo_foo"
-}
+Renvoie un JSON sur stdout.
 """
 
 import sys
@@ -37,14 +32,15 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 os.makedirs(os.path.join(SCRIPT_DIR, 'utils'), exist_ok=True)
 
 
-# ── Pipeline principal (indépendant de la source de données) ─────────────────
-def run_pipeline(data, n_clusters=8, perplexity=30, exercise_id=None):
-    """Exécute le pipeline complet à partir d'une liste de dicts et renvoie le résultat."""
+# ── Pipeline MICRO (un seul exercice) ────────────────────────────────────────
+def run_pipeline_micro(data, n_clusters=8, perplexity=30, exercise_id=None):
+    """Pipeline micro : clustering K-Means + t-SNE pour un exercice.
+    Renvoie les coordonnées individuelles avec cluster, user_id, date."""
 
     if len(data) < 5:
         return {
             'success': False,
-            'error': f"Pas assez de tentatives avec AES pour cet exercice ({len(data)} trouvées, minimum 5)."
+            'error': f"Pas assez de tentatives avec AES ({len(data)} trouvées, minimum 5)."
         }
 
     exercise_name = data[0].get('exercise_name', f'exercise_{exercise_id}')
@@ -54,10 +50,7 @@ def run_pipeline(data, n_clusters=8, perplexity=30, exercise_id=None):
         if not att.get('eval_set'):
             att['eval_set'] = 'training'
 
-    # Copie "training" pour l'entraînement
     train_data = [dict(att, eval_set='training') for att in data]
-
-    # Copie "test" pour l'inférence
     infer_data = [dict(att, eval_set='test') for att in data]
 
     # 2) Doc2Vec : entraînement + inférence
@@ -110,15 +103,28 @@ def run_pipeline(data, n_clusters=8, perplexity=30, exercise_id=None):
     tsne = TSNE(n_components=2, perplexity=actual_perplexity, random_state=42)
     coords_2d = tsne.fit_transform(vectors)
 
-    # 5) Génération du scatter plot matplotlib → base64
+    # 5) Construire les points individuels (pour Plotly côté JS)
+    points = []
+    for i, att in enumerate(data):
+        points.append({
+            'x': float(coords_2d[i, 0]),
+            'y': float(coords_2d[i, 1]),
+            'cluster': int(labels[i]),
+            'user_id': str(att.get('user_id', att.get('student_identifier', '?'))),
+            'attempt_id': att.get('attempt_id', i),
+            'correct': int(att.get('correct', 0)),
+            'date': str(att.get('submission_date', att.get('date', ''))),
+        })
+
+    # 6) Génération du scatter plot matplotlib → base64 (rétro-compatibilité)
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
 
     fig, ax = plt.subplots(figsize=(10, 7))
-
     colors = cm.get_cmap('tab10', actual_n_clusters)
+
     for cluster_id in range(actual_n_clusters):
         mask = labels == cluster_id
         ax.scatter(
@@ -148,12 +154,12 @@ def run_pipeline(data, n_clusters=8, perplexity=30, exercise_id=None):
     img_base64 = 'data:image/png;base64,' + base64.b64encode(buf.read()).decode('utf-8')
     buf.close()
 
-    # 6) Métadonnées
-    students = [att.get('user_id', '?') for att in data]
+    students = [str(att.get('user_id', att.get('student_identifier', '?'))) for att in data]
     correct_list = [int(att.get('correct', 0)) for att in data]
 
     return {
         'success': True,
+        'mode': 'micro',
         'image_base64': img_base64,
         'n_points': len(data),
         'n_clusters': actual_n_clusters,
@@ -161,19 +167,140 @@ def run_pipeline(data, n_clusters=8, perplexity=30, exercise_id=None):
         'clusters': labels.tolist(),
         'students': students,
         'correct': correct_list,
+        'points': points,
     }
+
+
+# ── Pipeline GLOBAL (tous les exercices → centroïdes par TD) ─────────────────
+def run_pipeline_global(data, perplexity=30):
+    """Pipeline global : Doc2Vec + t-SNE sur TOUTES les tentatives.
+    Renvoie les centroïdes par exercise_name pour la vue macro."""
+
+    if len(data) < 5:
+        return {
+            'success': False,
+            'error': f"Pas assez de tentatives avec AES ({len(data)} trouvées, minimum 5)."
+        }
+
+    # 1) Préparer les données
+    for att in data:
+        if not att.get('eval_set'):
+            att['eval_set'] = 'training'
+
+    train_data = [dict(att, eval_set='training') for att in data]
+    infer_data = [dict(att, eval_set='test') for att in data]
+
+    # 2) Doc2Vec
+    old_cwd = os.getcwd()
+    os.chdir(SCRIPT_DIR)
+
+    try:
+        from aes2vec import learnModel, inferVectors
+        import numpy as np
+
+        model = learnModel(
+            train_data,
+            selectionfield='eval_set',
+            selectionsets=['training'],
+            valuefield='aes2',
+            vsize=100,
+            cwindow=5,
+            niter=100
+        )
+
+        vectors = inferVectors(
+            model,
+            infer_data,
+            selectionfield='eval_set',
+            selectionsets=['test'],
+            valuefield='aes2'
+        )
+
+        vectors = np.array(vectors)
+    finally:
+        os.chdir(old_cwd)
+
+    if len(vectors) < 5:
+        return {
+            'success': False,
+            'error': f"Pas assez de vecteurs générés ({len(vectors)})."
+        }
+
+    # 3) t-SNE global
+    from sklearn.manifold import TSNE
+    import numpy as np
+
+    actual_perplexity = min(perplexity, max(1, len(vectors) - 1))
+    tsne = TSNE(n_components=2, perplexity=actual_perplexity, random_state=42)
+    coords_2d = tsne.fit_transform(vectors)
+
+    # 4) Regrouper par exercise_name et calculer les centroïdes
+    exercise_points = {}  # exercise_name -> list of (x, y, exercice_id)
+    all_points = []
+
+    for i, att in enumerate(data):
+        ex_name = att.get('exercise_name', 'Inconnu')
+        ex_id = att.get('exercice_id', att.get('exercise_id', 0))
+        x = float(coords_2d[i, 0])
+        y = float(coords_2d[i, 1])
+
+        if ex_name not in exercise_points:
+            exercise_points[ex_name] = {'xs': [], 'ys': [], 'exercice_id': ex_id}
+        exercise_points[ex_name]['xs'].append(x)
+        exercise_points[ex_name]['ys'].append(y)
+
+        all_points.append({
+            'x': x,
+            'y': y,
+            'exercise_name': ex_name,
+            'exercice_id': int(ex_id),
+        })
+
+    # Centroïdes par TD
+    centroids = []
+    for ex_name, pts in exercise_points.items():
+        cx = float(np.mean(pts['xs']))
+        cy = float(np.mean(pts['ys']))
+        centroids.append({
+            'exercise_name': ex_name,
+            'exercice_id': int(pts['exercice_id']),
+            'x': cx,
+            'y': cy,
+            'n_attempts': len(pts['xs']),
+        })
+
+    return {
+        'success': True,
+        'mode': 'global',
+        'n_points': len(data),
+        'n_exercises': len(centroids),
+        'centroids': centroids,
+        'all_points': all_points,
+    }
+
+
+# ── Ancien pipeline (rétro-compatibilité) ────────────────────────────────────
+def run_pipeline(data, n_clusters=8, perplexity=30, exercise_id=None):
+    """Rétro-compatibilité : appelle run_pipeline_micro."""
+    return run_pipeline_micro(data, n_clusters, perplexity, exercise_id)
 
 
 # ── Lecture depuis stdin (mode appelé par PHP) ───────────────────────────────
 def run_from_stdin():
-    """Lit le JSON depuis stdin et lance le pipeline."""
+    """Lit le JSON depuis stdin et lance le pipeline approprié."""
     raw = sys.stdin.read()
     payload = json.loads(raw)
+
+    mode        = payload.get('mode', 'micro')
     data        = payload['attempts']
     n_clusters  = int(payload.get('n_clusters', 8))
     perplexity  = int(payload.get('perplexity', 30))
     exercise_id = payload.get('exercise_id')
-    return run_pipeline(data, n_clusters, perplexity, exercise_id)
+
+    if mode == 'global':
+        return run_pipeline_global(data, perplexity)
+    else:
+        return run_pipeline_micro(data, n_clusters, perplexity, exercise_id)
 
 
 # ── Lecture depuis MySQL (mode CLI autonome) ─────────────────────────────────
@@ -183,7 +310,7 @@ def run_from_db(exercise_id, n_clusters=8, perplexity=30):
     conn = _get_connection(env)
     data = _load_attempts(conn, exercise_id)
     conn.close()
-    return run_pipeline(data, n_clusters, perplexity, exercise_id)
+    return run_pipeline_micro(data, n_clusters, perplexity, exercise_id)
 
 
 def _load_env():

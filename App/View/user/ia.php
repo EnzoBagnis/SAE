@@ -28,7 +28,7 @@ $exercises = $exercises ?? [];
         .ia-page .subtitle { color: #7f8c8d; margin-bottom: 2rem; font-size: 0.95rem; }
 
         /* Onglets principaux */
-        .ia-tabs { display: flex; gap: 0; border-bottom: 2px solid #e8ecef; margin-bottom: 2rem; }
+        .ia-tabs { display: flex; gap: 0; border-bottom: 2px solid #e8ecef; margin-bottom: 2rem; flex-wrap: wrap; }
         .ia-tab-btn {
             background: transparent; border: none; padding: 0.85rem 1.5rem; cursor: pointer;
             color: #7f8c8d; font-size: 0.95rem; font-weight: 500; border-bottom: 3px solid transparent;
@@ -60,7 +60,7 @@ $exercises = $exercises ?? [];
         .cluster-form { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.5rem; }
         .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
         .form-field label { font-size: 0.82rem; color: #7f8c8d; font-weight: 500; }
-        .form-field select, .form-field input {
+        .form-field select, .form-field input[type="number"] {
             padding: 0.5rem 0.75rem; border: 1px solid #dce1e7; border-radius: 6px;
             font-size: 0.9rem; background: #fff; min-width: 180px;
         }
@@ -73,6 +73,13 @@ $exercises = $exercises ?? [];
         }
         .btn-generate:hover { background: linear-gradient(135deg, #2980b9, #1f6da0); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(52,152,219,.3); }
         .btn-generate:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn-back {
+            background: #ecf0f1; color: #2c3e50; border: none; padding: 0.5rem 1.2rem;
+            border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500;
+            transition: all .2s; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem;
+        }
+        .btn-back:hover { background: #dce1e7; }
 
         /* Zone résultat */
         .cluster-result { display: none; margin-top: 1.5rem; }
@@ -94,6 +101,9 @@ $exercises = $exercises ?? [];
         }
         .chart-container img { width: 100%; height: auto; display: block; }
 
+        /* Plotly container */
+        .plotly-container { min-height: 500px; }
+
         .chart-meta {
             display: flex; gap: 1.5rem; padding: 1rem 1.5rem; background: #f8f9fa;
             border-top: 1px solid #e8ecef; flex-wrap: wrap;
@@ -108,6 +118,17 @@ $exercises = $exercises ?? [];
         .error-box.visible { display: block; }
 
         .empty-msg { color: #95a5a6; font-style: italic; padding: 0.5rem 0; }
+
+        /* Checkbox toggle trajectoires */
+        .toggle-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .toggle-row label { font-size: 0.88rem; color: #555; cursor: pointer; }
+        .toggle-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #3498db; }
+
+        /* Info badge */
+        .info-badge {
+            display: inline-block; background: #ebf5fb; color: #2980b9; padding: 0.35rem 0.8rem;
+            border-radius: 20px; font-size: 0.82rem; font-weight: 500; margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -145,8 +166,10 @@ $exercises = $exercises ?? [];
 
     <!-- ═══ Onglets ═══ -->
     <div class="ia-tabs">
-        <button class="ia-tab-btn active" onclick="switchIaTab('overview')">Vue d'ensemble</button>
-        <button class="ia-tab-btn" onclick="switchIaTab('clustering')">Cartographie des codes</button>
+        <button class="ia-tab-btn active" onclick="switchIaTab('overview', this)">Vue d'ensemble</button>
+        <button class="ia-tab-btn" onclick="switchIaTab('macro', this)">🗺️ Vue Macro (tous les TDs)</button>
+        <button class="ia-tab-btn" onclick="switchIaTab('micro', this)">🔬 Vue Micro (1 TD + trajectoires)</button>
+        <button class="ia-tab-btn" onclick="switchIaTab('clustering', this)">Cartographie (ancien)</button>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════
@@ -215,9 +238,9 @@ $exercises = $exercises ?? [];
                         </td>
                         <td style="padding:.65rem 1rem; text-align:center;">
                             <?php if ($nb >= 5) : ?>
-                            <button onclick="goToCluster(<?= (int)$exo['exercice_id'] ?>)"
+                            <button onclick="goToMicro(<?= (int)$exo['exercice_id'] ?>, '<?= htmlspecialchars(addslashes($exo['exercice_name'] ?? ''), ENT_QUOTES) ?>')"
                                     style="background:#3498db; color:#fff; border:none; padding:.35rem .9rem; border-radius:4px; cursor:pointer; font-size:.82rem;">
-                                Cartographier
+                                Analyser
                             </button>
                             <?php else : ?>
                             <span style="color:#bdc3c7; font-size:.82rem;">Min. 5 tentatives</span>
@@ -234,16 +257,157 @@ $exercises = $exercises ?? [];
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════
-         ONGLET 2 : Cartographie des codes
+         ONGLET 2 : Vue Macro (tous les TDs)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="tab-macro" class="ia-tab-content">
+        <div class="ia-section">
+            <h2>🗺️ Vue Macro — Cartographie globale des TDs</h2>
+            <p style="color:#7f8c8d; font-size:.9rem; margin-bottom:1.25rem;">
+                Visualisation t-SNE de <strong>toutes les tentatives</strong> regroupées par exercice (TD).
+                Chaque gros point représente le centroïde d'un TD. <strong>Cliquez sur un centroïde</strong>
+                pour zoomer sur la vue détaillée (Micro).
+            </p>
+
+            <div class="cluster-form">
+                <div class="form-field">
+                    <label for="macroResource">Filtrer par ressource</label>
+                    <select id="macroResource">
+                        <option value="">— Toutes les ressources —</option>
+                        <?php foreach ($resources as $r) : ?>
+                        <option value="<?= (int)$r['ressource_id'] ?>">
+                            <?= htmlspecialchars($r['ressource_name']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="macroPerplexity">Perplexité t-SNE</label>
+                    <input type="number" id="macroPerplexity" value="30" min="2" max="100" style="min-width:80px;">
+                </div>
+                <button class="btn-generate" id="btnMacro" onclick="launchMacro()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    Générer la vue globale
+                </button>
+            </div>
+
+            <!-- Loading Macro -->
+            <div class="loading-overlay" id="macroLoading">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Analyse globale en cours…</div>
+                <div class="loading-detail">Doc2Vec sur tout le dataset → t-SNE (peut prendre 30-60 secondes)</div>
+            </div>
+
+            <!-- Erreur Macro -->
+            <div class="error-box" id="macroError"></div>
+
+            <!-- Résultat Macro -->
+            <div class="cluster-result" id="macroResult">
+                <div class="chart-container">
+                    <div id="macroPlot" class="plotly-container"></div>
+                    <div class="chart-meta" id="macroMeta"></div>
+                </div>
+                <p style="color:#7f8c8d; font-size:.82rem; margin-top:.75rem; font-style:italic;">
+                    💡 Cliquez sur un centroïde (gros point) pour ouvrir la vue détaillée de cet exercice.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         ONGLET 3 : Vue Micro (1 TD + trajectoires)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="tab-micro" class="ia-tab-content">
+        <div class="ia-section">
+            <h2>🔬 Vue Micro — Analyse détaillée d'un exercice</h2>
+            <button class="btn-back" onclick="switchIaTab('macro', document.querySelectorAll('.ia-tab-btn')[1])">
+                ← Retour à la vue Macro
+            </button>
+
+            <p style="color:#7f8c8d; font-size:.9rem; margin-bottom:1.25rem;">
+                Clustering K-Means + t-SNE pour un exercice spécifique.
+                Les <strong>trajectoires</strong> montrent l'évolution chronologique de chaque étudiant
+                (lignes fléchées reliant les tentatives successives).
+            </p>
+
+            <div id="microSelectedExo" class="info-badge" style="display:none;"></div>
+
+            <div class="cluster-form">
+                <div class="form-field">
+                    <label for="microResource">Ressource</label>
+                    <select id="microResource" onchange="filterMicroExercises()">
+                        <option value="">— Toutes —</option>
+                        <?php foreach ($resources as $r) : ?>
+                        <option value="<?= (int)$r['ressource_id'] ?>">
+                            <?= htmlspecialchars($r['ressource_name']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="microExercise">Exercice</label>
+                    <select id="microExercise">
+                        <option value="">— Choisir un exercice —</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="microK">Clusters (K)</label>
+                    <input type="number" id="microK" value="8" min="2" max="20" style="min-width:80px;">
+                </div>
+                <div class="form-field">
+                    <label for="microPerplexity">Perplexité t-SNE</label>
+                    <input type="number" id="microPerplexity" value="30" min="2" max="100" style="min-width:80px;">
+                </div>
+                <button class="btn-generate" id="btnMicro" onclick="launchMicro()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Analyser l'exercice
+                </button>
+            </div>
+
+            <!-- Toggle trajectoires -->
+            <div class="toggle-row">
+                <input type="checkbox" id="microShowTrajectories" checked onchange="IaViz.toggleTrajectories()">
+                <label for="microShowTrajectories">Afficher les trajectoires étudiantes (lignes fléchées)</label>
+            </div>
+
+            <!-- Loading Micro -->
+            <div class="loading-overlay" id="microLoading">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Analyse détaillée en cours…</div>
+                <div class="loading-detail">Doc2Vec → K-Means → t-SNE + trajectoires (10-30 secondes)</div>
+            </div>
+
+            <!-- Erreur Micro -->
+            <div class="error-box" id="microError"></div>
+
+            <!-- Résultat Micro -->
+            <div class="cluster-result" id="microResult">
+                <div class="chart-container">
+                    <div id="microPlot" class="plotly-container"></div>
+                    <div class="chart-meta" id="microMeta"></div>
+                </div>
+                <p style="color:#7f8c8d; font-size:.82rem; margin-top:.75rem; font-style:italic;">
+                    🔍 Survolez un point pour voir le détail. Les lignes pointillées relient les tentatives
+                    successives d'un même étudiant (triées par date).
+                    ● = correct, ✗ = incorrect.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         ONGLET 4 : Cartographie des codes (ancien, rétro-compatibilité)
          ═══════════════════════════════════════════════════════════════════ -->
     <div id="tab-clustering" class="ia-tab-content">
-
         <div class="ia-section">
-            <h2>Cartographie des codes</h2>
+            <h2>Cartographie des codes (image statique)</h2>
             <p style="color:#7f8c8d; font-size:.9rem; margin-bottom:1.25rem;">
-                Sélectionnez un exercice pour regrouper les tentatives des élèves par stratégie/erreur.
-                Le pipeline vectorise les séquences AES avec <strong>Doc2Vec</strong>, regroupe avec
-                <strong>K-Means</strong>, puis projette en 2D avec <strong>t-SNE</strong>.
+                Version originale : génère une image PNG du scatter plot via matplotlib.
             </p>
 
             <div class="cluster-form">
@@ -280,17 +444,14 @@ $exercises = $exercises ?? [];
                 </button>
             </div>
 
-            <!-- Loading -->
             <div class="loading-overlay" id="loadingOverlay">
                 <div class="loading-spinner"></div>
                 <div class="loading-text">Analyse en cours…</div>
                 <div class="loading-detail">Entraînement Doc2Vec → K-Means → t-SNE (peut prendre 10-30 secondes)</div>
             </div>
 
-            <!-- Erreur -->
             <div class="error-box" id="errorBox"></div>
 
-            <!-- Résultat -->
             <div class="cluster-result" id="clusterResult">
                 <div class="chart-container">
                     <img id="clusterImage" src="" alt="Scatter plot t-SNE des clusters" />
@@ -298,7 +459,6 @@ $exercises = $exercises ?? [];
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -312,41 +472,117 @@ $exercises = $exercises ?? [];
     </div>
 </footer>
 
+<!-- Module iaViz.js (Plotly) -->
+<script src="<?= BASE_URL ?>/public/js/modules/iaViz.js"></script>
+
 <script>
 const BASE_URL = '<?= BASE_URL ?>';
 
 // ── Données exercices injectées depuis PHP ──────────────────────────────────
 const ALL_EXERCISES = <?= json_encode($exercises, JSON_UNESCAPED_UNICODE) ?>;
 
-// ── Onglets ─────────────────────────────────────────────────────────────────
-function switchIaTab(tabName) {
+// ── Initialiser IaViz ───────────────────────────────────────────────────────
+IaViz.init(BASE_URL);
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  ONGLETS
+// ══════════════════════════════════════════════════════════════════════════════
+function switchIaTab(tabName, btn) {
     document.querySelectorAll('.ia-tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.ia-tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + tabName).classList.add('active');
-    event.currentTarget.classList.add('active');
+    if (btn) btn.classList.add('active');
 }
 
-// ── Raccourci depuis le tableau : aller à l'onglet clustering + pré-sélectionner ──
-function goToCluster(exerciseId) {
+// ══════════════════════════════════════════════════════════════════════════════
+//  VUE MACRO
+// ══════════════════════════════════════════════════════════════════════════════
+function launchMacro() {
+    const resourceId = document.getElementById('macroResource').value;
+    const perplexity = parseInt(document.getElementById('macroPerplexity').value) || 30;
+
+    document.getElementById('btnMacro').disabled = true;
+    IaViz.loadMacro({
+        resource_id: resourceId || null,
+        perplexity: perplexity,
+    });
+
+    // Réactiver le bouton après un délai (le loading le fera visuellement)
+    setTimeout(() => { document.getElementById('btnMacro').disabled = false; }, 2000);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  VUE MICRO
+// ══════════════════════════════════════════════════════════════════════════════
+function filterMicroExercises() {
+    const rid = document.getElementById('microResource').value;
+    const sel = document.getElementById('microExercise');
+    sel.innerHTML = '<option value="">— Choisir un exercice —</option>';
+
+    const filtered = ALL_EXERCISES.filter(e => {
+        if (rid && String(e.ressource_id) !== String(rid)) return false;
+        return parseInt(e.nb_attempts) >= 5;
+    });
+
+    filtered.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.exercice_id;
+        const res = e.ressource_name ? ` [${e.ressource_name}]` : '';
+        opt.textContent = `${e.exercice_name}${res} — ${e.nb_attempts} tentatives`;
+        sel.appendChild(opt);
+    });
+
+    if (filtered.length === 0) {
+        sel.innerHTML = '<option value="">Aucun exercice analysable</option>';
+    }
+}
+
+function launchMicro() {
+    const exerciseId = document.getElementById('microExercise').value;
+    if (!exerciseId) {
+        alert('Veuillez sélectionner un exercice.');
+        return;
+    }
+
+    const nClusters  = parseInt(document.getElementById('microK').value) || 8;
+    const perplexity = parseInt(document.getElementById('microPerplexity').value) || 30;
+
+    document.getElementById('btnMicro').disabled = true;
+    IaViz.loadMicro({
+        exercise_id: parseInt(exerciseId),
+        n_clusters: nClusters,
+        perplexity: perplexity,
+    });
+    setTimeout(() => { document.getElementById('btnMicro').disabled = false; }, 2000);
+}
+
+/**
+ * Raccourci depuis le tableau "Vue d'ensemble" → aller directement à la vue Micro
+ */
+function goToMicro(exerciseId, exerciseName) {
+    // Basculer vers l'onglet Micro
+    switchIaTab('micro', document.querySelectorAll('.ia-tab-btn')[2]);
+
+    // Pré-remplir
     const exo = ALL_EXERCISES.find(e => parseInt(e.exercice_id) === exerciseId);
     if (exo) {
-        document.getElementById('clusterResource').value = exo.ressource_id ?? '';
+        document.getElementById('microResource').value = exo.ressource_id ?? '';
+        filterMicroExercises();
     }
-    filterExercises();
 
-    // Basculer vers l'onglet
-    document.querySelectorAll('.ia-tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.ia-tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-clustering').classList.add('active');
-    document.querySelectorAll('.ia-tab-btn')[1].classList.add('active');
-
-    // Pré-sélectionner l'exercice (après un tick pour laisser le select se remplir)
     setTimeout(() => {
-        document.getElementById('clusterExercise').value = exerciseId;
+        document.getElementById('microExercise').value = exerciseId;
+        const badge = document.getElementById('microSelectedExo');
+        if (badge) {
+            badge.textContent = '📌 ' + (exerciseName || 'Exercice #' + exerciseId);
+            badge.style.display = 'inline-block';
+        }
     }, 50);
 }
 
-// ── Filtrer exercices par ressource ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+//  ANCIEN ONGLET "CARTOGRAPHIE" (rétro-compatibilité)
+// ══════════════════════════════════════════════════════════════════════════════
 function filterExercises() {
     const rid = document.getElementById('clusterResource').value;
     const sel = document.getElementById('clusterExercise');
@@ -370,7 +606,6 @@ function filterExercises() {
     }
 }
 
-// ── Générer les clusters ────────────────────────────────────────────────────
 function generateClusters() {
     const exerciseId = document.getElementById('clusterExercise').value;
     if (!exerciseId) {
@@ -385,7 +620,6 @@ function generateClusters() {
     const errorBox   = document.getElementById('errorBox');
     const resultDiv  = document.getElementById('clusterResult');
 
-    // Reset
     btn.disabled = true;
     loading.classList.add('visible');
     errorBox.classList.remove('visible');
@@ -404,7 +638,7 @@ function generateClusters() {
         const contentType = r.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {
             return r.text().then(text => {
-                throw new Error('Le serveur a renvoyé du HTML au lieu de JSON (HTTP ' + r.status + '). Vérifiez les logs PHP.');
+                throw new Error('Le serveur a renvoyé du HTML au lieu de JSON (HTTP ' + r.status + ').');
             });
         }
         return r.json();
@@ -414,17 +648,13 @@ function generateClusters() {
         btn.disabled = false;
 
         if (res.success) {
-            // Afficher l'image
             document.getElementById('clusterImage').src = res.image_base64;
-
-            // Métadonnées
             const meta = document.getElementById('chartMeta');
             meta.innerHTML = `
                 <div class="meta-item"><strong>${res.n_points}</strong> tentatives analysées</div>
                 <div class="meta-item"><strong>${res.n_clusters}</strong> clusters identifiés</div>
                 <div class="meta-item">Exercice : <strong>${htmlEsc(res.exercise_name)}</strong></div>
             `;
-
             resultDiv.classList.add('visible');
         } else {
             errorBox.textContent = '❌ ' + (res.message || res.error || 'Erreur inconnue');
@@ -448,8 +678,9 @@ function toggleBurgerMenu() {
     document.getElementById('burgerBtn')?.classList.toggle('open');
 }
 
-// Initialiser la liste des exercices
+// ── Initialiser les listes d'exercices ──────────────────────────────────────
 filterExercises();
+filterMicroExercises();
 </script>
 </body>
 </html>
