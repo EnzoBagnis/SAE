@@ -31,7 +31,7 @@ class IaController extends AbstractController
 
         // Stats globales
         $totalAttempts  = (int)$pdo->query("SELECT COUNT(*) FROM attempts")->fetchColumn();
-        $totalExercises = (int)$pdo->query("SELECT COUNT(*) FROM exercices")->fetchColumn();
+        $totalExercises = (int)$pdo->query("SELECT COUNT(*) FROM exercises")->fetchColumn();
         $totalStudents  = (int)$pdo->query("SELECT COUNT(DISTINCT student_id) FROM attempts")->fetchColumn();
 
         // Répartition par eval_set
@@ -41,18 +41,18 @@ class IaController extends AbstractController
 
         // Ressources
         $resources = $pdo->query(
-            "SELECT ressource_id, ressource_name FROM ressources ORDER BY ressource_name ASC"
+            "SELECT resource_id, resource_name FROM resources ORDER BY resource_name ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         // Exercices (tous, pour le sélecteur dynamique côté JS)
         $exercises = $pdo->query(
-            "SELECT e.exercice_id, e.exercice_name, e.ressource_id, r.ressource_name,
+            "SELECT e.exercise_id, e.exo_name, e.resource_id, r.resource_name,
                     COUNT(a.attempt_id) AS nb_attempts
-             FROM exercices e
-             LEFT JOIN ressources r ON e.ressource_id = r.ressource_id
-             LEFT JOIN attempts a   ON a.exercice_id = e.exercice_id AND a.aes2 IS NOT NULL AND a.aes2 != ''
-             GROUP BY e.exercice_id
-             ORDER BY r.ressource_name ASC, e.exercice_name ASC"
+             FROM exercises e
+             LEFT JOIN resources r ON e.resource_id = r.resource_id
+             LEFT JOIN attempts a  ON a.exercise_id = e.exercise_id AND a.aes2 IS NOT NULL AND a.aes2 != ''
+             GROUP BY e.exercise_id
+             ORDER BY r.resource_name ASC, e.exo_name ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->renderView('user/ia', [
@@ -107,13 +107,13 @@ class IaController extends AbstractController
                     a.eval_set,
                     a.correct,
                     a.student_id,
-                    a.exercice_id,
-                    e.exercice_name AS exercise_name,
+                    a.exercise_id,
+                    e.exo_name AS exercise_name,
                     COALESCE(s.student_identifier, CONCAT('student_', a.student_id)) AS user_id
                 FROM attempts a
-                JOIN exercices e ON a.exercice_id = e.exercice_id
+                JOIN exercises e ON a.exercise_id = e.exercise_id
                 LEFT JOIN students s ON a.student_id = s.student_id
-                WHERE a.exercice_id = :eid
+                WHERE a.exercise_id = :eid
                   AND a.aes2 IS NOT NULL
                   AND a.aes2 != ''
                 ORDER BY a.attempt_id

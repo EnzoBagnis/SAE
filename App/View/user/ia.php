@@ -207,15 +207,15 @@ $exercises = $exercises ?? [];
                 <tbody>
                 <?php foreach ($exercises as $exo) : ?>
                     <tr style="border-bottom:1px solid #f0f0f0;">
-                        <td style="padding:.65rem 1rem;"><?= htmlspecialchars($exo['exercice_name'] ?? '') ?></td>
-                        <td style="padding:.65rem 1rem; color:#7f8c8d;"><?= htmlspecialchars($exo['ressource_name'] ?? '—') ?></td>
+                        <td style="padding:.65rem 1rem;"><?= htmlspecialchars($exo['exo_name'] ?? '') ?></td>
+                        <td style="padding:.65rem 1rem; color:#7f8c8d;"><?= htmlspecialchars($exo['resource_name'] ?? '—') ?></td>
                         <td style="padding:.65rem 1rem; text-align:center;">
                             <?php $nb = (int)($exo['nb_attempts'] ?? 0); ?>
                             <span style="font-weight:600; color:<?= $nb >= 5 ? '#27ae60' : '#e74c3c' ?>;"><?= $nb ?></span>
                         </td>
                         <td style="padding:.65rem 1rem; text-align:center;">
                             <?php if ($nb >= 5) : ?>
-                            <button onclick="goToCluster(<?= (int)$exo['exercice_id'] ?>)"
+                            <button onclick="goToCluster(<?= (int)$exo['exercise_id'] ?>)"
                                     style="background:#3498db; color:#fff; border:none; padding:.35rem .9rem; border-radius:4px; cursor:pointer; font-size:.82rem;">
                                 Cartographier
                             </button>
@@ -252,8 +252,8 @@ $exercises = $exercises ?? [];
                     <select id="clusterResource" onchange="filterExercises()">
                         <option value="">— Toutes —</option>
                         <?php foreach ($resources as $r) : ?>
-                        <option value="<?= (int)$r['ressource_id'] ?>">
-                            <?= htmlspecialchars($r['ressource_name']) ?>
+                        <option value="<?= (int)$r['resource_id'] ?>">
+                            <?= htmlspecialchars($r['resource_name']) ?>
                         </option>
                         <?php endforeach; ?>
                     </select>
@@ -329,9 +329,9 @@ function switchIaTab(tabName) {
 // ── Raccourci depuis le tableau : aller à l'onglet clustering + pré-sélectionner ──
 function goToCluster(exerciseId) {
     // Trouver l'exercice
-    const exo = ALL_EXERCISES.find(e => parseInt(e.exercice_id) === exerciseId);
+    const exo = ALL_EXERCISES.find(e => parseInt(e.exercise_id) === exerciseId);
     if (exo) {
-        document.getElementById('clusterResource').value = exo.ressource_id ?? '';
+        document.getElementById('clusterResource').value = exo.resource_id ?? '';
     }
     filterExercises();
 
@@ -354,15 +354,15 @@ function filterExercises() {
     sel.innerHTML = '<option value="">— Choisir un exercice —</option>';
 
     const filtered = ALL_EXERCISES.filter(e => {
-        if (rid && String(e.ressource_id) !== String(rid)) return false;
+        if (rid && String(e.resource_id) !== String(rid)) return false;
         return parseInt(e.nb_attempts) >= 5;
     });
 
     filtered.forEach(e => {
         const opt = document.createElement('option');
-        opt.value = e.exercice_id;
-        const res = e.ressource_name ? ` [${e.ressource_name}]` : '';
-        opt.textContent = `${e.exercice_name}${res} — ${e.nb_attempts} tentatives`;
+        opt.value = e.exercise_id;
+        const res = e.resource_name ? ` [${e.resource_name}]` : '';
+        opt.textContent = `${e.exo_name}${res} — ${e.nb_attempts} tentatives`;
         sel.appendChild(opt);
     });
 

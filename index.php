@@ -5,20 +5,11 @@
  * Main entry point for the application using Core/App architecture
  */
 
-// DEBUG TEMPORAIRE — à retirer après diagnostic
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
 // Start output buffering immediately to prevent "headers already sent" issues
 ob_start();
 
 // Bootstrap the application
 require_once __DIR__ . '/App/bootstrap.php';
-
-// FORCER le mode development pour voir les erreurs détaillées
-if (!defined('APP_ENV')) {
-    define('APP_ENV', 'development');
-}
 
 // Catch fatal errors (E_ERROR, E_PARSE, etc.) that set_exception_handler cannot catch
 register_shutdown_function(function (): void {
