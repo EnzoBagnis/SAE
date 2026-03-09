@@ -267,5 +267,178 @@ $current_resource_id = $resource_id ?? 'null';
         }
     }
 </script>
+
+<script>
+(function () {
+    var input     = document.getElementById('resourceSearchInput');
+    var typeSelect = document.getElementById('resourceSearchType');
+    var clearBtn  = document.getElementById('resourceClearBtn');
+    var resDiv    = document.getElementById('resourceSearchResults');
+    var resLabel  = document.getElementById('rsr-label');
+    var resList   = document.getElementById('rsr-list');
+    var modal     = document.getElementById('rsrStudentModal');
+    var mTitle    = document.getElementById('rsrStudentModalTitle');
+    var mBody     = document.getElementById('rsrStudentModalBody');
+
+    if (!input) return;
+
+    function debounce(fn, delay) {
+        var t;
+        return function () { clearTimeout(t); t = setTimeout(fn, delay); };
+    }
+
+    function setList(items) {
+        resList.innerHTML = '';
+        items.forEach(function (item) {
+            var li = document.createElement('li');
+            li.textContent = item.text;
+            li.style.padding = '9px 10px';
+            li.style.borderBottom = '1px solid #f0f0f0';
+            li.style.fontSize = '.9em';
+            if (item.click) {
+                li.style.cursor = 'pointer';
+                li.style.color = '#3498db';
+                li.addEventListener('click', item.click);
+                li.addEventListener('mouseenter', function () { li.style.background = '#f0f7ff'; });
+                li.addEventListener('mouseleave', function () { li.style.background = ''; });
+            }
+            resList.appendChild(li);
+        });
+    }
+
+    async function doSearch() {
+        var q    = (input.value || '').trim().toLowerCase();
+        var type = typeSelect.value;
+
+        if (!q) {
+            resDiv.style.display = 'none';
+            resList.innerHTML = '';
+            return;
+        }
+
+        resDiv.style.display  = 'block';
+        resLabel.textContent  = type === 'exercises' ? 'Travaux Pratiques trouvés :' : 'Étudiants trouvés :';
+        resList.innerHTML     = '<li style="color:#888;padding:8px;font-style:italic;">Chargement…</li>';
+
+        var BASE = window.BASE_URL  || '';
+        var RID  = window.RESOURCE_ID || null;
+
+        if (type === 'exercises') {
+            var url = BASE + '/api/dashboard/exercises' + (RID ? '?resource_id=' + RID : '');
+            try {
+                var resp = await fetch(url);
+                var json = await resp.json();
+                var exercises = (json.data && json.data.exercises) ? json.data.exercises : [];
+                var matches = exercises.filter(function (e) {
+                    return ((e.funcname || '') + ' ' + (e.exo_name || '') + ' ' + (e.extention || ''))
+                        .toLowerCase().indexOf(q) !== -1;
+                });
+                if (!matches.length) {
+                    setList([{ text: 'Aucun TP trouvé.', click: null }]);
+                } else {
+                    setList(matches.map(function (e) {
+                        var id   = e.exercise_id || e.exercice_id;
+                        var name = e.funcname || e.exo_name || 'TP sans titre';
+                        var rate = e.success_rate != null ? ' — ' + e.success_rate + '% réussite' : '';
+                        return {
+                            text:  name + rate,
+                            click: function () { window.location.href = BASE + '/exercises/' + id; }
+                        };
+                    }));
+                }
+            } catch (err) {
+                setList([{ text: 'Erreur lors du chargement des exercices.', click: null }]);
+                console.error(err);
+            }
+
+        } else {
+            var url = BASE + '/api/dashboard/students?page=1&perPage=100000' + (RID ? '&resource_id=' + RID : '');
+            try {
+                var resp = await fetch(url);
+                var json = await resp.json();
+                var students = (json.data && json.data.students) ? json.data.students : [];
+                var matches = students.filter(function (s) {
+                    return (s.title || s.identifier || s.id || '').toLowerCase().indexOf(q) !== -1;
+                });
+                if (!matches.length) {
+                    setList([{ text: 'Aucun étudiant trouvé.', click: null }]);
+                } else {
+                    setList(matches.map(function (s) {
+                        var label = s.title || s.identifier || s.id;
+                        var sid   = s.id || s.identifier || s.title;
+                        return {
+                            text:  label,
+                            click: function () { openStudentModal(sid); }
+                        };
+                    }));
+                }
+            } catch (err) {
+                setList([{ text: 'Erreur lors du chargement des étudiants.', click: null }]);
+                console.error(err);
+            }
+        }
+    }
+
+    var debouncedSearch = debounce(doSearch, 300);
+    input.addEventListener('input', debouncedSearch);
+    typeSelect.addEventListener('change', debouncedSearch);
+    clearBtn.addEventListener('click', function () {
+        input.value = '';
+        resDiv.style.display = 'none';
+        resList.innerHTML = '';
+    });
+
+    // ── Modale détail étudiant ─────────────────────────────────────────────
+    async function openStudentModal(studentId) {
+        if (!modal) return;
+        modal.style.display = 'block';
+        mTitle.textContent  = 'Étudiant : ' + studentId;
+        mBody.innerHTML     = '<p style="color:#888;text-align:center;padding:1rem;">⏳ Chargement…</p>';
+
+        var BASE = window.BASE_URL  || '';
+        var RID  = window.RESOURCE_ID || null;
+        var url  = BASE + '/api/dashboard/student/' + encodeURIComponent(studentId) + (RID ? '?resource_id=' + RID : '');
+
+        try {
+            var resp = await fetch(url);
+            var json = await resp.json();
+            if (!json.success) { mBody.innerHTML = '<p style="color:#888;padding:1rem;">Aucune donnée disponible.</p>'; return; }
+
+            var attempts = json.data.attempts || [];
+            var stats    = json.data.stats    || {};
+
+            if (!attempts.length) { mBody.innerHTML = '<p style="color:#666;padding:1rem;">Aucune tentative pour cet étudiant.</p>'; return; }
+
+            var rate  = stats.success_rate || 0;
+            var color = rate >= 70 ? '#27ae60' : rate >= 40 ? '#f39c12' : '#e74c3c';
+
+            var html = '<div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">'
+                + '<div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;"><div style="font-size:1.6rem;font-weight:700;">' + (stats.total_attempts || 0) + '</div><div style="font-size:.8rem;color:#777;">Tentatives</div></div>'
+                + '<div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;"><div style="font-size:1.6rem;font-weight:700;">' + (stats.correct_attempts || 0) + '</div><div style="font-size:.8rem;color:#777;">Réussies</div></div>'
+                + '<div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;"><div style="font-size:1.6rem;font-weight:700;color:' + color + ';">' + rate + '%</div><div style="font-size:.8rem;color:#777;">Réussite</div></div>'
+                + '</div><ul style="list-style:none;padding:0;max-height:360px;overflow-y:auto;">';
+            attempts.forEach(function (a) {
+                html += '<li style="padding:9px 4px;border-bottom:1px solid #f0f0f0;font-size:.9em;">'
+                      + (a.correct ? '✅' : '❌') + ' <strong>' + (a.exercice_name || 'Exercice') + '</strong></li>';
+            });
+            html += '</ul>';
+            mBody.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            mBody.innerHTML = '<p style="color:#e74c3c;padding:1rem;">Erreur lors du chargement.</p>';
+        }
+    }
+
+    window.closeRsrStudentModal = function () {
+        modal.style.display = 'none';
+        mBody.innerHTML = '';
+    };
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) window.closeRsrStudentModal();
+        });
+    }
+})();
+</script>
 </body>
 </html>
