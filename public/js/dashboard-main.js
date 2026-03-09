@@ -3,10 +3,12 @@
 import { BurgerMenuManager } from '/public/js/modules/burgerMenu.js';
 import { Utils } from '/public/js/modules/utils.js';
 import { VizManager } from '/public/js/modules/vizManager.js';
+import { ResourceSearch } from '/public/js/modules/resourceSearch.js';
 
 // Instances globales
 let burgerMenuManager;
 let vizManager;
+let resourceSearch;
 
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
@@ -17,6 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeDashboard() {
     burgerMenuManager = new BurgerMenuManager();
     vizManager = new VizManager();
+
+    // Barre de recherche dynamique (TP / Élève)
+    resourceSearch = new ResourceSearch({
+        baseUrl:    window.BASE_URL    || '',
+        resourceId: window.RESOURCE_ID || null,
+    });
 
     // Exposer les fonctions globales pour le HTML
     window.toggleBurgerMenu = () => burgerMenuManager.toggleMenu();
