@@ -343,13 +343,20 @@ export class VizManager {
         const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.2);
         const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
 
-        const tooltip = this._createTooltip();
+        const tooltip = this._createTooltip(containerId);
         const self = this;
 
-        svg.selectAll('rect')
+        // Groupe de label SVG flottant au survol
+        const hoverLabel = svg.append('g').attr('class', 'hover-label').style('visibility', 'hidden');
+        const hoverBg = hoverLabel.append('rect').attr('rx', 4).attr('fill', 'rgba(15,15,15,0.88)');
+        const hoverName = hoverLabel.append('text').attr('class', 'hover-name').style('font-size', '10px').style('font-weight', '700').style('fill', '#fff');
+        const hoverRate = hoverLabel.append('text').attr('class', 'hover-rate').style('font-size', '10px').style('font-weight', '600');
+
+        svg.selectAll('rect.bar')
             .data(sorted)
             .enter()
             .append('rect')
+            .attr('class', 'bar')
             .attr('x', (_, i) => x(i))
             .attr('y', d => y(d.success_rate || 0))
             .attr('width', x.bandwidth())
@@ -361,18 +368,47 @@ export class VizManager {
                 d3.select(this).attr('opacity', 0.75);
                 const rate = d.success_rate || 0;
                 const rateColor = VizManager.gradeColor(rate);
+                const bx = +d3.select(this).attr('x');
+                const by = +d3.select(this).attr('y');
+                const bw = x.bandwidth();
+
+                const name = htmlEscape(d.identifier || d.student_id);
+                const rateStr = rate + '%';
+
+                hoverName.text(name);
+                hoverRate.text(rateStr).style('fill', rateColor);
+
+                const nameW = hoverName.node().getBBox().width;
+                const rateW = hoverRate.node().getBBox().width;
+                const boxW = Math.max(nameW, rateW) + 12;
+                const boxH = 32;
+                let lx = bx + bw / 2 - boxW / 2;
+                if (lx < 0) lx = 0;
+                if (lx + boxW > w) lx = w - boxW;
+                const ly = by - boxH - 6;
+
+                hoverBg.attr('x', lx).attr('y', ly).attr('width', boxW).attr('height', boxH);
+                hoverName.attr('x', lx + 6).attr('y', ly + 12);
+                hoverRate.attr('x', lx + 6).attr('y', ly + 26);
+                hoverLabel.style('visibility', 'visible');
+
                 tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
                     .html(`
-                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${htmlEscape(d.identifier || d.student_id)}</div>
+                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div>
                         <div style="color:${rateColor};font-weight:600">Réussite : ${rate}%</div>
                         <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
                         <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
                     `);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', function() { d3.select(this).attr('opacity', 1); tooltip.style('visibility', 'hidden'); })
+            .on('mouseout', function() {
+                d3.select(this).attr('opacity', 1);
+                hoverLabel.style('visibility', 'hidden');
+                tooltip.style('visibility', 'hidden');
+            })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
+                hoverLabel.style('visibility', 'hidden');
                 const dataZone = document.querySelector('.viz-data-zone');
                 if (dataZone) self.renderLevel2Student(dataZone, d.identifier || d.student_id);
             });
@@ -415,13 +451,20 @@ export class VizManager {
         const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.2);
         const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
 
-        const tooltip = this._createTooltip();
+        const tooltip = this._createTooltip(containerId);
         const self = this;
 
-        svg.selectAll('rect')
+        // Label SVG flottant au survol
+        const hoverLabel = svg.append('g').attr('class', 'hover-label').style('visibility', 'hidden');
+        const hoverBg   = hoverLabel.append('rect').attr('rx', 4).attr('fill', 'rgba(15,15,15,0.88)');
+        const hoverName = hoverLabel.append('text').style('font-size', '10px').style('font-weight', '700').style('fill', '#fff');
+        const hoverRate = hoverLabel.append('text').style('font-size', '10px').style('font-weight', '600');
+
+        svg.selectAll('rect.bar')
             .data(sorted)
             .enter()
             .append('rect')
+            .attr('class', 'bar')
             .attr('x', (_, i) => x(i))
             .attr('y', d => y(d.success_rate != null ? d.success_rate : 0))
             .attr('width', x.bandwidth())
@@ -433,18 +476,47 @@ export class VizManager {
                 d3.select(this).attr('opacity', 0.75);
                 const rate = d.success_rate != null ? d.success_rate : null;
                 const rateColor = rate != null ? VizManager.gradeColor(rate) : '#95a5a6';
+                const bx = +d3.select(this).attr('x');
+                const by = +d3.select(this).attr('y');
+                const bw = x.bandwidth();
+
+                const name = htmlEscape(d.funcname || d.exo_name);
+                const rateStr = rate != null ? rate + '%' : 'N/A';
+
+                hoverName.text(name);
+                hoverRate.text(rateStr).style('fill', rateColor);
+
+                const nameW = hoverName.node().getBBox().width;
+                const rateW = hoverRate.node().getBBox().width;
+                const boxW = Math.max(nameW, rateW) + 12;
+                const boxH = 32;
+                let lx = bx + bw / 2 - boxW / 2;
+                if (lx < 0) lx = 0;
+                if (lx + boxW > w) lx = w - boxW;
+                const ly = by - boxH - 6;
+
+                hoverBg.attr('x', lx).attr('y', ly).attr('width', boxW).attr('height', boxH);
+                hoverName.attr('x', lx + 6).attr('y', ly + 12);
+                hoverRate.attr('x', lx + 6).attr('y', ly + 26);
+                hoverLabel.style('visibility', 'visible');
+
                 tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
                     .html(`
-                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${htmlEscape(d.funcname || d.exo_name)}</div>
-                        <div style="color:${rateColor};font-weight:600">Réussite : ${rate != null ? rate + '%' : 'N/A'}</div>
+                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div>
+                        <div style="color:${rateColor};font-weight:600">Réussite : ${rateStr}</div>
                         <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
                         <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
                     `);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', function() { d3.select(this).attr('opacity', 1); tooltip.style('visibility', 'hidden'); })
+            .on('mouseout', function() {
+                d3.select(this).attr('opacity', 1);
+                hoverLabel.style('visibility', 'hidden');
+                tooltip.style('visibility', 'hidden');
+            })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
+                hoverLabel.style('visibility', 'hidden');
                 const dataZone = document.querySelector('.viz-data-zone');
                 if (dataZone) self.renderLevel2TP(dataZone, d.exercise_id, d.funcname || d.exo_name);
             });
@@ -696,13 +768,20 @@ export class VizManager {
         const x = d3.scaleBand().range([0, w]).domain(data.map((_, i) => i)).padding(0.2);
         const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
 
-        const tooltip = this._createTooltip();
+        const tooltip = this._createTooltip(containerId);
         const self = this;
 
-        svg.selectAll('rect')
+        // Label SVG flottant au survol
+        const hoverLabel = svg.append('g').attr('class', 'hover-label').style('visibility', 'hidden');
+        const hoverBg   = hoverLabel.append('rect').attr('rx', 4).attr('fill', 'rgba(15,15,15,0.88)');
+        const hoverName = hoverLabel.append('text').style('font-size', '10px').style('font-weight', '700').style('fill', '#fff');
+        const hoverRate = hoverLabel.append('text').style('font-size', '10px').style('font-weight', '600');
+
+        svg.selectAll('rect.bar')
             .data(data)
             .enter()
             .append('rect')
+            .attr('class', 'bar')
             .attr('x', (_, i) => x(i))
             .attr('y', d => y(d.rate))
             .attr('width', x.bandwidth())
@@ -713,18 +792,46 @@ export class VizManager {
             .on('mouseover', function(event, d) {
                 d3.select(this).attr('opacity', 0.75);
                 const rateColor = VizManager.gradeColor(d.rate);
+                const bx = +d3.select(this).attr('x');
+                const by = +d3.select(this).attr('y');
+                const bw = x.bandwidth();
+                const name = htmlEscape(d.name);
+                const rateStr = d.rate + '%';
+
+                hoverName.text(name);
+                hoverRate.text(rateStr).style('fill', rateColor);
+
+                const nameW = hoverName.node().getBBox().width;
+                const rateW = hoverRate.node().getBBox().width;
+                const boxW = Math.max(nameW, rateW) + 12;
+                const boxH = 32;
+                let lx = bx + bw / 2 - boxW / 2;
+                if (lx < 0) lx = 0;
+                if (lx + boxW > w) lx = w - boxW;
+                const ly = by - boxH - 6;
+
+                hoverBg.attr('x', lx).attr('y', ly).attr('width', boxW).attr('height', boxH);
+                hoverName.attr('x', lx + 6).attr('y', ly + 12);
+                hoverRate.attr('x', lx + 6).attr('y', ly + 26);
+                hoverLabel.style('visibility', 'visible');
+
                 tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
                     .html(`
-                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${htmlEscape(d.name)}</div>
+                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div>
                         <div style="color:${rateColor};font-weight:600">Réussite : ${d.rate}%</div>
                         <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.correct}/${d.total} tentatives réussies</div>
                         <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
                     `);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', function() { d3.select(this).attr('opacity', 1); tooltip.style('visibility', 'hidden'); })
+            .on('mouseout', function() {
+                d3.select(this).attr('opacity', 1);
+                hoverLabel.style('visibility', 'hidden');
+                tooltip.style('visibility', 'hidden');
+            })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
+                hoverLabel.style('visibility', 'hidden');
                 const dataZone = document.querySelector('.viz-data-zone');
                 if (dataZone) self.renderLevel2TP(dataZone, d.id, d.name);
             });
@@ -814,8 +921,14 @@ export class VizManager {
         const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.3);
         const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
 
-        const tooltip = this._createTooltip();
+        const tooltip = this._createTooltip(containerId);
         const self = this;
+
+        // Label SVG flottant au survol
+        const hoverLabel = svg.append('g').attr('class', 'hover-label').style('visibility', 'hidden');
+        const hoverBg   = hoverLabel.append('rect').attr('rx', 4).attr('fill', 'rgba(15,15,15,0.88)');
+        const hoverName = hoverLabel.append('text').style('font-size', '10px').style('font-weight', '700').style('fill', '#fff');
+        const hoverRate = hoverLabel.append('text').style('font-size', '10px').style('font-weight', '600');
 
         // Lignes reliant tous les points
         const lineGen = d3.line()
@@ -845,18 +958,45 @@ export class VizManager {
                 d3.select(this).attr('r', 9);
                 const rate = d.success_rate || 0;
                 const rateColor = VizManager.gradeColor(rate);
+                const cx = +d3.select(this).attr('cx');
+                const cy = +d3.select(this).attr('cy');
+                const name = htmlEscape(d.identifier);
+                const rateStr = rate + '%';
+
+                hoverName.text(name);
+                hoverRate.text(rateStr).style('fill', rateColor);
+
+                const nameW = hoverName.node().getBBox().width;
+                const rateW = hoverRate.node().getBBox().width;
+                const boxW = Math.max(nameW, rateW) + 12;
+                const boxH = 32;
+                let lx = cx - boxW / 2;
+                if (lx < 0) lx = 0;
+                if (lx + boxW > w) lx = w - boxW;
+                const ly = cy - boxH - 12;
+
+                hoverBg.attr('x', lx).attr('y', ly).attr('width', boxW).attr('height', boxH);
+                hoverName.attr('x', lx + 6).attr('y', ly + 12);
+                hoverRate.attr('x', lx + 6).attr('y', ly + 26);
+                hoverLabel.style('visibility', 'visible');
+
                 tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
                     .html(`
-                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${htmlEscape(d.identifier)}</div>
+                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div>
                         <div style="color:${rateColor};font-weight:600">Réussite : ${rate}%</div>
                         <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
                         <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
                     `);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', function() { d3.select(this).attr('r', 6); tooltip.style('visibility', 'hidden'); })
+            .on('mouseout', function() {
+                d3.select(this).attr('r', 6);
+                hoverLabel.style('visibility', 'hidden');
+                tooltip.style('visibility', 'hidden');
+            })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
+                hoverLabel.style('visibility', 'hidden');
                 const dataZone = document.querySelector('.viz-data-zone');
                 if (dataZone) self.renderLevel3Student(dataZone, d.identifier, true, tpContext);
             });
@@ -960,10 +1100,11 @@ export class VizManager {
     // Helpers
     // =========================================================================
 
-    _createTooltip() {
-        d3.select('.viz-tooltip').remove();
+    _createTooltip(id = 'default') {
+        const cls = `viz-tooltip-${id}`;
+        d3.select(`.${cls}`).remove();
         return d3.select('body').append('div')
-            .attr('class', 'viz-tooltip')
+            .attr('class', `viz-tooltip ${cls}`)
             .style('position', 'absolute')
             .style('visibility', 'hidden')
             .style('background', 'rgba(15,15,15,0.93)')
