@@ -836,18 +836,6 @@ export class VizManager {
         const self = this;
 
 
-        // Lignes reliant tous les points
-        const lineGen = d3.line()
-            .x((_, i) => x(i) + x.bandwidth() / 2)
-            .y(d => y(d.success_rate || 0));
-
-        svg.append('path')
-            .datum(sorted)
-            .attr('fill', 'none')
-            .attr('stroke', '#bdc3c7')
-            .attr('stroke-width', 1.5)
-            .attr('d', lineGen);
-
         // Points colorés
         svg.selectAll('circle')
             .data(sorted)
