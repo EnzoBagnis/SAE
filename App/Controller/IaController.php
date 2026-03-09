@@ -68,6 +68,63 @@ class IaController extends AbstractController
     }
 
     /**
+     * TEMPORAIRE — diagnostic Python sur le serveur.
+     * GET /api/ia/debug-python → JSON avec les chemins testés et le Python utilisé.
+     * À SUPPRIMER après résolution du problème.
+     */
+    public function debugPython(): void
+    {
+        $projectRoot = realpath(__DIR__ . '/../../');
+
+        $possiblePythonPaths = [
+            $projectRoot . '/scripts/venv/bin/python3',
+            $projectRoot . '/scripts/venv/bin/python',
+            $projectRoot . '/venv/bin/python3',
+            $projectRoot . '/venv/bin/python',
+            '/home/studtraj/venv/bin/python3',
+            '/home/studtraj/www/venv/bin/python3',
+            '/home/studtraj/www/SAE/scripts/venv/bin/python3',
+            $projectRoot . '/scripts/venv/Scripts/python.exe',
+        ];
+
+        $results = [];
+        $chosenPath = 'python';
+        foreach ($possiblePythonPaths as $p) {
+            $exists = file_exists($p);
+            $results[] = ['path' => $p, 'exists' => $exists];
+            if ($exists && $chosenPath === 'python') {
+                $chosenPath = $p;
+            }
+        }
+
+        // Tester which python3 / which python
+        $whichPython3 = trim(shell_exec('which python3 2>&1') ?? '');
+        $whichPython  = trim(shell_exec('which python 2>&1') ?? '');
+
+        // Tester si gensim est disponible avec le python choisi
+        $testCmd = escapeshellarg($chosenPath) . ' -c "import gensim; print(gensim.__version__)" 2>&1';
+        $gensimTest = trim(shell_exec($testCmd) ?? '');
+
+        // Lister le contenu de scripts/venv/ s'il existe
+        $venvDir = $projectRoot . '/scripts/venv';
+        $venvContents = is_dir($venvDir) ? scandir($venvDir) : 'DOSSIER INEXISTANT';
+        $venvBinDir = $venvDir . '/bin';
+        $venvBinContents = is_dir($venvBinDir) ? scandir($venvBinDir) : 'DOSSIER bin/ INEXISTANT';
+
+        $this->jsonResponse([
+            'project_root'      => $projectRoot,
+            'script_exists'     => file_exists($projectRoot . '/scripts/clustering_pipeline.py'),
+            'candidates'        => $results,
+            'chosen_python'     => $chosenPath,
+            'which_python3'     => $whichPython3,
+            'which_python'      => $whichPython,
+            'gensim_test'       => $gensimTest,
+            'venv_contents'     => $venvContents,
+            'venv_bin_contents' => $venvBinContents,
+        ]);
+    }
+
+    /**
      * API endpoint : POST /api/ia/clustering
      * PHP extrait les données de la BD, les passe au script Python via stdin.
      * Le script Python fait Doc2Vec → KMeans → t-SNE → image base64.
@@ -134,17 +191,29 @@ class IaController extends AbstractController
 
             // ── Chemins Python ──
             $projectRoot = realpath(__DIR__ . '/../../');
-            $scriptPath  = $projectRoot . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'clustering_pipeline.py';
+            $scriptPath  = $projectRoot . '/scripts/clustering_pipeline.py';
 
             // Chercher le venv Python dans plusieurs emplacements possibles
             $possiblePythonPaths = [
-                $projectRoot . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'venv' . DIRECTORY_SEPARATOR . 'Scripts' . DIRECTORY_SEPARATOR . 'python.exe',
+                // Linux : venv dans scripts/
+                $projectRoot . '/scripts/venv/bin/python3',
+                $projectRoot . '/scripts/venv/bin/python',
+                // Linux : venv à la racine du projet
+                $projectRoot . '/venv/bin/python3',
+                $projectRoot . '/venv/bin/python',
+                // Linux : venv dans le home (Alwaysdata / hébergeur)
+                '/home/studtraj/venv/bin/python3',
+                '/home/studtraj/www/venv/bin/python3',
+                '/home/studtraj/www/SAE/scripts/venv/bin/python3',
+                // Windows : venv dans scripts/
+                $projectRoot . '/scripts/venv/Scripts/python.exe',
+                // Windows : venv externe
                 'C:\\xampp\\htdocs\\BUT3\\venv\\Scripts\\python.exe',
-                $projectRoot . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'venv' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'python3',
-                'C:/xampp/htdocs/BUT3/venv/bin/python3',
+                // python3 système (peut avoir les modules)
+                'python3',
             ];
 
-            $pythonPath = 'python'; // fallback
+            $pythonPath = 'python'; // fallback ultime
             foreach ($possiblePythonPaths as $candidate) {
                 if (file_exists($candidate)) {
                     $pythonPath = $candidate;

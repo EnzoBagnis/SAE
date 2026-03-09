@@ -39,6 +39,9 @@ $router->get('/ia', App\Controller\IaController::class, 'index');
 // IA API route (clustering pipeline)
 $router->post('/api/ia/clustering', App\Controller\IaController::class, 'clustering');
 
+// IA diagnostic route (TEMPORAIRE - à supprimer après debug)
+$router->get('/api/ia/debug-python', App\Controller\IaController::class, 'debugPython');
+
 // Exercise routes
 $router->get('/exercises', App\Controller\ExercisesController::class, 'index');
 $router->get('/exercises/{id}', App\Controller\ExercisesController::class, 'show');
