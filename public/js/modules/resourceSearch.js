@@ -8,18 +8,30 @@ export class ResourceSearch {
         this.base = baseUrl;
         this.rid  = resourceId;
 
-        this.inputEl  = document.getElementById('resourceSearchInput');
-        this.typeEl   = document.getElementById('resourceSearchType');
-        this.clearBtn = document.getElementById('resourceClearBtn');
-        this.resDiv   = document.getElementById('resourceSearchResults');
-        this.resLabel = document.getElementById('rsr-label');
-        this.resList  = document.getElementById('rsr-list');
-        this.modal    = document.getElementById('rsrStudentModal');
-        this.mTitle   = document.getElementById('rsrStudentModalTitle');
-        this.mBody    = document.getElementById('rsrStudentModalBody');
+        // Helper that returns the first matching element from a list of possible IDs
+        const getEl = (...ids) => {
+            for (const id of ids) {
+                if (!id) continue;
+                const el = document.getElementById(id);
+                if (el) return el;
+            }
+            return null;
+        };
 
-        if (!this.inputEl || !this.resDiv || !this.resList) {
-            console.warn('[ResourceSearch] Éléments DOM introuvables — module désactivé.',
+        // Support both the new IDs (resourceSearch*) and the legacy ones used in details.php
+        this.inputEl  = getEl('resourceSearchInput', 'resourceSearch', 'resource-search-input');
+        this.typeEl   = getEl('resourceSearchType', 'searchType');
+        this.clearBtn = getEl('resourceClearBtn', 'clearSearchBtn');
+        this.resDiv   = getEl('resourceSearchResults', 'searchResults');
+        this.resLabel = getEl('rsr-label', null); // not present in legacy view
+        this.resList  = getEl('rsr-list', 'studentsList', 'exercisesList');
+        this.modal    = getEl('rsrStudentModal', 'studentDetailModal');
+        this.mTitle   = getEl('rsrStudentModalTitle', 'studentModalTitle');
+        this.mBody    = getEl('rsrStudentModalBody', 'studentModalBody');
+
+        // If minimal elements are missing, log and gracefully return (no JS errors on page)
+        if (!this.inputEl || !this.resDiv) {
+            console.warn('[ResourceSearch] Éléments DOM essentiels introuvables — module désactivé.',
                 { input: !!this.inputEl, resDiv: !!this.resDiv, resList: !!this.resList });
             return;
         }
@@ -28,16 +40,18 @@ export class ResourceSearch {
 
         const debounced = this._debounce(() => this._search(), 300);
         this.inputEl.addEventListener('input', debounced);
-        this.typeEl.addEventListener('change', () => {
-            this.inputEl.placeholder = this.typeEl.value === 'exercises'
-                ? 'Rechercher un TP par nom…'
-                : 'Rechercher un étudiant par identifiant…';
+        this.typeEl?.addEventListener('change', () => {
+            if (this.typeEl) {
+                if (this.inputEl) this.inputEl.placeholder = this.typeEl.value === 'exercises'
+                    ? 'Rechercher un TP par nom…'
+                    : 'Rechercher un étudiant par identifiant…';
+            }
             debounced();
         });
-        this.clearBtn.addEventListener('click', () => {
-            this.inputEl.value = '';
-            this.resDiv.style.display = 'none';
-            this.resList.innerHTML = '';
+        this.clearBtn?.addEventListener('click', () => {
+            if (this.inputEl) this.inputEl.value = '';
+            if (this.resDiv) this.resDiv.style.display = 'none';
+            if (this.resList) this.resList.innerHTML = '';
         });
         this.modal?.addEventListener('click', e => {
             if (e.target === this.modal) this._closeModal();
@@ -47,20 +61,20 @@ export class ResourceSearch {
     }
 
     async _search() {
-        const q    = (this.inputEl.value || '').trim().toLowerCase();
-        const type = this.typeEl.value;
+        const q    = (this.inputEl?.value || '').trim().toLowerCase();
+        const type = this.typeEl?.value || 'exercises';
 
         console.log('[ResourceSearch] search —', { q, type });
 
         if (!q) {
-            this.resDiv.style.display = 'none';
-            this.resList.innerHTML = '';
+            if (this.resDiv) this.resDiv.style.display = 'none';
+            if (this.resList) this.resList.innerHTML = '';
             return;
         }
 
-        this.resDiv.style.display = 'block';
-        this.resLabel.textContent = type === 'exercises' ? 'Travaux Pratiques trouvés :' : 'Étudiants trouvés :';
-        this.resList.innerHTML    = '<li style="color:#888;padding:8px;font-style:italic;">Chargement…</li>';
+        if (this.resDiv) this.resDiv.style.display = 'block';
+        if (this.resLabel) this.resLabel.textContent = type === 'exercises' ? 'Travaux Pratiques trouvés :' : 'Étudiants trouvés :';
+        if (this.resList) this.resList.innerHTML    = '<li style="color:#888;padding:8px;font-style:italic;">Chargement…</li>';
 
         if (type === 'exercises') {
             await this._searchExercises(q);
@@ -130,6 +144,7 @@ export class ResourceSearch {
     }
 
     _setList(items) {
+        if (!this.resList) return;
         this.resList.innerHTML = '';
         items.forEach(({ text, click }) => {
             const li = document.createElement('li');
@@ -149,15 +164,15 @@ export class ResourceSearch {
     async _openStudentModal(studentId) {
         if (!this.modal) return;
         this.modal.style.display = 'block';
-        this.mTitle.textContent  = `Étudiant : ${studentId}`;
-        this.mBody.innerHTML     = '<p style="color:#888;text-align:center;padding:1rem;">⏳ Chargement…</p>';
+        if (this.mTitle) this.mTitle.textContent  = `Étudiant : ${studentId}`;
+        if (this.mBody) this.mBody.innerHTML     = '<p style="color:#888;text-align:center;padding:1rem;">⏳ Chargement…</p>';
 
         let url = `${this.base}/api/dashboard/student/${encodeURIComponent(studentId)}`;
         if (this.rid) url += `?resource_id=${this.rid}`;
 
         const data = await this._safeFetch(url);
         if (!data) {
-            this.mBody.innerHTML = '<p style="color:#e74c3c;padding:1rem;">Erreur lors du chargement.</p>';
+            if (this.mBody) this.mBody.innerHTML = '<p style="color:#e74c3c;padding:1rem;">Erreur lors du chargement.</p>';
             return;
         }
 
@@ -165,7 +180,7 @@ export class ResourceSearch {
         const stats    = data.stats    ?? {};
 
         if (!attempts.length) {
-            this.mBody.innerHTML = '<p style="color:#666;padding:1rem;">Aucune tentative pour cet étudiant.</p>';
+            if (this.mBody) this.mBody.innerHTML = '<p style="color:#666;padding:1rem;">Aucune tentative pour cet étudiant.</p>';
             return;
         }
 
@@ -196,13 +211,13 @@ export class ResourceSearch {
         });
 
         html += '</ul>';
-        this.mBody.innerHTML = html;
+        if (this.mBody) this.mBody.innerHTML = html;
     }
 
     _closeModal() {
         if (!this.modal) return;
         this.modal.style.display = 'none';
-        this.mBody.innerHTML = '';
+        if (this.mBody) this.mBody.innerHTML = '';
     }
 
     async _safeFetch(url) {
@@ -210,8 +225,20 @@ export class ResourceSearch {
             const resp = await fetch(url, { credentials: 'same-origin' });
             if (!resp.ok) { console.error('[ResourceSearch] HTTP', resp.status, url); return null; }
             const ct = resp.headers.get('content-type') || '';
-            if (!ct.includes('application/json')) { console.error('[ResourceSearch] non-JSON response', ct); return null; }
-            const json = await resp.json();
+            const text = await resp.text();
+            if (!ct.includes('application/json')) {
+                // Try to detect redirects to login or HTML errors and log them
+                console.error('[ResourceSearch] non-JSON response', ct, text.slice(0,400));
+                return null;
+            }
+            // Parse JSON safely
+            let json;
+            try {
+                json = JSON.parse(text);
+            } catch (err) {
+                console.error('[ResourceSearch] JSON parse error', err, text.slice(0,400));
+                return null;
+            }
             if (!json.success) { console.error('[ResourceSearch] success=false', json); return null; }
             return json.data;
         } catch (err) {

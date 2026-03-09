@@ -21,8 +21,9 @@ use Core\Service\SessionService;
 class DashboardApiController extends AbstractController
 {
     private AuthenticationService $authService;
-    private AttemptRepository $attemptRepository;
-    private ExerciseRepository $exerciseRepository;
+    private ?AttemptRepository $attemptRepository;
+    private ?ExerciseRepository $exerciseRepository;
+    private bool $dbAvailable;
 
     /**
      * Constructor
@@ -30,8 +31,17 @@ class DashboardApiController extends AbstractController
     public function __construct()
     {
         $this->authService       = new AuthenticationService(new SessionService());
-        $this->attemptRepository = new AttemptRepository();
-        $this->exerciseRepository = new ExerciseRepository();
+        $this->dbAvailable = true;
+        try {
+            $this->attemptRepository = new AttemptRepository();
+            $this->exerciseRepository = new ExerciseRepository();
+        } catch (\Throwable $e) {
+            // DB not available — mark controller as degraded and log full error
+            error_log('[DashboardApiController::__construct] DB init failed: ' . $e->__toString());
+            $this->dbAvailable = false;
+            $this->attemptRepository = null;
+            $this->exerciseRepository = null;
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -46,7 +56,16 @@ class DashboardApiController extends AbstractController
      */
     public function students(): void
     {
-        $this->authService->requireAuth('/auth/login');
+        // For API endpoints prefer JSON error instead of redirect
+        if (!$this->authService->isAuthenticated()) {
+            $this->jsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
+            return;
+        }
+
+        if (!$this->dbAvailable) {
+            $this->jsonResponse(['success' => false, 'message' => 'Base de données indisponible'], 503);
+            return;
+        }
 
         $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
 
@@ -84,8 +103,8 @@ class DashboardApiController extends AbstractController
                 ],
             ]);
         } catch (\Throwable $e) {
-            error_log('[DashboardApiController::students] ' . $e->getMessage());
-            $this->jsonResponse(['success' => false, 'data' => ['students' => [], 'total' => 0]], 500);
+            error_log('[DashboardApiController::students] ' . $e->__toString());
+            $this->jsonResponse(['success' => false, 'message' => 'Erreur interne lors du chargement des étudiants.'], 500);
         }
     }
 
@@ -101,7 +120,15 @@ class DashboardApiController extends AbstractController
      */
     public function student(string $identifier): void
     {
-        $this->authService->requireAuth('/auth/login');
+        if (!$this->authService->isAuthenticated()) {
+            $this->jsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
+            return;
+        }
+
+        if (!$this->dbAvailable) {
+            $this->jsonResponse(['success' => false, 'message' => 'Base de données indisponible'], 503);
+            return;
+        }
 
         $identifier = urldecode($identifier);
         $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
@@ -165,8 +192,8 @@ class DashboardApiController extends AbstractController
                 ],
             ]);
         } catch (\Throwable $e) {
-            error_log('[DashboardApiController::student] ' . $e->getMessage());
-            $this->jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+            error_log('[DashboardApiController::student] ' . $e->__toString());
+            $this->jsonResponse(['success' => false, 'message' => 'Erreur interne lors du chargement de l\'étudiant.'], 500);
         }
     }
 
@@ -181,7 +208,15 @@ class DashboardApiController extends AbstractController
      */
     public function exercises(): void
     {
-        $this->authService->requireAuth('/auth/login');
+        if (!$this->authService->isAuthenticated()) {
+            $this->jsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
+            return;
+        }
+
+        if (!$this->dbAvailable) {
+            $this->jsonResponse(['success' => false, 'message' => 'Base de données indisponible'], 503);
+            return;
+        }
 
         $resourceId  = isset($_GET['resource_id'])  ? (int)$_GET['resource_id']  : null;
         $exerciseId  = isset($_GET['exercise_id'])  ? (int)$_GET['exercise_id']  : null;
@@ -287,8 +322,8 @@ class DashboardApiController extends AbstractController
                 'data'    => ['exercises' => $exercises, 'total' => count($exercises)],
             ]);
         } catch (\Throwable $e) {
-            error_log('[DashboardApiController::exercises] ' . $e->getMessage());
-            $this->jsonResponse(['success' => false, 'data' => ['exercises' => [], 'total' => 0]], 500);
+            error_log('[DashboardApiController::exercises] ' . $e->__toString());
+            $this->jsonResponse(['success' => false, 'message' => 'Erreur interne lors du chargement des exercices.'], 500);
         }
     }
 
@@ -303,7 +338,15 @@ class DashboardApiController extends AbstractController
      */
     public function studentsStats(): void
     {
-        $this->authService->requireAuth('/auth/login');
+        if (!$this->authService->isAuthenticated()) {
+            $this->jsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
+            return;
+        }
+
+        if (!$this->dbAvailable) {
+            $this->jsonResponse(['success' => false, 'message' => 'Base de données indisponible'], 503);
+            return;
+        }
 
         $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
 
@@ -346,8 +389,8 @@ class DashboardApiController extends AbstractController
 
             $this->jsonResponse(['success' => true, 'data' => $stats]);
         } catch (\Throwable $e) {
-            error_log('[DashboardApiController::studentsStats] ' . $e->getMessage());
-            $this->jsonResponse(['success' => false, 'data' => []], 500);
+            error_log('[DashboardApiController::studentsStats] ' . $e->__toString());
+            $this->jsonResponse(['success' => false, 'message' => 'Erreur interne lors du calcul des statistiques.'], 500);
         }
     }
 }

@@ -322,185 +322,38 @@ $title = 'StudTraj - ' . $resTitle;
 
 <!-- Search JS -->
 <script>
-    (function(){
-        const input = document.getElementById('resourceSearchInput');
-        const typeSelect = document.getElementById('searchType');
-        const clearBtn = document.getElementById('clearSearchBtn');
-        const studentsResults = document.getElementById('studentsResults');
-        const studentsList = document.getElementById('studentsList');
-        const exercisesResults = document.getElementById('exercisesResults');
-        const exercisesList = document.getElementById('exercisesList');
-        const searchResults = document.getElementById('searchResults');
-        const studentModal = document.getElementById('studentDetailModal');
-        const studentModalTitle = document.getElementById('studentModalTitle');
-        const studentModalBody = document.getElementById('studentModalBody');
-
-        // Debounce helper
-        function debounce(fn, delay){
-            let t;
-            return function(...args){
-                clearTimeout(t);
-                t = setTimeout(()=>fn.apply(this,args), delay);
-            };
-        }
-
-        // Lire les exercices déjà rendus côté serveur (DOM)
-        function collectExercisesFromDom(){
-            const nodes = Array.from(document.getElementsByClassName('tp-item'));
-            return nodes.map(n => ({
-                name: (n.querySelector('.tp-item-info h3')?.innerText || '').trim(),
-                desc: (n.querySelector('.tp-item-info p')?.innerText || '').trim(),
-                node: n
-            }));
-        }
-
-        const exercisesCache = collectExercisesFromDom();
-
-        async function searchHandler(){
-            const q = (input.value || '').trim().toLowerCase();
-            const type = typeSelect.value;
-
-            if (q === ''){
-                // Reset display
-                searchResults.style.display = 'none';
-                studentsResults.style.display = 'none';
-                exercisesResults.style.display = 'none';
-                // show all exercises DOM
-                exercisesCache.forEach(e => e.node.style.display = 'flex');
-                return;
-            }
-
-            searchResults.style.display = 'block';
-
-            if (type === 'exercises'){
-                // Client-side filter of exercices
-                const matches = [];
-                exercisesCache.forEach(e => {
-                    const hay = (e.name + ' ' + e.desc).toLowerCase();
-                    if (hay.indexOf(q) !== -1){
-                        e.node.style.display = 'flex';
-                        matches.push(e);
-                    } else {
-                        e.node.style.display = 'none';
-                    }
+// Import dynamique pour que BASE_URL (sous-dossier /SAE/) soit connu au moment du chargement
+(function() {
+    var base = window.BASE_URL || '';
+    import(base + '/public/js/modules/resourceSearch.js')
+        .then(function(module) {
+            try {
+                var rs = new module.ResourceSearch({
+                    baseUrl: base,
+                    resourceId: window.RESOURCE_ID || null
                 });
-
-                // Render quick list
-                exercisesList.innerHTML = '';
-                if (matches.length === 0){
-                    exercisesList.innerHTML = '<li style="color:#888;">Aucun exercice trouvé.</li>';
-                } else {
-                    matches.forEach(m => {
-                        const li = document.createElement('li');
-                        li.style.padding = '6px 0';
-                        li.textContent = m.name;
-                        exercisesList.appendChild(li);
-                    });
-                }
-
-                exercisesResults.style.display = 'block';
-                studentsResults.style.display = 'none';
-
-            } else {
-                // Students: fetch list from API and filter
-                studentsResults.style.display = 'block';
-                exercisesResults.style.display = 'none';
-                studentsList.innerHTML = '<li style="color:#666;">Chargement…</li>';
-
-                try{
-                    let url = `${window.BASE_URL}/api/dashboard/students?page=1&perPage=10000`;
-                    if (window.RESOURCE_ID) url += `&resource_id=${window.RESOURCE_ID}`;
-                    const resp = await fetch(url);
-                    if (!resp.ok) throw new Error('Échec API');
-                    const data = await resp.json();
-                    const students = (data.data && data.data.students) ? data.data.students : [];
-                    const filtered = students.filter(s => (s.title || '').toLowerCase().indexOf(q) !== -1);
-
-                    studentsList.innerHTML = '';
-                    if (filtered.length === 0){
-                        studentsList.innerHTML = '<li style="color:#888;">Aucun étudiant trouvé.</li>';
-                    } else {
-                        filtered.forEach(s => {
-                            const li = document.createElement('li');
-                            li.style.padding = '6px 0';
-                            li.style.cursor = 'pointer';
-                            li.textContent = s.title || s.identifier || s.id;
-                            li.dataset.studentId = s.id || s.identifier || s.title;
-                            li.addEventListener('click', () => openStudentDetails(li.dataset.studentId));
-                            studentsList.appendChild(li);
-                        });
-                    }
-                } catch(err){
-                    studentsList.innerHTML = '<li style="color:#e74c3c;">Erreur lors du chargement des étudiants.</li>';
-                    console.error(err);
-                }
+                window._resourceSearch = rs;
+            } catch(e) {
+                console.error('ResourceSearch init failed', e);
             }
-        }
-
-        const debouncedSearch = debounce(searchHandler, 300);
-
-        input.addEventListener('input', debouncedSearch);
-        typeSelect.addEventListener('change', debouncedSearch);
-        clearBtn.addEventListener('click', () => {
-            input.value = '';
-            debouncedSearch();
+        })
+        .catch(function(err) {
+            console.error('Impossible de charger resourceSearch.js :', err);
         });
+})();
 
-        // Open student details (AJAX)
-        async function openStudentDetails(studentId){
-            studentModal.style.display = 'block';
-            studentModalTitle.textContent = `Étudiant : ${studentId}`;
-            studentModalBody.innerHTML = 'Chargement…';
+// Fermer la modale étudiant (appelé depuis le bouton ×)
+function closeStudentModal() {
+    var m = document.getElementById('studentDetailModal');
+    if (m) { m.style.display = 'none'; }
+    var b = document.getElementById('studentModalBody');
+    if (b) { b.innerHTML = ''; }
+}
 
-            try{
-                const url = `${window.BASE_URL}/api/dashboard/student/${encodeURIComponent(studentId)}` + (window.RESOURCE_ID ? `?resource_id=${window.RESOURCE_ID}` : '');
-                const resp = await fetch(url);
-                if (!resp.ok) throw new Error('Erreur API étudiant');
-                const json = await resp.json();
-                if (!json.success){
-                    studentModalBody.innerHTML = '<div style="color:#888;">Aucune donnée disponible.</div>';
-                    return;
-                }
-
-                const attempts = json.data.attempts || [];
-                let html = `<div style="max-height:400px;overflow:auto;">`;
-                if (attempts.length === 0){
-                    html += '<p style="color:#666;">Aucune tentative pour cet étudiant sur cette ressource.</p>';
-                } else {
-                    html += '<ul style="list-style:none;padding-left:0;">';
-                    attempts.forEach(a => {
-                        html += `<li style="padding:8px 0;border-bottom:1px solid #f0f0f0;">
-                                    <strong>${a.exercice_name || 'Exercice'}</strong>
-                                    <div style="font-size:.9em;color:#666;">Correct: ${a.correct ? 'Oui' : 'Non'}</div>
-                                  </li>`;
-                    });
-                    html += '</ul>';
-                }
-                html += '</div>';
-                studentModalBody.innerHTML = html;
-            } catch(e){
-                console.error(e);
-                studentModalBody.innerHTML = '<div style="color:#e74c3c;">Erreur lors du chargement.</div>';
-            }
-        }
-
-        window.closeStudentModal = function(){
-            studentModal.style.display = 'none';
-            studentModalBody.innerHTML = '';
-        };
-
-        // Close modal by clicking outside
-        studentModal.addEventListener('click', (e) => {
-            if (e.target === studentModal) closeStudentModal();
-        });
-
-    })();
-</script>
-
-<script>
-// ─── Fermer la modale ────────────────────────────────────────────────────────
+// Fermer la modale ressource générique
 function closeResourceModal() {
-    document.getElementById('resourceModal').style.display = 'none';
+    var m = document.getElementById('resourceModal');
+    if (m) { m.style.display = 'none'; }
 }
 </script>
 </body>
