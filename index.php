@@ -18,9 +18,8 @@ register_shutdown_function(function (): void {
         error_log('[FATAL] ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']);
         if (!headers_sent()) {
             http_response_code(500);
-            // Détecter si c'est une requête API pour renvoyer du JSON
             $uri = $_SERVER['REQUEST_URI'] ?? '';
-            if (str_contains($uri, '/api/')) {
+            if (strpos($uri, '/api/') !== false) {
                 header('Content-Type: application/json; charset=utf-8');
                 echo json_encode(['success' => false, 'message' => 'Erreur fatale du serveur'], JSON_UNESCAPED_UNICODE);
                 return;
@@ -43,9 +42,8 @@ set_exception_handler(function (\Throwable $e): void {
     $line = $e->getLine();
     error_log('[UNCAUGHT] ' . get_class($e) . ': ' . $msg . ' in ' . $file . ':' . $line);
 
-    // Détecter si c'est une requête API pour renvoyer du JSON au lieu de HTML
     $uri = $_SERVER['REQUEST_URI'] ?? '';
-    if (str_contains($uri, '/api/')) {
+    if (strpos($uri, '/api/') !== false) {
         if (!headers_sent()) {
             http_response_code(500);
             header('Content-Type: application/json; charset=utf-8');
@@ -73,7 +71,6 @@ set_exception_handler(function (\Throwable $e): void {
         echo '<p>dans <b>' . htmlspecialchars($file) . '</b> ligne <b>' . $line . '</b></p>';
         echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
     } else {
-        // In production, show a generic error page
         $errorView = __DIR__ . '/App/View/errors/500.php';
         if (file_exists($errorView)) {
             require $errorView;
@@ -89,10 +86,6 @@ use Core\Service\Container;
 
 $router = new Router();
 
-// ---------------------------------------------------------------------------
-// Service Container — register controllers that require dependency injection.
-// Controllers not registered here are still instantiated via `new` (fallback).
-// ---------------------------------------------------------------------------
 $container = new Container();
 
 $container->set(
@@ -113,9 +106,8 @@ require_once __DIR__ . '/App/routes.php';
 // Set 404 handler
 $router->setNotFoundHandler(function() {
     http_response_code(404);
-    // Détecter si c'est une requête API pour renvoyer du JSON
     $uri = $_SERVER['REQUEST_URI'] ?? '';
-    if (str_contains($uri, '/api/')) {
+    if (strpos($uri, '/api/') !== false) {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => false, 'message' => 'Route API non trouvée'], JSON_UNESCAPED_UNICODE);
         return;
@@ -129,3 +121,4 @@ $router->setNotFoundHandler(function() {
 
 // Dispatch the request
 $router->dispatch();
+
