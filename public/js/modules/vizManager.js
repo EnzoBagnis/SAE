@@ -329,7 +329,7 @@ export class VizManager {
 
         const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
 
-        const margin = { top: 10, right: 20, bottom: 70, left: 50 };
+        const margin = { top: 10, right: 20, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
         const w = vw - margin.left - margin.right;
         const h = vh - margin.top - margin.bottom;
@@ -369,10 +369,8 @@ export class VizManager {
                 if (dataZone) self.renderLevel2Student(dataZone, d.identifier || d.student_id);
             });
 
-        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(i => {
-            const label = sorted[i]?.identifier || '';
-            return label.length > 6 ? label.slice(0, 6) + '…' : label;
-        })).selectAll('text').attr('transform', 'rotate(-40)').style('text-anchor', 'end').style('font-size', '0.7rem');
+        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => ''))
+            .selectAll('text').remove();
 
         svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
 
@@ -395,7 +393,7 @@ export class VizManager {
 
         const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
 
-        const margin = { top: 10, right: 20, bottom: 80, left: 50 };
+        const margin = { top: 10, right: 20, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
         const w = vw - margin.left - margin.right;
         const h = vh - margin.top - margin.bottom;
@@ -435,10 +433,8 @@ export class VizManager {
                 if (dataZone) self.renderLevel2TP(dataZone, d.exercise_id, d.funcname || d.exo_name);
             });
 
-        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(i => {
-            const label = sorted[i]?.funcname || sorted[i]?.exo_name || '';
-            return label.length > 8 ? label.slice(0, 8) + '…' : label;
-        })).selectAll('text').attr('transform', 'rotate(-40)').style('text-anchor', 'end').style('font-size', '0.7rem');
+        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => ''))
+            .selectAll('text').remove();
 
         svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
 
@@ -670,7 +666,7 @@ export class VizManager {
             rate: e.total > 0 ? Math.round((e.correct / e.total) * 100) : 0
         })).sort((a, b) => b.rate - a.rate);
 
-        const margin = { top: 10, right: 20, bottom: 80, left: 50 };
+        const margin = { top: 10, right: 20, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
         const w = vw - margin.left - margin.right;
         const h = vh - margin.top - margin.bottom;
@@ -710,10 +706,8 @@ export class VizManager {
                 if (dataZone) self.renderLevel2TP(dataZone, d.id, d.name);
             });
 
-        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(i => {
-            const label = data[i]?.name || '';
-            return label.length > 8 ? label.slice(0, 8) + '…' : label;
-        })).selectAll('text').attr('transform', 'rotate(-40)').style('text-anchor', 'end').style('font-size', '0.7rem');
+        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => ''))
+            .selectAll('text').remove();
 
         svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
     }
@@ -783,7 +777,7 @@ export class VizManager {
         }
 
         const sorted = [...students].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
-        const margin = { top: 10, right: 20, bottom: 80, left: 50 };
+        const margin = { top: 10, right: 20, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
         const w = vw - margin.left - margin.right;
         const h = vh - margin.top - margin.bottom;
@@ -836,10 +830,8 @@ export class VizManager {
                 if (dataZone) self.renderLevel3Student(dataZone, d.identifier, true, tpContext);
             });
 
-        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(i => {
-            const label = sorted[i]?.identifier || '';
-            return label.length > 6 ? label.slice(0, 6) + '…' : label;
-        })).selectAll('text').attr('transform', 'rotate(-40)').style('text-anchor', 'end').style('font-size', '0.7rem');
+        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => ''))
+            .selectAll('text').remove();
         svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
 
         this._renderGradeLegend(svg, w + 5, 0);
