@@ -15,9 +15,26 @@ require_once __DIR__ . '/App/bootstrap.php';
 register_shutdown_function(function (): void {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        $logFile = __DIR__ . '/logs/php_errors.log';
+        $logMsg  = '[' . date('d-M-Y H:i:s') . '] [FATAL] '
+                 . $error['message'] . ' in ' . $error['file'] . ':' . $error['line'] . PHP_EOL;
+        @file_put_contents($logFile, $logMsg, FILE_APPEND);
         error_log('[FATAL] ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']);
+
         if (!headers_sent()) {
             http_response_code(500);
+        }
+
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        if (strpos($uri, '/api/') !== false) {
+            if (!headers_sent()) {
+                header('Content-Type: application/json; charset=utf-8');
+            }
+            echo json_encode(['success' => false, 'message' => 'Erreur interne fatale.', 'debug' => $error['message']]);
+            return;
+        }
+
+        if (!headers_sent()) {
             header('Content-Type: text/html; charset=utf-8');
         }
         $errorView = __DIR__ . '/App/View/errors/500.php';
@@ -29,15 +46,41 @@ register_shutdown_function(function (): void {
     }
 });
 
+
 // Global exception handler — catches any uncaught exception/error and returns a proper 500
 set_exception_handler(function (\Throwable $e): void {
-    $msg = $e->getMessage();
+    $msg  = $e->getMessage();
     $file = $e->getFile();
     $line = $e->getLine();
+
+    // Toujours logger la stack trace complète dans le fichier de log de l'app
+    $logFile = __DIR__ . '/logs/php_errors.log';
+    $logMsg  = '[' . date('d-M-Y H:i:s') . '] [UNCAUGHT] '
+             . get_class($e) . ': ' . $msg
+             . ' in ' . $file . ':' . $line . PHP_EOL
+             . $e->getTraceAsString() . PHP_EOL;
+    @file_put_contents($logFile, $logMsg, FILE_APPEND);
     error_log('[UNCAUGHT] ' . get_class($e) . ': ' . $msg . ' in ' . $file . ':' . $line);
 
     if (!headers_sent()) {
         http_response_code(500);
+    }
+
+    // Pour les routes API, retourner du JSON au lieu de HTML
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($uri, '/api/') !== false) {
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=utf-8');
+        }
+        echo json_encode([
+            'success' => false,
+            'message' => 'Erreur interne du serveur.',
+            'debug'   => $msg . ' in ' . basename($file) . ':' . $line,
+        ]);
+        return;
+    }
+
+    if (!headers_sent()) {
         header('Content-Type: text/html; charset=utf-8');
     }
 
@@ -48,7 +91,6 @@ set_exception_handler(function (\Throwable $e): void {
         echo '<p>dans <b>' . htmlspecialchars($file) . '</b> ligne <b>' . $line . '</b></p>';
         echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
     } else {
-        // In production, show a generic error page
         $errorView = __DIR__ . '/App/View/errors/500.php';
         if (file_exists($errorView)) {
             require $errorView;
