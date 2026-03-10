@@ -24,6 +24,23 @@ function initializeDashboard() {
     window.openSiteMap = Utils.openSiteMap;
     window.closeSiteMap = Utils.closeSiteMap;
 
+    // Exposer vizManager et une fonction de navigation pour les autres modules (ex: barre de recherche)
+    window.vizManager = vizManager;
+    window.navigateToExercise = function(exerciseId, exerciseName) {
+        const dataZone = document.querySelector('.viz-data-zone');
+        if (dataZone && vizManager) {
+            vizManager.renderLevel2TP(dataZone, exerciseId, exerciseName);
+            dataZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+    window.navigateToStudent = function(studentId) {
+        const dataZone = document.querySelector('.viz-data-zone');
+        if (dataZone && vizManager) {
+            vizManager.renderLevel2Student(dataZone, studentId);
+            dataZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
     Utils.setupModalCloseOnOutsideClick();
 
     // Charger la vue niveau 1 directement

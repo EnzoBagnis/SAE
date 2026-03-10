@@ -109,7 +109,18 @@ export class ResourceSearch {
 
         this._setList(matches.map(e => ({
             text:  `${e.funcname || e.exo_name || 'TP sans titre'}${e.success_rate != null ? ' — ' + e.success_rate + '% réussite' : ''}`,
-            click: () => { window.location.href = `${this.base}/exercises/${e.exercise_id ?? e.exercice_id}`; }
+            click: () => {
+                const id   = e.exercise_id ?? e.exercice_id;
+                const name = e.funcname || e.exo_name || 'TP sans titre';
+                // Si on est dans le dashboard (viz-data-zone présente), naviguer sans changer l'URL
+                if (typeof window.navigateToExercise === 'function' && document.querySelector('.viz-data-zone')) {
+                    if (this.resDiv) this.resDiv.style.display = 'none';
+                    if (this.inputEl) this.inputEl.value = '';
+                    window.navigateToExercise(id, name);
+                } else {
+                    window.location.href = `${this.base}/exercises/${id}`;
+                }
+            }
         })));
     }
 
@@ -139,7 +150,17 @@ export class ResourceSearch {
 
         this._setList(matches.map(s => ({
             text:  s.title || s.identifier || s.id,
-            click: () => this._openStudentModal(s.id || s.identifier || s.title)
+            click: () => {
+                const studentId = s.id || s.identifier || s.title;
+                // Si on est dans le dashboard (viz-data-zone présente), naviguer sans changer l'URL
+                if (typeof window.navigateToStudent === 'function' && document.querySelector('.viz-data-zone')) {
+                    if (this.resDiv) this.resDiv.style.display = 'none';
+                    if (this.inputEl) this.inputEl.value = '';
+                    window.navigateToStudent(studentId);
+                } else {
+                    this._openStudentModal(studentId);
+                }
+            }
         })));
     }
 
