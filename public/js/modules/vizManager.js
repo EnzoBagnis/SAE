@@ -523,8 +523,10 @@ export class VizManager {
                     return pd === d ? arcHover(pd) : arcShrink(pd);
                 });
                 const pct = ((d.data.value / total) * 100).toFixed(1);
-                tooltip.style('visibility', 'visible')
-                    .html(`<strong>${d.data.label}</strong><br>${d.data.value} tentatives<br>${pct}%`);
+                tooltip
+                    .style('visibility', 'visible')
+                    .style('border-left', `3px solid ${d.data.color}`)
+                    .html(`<strong style="color:${d.data.color}">${d.data.label}</strong><br>${d.data.value} tentatives<br>${pct}%`);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
             .on('mouseout', function() {
@@ -945,8 +947,10 @@ export class VizManager {
                 paths2.transition().duration(200).attr('d', function(pd) {
                     return pd === d ? arcHover(pd) : arcShrink(pd);
                 });
-                tooltip.style('visibility', 'visible')
-                    .html(`<strong>${d.data.label}</strong><br>${d.data.value} étudiant(s)<br>${((d.data.value / total) * 100).toFixed(1)}%`);
+                tooltip
+                    .style('visibility', 'visible')
+                    .style('border-left', `3px solid ${d.data.color}`)
+                    .html(`<strong style="color:${d.data.color}">${d.data.label}</strong><br>${d.data.value} étudiant(s)<br>${((d.data.value / total) * 100).toFixed(1)}%`);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
             .on('mouseout', function() {
