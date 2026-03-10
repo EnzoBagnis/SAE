@@ -31,8 +31,8 @@ class IaController extends AbstractController
 
         // Stats globales
         $totalAttempts  = (int)$pdo->query("SELECT COUNT(*) FROM attempts")->fetchColumn();
-        $totalExercises = (int)$pdo->query("SELECT COUNT(*) FROM exercises")->fetchColumn();
-        $totalStudents  = (int)$pdo->query("SELECT COUNT(DISTINCT student_id) FROM attempts")->fetchColumn();
+        $totalExercises = (int)$pdo->query("SELECT COUNT(*) FROM exercices")->fetchColumn();
+        $totalStudents  = (int)$pdo->query("SELECT COUNT(DISTINCT user_id) FROM attempts")->fetchColumn();
 
         // Répartition par eval_set
         $evalSets = $pdo->query(
@@ -41,18 +41,18 @@ class IaController extends AbstractController
 
         // Ressources
         $resources = $pdo->query(
-            "SELECT resource_id, resource_name FROM resources ORDER BY resource_name ASC"
+            "SELECT ressource_id, ressource_name FROM ressources ORDER BY ressource_name ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         // Exercices (tous, pour le sélecteur dynamique côté JS)
         $exercises = $pdo->query(
-            "SELECT e.exercise_id, e.exo_name AS exercise_name, e.resource_id, r.resource_name,
+            "SELECT e.exercice_id, e.exercice_name AS exercise_name, e.ressource_id, r.ressource_name,
                     COUNT(a.attempt_id) AS nb_attempts
-             FROM exercises e
-             LEFT JOIN resources r ON e.resource_id = r.resource_id
-             LEFT JOIN attempts a   ON a.exercise_id = e.exercise_id AND a.aes2 IS NOT NULL AND a.aes2 != ''
-             GROUP BY e.exercise_id
-             ORDER BY r.resource_name ASC, e.exo_name ASC"
+             FROM exercices e
+             LEFT JOIN ressources r ON e.ressource_id = r.ressource_id
+             LEFT JOIN attempts a   ON a.exercice_id = e.exercice_id AND a.aes2 IS NOT NULL AND a.aes2 != ''
+             GROUP BY e.exercice_id
+             ORDER BY r.ressource_name ASC, e.exercice_name ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->renderView('user/ia', [
@@ -154,17 +154,17 @@ class IaController extends AbstractController
                     a.aes2,
                     a.eval_set,
                     a.correct,
-                    a.student_id AS user_id,
-                    a.exercise_id AS exercice_id,
-                    e.exo_name AS exercise_name
+                    a.user_id AS user_id,
+                    a.exercice_id AS exercice_id,
+                    e.exercice_name AS exercise_name
                 FROM attempts a
-                JOIN exercises e ON a.exercise_id = e.exercise_id
+                JOIN exercices e ON a.exercice_id = e.exercice_id
                 WHERE a.aes2 IS NOT NULL AND a.aes2 != ''
             ";
             $params = [];
 
             if ($resourceId) {
-                $sql .= " AND e.resource_id = :rid";
+                $sql .= " AND e.ressource_id = :rid";
                 $params['rid'] = $resourceId;
             }
 
@@ -228,16 +228,16 @@ class IaController extends AbstractController
                     a.aes2,
                     a.eval_set,
                     a.correct,
-                    a.student_id AS user_id,
-                    a.exercise_id AS exercice_id,
+                    a.user_id AS user_id,
+                    a.exercice_id AS exercice_id,
                     a.submission_date,
-                    e.exo_name AS exercise_name
+                    e.exercice_name AS exercise_name
                 FROM attempts a
-                JOIN exercises e ON a.exercise_id = e.exercise_id
-                WHERE a.exercise_id = :eid
+                JOIN exercices e ON a.exercice_id = e.exercice_id
+                WHERE a.exercice_id = :eid
                   AND a.aes2 IS NOT NULL
                   AND a.aes2 != ''
-                ORDER BY a.student_id, a.attempt_id
+                ORDER BY a.user_id, a.attempt_id
             ");
             $stmt->execute(['eid' => $exerciseId]);
             $attempts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -302,12 +302,12 @@ class IaController extends AbstractController
                     a.aes2,
                     a.eval_set,
                     a.correct,
-                    a.student_id AS user_id,
-                    a.exercise_id AS exercice_id,
-                    e.exo_name AS exercise_name
+                    a.user_id AS user_id,
+                    a.exercice_id AS exercice_id,
+                    e.exercice_name AS exercise_name
                 FROM attempts a
-                JOIN exercises e ON a.exercise_id = e.exercise_id
-                WHERE a.exercise_id = :eid
+                JOIN exercices e ON a.exercice_id = e.exercice_id
+                WHERE a.exercice_id = :eid
                   AND a.aes2 IS NOT NULL
                   AND a.aes2 != ''
                 ORDER BY a.attempt_id
