@@ -605,8 +605,8 @@ export class VizManager {
             .style('fill', '#fff')
             .style('font-weight', 'bold')
             .text(d => {
-                const pct = ((d.data.value / total) * 100).toFixed(0);
-                return pct > 5 ? `${pct}%` : '';
+                const pct = ((d.data.value / total) * 100).toFixed(1);
+                return parseFloat(pct) > 5 ? `${pct}%` : '';
             });
 
         // Légende
