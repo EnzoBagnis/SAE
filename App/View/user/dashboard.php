@@ -191,19 +191,11 @@ $current_resource_id = $resource_id ?? 'null';
     <!-- Résultats de recherche -->
     <div id="resourceSearchResults"
          style="background:#fff;border-radius:10px;padding:14px 20px;margin-bottom:1rem;
-                box-shadow:0 1px 4px rgba(0,0,0,.06);display:none;">
-        <strong id="rsr-label" style="font-size:.9em;color:#444;display:block;margin-bottom:6px;"></strong>
+    <!-- Barre de recherche -->
+    <div id="resourceSearchResults" style="display:none;background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:8px;margin-bottom:8px;">
+        <strong id="rsr-label" style="font-size:.85rem;color:#555;"></strong>
         <ul id="rsr-list"
             style="list-style:none;padding:0;margin:0;max-height:280px;overflow-y:auto;"></ul>
-    </div>
-
-    <!-- Modale détail étudiant -->
-    <div id="rsrStudentModal" class="modal" style="display:none;z-index:250;">
-        <div class="modal-content" style="max-width:800px;">
-            <span class="close" onclick="closeRsrStudentModal()">&times;</span>
-            <h3 id="rsrStudentModalTitle" style="margin-top:0;">Détails étudiant</h3>
-            <div id="rsrStudentModalBody">Chargement…</div>
-        </div>
     </div>
 
     <div class="viz-data-zone">
@@ -288,9 +280,6 @@ $current_resource_id = $resource_id ?? 'null';
     var resDiv    = document.getElementById('resourceSearchResults');
     var resLabel  = document.getElementById('rsr-label');
     var resList   = document.getElementById('rsr-list');
-    var modal     = document.getElementById('rsrStudentModal');
-    var mTitle    = document.getElementById('rsrStudentModalTitle');
-    var mBody     = document.getElementById('rsrStudentModalBody');
 
     if (!input) return;
 
@@ -380,7 +369,18 @@ $current_resource_id = $resource_id ?? 'null';
                         var sid   = s.id || s.identifier || s.title;
                         return {
                             text:  label,
-                            click: function () { openStudentModal(sid); }
+                            click: function () {
+                                resDiv.style.display = 'none';
+                                resList.innerHTML = '';
+                                input.value = '';
+                                var dataZone = document.querySelector('.viz-data-zone');
+                                if (dataZone && window.vizManager) {
+                                    window.vizManager.renderLevel2Student(dataZone, sid);
+                                    dataZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                } else if (typeof window.navigateToStudent === 'function') {
+                                    window.navigateToStudent(sid);
+                                }
+                            }
                         };
                     }));
                 }
@@ -399,57 +399,6 @@ $current_resource_id = $resource_id ?? 'null';
         resDiv.style.display = 'none';
         resList.innerHTML = '';
     });
-
-    // ── Modale détail étudiant ─────────────────────────────────────────────
-    async function openStudentModal(studentId) {
-        if (!modal) return;
-        modal.style.display = 'block';
-        mTitle.textContent  = 'Étudiant : ' + studentId;
-        mBody.innerHTML     = '<p style="color:#888;text-align:center;padding:1rem;">⏳ Chargement…</p>';
-
-        var BASE = window.BASE_URL  || '';
-        var RID  = window.RESOURCE_ID || null;
-        var url  = BASE + '/api/dashboard/student/' + encodeURIComponent(studentId) + (RID ? '?resource_id=' + RID : '');
-
-        try {
-            var resp = await fetch(url);
-            var json = await resp.json();
-            if (!json.success) { mBody.innerHTML = '<p style="color:#888;padding:1rem;">Aucune donnée disponible.</p>'; return; }
-
-            var attempts = json.data.attempts || [];
-            var stats    = json.data.stats    || {};
-
-            if (!attempts.length) { mBody.innerHTML = '<p style="color:#666;padding:1rem;">Aucune tentative pour cet étudiant.</p>'; return; }
-
-            var rate  = stats.success_rate || 0;
-            var color = rate >= 70 ? '#27ae60' : rate >= 40 ? '#f39c12' : '#e74c3c';
-
-            var html = '<div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">'
-                + '<div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;"><div style="font-size:1.6rem;font-weight:700;">' + (stats.total_attempts || 0) + '</div><div style="font-size:.8rem;color:#777;">Tentatives</div></div>'
-                + '<div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;"><div style="font-size:1.6rem;font-weight:700;">' + (stats.correct_attempts || 0) + '</div><div style="font-size:.8rem;color:#777;">Réussies</div></div>'
-                + '<div style="flex:1;background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;min-width:80px;"><div style="font-size:1.6rem;font-weight:700;color:' + color + ';">' + rate + '%</div><div style="font-size:.8rem;color:#777;">Réussite</div></div>'
-                + '</div><ul style="list-style:none;padding:0;max-height:360px;overflow-y:auto;">';
-            attempts.forEach(function (a) {
-                html += '<li style="padding:9px 4px;border-bottom:1px solid #f0f0f0;font-size:.9em;">'
-                      + (a.correct ? '✅' : '❌') + ' <strong>' + (a.exercice_name || 'Exercice') + '</strong></li>';
-            });
-            html += '</ul>';
-            mBody.innerHTML = html;
-        } catch (e) {
-            console.error(e);
-            mBody.innerHTML = '<p style="color:#e74c3c;padding:1rem;">Erreur lors du chargement.</p>';
-        }
-    }
-
-    window.closeRsrStudentModal = function () {
-        modal.style.display = 'none';
-        mBody.innerHTML = '';
-    };
-    if (modal) {
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) window.closeRsrStudentModal();
-        });
-    }
 })();
 </script>
 </body>

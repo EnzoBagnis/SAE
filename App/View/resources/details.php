@@ -311,15 +311,6 @@ $title = 'StudTraj - ' . $resTitle;
     </div>
 </div>
 
-<!-- Student detail modal (ajax) -->
-<div id="studentDetailModal" class="modal" style="display:none;z-index:250;">
-    <div class="modal-content" style="max-width:800px;">
-        <span class="close" onclick="closeStudentModal()">&times;</span>
-        <h3 id="studentModalTitle">Détails étudiant</h3>
-        <div id="studentModalBody">Chargement...</div>
-    </div>
-</div>
-
 <!-- Search JS -->
 <script>
 // Import dynamique pour que BASE_URL (sous-dossier /SAE/) soit connu au moment du chargement
@@ -342,13 +333,6 @@ $title = 'StudTraj - ' . $resTitle;
         });
 })();
 
-// Fermer la modale étudiant (appelé depuis le bouton ×)
-function closeStudentModal() {
-    var m = document.getElementById('studentDetailModal');
-    if (m) { m.style.display = 'none'; }
-    var b = document.getElementById('studentModalBody');
-    if (b) { b.innerHTML = ''; }
-}
 
 // Fermer la modale ressource générique
 function closeResourceModal() {
