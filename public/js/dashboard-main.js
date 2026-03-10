@@ -46,10 +46,11 @@ function initializeDashboard() {
     // Charger la vue niveau 1 directement
     const dataZone = document.querySelector('.viz-data-zone');
     if (dataZone && window.RESOURCE_ID) {
-        // Vérifier si on doit ouvrir directement un TP (ex: venant de /exercises/{id})
+        // Vérifier si on doit ouvrir directement un TP ou un élève (ex: venant de la barre de recherche)
         const urlParams = new URLSearchParams(window.location.search);
         const openExerciseId   = urlParams.get('open_exercise');
         const openExerciseName = urlParams.get('exercise_name') || '';
+        const openStudentId    = urlParams.get('open_student');
 
         if (openExerciseId) {
             // Nettoyer l'URL sans recharger la page
@@ -61,6 +62,17 @@ function initializeDashboard() {
                 vizManager.renderLevel2TP(dataZone, parseInt(openExerciseId, 10), decodeURIComponent(openExerciseName));
             }).catch(() => {
                 vizManager.renderLevel2TP(dataZone, parseInt(openExerciseId, 10), decodeURIComponent(openExerciseName));
+            });
+        } else if (openStudentId) {
+            // Nettoyer l'URL sans recharger la page
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, '', cleanUrl);
+
+            // Charger d'abord le niveau 1 en arrière-plan puis naviguer vers l'élève
+            vizManager.renderLevel1(dataZone).then(() => {
+                vizManager.renderLevel2Student(dataZone, decodeURIComponent(openStudentId));
+            }).catch(() => {
+                vizManager.renderLevel2Student(dataZone, decodeURIComponent(openStudentId));
             });
         } else {
             vizManager.renderLevel1(dataZone);

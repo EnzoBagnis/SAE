@@ -158,7 +158,14 @@ export class ResourceSearch {
                     if (this.inputEl) this.inputEl.value = '';
                     window.navigateToStudent(studentId);
                 } else {
-                    this._openStudentModal(studentId);
+                    // Rediriger vers le dashboard de la ressource avec l'élève sélectionné
+                    const ridPart = this.rid ? `${this.rid}` : '';
+                    if (ridPart) {
+                        window.location.href = `${this.base}/resources/${ridPart}?open_student=${encodeURIComponent(studentId)}`;
+                    } else {
+                        // Pas de ressource connue : ouvrir la modale en fallback
+                        this._openStudentModal(studentId);
+                    }
                 }
             }
         })));
