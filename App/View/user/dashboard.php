@@ -170,14 +170,9 @@ $current_resource_id = $resource_id ?? 'null';
     </div>
     <?php endif; ?>
 
-    <!-- ── Barre de recherche (Élève / TP) ── -->
+    <!-- ── Barre de recherche générale ── -->
     <div style="background:#fff;border-radius:10px;padding:14px 20px;margin-bottom:1rem;
                 box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <select id="resourceSearchType"
-                style="padding:8px 10px;border:1px solid #ddd;border-radius:4px;font-size:.9em;background:#f8f9fa;">
-            <option value="exercises">Travaux Pratiques</option>
-            <option value="students">Élève</option>
-        </select>
         <input type="text" id="resourceSearchInput"
                placeholder="Rechercher un TP ou un étudiant par mot-clé…"
                style="flex:1;min-width:200px;padding:8px 10px;border:1px solid #ddd;
@@ -274,12 +269,11 @@ $current_resource_id = $resource_id ?? 'null';
 
 <script>
 (function () {
-    var input     = document.getElementById('resourceSearchInput');
-    var typeSelect = document.getElementById('resourceSearchType');
-    var clearBtn  = document.getElementById('resourceClearBtn');
-    var resDiv    = document.getElementById('resourceSearchResults');
-    var resLabel  = document.getElementById('rsr-label');
-    var resList   = document.getElementById('rsr-list');
+    var input    = document.getElementById('resourceSearchInput');
+    var clearBtn = document.getElementById('resourceClearBtn');
+    var resDiv   = document.getElementById('resourceSearchResults');
+    var resLabel = document.getElementById('rsr-label');
+    var resList  = document.getElementById('rsr-list');
 
     if (!input) return;
 
@@ -308,8 +302,7 @@ $current_resource_id = $resource_id ?? 'null';
     }
 
     async function doSearch() {
-        var q    = (input.value || '').trim().toLowerCase();
-        var type = typeSelect.value;
+        var q = (input.value || '').trim().toLowerCase();
 
         if (!q) {
             resDiv.style.display = 'none';
@@ -317,83 +310,66 @@ $current_resource_id = $resource_id ?? 'null';
             return;
         }
 
-        resDiv.style.display  = 'block';
-        resLabel.textContent  = type === 'exercises' ? 'Travaux Pratiques trouvés :' : 'Étudiants trouvés :';
-        resList.innerHTML     = '<li style="color:#888;padding:8px;font-style:italic;">Chargement…</li>';
+        resDiv.style.display = 'block';
+        resLabel.textContent = 'Résultats :';
+        resList.innerHTML    = '<li style="color:#888;padding:8px;font-style:italic;">Chargement…</li>';
 
-        var BASE = window.BASE_URL  || '';
+        var BASE = window.BASE_URL   || '';
         var RID  = window.RESOURCE_ID || null;
+        var results = [];
 
-        if (type === 'exercises') {
-            var url = BASE + '/api/dashboard/exercises' + (RID ? '?resource_id=' + RID : '');
-            try {
-                var resp = await fetch(url);
-                var json = await resp.json();
-                var exercises = (json.data && json.data.exercises) ? json.data.exercises : [];
-                var matches = exercises.filter(function (e) {
-                    return ((e.funcname || '') + ' ' + (e.exo_name || '') + ' ' + (e.extention || ''))
-                        .toLowerCase().indexOf(q) !== -1;
-                });
-                if (!matches.length) {
-                    setList([{ text: 'Aucun TP trouvé.', click: null }]);
-                } else {
-                    setList(matches.map(function (e) {
-                        var id   = e.exercise_id || e.exercice_id;
-                        var name = e.funcname || e.exo_name || 'TP sans titre';
-                        var rate = e.success_rate != null ? ' — ' + e.success_rate + '% réussite' : '';
-                        return {
-                            text:  name + rate,
-                            click: function () { window.location.href = BASE + '/exercises/' + id; }
-                        };
-                    }));
-                }
-            } catch (err) {
-                setList([{ text: 'Erreur lors du chargement des exercices.', click: null }]);
-                console.error(err);
-            }
+        try {
+            var [respEx, respSt] = await Promise.all([
+                fetch(BASE + '/api/dashboard/exercises' + (RID ? '?resource_id=' + RID : '')).then(r => r.json()),
+                fetch(BASE + '/api/dashboard/students?page=1&perPage=100000' + (RID ? '&resource_id=' + RID : '')).then(r => r.json())
+            ]);
 
-        } else {
-            var url = BASE + '/api/dashboard/students?page=1&perPage=100000' + (RID ? '&resource_id=' + RID : '');
-            try {
-                var resp = await fetch(url);
-                var json = await resp.json();
-                var students = (json.data && json.data.students) ? json.data.students : [];
-                var matches = students.filter(function (s) {
-                    return (s.title || s.identifier || s.id || '').toLowerCase().indexOf(q) !== -1;
+            var exercises = (respEx.data && respEx.data.exercises) ? respEx.data.exercises : [];
+            exercises.filter(function (e) {
+                return ((e.funcname || '') + ' ' + (e.exo_name || '') + ' ' + (e.extention || ''))
+                    .toLowerCase().indexOf(q) !== -1;
+            }).forEach(function (e) {
+                var id   = e.exercise_id || e.exercice_id;
+                var name = e.funcname || e.exo_name || 'TP sans titre';
+                var rate = e.success_rate != null ? ' — ' + e.success_rate + '% réussite' : '';
+                results.push({
+                    text:  '📝 ' + name + rate,
+                    click: function () { window.location.href = BASE + '/exercises/' + id; }
                 });
-                if (!matches.length) {
-                    setList([{ text: 'Aucun étudiant trouvé.', click: null }]);
-                } else {
-                    setList(matches.map(function (s) {
-                        var label = s.title || s.identifier || s.id;
-                        var sid   = s.id || s.identifier || s.title;
-                        return {
-                            text:  label,
-                            click: function () {
-                                resDiv.style.display = 'none';
-                                resList.innerHTML = '';
-                                input.value = '';
-                                var dataZone = document.querySelector('.viz-data-zone');
-                                if (dataZone && window.vizManager) {
-                                    window.vizManager.renderLevel2Student(dataZone, sid);
-                                    dataZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                } else if (typeof window.navigateToStudent === 'function') {
-                                    window.navigateToStudent(sid);
-                                }
-                            }
-                        };
-                    }));
-                }
-            } catch (err) {
-                setList([{ text: 'Erreur lors du chargement des étudiants.', click: null }]);
-                console.error(err);
-            }
+            });
+
+            var students = (respSt.data && respSt.data.students) ? respSt.data.students : [];
+            students.filter(function (s) {
+                return (s.title || s.identifier || s.id || '').toLowerCase().indexOf(q) !== -1;
+            }).forEach(function (s) {
+                var label = s.title || s.identifier || s.id;
+                var sid   = s.id || s.identifier || s.title;
+                results.push({
+                    text:  '👤 ' + label,
+                    click: function () {
+                        resDiv.style.display = 'none';
+                        resList.innerHTML = '';
+                        input.value = '';
+                        var dataZone = document.querySelector('.viz-data-zone');
+                        if (dataZone && window.vizManager) {
+                            window.vizManager.renderLevel2Student(dataZone, sid);
+                            dataZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        } else if (typeof window.navigateToStudent === 'function') {
+                            window.navigateToStudent(sid);
+                        }
+                    }
+                });
+            });
+
+            setList(results.length ? results : [{ text: 'Aucun résultat.', click: null }]);
+        } catch (err) {
+            setList([{ text: 'Erreur lors du chargement.', click: null }]);
+            console.error(err);
         }
     }
 
     var debouncedSearch = debounce(doSearch, 300);
     input.addEventListener('input', debouncedSearch);
-    typeSelect.addEventListener('change', debouncedSearch);
     clearBtn.addEventListener('click', function () {
         input.value = '';
         resDiv.style.display = 'none';

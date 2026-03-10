@@ -177,11 +177,7 @@ $title = 'StudTraj - ' . $resTitle;
 
         <!-- Barre de recherche spécifique à la ressource -->
         <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
-            <select id="searchType" style="padding:8px;border:1px solid #ddd;border-radius:4px;">
-                <option value="exercises">Exercice</option>
-                <option value="students">Élève</option>
-            </select>
-            <input type="search" id="resourceSearchInput" placeholder="Rechercher un élève ou un exercice..."
+            <input type="search" id="resourceSearchInput" placeholder="Rechercher un TP ou un étudiant par mot-clé…"
                    style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;" />
             <button id="clearSearchBtn" style="padding:8px 12px;border-radius:4px;border:1px solid #ddd;background:#f5f5f5;">Effacer</button>
         </div>

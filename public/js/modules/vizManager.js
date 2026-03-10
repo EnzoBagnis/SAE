@@ -317,27 +317,16 @@ export class VizManager {
     // Graphique 1 : Barres élèves (niveau 1)
     // =========================================================================
 
-    _renderStudentsBarChart(data, containerId, sortOrder = 'rate-desc') {
+    _renderStudentsBarChart(data, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
 
-        // En-tête avec titre + menu déroulant de tri
+        // En-tête avec titre uniquement
         const header = document.createElement('div');
         header.className = 'viz-chart-header';
-        header.innerHTML = `
-            <h3 class="viz-chart-title" style="margin:0;">Visualisation élèves</h3>
-            <select class="viz-sort-select" title="Trier le graphique">
-                <option value="rate-desc"${sortOrder === 'rate-desc' ? ' selected' : ''}>Taux ↓</option>
-                <option value="rate-asc"${sortOrder === 'rate-asc'  ? ' selected' : ''}>Taux ↑</option>
-                <option value="name-asc"${sortOrder === 'name-asc'  ? ' selected' : ''}>Nom A→Z</option>
-                <option value="name-desc"${sortOrder === 'name-desc' ? ' selected' : ''}>Nom Z→A</option>
-            </select>
-        `;
+        header.innerHTML = `<h3 class="viz-chart-title" style="margin:0;">Visualisation élèves</h3>`;
         container.appendChild(header);
-        header.querySelector('.viz-sort-select').addEventListener('change', e => {
-            this._renderStudentsBarChart(data, containerId, e.target.value);
-        });
 
         if (!data || data.length === 0) {
             const p = document.createElement('p');
@@ -347,16 +336,7 @@ export class VizManager {
             return;
         }
 
-        const getSortedStudents = (order) => {
-            const arr = [...data];
-            if (order === 'rate-desc') return arr.sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
-            if (order === 'rate-asc')  return arr.sort((a, b) => (a.success_rate || 0) - (b.success_rate || 0));
-            const getName = d => (d.identifier || d.student_id || '').toLowerCase();
-            if (order === 'name-asc')  return arr.sort((a, b) => getName(a).localeCompare(getName(b)));
-            if (order === 'name-desc') return arr.sort((a, b) => getName(b).localeCompare(getName(a)));
-            return arr;
-        };
-        const sorted = getSortedStudents(sortOrder);
+        const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
 
         const margin = { top: 10, right: 100, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
@@ -423,27 +403,16 @@ export class VizManager {
     // Graphique 2 : Barres TP (niveau 1)
     // =========================================================================
 
-    _renderTPBarChart(data, containerId, sortOrder = 'rate-desc') {
+    _renderTPBarChart(data, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
 
-        // En-tête avec titre + menu déroulant de tri
+        // En-tête avec titre uniquement
         const header = document.createElement('div');
         header.className = 'viz-chart-header';
-        header.innerHTML = `
-            <h3 class="viz-chart-title" style="margin:0;">Visualisation TP</h3>
-            <select class="viz-sort-select" title="Trier le graphique">
-                <option value="rate-desc"${sortOrder === 'rate-desc' ? ' selected' : ''}>Taux ↓</option>
-                <option value="rate-asc"${sortOrder === 'rate-asc'  ? ' selected' : ''}>Taux ↑</option>
-                <option value="name-asc"${sortOrder === 'name-asc'  ? ' selected' : ''}>Nom A→Z</option>
-                <option value="name-desc"${sortOrder === 'name-desc' ? ' selected' : ''}>Nom Z→A</option>
-            </select>
-        `;
+        header.innerHTML = `<h3 class="viz-chart-title" style="margin:0;">Visualisation TP</h3>`;
         container.appendChild(header);
-        header.querySelector('.viz-sort-select').addEventListener('change', e => {
-            this._renderTPBarChart(data, containerId, e.target.value);
-        });
 
         if (!data || data.length === 0) {
             const p = document.createElement('p');
@@ -453,16 +422,7 @@ export class VizManager {
             return;
         }
 
-        const getSortedTP = (order) => {
-            const arr = [...data];
-            if (order === 'rate-desc') return arr.sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
-            if (order === 'rate-asc')  return arr.sort((a, b) => (a.success_rate || 0) - (b.success_rate || 0));
-            const getName = d => (d.funcname || d.exo_name || '').toLowerCase();
-            if (order === 'name-asc')  return arr.sort((a, b) => getName(a).localeCompare(getName(b)));
-            if (order === 'name-desc') return arr.sort((a, b) => getName(b).localeCompare(getName(a)));
-            return arr;
-        };
-        const sorted = getSortedTP(sortOrder);
+        const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
 
         const margin = { top: 10, right: 100, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
