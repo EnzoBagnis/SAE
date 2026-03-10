@@ -35,12 +35,15 @@ $errorMsg = htmlspecialchars($_GET['error'] ?? '');
 </head>
 <body>
 <header class="top-menu">
-    <div class="logo"><h1>StudTraj</h1></div>
+    <div class="logo">
+        <a href="<?= BASE_URL ?>/resources" style="text-decoration:none;color:inherit;">
+            <h1>StudTraj</h1>
+        </a>
+    </div>
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
     </button>
     <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
     </nav>
     <div class="header-right">
         <div class="user-profile">
@@ -69,7 +72,6 @@ $errorMsg = htmlspecialchars($_GET['error'] ?? '');
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
         <ul class="burger-menu-list">
-            <li><a href="<?= BASE_URL ?>/resources" class="burger-link active">Ressources</a></li>
             <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>
