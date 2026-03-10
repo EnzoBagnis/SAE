@@ -317,16 +317,27 @@ export class VizManager {
     // Graphique 1 : Barres élèves (niveau 1)
     // =========================================================================
 
-    _renderStudentsBarChart(data, containerId) {
+    _renderStudentsBarChart(data, containerId, sortOrder = 'rate-desc') {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
 
-        // En-tête avec titre uniquement
+        // En-tête avec titre + menu déroulant de tri
         const header = document.createElement('div');
         header.className = 'viz-chart-header';
-        header.innerHTML = `<h3 class="viz-chart-title" style="margin:0;">Visualisation élèves</h3>`;
+        header.innerHTML = `
+            <h3 class="viz-chart-title" style="margin:0;">Visualisation élèves</h3>
+            <select class="viz-sort-select" title="Trier le graphique">
+                <option value="rate-desc"${sortOrder === 'rate-desc' ? ' selected' : ''}>Taux ↓</option>
+                <option value="rate-asc"${sortOrder === 'rate-asc'  ? ' selected' : ''}>Taux ↑</option>
+                <option value="name-asc"${sortOrder === 'name-asc'  ? ' selected' : ''}>Nom A→Z</option>
+                <option value="name-desc"${sortOrder === 'name-desc' ? ' selected' : ''}>Nom Z→A</option>
+            </select>
+        `;
         container.appendChild(header);
+        header.querySelector('.viz-sort-select').addEventListener('change', e => {
+            this._renderStudentsBarChart(data, containerId, e.target.value);
+        });
 
         if (!data || data.length === 0) {
             const p = document.createElement('p');
@@ -336,7 +347,16 @@ export class VizManager {
             return;
         }
 
-        const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
+        const getSortedStudents = (order) => {
+            const arr = [...data];
+            if (order === 'rate-desc') return arr.sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
+            if (order === 'rate-asc')  return arr.sort((a, b) => (a.success_rate || 0) - (b.success_rate || 0));
+            const getName = d => (d.identifier || d.student_id || '').toLowerCase();
+            if (order === 'name-asc')  return arr.sort((a, b) => getName(a).localeCompare(getName(b)));
+            if (order === 'name-desc') return arr.sort((a, b) => getName(b).localeCompare(getName(a)));
+            return arr;
+        };
+        const sorted = getSortedStudents(sortOrder);
 
         const margin = { top: 10, right: 100, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
@@ -403,16 +423,27 @@ export class VizManager {
     // Graphique 2 : Barres TP (niveau 1)
     // =========================================================================
 
-    _renderTPBarChart(data, containerId) {
+    _renderTPBarChart(data, containerId, sortOrder = 'rate-desc') {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
 
-        // En-tête avec titre uniquement
+        // En-tête avec titre + menu déroulant de tri
         const header = document.createElement('div');
         header.className = 'viz-chart-header';
-        header.innerHTML = `<h3 class="viz-chart-title" style="margin:0;">Visualisation TP</h3>`;
+        header.innerHTML = `
+            <h3 class="viz-chart-title" style="margin:0;">Visualisation TP</h3>
+            <select class="viz-sort-select" title="Trier le graphique">
+                <option value="rate-desc"${sortOrder === 'rate-desc' ? ' selected' : ''}>Taux ↓</option>
+                <option value="rate-asc"${sortOrder === 'rate-asc'  ? ' selected' : ''}>Taux ↑</option>
+                <option value="name-asc"${sortOrder === 'name-asc'  ? ' selected' : ''}>Nom A→Z</option>
+                <option value="name-desc"${sortOrder === 'name-desc' ? ' selected' : ''}>Nom Z→A</option>
+            </select>
+        `;
         container.appendChild(header);
+        header.querySelector('.viz-sort-select').addEventListener('change', e => {
+            this._renderTPBarChart(data, containerId, e.target.value);
+        });
 
         if (!data || data.length === 0) {
             const p = document.createElement('p');
@@ -422,7 +453,16 @@ export class VizManager {
             return;
         }
 
-        const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
+        const getSortedTP = (order) => {
+            const arr = [...data];
+            if (order === 'rate-desc') return arr.sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
+            if (order === 'rate-asc')  return arr.sort((a, b) => (a.success_rate || 0) - (b.success_rate || 0));
+            const getName = d => (d.funcname || d.exo_name || '').toLowerCase();
+            if (order === 'name-asc')  return arr.sort((a, b) => getName(a).localeCompare(getName(b)));
+            if (order === 'name-desc') return arr.sort((a, b) => getName(b).localeCompare(getName(a)));
+            return arr;
+        };
+        const sorted = getSortedTP(sortOrder);
 
         const margin = { top: 10, right: 100, bottom: 20, left: 50 };
         const vw = 500, vh = 300;
@@ -741,10 +781,6 @@ export class VizManager {
         const tooltip = this._createTooltip(containerId);
         const self = this;
 
-        // Label SVG flottant au survol
-        svg.selectAll('rect.bar')
-            .data(data)
-            .enter()
             .append('rect')
             .attr('class', 'bar')
             .attr('x', (_, i) => x(i))
@@ -781,10 +817,6 @@ export class VizManager {
             .selectAll('text').remove();
 
         svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
-
-        this._renderGradeLegend(svg, w + 5, 0);
-    }
-
     // =========================================================================
     // Niveau 2A : Carte statistiques A/B/C
     // =========================================================================
@@ -825,27 +857,29 @@ export class VizManager {
             const c = document.createElement('div');
             c.className = 'viz-stat-card';
             c.style.borderLeftColor = m.color;
-            c.innerHTML = `
+        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.3);
                 <div class="viz-stat-value" style="color:${m.color}; font-size:${m.large ? '2.5rem' : '1.8rem'}">${m.value}</div>
-                <div class="viz-stat-label">${m.label}</div>
+        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.3);
             `;
             card.appendChild(c);
         });
 
+        // Points colorés
+
+        // Points colorés
+        svg.selectAll('circle')
         return card;
     }
+            .append('circle')
+            .attr('cx', (_, i) => x(i) + x.bandwidth() / 2)
+            .attr('cy', d => y(d.success_rate || 0))
+            .attr('r', 6)
+            .attr('stroke-width', 2)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2)
 
-    // =========================================================================
-    // Niveau 2B : Lignes par étudiant pour un TP
-    // =========================================================================
-
-    _renderTPStudentLines(students, containerId, container, tpContext) {
-        const el = document.getElementById(containerId);
-        if (!el) return;
-        el.innerHTML = '<h3 class="viz-chart-title">Performance par étudiant</h3>';
-
-        if (!students || students.length === 0) {
-            el.innerHTML += '<p class="viz-no-data">Aucun étudiant.</p>';
+                d3.select(this).attr('r', 9);
+                d3.select(this).attr('r', 9);
             return;
         }
 
@@ -858,30 +892,32 @@ export class VizManager {
         const svg = d3.select(`#${containerId}`).append('svg')
             .attr('viewBox', `0 0 ${vw} ${vh}`)
             .style('width', '100%')
-            .append('g')
-            .attr('transform', `translate(${margin.left},${margin.top})`);
+                d3.select(this).attr('r', 6);
+                d3.select(this).attr('r', 6);
 
-        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.2);
+        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.3);
         const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
-
+        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.3);
         const tooltip = this._createTooltip(containerId);
         const self = this;
 
-        svg.selectAll('rect.bar')
+
+        // Points colorés
+
+        // Points colorés
+        svg.selectAll('circle')
             .data(sorted)
             .enter()
-            .append('rect')
-            .attr('class', 'bar')
-            .attr('x', (_, i) => x(i))
-            .attr('y', d => y(d.success_rate || 0))
-            .attr('width', x.bandwidth())
-            .attr('height', d => h - y(d.success_rate || 0))
-            .attr('fill', d => VizManager.gradeColor(d.success_rate || 0))
-            .attr('rx', 2)
-            .style('cursor', 'pointer')
+            .append('circle')
+            .attr('cx', (_, i) => x(i) + x.bandwidth() / 2)
+            .attr('cy', d => y(d.success_rate || 0))
+            .attr('r', 6)
+            .attr('stroke-width', 2)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2)
             .on('mouseover', function(event, d) {
-                d3.select(this).attr('opacity', 0.75);
-                const rate = d.success_rate || 0;
+                d3.select(this).attr('r', 9);
+                d3.select(this).attr('r', 9);
                 const rateColor = VizManager.gradeColor(rate);
                 const name = htmlEscape(d.identifier);
                 tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
@@ -894,8 +930,8 @@ export class VizManager {
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
             .on('mouseout', function() {
-                d3.select(this).attr('opacity', 1);
-                tooltip.style('visibility', 'hidden');
+                d3.select(this).attr('r', 6);
+                d3.select(this).attr('r', 6);
             })
             .on('click', (event, d) => {
                 tooltip.style('visibility', 'hidden');
