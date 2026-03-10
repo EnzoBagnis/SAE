@@ -230,7 +230,7 @@ class IaController extends AbstractController
                     a.correct,
                     a.user_id AS user_id,
                     a.exercice_id AS exercice_id,
-                    a.submission_date,
+                    NULL AS submission_date,
                     e.exercice_name AS exercise_name
                 FROM attempts a
                 JOIN exercices e ON a.exercice_id = e.exercice_id
