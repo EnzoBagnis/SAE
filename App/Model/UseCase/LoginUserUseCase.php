@@ -69,7 +69,15 @@ class LoginUserUseCase
         if (!$user->isVerified()) {
             return [
                 'success' => false,
-                'message' => 'Votre email n\'est pas encore vérifié',
+                'message' => 'Votre email n\'est pas encore vérifié.',
+            ];
+        }
+
+        // Check if account is approved by admin (status must be 3)
+        if (!$user->isAdminApproved()) {
+            return [
+                'success' => false,
+                'message' => 'Votre compte est en attente de validation par un administrateur.',
             ];
         }
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -165,12 +165,12 @@
                 <?php else : ?>
                     <?php foreach ($pendingUsers as $user) : ?>
                         <tr>
-                            <td><?php switch ($user['verifie'] ?? '') {
+                            <td><?php switch ((int)($user['verifie'] ?? 0)) {
                                 case 0:
-                                    echo "Demande envoyée";
+                                    echo "Email non vérifié";
                                     break;
                                 case 1:
-                                    echo "Email vérifié";
+                                    echo "Email vérifié ✓";
                                     break;
                                 } ?></td>
                             <td><?= htmlspecialchars($user['id'] ?? '') ?></td>

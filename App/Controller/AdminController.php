@@ -75,16 +75,16 @@ class AdminController extends AbstractController
 
         $pdo = DatabaseConnection::getInstance()->getConnection();
 
-        // Utilisateurs vérifiés (account_status = 1)
+        // Utilisateurs approuvés par l'admin (account_status = 3)
         $verifiedUsers = $pdo->query(
             "SELECT mail AS id, surname AS nom, name AS prenom, mail, account_status AS verifie
-             FROM teachers WHERE account_status = 1 ORDER BY surname ASC"
+             FROM teachers WHERE account_status = 3 ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
-        // Utilisateurs en attente de vérification (account_status = 0)
+        // Utilisateurs en attente de validation admin (account_status = 0 ou 1)
         $pendingUsers = $pdo->query(
             "SELECT mail AS id, surname AS nom, name AS prenom, mail, account_status AS verifie
-             FROM teachers WHERE account_status = 0 ORDER BY surname ASC"
+             FROM teachers WHERE account_status IN (0, 1) ORDER BY surname ASC"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         // Utilisateurs bloqués (account_status = 2)
@@ -153,7 +153,7 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Validate a pending user (set account_status to 1)
+     * Validate a pending user (set account_status to 3 = admin-approved)
      *
      * @return void
      */
@@ -169,7 +169,8 @@ class AdminController extends AbstractController
         if (!empty($mail)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
 
-            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 1 WHERE mail = :mail AND account_status = 0");
+            // account_status = 3 : approuvé par admin (peut se connecter)
+            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 3 WHERE mail = :mail AND account_status = 1");
             $stmt->execute(['mail' => $mail]);
         }
 
@@ -227,7 +228,7 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Unban a user (set account_status back to 1)
+     * Unban a user (set account_status back to 3 = admin-approved)
      *
      * @return void
      */
@@ -242,7 +243,7 @@ class AdminController extends AbstractController
 
         if (!empty($mail)) {
             $pdo = DatabaseConnection::getInstance()->getConnection();
-            $stmt = $pdo->prepare("DELETE FROM teachers WHERE mail = :mail");
+            $stmt = $pdo->prepare("UPDATE teachers SET account_status = 3 WHERE mail = :mail AND account_status = 2");
             $stmt->execute(['mail' => $mail]);
         }
 
