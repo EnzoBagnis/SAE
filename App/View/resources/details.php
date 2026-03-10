@@ -231,7 +231,7 @@ $title = 'StudTraj - ' . $resTitle;
                         <?php endif; ?>
                     </div>
                     <div class="tp-item-actions">
-                        <a href="<?= BASE_URL ?>/exercises/<?= (int)$exercise['exercice_id'] ?>"
+                        <a href="<?= BASE_URL ?>/resources/<?= (int)$resource->getResourceId() ?>?open_exercise=<?= (int)$exercise['exercice_id'] ?>&exercise_name=<?= urlencode($exercise['exercice_name'] ?? '') ?>"
                            class="btn">Voir le TP</a>
                     </div>
                 </div>

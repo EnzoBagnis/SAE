@@ -73,6 +73,14 @@ class ExercisesController extends AbstractController
             return;
         }
 
+        // Rediriger vers la page de la ressource associée en ouvrant directement ce TP
+        $resourceId = $exercise->getResourceId();
+        if ($resourceId) {
+            $this->redirect('/resources/' . $resourceId . '?open_exercise=' . $exerciseId . '&exercise_name=' . urlencode($exercise->getExoName()));
+            return;
+        }
+
+        // Fallback : afficher la liste
         $this->renderView('exercises/list', [
             'exercises' => [$exercise],
             'total'     => 1,

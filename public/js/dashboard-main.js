@@ -46,7 +46,25 @@ function initializeDashboard() {
     // Charger la vue niveau 1 directement
     const dataZone = document.querySelector('.viz-data-zone');
     if (dataZone && window.RESOURCE_ID) {
-        vizManager.renderLevel1(dataZone);
+        // Vérifier si on doit ouvrir directement un TP (ex: venant de /exercises/{id})
+        const urlParams = new URLSearchParams(window.location.search);
+        const openExerciseId   = urlParams.get('open_exercise');
+        const openExerciseName = urlParams.get('exercise_name') || '';
+
+        if (openExerciseId) {
+            // Nettoyer l'URL sans recharger la page
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, '', cleanUrl);
+
+            // Charger d'abord le niveau 1 en arrière-plan puis naviguer vers le TP
+            vizManager.renderLevel1(dataZone).then(() => {
+                vizManager.renderLevel2TP(dataZone, parseInt(openExerciseId, 10), decodeURIComponent(openExerciseName));
+            }).catch(() => {
+                vizManager.renderLevel2TP(dataZone, parseInt(openExerciseId, 10), decodeURIComponent(openExerciseName));
+            });
+        } else {
+            vizManager.renderLevel1(dataZone);
+        }
     } else if (dataZone) {
         dataZone.innerHTML = '<p style="text-align:center;color:#7f8c8d;padding:3rem;">Aucune ressource sélectionnée.</p>';
     }
