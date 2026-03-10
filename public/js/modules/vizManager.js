@@ -502,11 +502,13 @@ export class VizManager {
             .attr('transform', `translate(${size / 2},${size / 2})`);
 
         const pie = d3.pie().value(d => d.value)(data);
-        const arc = d3.arc().innerRadius(radius * 0.5).outerRadius(radius);
+        const arc        = d3.arc().innerRadius(radius * 0.5).outerRadius(radius);
+        const arcHover   = d3.arc().innerRadius(radius * 0.5).outerRadius(radius * 1.12);
+        const arcShrink  = d3.arc().innerRadius(radius * 0.5).outerRadius(radius * 0.90);
 
         const tooltip = this._createTooltip();
 
-        svg.selectAll('path')
+        const paths = svg.selectAll('path')
             .data(pie)
             .enter()
             .append('path')
@@ -514,14 +516,22 @@ export class VizManager {
             .attr('fill', d => d.data.color)
             .attr('stroke', '#fff')
             .attr('stroke-width', 2)
-            .style('cursor', 'default')
-            .on('mouseover', (event, d) => {
+            .style('cursor', 'pointer')
+            .on('mouseover', function(event, d) {
+                // Agrandir la part survolée, rétrécir les autres
+                paths.transition().duration(200).attr('d', function(pd) {
+                    return pd === d ? arcHover(pd) : arcShrink(pd);
+                });
                 const pct = ((d.data.value / total) * 100).toFixed(1);
                 tooltip.style('visibility', 'visible')
                     .html(`<strong>${d.data.label}</strong><br>${d.data.value} tentatives<br>${pct}%`);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', () => tooltip.style('visibility', 'hidden'));
+            .on('mouseout', function() {
+                // Rétablir toutes les parts à la taille normale
+                paths.transition().duration(200).attr('d', arc);
+                tooltip.style('visibility', 'hidden');
+            });
 
         // Labels dans le camembert
         svg.selectAll('text.arc-label')
@@ -917,10 +927,12 @@ export class VizManager {
             .attr('transform', `translate(${size / 2},${size / 2})`);
 
         const pie = d3.pie().value(d => d.value)(categories.filter(c => c.value > 0));
-        const arc = d3.arc().innerRadius(radius * 0.4).outerRadius(radius);
+        const arc        = d3.arc().innerRadius(radius * 0.4).outerRadius(radius);
+        const arcHover   = d3.arc().innerRadius(radius * 0.4).outerRadius(radius * 1.12);
+        const arcShrink  = d3.arc().innerRadius(radius * 0.4).outerRadius(radius * 0.90);
         const tooltip = this._createTooltip();
 
-        svg.selectAll('path')
+        const paths2 = svg.selectAll('path')
             .data(pie)
             .enter()
             .append('path')
@@ -928,12 +940,19 @@ export class VizManager {
             .attr('fill', d => d.data.color)
             .attr('stroke', '#fff')
             .attr('stroke-width', 2)
-            .on('mouseover', (event, d) => {
+            .style('cursor', 'pointer')
+            .on('mouseover', function(event, d) {
+                paths2.transition().duration(200).attr('d', function(pd) {
+                    return pd === d ? arcHover(pd) : arcShrink(pd);
+                });
                 tooltip.style('visibility', 'visible')
                     .html(`<strong>${d.data.label}</strong><br>${d.data.value} étudiant(s)<br>${((d.data.value / total) * 100).toFixed(1)}%`);
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', () => tooltip.style('visibility', 'hidden'));
+            .on('mouseout', function() {
+                paths2.transition().duration(200).attr('d', arc);
+                tooltip.style('visibility', 'hidden');
+            });
 
         // Labels
         svg.selectAll('text.arc-label')

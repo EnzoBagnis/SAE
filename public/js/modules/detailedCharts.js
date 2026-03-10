@@ -484,9 +484,9 @@ const DetailedCharts = (function() {
             .value(d => d.value)
             .sort(null);
 
-        const arc = d3.arc()
-            .innerRadius(radius * 0.5)
-            .outerRadius(radius);
+        const arc       = d3.arc().innerRadius(radius * 0.5).outerRadius(radius);
+        const arcHover  = d3.arc().innerRadius(radius * 0.5).outerRadius(radius * 1.12);
+        const arcShrink = d3.arc().innerRadius(radius * 0.5).outerRadius(radius * 0.90);
 
         const arcs = svg.selectAll('.arc')
             .data(pie(data))
@@ -494,19 +494,19 @@ const DetailedCharts = (function() {
             .append('g')
             .attr('class', 'arc');
 
-        arcs.append('path')
+        const arcPaths = arcs.append('path')
             .attr('d', arc)
             .attr('fill', d => d.data.color)
             .attr('stroke', 'white')
             .attr('stroke-width', 2)
             .style('cursor', 'pointer')
             .on('mouseover', function(event, d) {
-                d3.select(this).transition().duration(200)
-                    .attr('d', d3.arc().innerRadius(radius * 0.5).outerRadius(radius * 1.1));
+                arcPaths.transition().duration(200).attr('d', function(pd) {
+                    return pd === d ? arcHover(pd) : arcShrink(pd);
+                });
             })
             .on('mouseout', function() {
-                d3.select(this).transition().duration(200)
-                    .attr('d', arc);
+                arcPaths.transition().duration(200).attr('d', arc);
             });
 
         arcs.append('text')
