@@ -781,8 +781,6 @@ export class VizManager {
             .selectAll('text').remove();
 
         svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
-
-        this._renderGradeLegend(svg, w + 5, 0);
     }
 
     // =========================================================================
@@ -861,26 +859,27 @@ export class VizManager {
             .append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
 
-        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.2);
+        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.3);
         const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
 
         const tooltip = this._createTooltip(containerId);
         const self = this;
 
-        svg.selectAll('rect.bar')
+
+        // Points colorés
+        svg.selectAll('circle')
             .data(sorted)
             .enter()
-            .append('rect')
-            .attr('class', 'bar')
-            .attr('x', (_, i) => x(i))
-            .attr('y', d => y(d.success_rate || 0))
-            .attr('width', x.bandwidth())
-            .attr('height', d => h - y(d.success_rate || 0))
+            .append('circle')
+            .attr('cx', (_, i) => x(i) + x.bandwidth() / 2)
+            .attr('cy', d => y(d.success_rate || 0))
+            .attr('r', 6)
             .attr('fill', d => VizManager.gradeColor(d.success_rate || 0))
-            .attr('rx', 2)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2)
             .style('cursor', 'pointer')
             .on('mouseover', function(event, d) {
-                d3.select(this).attr('opacity', 0.75);
+                d3.select(this).attr('r', 9);
                 const rate = d.success_rate || 0;
                 const rateColor = VizManager.gradeColor(rate);
                 const name = htmlEscape(d.identifier);
@@ -894,7 +893,7 @@ export class VizManager {
             })
             .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
             .on('mouseout', function() {
-                d3.select(this).attr('opacity', 1);
+                d3.select(this).attr('r', 6);
                 tooltip.style('visibility', 'hidden');
             })
             .on('click', (event, d) => {
