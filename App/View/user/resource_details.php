@@ -98,15 +98,13 @@
     <!-- Menu du haut -->
     <header class="top-menu">
         <div class="logo">
-            <h1>StudTraj</h1>
+            <a href="<?= BASE_URL ?>/index.php?action=resources_list" style="text-decoration:none;color:inherit;"><h1>StudTraj</h1></a>
         </div>
         <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
 
         <nav class="nav-menu">
-            <a href="<?= BASE_URL ?>/index.php?action=dashboard">Tableau de Bord</a>
-            <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
         </nav>
         <div class="header-right">
             <button onclick="openImportModal(<?= $resource->resource_id ?>)" class="btn-import-trigger">
@@ -146,11 +144,6 @@
                 </span>
             </div>
             <ul class="burger-menu-list">
-                <li>
-                    <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">
-                        Mes Ressources
-                    </a>
-                </li>
                 <li>
                     <a href="<?= BASE_URL ?>/index.php?action=logout" class="burger-link burger-logout">Déconnexion</a>
                 </li>

@@ -107,12 +107,11 @@ $current_resource_id = $resource_id ?? 'null';
 </head>
 <body>
 <header class="top-menu">
-    <div class="logo"><h1>StudTraj</h1></div>
+    <div class="logo"><a href="<?= BASE_URL ?>/resources" style="text-decoration:none;color:inherit;"><h1>StudTraj</h1></a></div>
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
     </button>
     <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
     </nav>
     <div class="header-right">
         <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
@@ -147,7 +146,6 @@ $current_resource_id = $resource_id ?? 'null';
             <span><?= htmlspecialchars($user_firstname) ?> <?= htmlspecialchars($user_lastname) ?></span>
         </div>
         <ul class="burger-menu-list">
-            <li><a href="<?= BASE_URL ?>/resources" class="burger-link">Ressources</a></li>
             <li>
                 <a href="#" class="burger-link burger-import"
                    onclick="openImportModal(<?= $current_resource_id ?>); toggleBurgerMenu(); return false;">

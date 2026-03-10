@@ -49,7 +49,10 @@ try {
 </head>
 <body>
 <header class="top-menu">
-    <div class="logo"><h1>StudTraj</h1></div>
+    <div class="logo">
+        <a href="<?= BASE_URL ?>/index.php?action=resources_list"
+           style="text-decoration:none;color:inherit;"><h1>StudTraj</h1></a>
+    </div>
 
     <!-- Bouton burger pour mobile -->
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
@@ -59,7 +62,6 @@ try {
     </button>
 
     <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/index.php?action=resources_list" class="active">Ressources</a>
     </nav>
 
     <div class="header-right">
@@ -100,7 +102,6 @@ try {
             </span>
         </div>
         <ul class="burger-menu-list">
-            <li><a href="<?= BASE_URL ?>/index.php?action=resources_list" class="burger-link active">Ressources</a></li>
             <li><a href="#" onclick="confirmLogout()" class="burger-link burger-logout">Déconnexion</a></li>
         </ul>
     </div>
