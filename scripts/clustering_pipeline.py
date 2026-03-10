@@ -98,10 +98,23 @@ def run_pipeline_micro(data, n_clusters=8, perplexity=30, exercise_id=None):
 
     # 4) t-SNE réduction 2D
     from sklearn.manifold import TSNE
+    from sklearn.preprocessing import normalize
 
-    actual_perplexity = min(perplexity, max(1, len(vectors) - 1))
-    tsne = TSNE(n_components=2, perplexity=actual_perplexity, random_state=42)
-    coords_2d = tsne.fit_transform(vectors)
+    # Normaliser les vecteurs avant t-SNE pour améliorer la séparation
+    vectors_normed = normalize(vectors, norm='l2')
+
+    actual_perplexity = min(perplexity, max(5, len(vectors_normed) // 3))
+    tsne = TSNE(
+        n_components=2,
+        perplexity=actual_perplexity,
+        random_state=42,
+        n_iter=1500,
+        learning_rate='auto',
+        init='pca',
+        early_exaggeration=12.0,
+        metric='cosine',
+    )
+    coords_2d = tsne.fit_transform(vectors_normed)
 
     # 5) Construire les points individuels (pour Plotly côté JS)
     points = []
@@ -228,11 +241,24 @@ def run_pipeline_global(data, perplexity=30):
 
     # 3) t-SNE global
     from sklearn.manifold import TSNE
+    from sklearn.preprocessing import normalize
     import numpy as np
 
-    actual_perplexity = min(perplexity, max(1, len(vectors) - 1))
-    tsne = TSNE(n_components=2, perplexity=actual_perplexity, random_state=42)
-    coords_2d = tsne.fit_transform(vectors)
+    # Normaliser les vecteurs avant t-SNE pour améliorer la séparation
+    vectors_normed = normalize(vectors, norm='l2')
+
+    actual_perplexity = min(perplexity, max(5, len(vectors_normed) // 3))
+    tsne = TSNE(
+        n_components=2,
+        perplexity=actual_perplexity,
+        random_state=42,
+        n_iter=1500,
+        learning_rate='auto',
+        init='pca',
+        early_exaggeration=12.0,
+        metric='cosine',
+    )
+    coords_2d = tsne.fit_transform(vectors_normed)
 
     # 4) Regrouper par exercise_name et calculer les centroïdes
     exercise_points = {}  # exercise_name -> list of (x, y, exercice_id)

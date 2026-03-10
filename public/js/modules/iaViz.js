@@ -280,7 +280,7 @@ const IaViz = (function () {
     }
 
     /**
-     * Rendu Plotly de la vue Micro (clusters + trajectoires).
+     * Rendu Plotly de la vue Micro (clusters + trajectoires + hover focus).
      */
     function _renderMicro(data) {
         const container = document.getElementById('microPlot');
@@ -292,12 +292,24 @@ const IaViz = (function () {
         const nClusters = data.n_clusters || 8;
         const traces = [];
 
+        // ── Opacités par défaut (tout est grisé) ──
+        const DIM_OPACITY = 0.15;
+        const BRIGHT_OPACITY = 1.0;
+        const DIM_LINE_WIDTH = 1;
+        const BRIGHT_LINE_WIDTH = 3;
+
+        // ── Préparer le lookup user_id → indices de traces ──
+        // On indexe chaque point avec son user_id pour le hover focus
+        const allUserIds = [...new Set(points.map(p => p.user_id))];
+
         // --- 1) Points colorés par cluster ---
+        // On crée UNE trace par cluster, chaque point a son symbole selon correct
         for (let c = 0; c < nClusters; c++) {
             const clusterPts = points.filter(p => p.cluster === c);
             if (clusterPts.length === 0) continue;
 
             const col = COLORS_10[c % COLORS_10.length];
+
             traces.push({
                 x: clusterPts.map(p => p.x),
                 y: clusterPts.map(p => p.y),
@@ -305,34 +317,126 @@ const IaViz = (function () {
                 type: 'scatter',
                 name: `Cluster ${c}`,
                 marker: {
-                    size: 8,
-                    color: col,
-                    opacity: 0.75,
-                    line: { width: 1, color: '#fff' },
-                    symbol: clusterPts.map(p => p.correct ? 'circle' : 'x'),
+                    size: clusterPts.map(p => p.correct ? 14 : 8),
+                    color: clusterPts.map(p => p.correct ? col : col),
+                    opacity: DIM_OPACITY,
+                    line: {
+                        width: clusterPts.map(p => p.correct ? 2.5 : 1),
+                        color: clusterPts.map(p => p.correct ? '#FFD700' : '#fff'),
+                    },
+                    symbol: clusterPts.map(p => p.correct ? 'star' : 'circle'),
                 },
                 hoverinfo: 'text',
-                text: clusterPts.map(p =>
-                    `<b>Étudiant:</b> ${_esc(p.user_id)}<br>` +
-                    `<b>Cluster:</b> ${p.cluster}<br>` +
-                    `<b>Correct:</b> ${p.correct ? '✓ Oui' : '✗ Non'}<br>` +
-                    `<b>Date:</b> ${p.date || '—'}<br>` +
-                    `<b>Tentative:</b> #${p.attempt_id}`
-                ),
+                text: clusterPts.map(p => {
+                    const dateStr = p.date && p.date !== '' && p.date !== 'None'
+                        ? _formatDate(p.date)
+                        : '—';
+                    return `<b>👤 Étudiant :</b> ${_esc(p.user_id)}<br>` +
+                           `<b>🎯 Cluster :</b> ${p.cluster}<br>` +
+                           `<b>${p.correct ? '✅' : '❌'} Correct :</b> ${p.correct ? '<span style="color:#2ecc71;font-weight:bold">Oui</span>' : '<span style="color:#e74c3c">Non</span>'}<br>` +
+                           `<b>📝 Tentative :</b> #${p.attempt_id}<br>` +
+                           `<b>📅 Date :</b> ${dateStr}<br>` +
+                           `<b>📍 Position :</b> (${p.x.toFixed(2)}, ${p.y.toFixed(2)})`;
+                }),
+                customdata: clusterPts.map(p => p.user_id),
+                hoverlabel: {
+                    bgcolor: '#2c3e50',
+                    bordercolor: '#ecf0f1',
+                    font: { color: '#fff', size: 12, family: 'sans-serif' },
+                },
             });
         }
 
-        // --- 2) Trajectoires par étudiant (lignes directionnelles) ---
+        // Nombre de traces de clusters (pour identifier les traces trajectoires ensuite)
+        const nClusterTraces = traces.length;
+
+        // --- 2) Trajectoires par étudiant (lignes avec flèches) ---
         const showTrajectories = document.getElementById('microShowTrajectories')?.checked !== false;
+        const trajectoryAnnotations = [];
+
         if (showTrajectories) {
-            const trajectoryTraces = _buildTrajectoryTraces(points);
-            trajectoryTraces.forEach(t => traces.push(t));
+            const byUser = {};
+            points.forEach(p => {
+                if (!byUser[p.user_id]) byUser[p.user_id] = [];
+                byUser[p.user_id].push(p);
+            });
+
+            const trajColors = [
+                'rgba(52,73,94,{a})', 'rgba(142,68,173,{a})', 'rgba(41,128,185,{a})',
+                'rgba(39,174,96,{a})', 'rgba(243,156,18,{a})', 'rgba(192,57,43,{a})',
+                'rgba(22,160,133,{a})', 'rgba(127,140,141,{a})',
+            ];
+
+            let colIdx = 0;
+
+            Object.keys(byUser).forEach(userId => {
+                let userPts = byUser[userId];
+                if (userPts.length < 2) return;
+
+                userPts.sort((a, b) => {
+                    if (a.date && b.date && a.date !== b.date) return a.date.localeCompare(b.date);
+                    return (a.attempt_id || 0) - (b.attempt_id || 0);
+                });
+
+                const colTemplate = trajColors[colIdx % trajColors.length];
+                const dimCol = colTemplate.replace('{a}', String(DIM_OPACITY));
+                colIdx++;
+
+                traces.push({
+                    x: userPts.map(p => p.x),
+                    y: userPts.map(p => p.y),
+                    mode: 'lines',
+                    type: 'scatter',
+                    name: `Traj. ${userId}`,
+                    line: {
+                        color: dimCol,
+                        width: DIM_LINE_WIDTH,
+                        dash: 'dot',
+                    },
+                    hoverinfo: 'skip',
+                    showlegend: false,
+                    customdata: userPts.map(() => userId),
+                    _userId: userId,
+                    _colTemplate: colTemplate,
+                });
+
+                // Flèches (annotations) du point N-1 vers N
+                for (let i = 0; i < userPts.length - 1; i++) {
+                    const fromPt = userPts[i];
+                    const toPt = userPts[i + 1];
+                    const dx = toPt.x - fromPt.x;
+                    const dy = toPt.y - fromPt.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 0.3) continue;
+
+                    trajectoryAnnotations.push({
+                        x: toPt.x,
+                        y: toPt.y,
+                        ax: fromPt.x,
+                        ay: fromPt.y,
+                        xref: 'x',
+                        yref: 'y',
+                        axref: 'x',
+                        ayref: 'y',
+                        showarrow: true,
+                        arrowhead: 3,
+                        arrowsize: 1.4,
+                        arrowwidth: 1.5,
+                        arrowcolor: colTemplate.replace('{a}', String(DIM_OPACITY)),
+                        standoff: 5,
+                        startstandoff: 5,
+                        opacity: DIM_OPACITY,
+                        _userId: userId,
+                        _colTemplate: colTemplate,
+                    });
+                }
+            });
         }
 
         const exName = data.exercise_name || '';
         const layout = {
             title: {
-                text: `Vue Micro — ${exName}<br><sup>${data.n_points} tentatives, ${nClusters} clusters</sup>`,
+                text: `Vue Micro — ${exName}<br><sup>${data.n_points} tentatives, ${nClusters} clusters · Survolez un point pour isoler la trajectoire</sup>`,
                 font: { size: 15, color: '#2c3e50' },
             },
             xaxis: { title: 't-SNE dim. 1', zeroline: false, showgrid: true, gridcolor: '#ecf0f1' },
@@ -340,126 +444,164 @@ const IaViz = (function () {
             hovermode: 'closest',
             plot_bgcolor: '#fafbfc',
             paper_bgcolor: '#fff',
-            margin: { t: 70, b: 50, l: 60, r: 30 },
+            margin: { t: 80, b: 50, l: 60, r: 30 },
             legend: { orientation: 'h', y: -0.18 },
             showlegend: true,
+            annotations: trajectoryAnnotations.length > 300
+                ? trajectoryAnnotations.slice(0, 300)
+                : trajectoryAnnotations,
         };
 
-        Plotly.newPlot(container, traces, layout, { responsive: true });
+        Plotly.newPlot(container, traces, layout, { responsive: true }).then(() => {
+            // ── Hover Focus : surbrillance de la trajectoire de l'utilisateur survolé ──
+            container.on('plotly_hover', function (evtData) {
+                if (!evtData || !evtData.points || evtData.points.length === 0) return;
+                const pt = evtData.points[0];
+                const hoveredUserId = pt.customdata;
+                if (!hoveredUserId) return;
+
+                _highlightUser(container, traces, nClusterTraces, hoveredUserId, trajectoryAnnotations, layout);
+            });
+
+            container.on('plotly_unhover', function () {
+                _resetHighlight(container, traces, nClusterTraces, trajectoryAnnotations, layout);
+            });
+        });
 
         // Métadonnées
         const metaEl = document.getElementById('microMeta');
         if (metaEl) {
             const uniqueStudents = new Set(points.map(p => p.user_id)).size;
+            const correctCount = points.filter(p => p.correct).length;
             metaEl.innerHTML =
                 `<span class="meta-item"><strong>${data.n_points}</strong> tentatives</span>` +
                 `<span class="meta-item"><strong>${nClusters}</strong> clusters</span>` +
                 `<span class="meta-item"><strong>${uniqueStudents}</strong> étudiants</span>` +
+                `<span class="meta-item">✅ <strong>${correctCount}</strong> réussies (★ = réussite)</span>` +
                 `<span class="meta-item">Exercice : <strong>${_esc(exName)}</strong></span>`;
         }
     }
 
     /**
-     * Construit les traces Plotly pour les trajectoires étudiantes.
-     * Pour chaque user_id, trie les tentatives chronologiquement et
-     * trace des segments avec des flèches (annotations).
+     * Met en surbrillance la trajectoire d'un utilisateur donné.
      */
-    function _buildTrajectoryTraces(points) {
-        const traces = [];
+    function _highlightUser(container, traces, nClusterTraces, userId, annotations, layout) {
+        const DIM_OPACITY = 0.08;
+        const BRIGHT_OPACITY = 1.0;
 
-        // Regrouper par user_id
-        const byUser = {};
-        points.forEach(p => {
-            if (!byUser[p.user_id]) byUser[p.user_id] = [];
-            byUser[p.user_id].push(p);
-        });
+        const update = {};
 
-        // Palette de couleurs pour les trajectoires (plus subtile)
-        const trajColors = [
-            'rgba(52,73,94,0.4)', 'rgba(142,68,173,0.4)', 'rgba(41,128,185,0.4)',
-            'rgba(39,174,96,0.4)', 'rgba(243,156,18,0.4)', 'rgba(192,57,43,0.4)',
-            'rgba(22,160,133,0.4)', 'rgba(127,140,141,0.4)',
-        ];
-
-        let colIdx = 0;
-        const annotations = [];
-
-        Object.keys(byUser).forEach(userId => {
-            let userPts = byUser[userId];
-            if (userPts.length < 2) return; // Pas de trajectoire pour un seul point
-
-            // Trier par date puis par attempt_id
-            userPts.sort((a, b) => {
-                if (a.date && b.date && a.date !== b.date) return a.date.localeCompare(b.date);
-                return (a.attempt_id || 0) - (b.attempt_id || 0);
-            });
-
-            const col = trajColors[colIdx % trajColors.length];
-            colIdx++;
-
-            // Trace ligne
-            traces.push({
-                x: userPts.map(p => p.x),
-                y: userPts.map(p => p.y),
-                mode: 'lines',
-                type: 'scatter',
-                name: `Traj. ${userId}`,
-                line: {
-                    color: col,
-                    width: 1.5,
-                    dash: 'dot',
-                },
-                hoverinfo: 'skip',
-                showlegend: false,
-            });
-
-            // Flèches (annotations Plotly) du point N-1 vers N
-            for (let i = 0; i < userPts.length - 1; i++) {
-                const fromPt = userPts[i];
-                const toPt   = userPts[i + 1];
-                // N'ajouter des flèches que si les points sont suffisamment éloignés
-                const dx = toPt.x - fromPt.x;
-                const dy = toPt.y - fromPt.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 0.5) continue; // sauter les points très proches
-
-                annotations.push({
-                    x: toPt.x,
-                    y: toPt.y,
-                    ax: fromPt.x,
-                    ay: fromPt.y,
-                    xref: 'x',
-                    yref: 'y',
-                    axref: 'x',
-                    ayref: 'y',
-                    showarrow: true,
-                    arrowhead: 3,
-                    arrowsize: 1.2,
-                    arrowwidth: 1.5,
-                    arrowcolor: col.replace('0.4', '0.6'),
-                    standoff: 4,
-                    startstandoff: 4,
-                });
-            }
-        });
-
-        // Stocker les annotations dans un attribut spécial pour les appliquer au layout
-        if (annotations.length > 0) {
-            // On va les injecter via relayout après le rendu
-            setTimeout(() => {
-                const container = document.getElementById('microPlot');
-                if (container && window.Plotly) {
-                    // Limiter les flèches si trop nombreuses pour la perf
-                    const maxAnnotations = 200;
-                    const annots = annotations.length > maxAnnotations
-                        ? annotations.slice(0, maxAnnotations)
-                        : annotations;
-                    Plotly.relayout(container, { annotations: annots });
+        // Mise à jour des traces de clusters (points)
+        for (let i = 0; i < nClusterTraces; i++) {
+            const trace = traces[i];
+            if (!trace.customdata) continue;
+            const opacities = trace.customdata.map(uid => uid === userId ? BRIGHT_OPACITY : DIM_OPACITY);
+            const sizes = [];
+            // Recalculer les tailles : en surbrillance les points sont plus gros
+            if (trace.marker && trace.marker.symbol) {
+                for (let j = 0; j < trace.customdata.length; j++) {
+                    const isHovered = trace.customdata[j] === userId;
+                    const isStar = trace.marker.symbol[j] === 'star';
+                    if (isHovered) {
+                        sizes.push(isStar ? 18 : 11);
+                    } else {
+                        sizes.push(isStar ? 14 : 8);
+                    }
                 }
-            }, 100);
+            }
+            update['marker.opacity'] = opacities;
+            if (sizes.length > 0) update['marker.size'] = sizes;
+            Plotly.restyle(container, update, [i]);
         }
 
-        return traces;
+        // Mise à jour des traces de trajectoires (lignes)
+        for (let i = nClusterTraces; i < traces.length; i++) {
+            const trace = traces[i];
+            const isHighlighted = trace._userId === userId;
+            Plotly.restyle(container, {
+                'line.color': isHighlighted
+                    ? trace._colTemplate.replace('{a}', '0.9')
+                    : trace._colTemplate.replace('{a}', String(DIM_OPACITY)),
+                'line.width': isHighlighted ? 3 : 0.5,
+                'line.dash': isHighlighted ? 'solid' : 'dot',
+            }, [i]);
+        }
+
+        // Mise à jour des annotations (flèches)
+        if (annotations.length > 0) {
+            const updatedAnnotations = annotations.map(ann => {
+                const isHighlighted = ann._userId === userId;
+                return Object.assign({}, ann, {
+                    arrowcolor: ann._colTemplate.replace('{a}', isHighlighted ? '0.9' : String(DIM_OPACITY)),
+                    arrowwidth: isHighlighted ? 2.5 : 0.8,
+                    opacity: isHighlighted ? 1.0 : DIM_OPACITY,
+                });
+            });
+            const limited = updatedAnnotations.length > 300 ? updatedAnnotations.slice(0, 300) : updatedAnnotations;
+            Plotly.relayout(container, { annotations: limited });
+        }
+    }
+
+    /**
+     * Réinitialise toutes les opacités (état par défaut : tout grisé).
+     */
+    function _resetHighlight(container, traces, nClusterTraces, annotations, layout) {
+        const DIM_OPACITY = 0.15;
+
+        // Reset des points de clusters
+        for (let i = 0; i < nClusterTraces; i++) {
+            const trace = traces[i];
+            if (!trace.customdata) continue;
+            const opacities = trace.customdata.map(() => DIM_OPACITY);
+            const sizes = [];
+            if (trace.marker && trace.marker.symbol) {
+                for (let j = 0; j < trace.customdata.length; j++) {
+                    const isStar = trace.marker.symbol[j] === 'star';
+                    sizes.push(isStar ? 14 : 8);
+                }
+            }
+            const update = { 'marker.opacity': opacities };
+            if (sizes.length > 0) update['marker.size'] = sizes;
+            Plotly.restyle(container, update, [i]);
+        }
+
+        // Reset des lignes de trajectoires
+        for (let i = nClusterTraces; i < traces.length; i++) {
+            const trace = traces[i];
+            Plotly.restyle(container, {
+                'line.color': trace._colTemplate.replace('{a}', String(DIM_OPACITY)),
+                'line.width': 1,
+                'line.dash': 'dot',
+            }, [i]);
+        }
+
+        // Reset des annotations
+        if (annotations.length > 0) {
+            const resetAnnotations = annotations.map(ann => Object.assign({}, ann, {
+                arrowcolor: ann._colTemplate.replace('{a}', String(DIM_OPACITY)),
+                arrowwidth: 1.5,
+                opacity: DIM_OPACITY,
+            }));
+            const limited = resetAnnotations.length > 300 ? resetAnnotations.slice(0, 300) : resetAnnotations;
+            Plotly.relayout(container, { annotations: limited });
+        }
+    }
+
+    /**
+     * Formate une date ISO en format lisible.
+     */
+    function _formatDate(dateStr) {
+        if (!dateStr || dateStr === 'None' || dateStr === '') return '—';
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString('fr-FR', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit',
+            });
+        } catch (e) {
+            return dateStr;
+        }
     }
 
     /**
@@ -522,4 +664,3 @@ const IaViz = (function () {
     };
 
 })();
-
