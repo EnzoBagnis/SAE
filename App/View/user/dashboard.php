@@ -71,6 +71,18 @@ $current_resource_id = $resource_id ?? 'null';
         .viz-chart-card { background: #f8f9fa; border-radius: 8px; padding: 1rem 1.25rem 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden; }
         .viz-chart-full { grid-column: 1 / -1; max-width: 480px; margin: 0 auto; width: 100%; }
         .viz-chart-title { color: #34495e; font-size: 1rem; margin: 0 0 0.75rem; font-weight: 600; }
+        .viz-chart-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .viz-sort-select {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border: 1px solid #d0d7de;
+            border-radius: 4px;
+            background: #fff;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .viz-sort-select:hover, .viz-sort-select:focus { border-color: #3498db; outline: none; }
         .viz-no-data { color: #95a5a6; font-size: 0.9rem; text-align: center; padding: 1rem 0; }
         /* Cartes de stats */
         .viz-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
