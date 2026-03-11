@@ -134,6 +134,39 @@ $current_resource_id = $resource_id ?? 'null';
             transition: color 0.2s;
         }
         .header-search button:hover { color: #fff; }
+        /* Dropdown résultats de recherche */
+        #resourceSearchResults {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #dde;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 6px 16px rgba(0,0,0,.18);
+            z-index: 2000;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        #rsr-label {
+            display: block;
+            font-size: .78rem;
+            color: #888;
+            padding: 6px 12px 2px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        #rsr-list { list-style: none; padding: 0; margin: 0; }
+        #rsr-list li {
+            padding: 9px 14px;
+            font-size: .9em;
+            border-bottom: 1px solid #f0f0f0;
+            color: #2c3e50;
+        }
+        #rsr-list li[data-clickable]:hover { background: #f0f7ff; cursor: pointer; color: #3498db; }
+        .header-search { position: relative; }
         @media (max-width: 768px) { .header-search { display: none; } }
     </style>
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
@@ -145,6 +178,10 @@ $current_resource_id = $resource_id ?? 'null';
     <div class="header-search">
         <input type="text" id="resourceSearchInput" placeholder="Rechercher un TP ou un étudiant par mot-clé…" autocomplete="off" />
         <button id="resourceClearBtn" title="Effacer">&#x2715;</button>
+        <div id="resourceSearchResults">
+            <strong id="rsr-label"></strong>
+            <ul id="rsr-list"></ul>
+        </div>
     </div>
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -206,11 +243,6 @@ $current_resource_id = $resource_id ?? 'null';
     </div>
     <?php endif; ?>
 
-    <!-- Résultats de recherche -->
-    <div id="resourceSearchResults" style="display:none;background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:8px;margin-bottom:8px;">
-        <strong id="rsr-label" style="font-size:.85rem;color:#555;"></strong>
-        <ul id="rsr-list" style="list-style:none;padding:0;margin:0;max-height:280px;overflow-y:auto;"></ul>
-    </div>
 
     <div class="viz-data-zone">
         <div class="viz-loading">⏳ Chargement des données…</div>
@@ -306,19 +338,20 @@ $current_resource_id = $resource_id ?? 'null';
         items.forEach(function (item) {
             var li = document.createElement('li');
             li.textContent = item.text;
-            li.style.padding = '9px 10px';
-            li.style.borderBottom = '1px solid #f0f0f0';
-            li.style.fontSize = '.9em';
             if (item.click) {
-                li.style.cursor = 'pointer';
-                li.style.color = '#3498db';
+                li.setAttribute('data-clickable', '1');
                 li.addEventListener('click', item.click);
-                li.addEventListener('mouseenter', function () { li.style.background = '#f0f7ff'; });
-                li.addEventListener('mouseleave', function () { li.style.background = ''; });
             }
             resList.appendChild(li);
         });
     }
+
+    // Fermer le dropdown en cliquant en dehors
+    document.addEventListener('click', function (e) {
+        if (!resDiv.contains(e.target) && e.target !== input && e.target !== clearBtn) {
+            resDiv.style.display = 'none';
+        }
+    });
 
     async function doSearch() {
         var q = (input.value || '').trim().toLowerCase();
