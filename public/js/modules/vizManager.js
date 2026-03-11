@@ -42,9 +42,10 @@ export class VizManager {
         this._renderBreadcrumb(container, []);
 
         try {
+            const _ts = Date.now();
             const [statsResp, exResp] = await Promise.all([
-                fetch(`${window.BASE_URL}/api/dashboard/students-stats?resource_id=${this.resourceId}`).then(r => r.json()),
-                fetch(`${window.BASE_URL}/api/dashboard/exercises?resource_id=${this.resourceId}`).then(r => r.json()),
+                fetch(`${window.BASE_URL}/api/dashboard/students-stats?resource_id=${this.resourceId}&_=${_ts}`).then(r => r.json()),
+                fetch(`${window.BASE_URL}/api/dashboard/exercises?resource_id=${this.resourceId}&_=${_ts}`).then(r => r.json()),
             ]);
 
             const studentsData = statsResp.success ? statsResp.data : [];
@@ -487,7 +488,7 @@ export class VizManager {
                     d3.select(this).attr('opacity', 0.75);
                     const rate = d.success_rate != null ? d.success_rate : null;
                     const rateColor = rate != null ? VizManager.gradeColor(rate) : '#95a5a6';
-                    const name = htmlEscape(d.funcname || d.exo_name);
+                    const name = htmlEscape(d.funcname || d.exo_name || d.exercice_name || d.exercise_name || '');
                     const rateStr = rate != null ? rate + '%' : 'N/A';
                     tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
                         .html(`<div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div><div style="color:${rateColor};font-weight:600">Réussite : ${rateStr}</div><div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div><div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>`);
@@ -497,7 +498,7 @@ export class VizManager {
                 .on('click', (event, d) => {
                     tooltip.style('visibility', 'hidden');
                     const dataZone = document.querySelector('.viz-data-zone');
-                    if (dataZone) self.renderLevel2TP(dataZone, d.exercise_id, d.funcname || d.exo_name);
+                    if (dataZone) self.renderLevel2TP(dataZone, d.exercise_id, d.funcname || d.exo_name || d.exercice_name || d.exercise_name);
                 });
 
             svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => '')).selectAll('text').remove();

@@ -11,6 +11,7 @@ use Core\Service\SessionService;
 /**
  * Dashboard API Controller
  * Provides JSON endpoints consumed by dashboard-main.js and its modules.
+ * v2 — exercice_name used directly as display name (exo_name + funcname fields)
  *
  * Routes (all require authentication):
  *   GET /api/dashboard/students          — list unique students (optionally filtered by resource_id)
