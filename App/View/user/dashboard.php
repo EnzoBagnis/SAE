@@ -1,4 +1,4 @@
-﻿﻿﻿<?php
+﻿﻿﻿﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -101,6 +101,40 @@ $current_resource_id = $resource_id ?? 'null';
         .viz-resource-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #3498db; font-weight: 600; }
         .viz-resource-name { margin: 0.2rem 0 0; color: #2c3e50; font-size: 1.5rem; }
         .viz-resource-desc { margin: 0.3rem 0 0; color: #7f8c8d; font-size: 0.9rem; }
+        /* Barre de recherche dans le header */
+        .header-search {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            max-width: 420px;
+            margin: 0 2rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .header-search input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            padding: 7px 12px;
+            font-size: 0.9em;
+        }
+        .header-search input::placeholder { color: rgba(255,255,255,0.55); }
+        .header-search button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            padding: 7px 10px;
+            cursor: pointer;
+            font-size: 1em;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .header-search button:hover { color: #fff; }
+        @media (max-width: 768px) { .header-search { display: none; } }
     </style>
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
     <meta name="robots" content="noindex, nofollow">
