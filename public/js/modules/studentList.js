@@ -16,8 +16,11 @@ export class StudentListManager {
         this.searchTerm = '';
     }
 
-    // Récupérer l'ID de la ressource depuis l'URL
+    // Récupérer l'ID de la ressource depuis window.RESOURCE_ID (injecté PHP) ou l'URL
     getResourceIdFromUrl() {
+        if (window.RESOURCE_ID !== undefined && window.RESOURCE_ID !== null) {
+            return window.RESOURCE_ID;
+        }
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('resource_id');
     }
@@ -52,7 +55,7 @@ export class StudentListManager {
 
         try {
             // Charger TOUS les étudiants en une seule requête (pas de pagination)
-            let url = `${window.BASE_URL}/index.php?action=students&page=1&perPage=10000`;
+            let url = `${window.BASE_URL}/api/dashboard/students?page=1&perPage=10000`;
             if (this.resourceId) {
                 url += `&resource_id=${this.resourceId}`;
             }
@@ -96,9 +99,9 @@ export class StudentListManager {
         if (this.allExercises.length > 0) return;
 
         try {
-            let url = `${window.BASE_URL}/index.php?action=exercises`;
+            let url = `${window.BASE_URL}/api/dashboard/exercises`;
             if (this.resourceId) {
-                url += `&resource_id=${this.resourceId}`;
+                url += `?resource_id=${this.resourceId}`;
             }
 
             const response = await fetch(url);
@@ -182,9 +185,9 @@ export class StudentListManager {
         sidebarList.innerHTML = '<div class="sidebar-message">⏳ Chargement...</div>';
 
         try {
-            let url = `${window.BASE_URL}/index.php?action=exercises`;
+            let url = `${window.BASE_URL}/api/dashboard/exercises`;
             if (this.resourceId) {
-                url += `&resource_id=${this.resourceId}`;
+                url += `?resource_id=${this.resourceId}`;
             }
 
             const response = await fetch(url);

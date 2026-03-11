@@ -31,10 +31,10 @@
 ### Frontend
 - **HTML5 / CSS3** : Interface utilisateur moderne
 - **JavaScript** : Interactivité et visualisations
-- **Chart.js / D3.js** : Graphiques et visualisations de données
+- **D3.js** : Graphiques et visualisations de données
 
 ### Base de données
-- **MySQL / MariaDB** : Stockage des données
+- **MySQL** : Stockage des données
 
 ### Outils de développement
 - **Composer** : Gestion des dépendances PHP
@@ -48,31 +48,42 @@
 
 ```
 StudTraj/
-├── config/              # Configuration et routage
-│   └── router.php       # Routeur principal de l'application
-├── controllers/         # Contrôleurs MVC
-│   ├── Admin/          # Gestion administrative
-│   ├── Analysis/       # Analyse et visualisation
-│   ├── Auth/           # Authentification et autorisation
-│   ├── Import/         # Import de données
-│   └── User/           # Fonctionnalités utilisateur
-├── models/             # Modèles de données
-│   ├── Database.php    # Connexion base de données
-│   ├── Student.php     # Gestion des étudiants
-│   ├── Exercise.php    # Gestion des exercices
-│   ├── Resource.php    # Gestion des ressources
-│   ├── User.php        # Gestion des utilisateurs
-│   └── Code2VecService.php  # Service d'analyse vectorielle
-├── views/              # Vues (templates)
-│   ├── admin/         # Vues administrateur
-│   └── user/          # Vues utilisateur
-├── public/            # Ressources publiques
-│   ├── css/          # Feuilles de style
-│   └── js/           # Scripts JavaScript
-├── docs/             # Documentation générée
-├── images/           # Images uploadées
-├── cron/             # Tâches planifiées
-└── index.php         # Point d'entrée de l'application
+├── config/                    # Configuration et routage
+├── src/                       # Code source de l'application
+│   ├── Application/          # Use Cases (logique applicative)
+│   │   ├── Authentication/
+│   │   ├── ExerciseManagement/
+│   │   └── StudentTracking/
+│   ├── Domain/               # Entités et interfaces métier
+│   │   ├── Authentication/
+│   │   ├── ExerciseManagement/
+│   │   ├── ResourceManagement/
+│   │   └── StudentTracking/
+│   ├── Infrastructure/       # Implémentations techniques
+│   │   ├── DependencyInjection/
+│   │   ├── Persistence/
+│   │   ├── Repository/
+│   │   ├── Routing/
+│   │   └── Service/
+│   └── Presentation/         # Interface utilisateur
+│       ├── Controller/       # Contrôleurs
+│       │   ├── Authentication/
+│       │   ├── ExerciseManagement/
+│       │   ├── ResourceManagement/
+│       │   ├── StudentTracking/
+│       │   └── UserManagement/
+│       └── Views/            # Vues (templates)
+│           ├── admin/        # Vues administrateur
+│           ├── auth/         # Vues authentification
+│           ├── layouts/      # Layouts partagés
+│           └── user/         # Vues utilisateur
+├── public/                   # Ressources publiques
+│   ├── css/                 # Feuilles de style
+│   └── js/                  # Scripts JavaScript
+├── scripts/                  # Scripts Python (Code2Vec)
+├── docs/                     # Documentation générée
+├── vendor/                   # Dépendances Composer
+└── index.php                # Point d'entrée de l'application
 ```
 
 ---
@@ -110,7 +121,6 @@ StudTraj/
 
 5. **Configurer les permissions**
    ```bash
-   chmod 755 images/
    chmod 755 cron/
    ```
 

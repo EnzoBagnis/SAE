@@ -7,6 +7,50 @@
     position: relative;
 }
 
+/* Footer intégré au dashboard */
+.main-footer {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.main-footer .footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.main-footer .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 16px;
+}
+
+.main-footer .footer-links a {
+    color: #bdc3c7;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.main-footer .footer-links a:hover {
+    color: #4a90e2;
+}
+
 /* Top Menu */
 .top-menu {
     position: fixed;
@@ -22,12 +66,23 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     z-index: 1000;
     height: 80px;
+    overflow: visible;
 }
 
 .logo h1 {
     margin: 0;
     font-size: 1.8rem;
     color: #3498db;
+}
+
+.logo a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+
+.logo a:hover h1 {
+    color: #ffffff;
 }
 
 .nav-menu {

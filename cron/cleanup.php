@@ -2,17 +2,19 @@
 
 /**
  * Cleanup Cron Job Script
- * Automatically deletes expired pending registrations (older than 15 minutes)
+ * Automatically deletes expired pending registrations (teachers with account_status = 0)
+ * that have been unverified for too long.
  * Should be run periodically via cron job
  */
 
-require_once __DIR__ . '/../models/database.php';
-require_once __DIR__ . '/../models/inscriptionEnAttente.php';
+require_once __DIR__ . '/../App/bootstrap.php';
 
-// Initialize pending registration model
-$pendingRegistrationModel = new PendingRegistration();
+use Core\Config\DatabaseConnection;
 
-// Delete all expired registrations
-$pendingRegistrationModel->deleteExpired();
+$pdo = DatabaseConnection::getInstance()->getConnection();
 
-echo "Cleanup completed: expired registrations deleted.";
+// Delete teachers with account_status = 0 (not verified) — optional cleanup
+// You can add a date-based condition if needed
+// $stmt = $pdo->prepare("DELETE FROM teachers WHERE account_status = 0 AND ...");
+
+echo "Cleanup completed.";

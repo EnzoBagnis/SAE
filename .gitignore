@@ -1,1 +1,47 @@
-config/.env
+# Environment configuration
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Composer
+/vendor/
+composer.phar
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+/tmp/
+/temp/
+
+# Uploads (if any)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Cache
+/cache/
+*.cache
+
+# Diagnostic files (for security)
+diagnostic.php
+test.php
+phpinfo.php
+
+# PHPUnit
+.phpunit.result.cache
+
+# Node modules (if using npm)
+node_modules/
+

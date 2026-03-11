@@ -8,8 +8,12 @@ let currentAttemptsData = null;
 function openImportModal(resourceId = null) {
     const modal = document.getElementById('importModal');
     if (modal) {
-        if (resourceId) modal.dataset.resourceId = resourceId;
-        else delete modal.dataset.resourceId;
+        // Ne stocker que si c'est un vrai ID (pas null/undefined/0)
+        if (resourceId && resourceId !== 'null' && parseInt(resourceId) > 0) {
+            modal.dataset.resourceId = parseInt(resourceId);
+        } else {
+            delete modal.dataset.resourceId;
+        }
         modal.style.display = 'block';
         switchImportTab('exercises');
     }
@@ -80,7 +84,9 @@ async function importAttempts() {
     }
 
     const modal = document.getElementById('importModal');
-    let resourceId = modal?.dataset.resourceId || new URLSearchParams(window.location.search).get('id');
+    let resourceId = modal?.dataset.resourceId || new URLSearchParams(window.location.search).get('id') || window.RESOURCE_ID;
+    // S'assurer que resourceId est un entier valide
+    resourceId = (resourceId && resourceId !== 'null' && parseInt(resourceId) > 0) ? parseInt(resourceId) : null;
 
     // CONFIGURATION : On envoie par paquets de 50 pour être sûr que Alwaysdata accepte
     const CHUNK_SIZE = 50;
@@ -101,7 +107,7 @@ async function importAttempts() {
                 dataset_info: (i === 0) ? datasetInfo : null // Uniquement au premier paquet
             };
 
-            const response = await fetch(`${window.BASE_URL}/api_import_attempts.php${resourceId ? '?id='+resourceId : ''}`, {
+            const response = await fetch(`${window.BASE_URL}/api/import/attempts${resourceId ? '?resource_id='+resourceId : ''}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -121,10 +127,15 @@ async function importAttempts() {
                 throw new Error(result?.error || `Erreur serveur ${response.status}`);
             }
 
-            totalAdded += (result?.added_count || chunk.length);
+            totalAdded += (result?.added_count ?? result?.inserted ?? 0);
+
+            // Afficher les erreurs partielles s'il y en a
+            if (result?.errors && result.errors.length > 0) {
+                console.warn(`Erreurs sur ce paquet (${result.errors.length}) :`, result.errors);
+            }
         }
 
-        showImportStatus(`✓ Import réussi ! ${totalAdded} lignes traitées.`, 'success');
+        showImportStatus(`✓ Import réussi ! ${totalAdded} tentative(s) insérée(s).`, 'success');
         setTimeout(() => window.location.reload(), 2000);
 
     } catch (error) {
@@ -145,29 +156,66 @@ async function importExercises() {
 
     let list = Array.isArray(currentExercisesData) ? currentExercisesData : (currentExercisesData.exercises || []);
     const modal = document.getElementById('importModal');
-    const resourceId = modal?.dataset.resourceId;
+    const rawResourceId = modal?.dataset.resourceId || new URLSearchParams(window.location.search).get('resource_id') || window.RESOURCE_ID;
+    const resourceId = (rawResourceId && rawResourceId !== 'null' && parseInt(rawResourceId) > 0) ? parseInt(rawResourceId) : null;
 
-    const CHUNK_SIZE = 50;
+    if (!resourceId) {
+        showImportStatus('Erreur : aucun identifiant de ressource trouvé. Rechargez la page.', 'error');
+        return;
+    }
+
+    const CHUNK_SIZE = 500;
     showImportStatus(`Importation des exercices...`, 'warning');
 
     try {
+        let totalInserted = 0;
+        let totalUpdated  = 0;
+        let totalSkipped  = 0;
+
         for (let i = 0; i < list.length; i += CHUNK_SIZE) {
             const chunk = list.slice(i, i + CHUNK_SIZE);
+            const progress = Math.min(i + CHUNK_SIZE, list.length);
+
+            showImportStatus(`Import : ${progress} / ${list.length} <span class="loading-spinner"></span>`, 'warning');
+
             const payload = {
                 exercises: chunk.map(ex => ({ ...ex, resource_id: resourceId || ex.resource_id }))
             };
 
-            const response = await fetch(`${window.BASE_URL}/api_import_exercises.php`, {
+            const response = await fetch(`${window.BASE_URL}/api/import/exercises${resourceId ? '?resource_id='+resourceId : ''}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error("Erreur lors de l'envoi d'un paquet d'exercices.");
+            // Lire le corps de la réponse pour obtenir le vrai message d'erreur
+            const text = await response.text();
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                console.error('Réponse serveur (non-JSON) :', text);
+                throw new Error(`Le serveur a renvoyé une réponse invalide. Voir la console pour les détails.`);
+            }
+
+            if (!response.ok) {
+                const errMsg = result?.error || result?.message || `Erreur serveur ${response.status}`;
+                console.error('Erreur import exercices :', result);
+                throw new Error(errMsg);
+            }
+
+        totalInserted += (result?.inserted || 0);
+        totalUpdated  += (result?.updated  || 0);
+        totalSkipped  += (result?.skipped  || 0);
         }
-        showImportStatus(`✓ Import terminé avec succès !`, 'success');
+
+        let msg = `✓ Import terminé ! ${totalInserted} ajouté(s)`;
+        if (totalUpdated > 0) msg += `, ${totalUpdated} mis à jour`;
+        if (totalSkipped > 0) msg += `, ${totalSkipped} doublon(s) ignoré(s)`;
+        showImportStatus(msg, 'success');
         setTimeout(() => window.location.reload(), 2000);
     } catch (error) {
+        console.error('Erreur import exercices :', error);
         showImportStatus(`Erreur : ${error.message}`, 'error');
     }
 }
@@ -216,3 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.id === 'importModal') closeImportModal();
     });
 });
+
+// Exposition globale des fonctions appelées via onclick dans le HTML
+// (nécessaire car ce fichier est chargé en tant que module ES)
+window.openImportModal   = openImportModal;
+window.closeImportModal  = closeImportModal;
+window.switchImportTab   = switchImportTab;
+window.handleFileSelect  = handleFileSelect;
+window.importAttempts    = importAttempts;
+window.importExercises   = importExercises;

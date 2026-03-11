@@ -3,8 +3,7 @@
 export class Utils {
     static confirmLogout() {
         if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-            // Utilise la variable globale fournie par le footer via PHP
-            window.location.href = window.BASE_URL + '/index.php?action=logout';
+            window.location.href = window.BASE_URL + '/auth/logout';
         }
     }
 
