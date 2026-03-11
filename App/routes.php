@@ -70,6 +70,7 @@ $router->get('/api/dashboard/students-stats', App\Controller\DashboardApiControl
 // Dashboard IA API routes (clustering pipeline intégré au dashboard)
 $router->post('/api/dashboard/ia/macro', App\Controller\DashboardApiController::class, 'iaMacro');
 $router->post('/api/dashboard/ia/micro', App\Controller\DashboardApiController::class, 'iaMicro');
+$router->get('/api/dashboard/ia/check-data', App\Controller\DashboardApiController::class, 'iaCheckData');
 
 // Admin routes
 $router->get('/admin', App\Controller\AdminController::class, 'loginForm');

@@ -73,11 +73,15 @@ class ExercisesController extends AbstractController
             return;
         }
 
-        $this->renderView('exercises/list', [
-            'exercises' => [$exercise],
-            'total'     => 1,
+        // Rendre la vue dashboard avec le contexte exercice pour la vue Micro IA
+        $resourceId = $exercise->getResourceId();
+
+        $this->renderView('user/dashboard', [
+            'resource_id'    => $resourceId > 0 ? $resourceId : null,
+            'exercise_id'    => $exerciseId,
+            'user_firstname' => $this->authService->getUserFirstName() ?? '',
+            'user_lastname'  => $this->authService->getUserLastName() ?? '',
+            'title'          => 'StudTraj - ' . htmlspecialchars($exercise->getExoName()),
         ]);
     }
 }
-
-

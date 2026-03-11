@@ -499,6 +499,78 @@ class DashboardApiController extends AbstractController
     }
 
     // -------------------------------------------------------------------------
+    // GET /api/dashboard/ia/check-data
+    // -------------------------------------------------------------------------
+
+    /**
+     * Vérifie si des données AES existent pour une ressource donnée.
+     * Retourne le nombre de tentatives avec AES et la liste des exercices.
+     * Ne lance PAS le pipeline Python.
+     *
+     * @return void
+     */
+    public function iaCheckData(): void
+    {
+        $this->authService->requireAuth('/auth/login');
+
+        $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
+
+        try {
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+
+            $sql = "
+                SELECT COUNT(*) AS total_aes
+                FROM attempts a
+                JOIN exercices e ON a.exercice_id = e.exercice_id
+                WHERE a.aes2 IS NOT NULL AND a.aes2 != ''
+            ";
+            $params = [];
+
+            if ($resourceId) {
+                $sql .= " AND e.ressource_id = :rid";
+                $params['rid'] = $resourceId;
+            }
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $totalAes = (int)$stmt->fetchColumn();
+
+            // Lister les exercices avec des données AES
+            $sqlExo = "
+                SELECT e.exercice_id, e.exercice_name,
+                       COUNT(a.attempt_id) AS aes_count
+                FROM exercices e
+                JOIN attempts a ON a.exercice_id = e.exercice_id
+                WHERE a.aes2 IS NOT NULL AND a.aes2 != ''
+            ";
+            $paramsExo = [];
+
+            if ($resourceId) {
+                $sqlExo .= " AND e.ressource_id = :rid";
+                $paramsExo['rid'] = $resourceId;
+            }
+
+            $sqlExo .= " GROUP BY e.exercice_id ORDER BY e.exercice_name ASC";
+
+            $stmtExo = $pdo->prepare($sqlExo);
+            $stmtExo->execute($paramsExo);
+            $exercises = $stmtExo->fetchAll(\PDO::FETCH_ASSOC);
+
+            $this->jsonResponse([
+                'success'        => true,
+                'has_data'       => $totalAes >= 5,
+                'total_aes'      => $totalAes,
+                'exercises'      => $exercises,
+                'min_required'   => 5,
+            ]);
+
+        } catch (\Throwable $e) {
+            error_log('[DashboardApiController::iaCheckData] ' . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Erreur serveur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Private: Python pipeline runner (shared with iaMacro / iaMicro)
     // -------------------------------------------------------------------------
 

@@ -13,6 +13,12 @@ if ($resource_id === null && isset($_GET['resource_id'])) {
     $resource_id = (int)$_GET['resource_id'];
 }
 
+// Exercise context (set by ExercisesController::show for direct Micro view)
+$exercise_id = $exercise_id ?? null;
+if ($exercise_id === null && isset($_GET['exercise_id'])) {
+    $exercise_id = (int)$_GET['exercise_id'];
+}
+
 $initials = strtoupper(substr($user_firstname, 0, 1) . substr($user_lastname, 0, 1));
 $current_resource_id = $resource_id ?? 'null';
 ?>
@@ -36,8 +42,9 @@ $current_resource_id = $resource_id ?? 'null';
     <script src="<?= BASE_URL ?>/public/js/modules/dashboardIaChart.js"></script>
     <script>
         // Inject server-side context for JS modules — doit être AVANT dashboard-main.js
-        window.BASE_URL    = '<?= BASE_URL ?>';
-        window.RESOURCE_ID = <?= $resource_id !== null ? (int)$resource_id : 'null' ?>;
+        window.BASE_URL     = '<?= BASE_URL ?>';
+        window.RESOURCE_ID  = <?= $resource_id !== null ? (int)$resource_id : 'null' ?>;
+        window.EXERCISE_ID  = <?= $exercise_id !== null ? (int)$exercise_id : 'null' ?>;
     </script>
     <script type="module" src="<?= BASE_URL ?>/public/js/dashboard-main.js"></script>
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
@@ -128,13 +135,13 @@ $current_resource_id = $resource_id ?? 'null';
             <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
         </div>
 
-        <!-- ── Conteneur IA Clustering (Macro / Micro) ── -->
+        <!-- ── Conteneur IA Clustering (Vue Micro uniquement) ── -->
         <div id="ai-clustering-chart" class="ai-clustering-section">
             <div class="ai-clustering-header">
-                <h3>🤖 Cartographie IA des codes</h3>
+                <h3>🤖 Analyse IA — Trajectoires du TD</h3>
                 <div class="ai-clustering-controls">
                     <button id="ai-clustering-back-btn" class="btn-ai-back" style="display:none;" onclick="DashboardIaChart.backToMacro()">
-                        ← Retour vue globale
+                        ← Retour à la sélection
                     </button>
                     <button id="ai-clustering-refresh-btn" class="btn-ai-refresh" onclick="DashboardIaChart.refresh()">
                         ⟳ Rafraîchir

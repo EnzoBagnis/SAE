@@ -25,6 +25,8 @@ $title = 'StudTraj - ' . $resTitle;
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/dashboard.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/footer.css">
     <script src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script src="<?= BASE_URL ?>/public/js/modules/resourceIaChart.js"></script>
     <script>
         window.BASE_URL    = '<?= BASE_URL ?>';
         window.RESOURCE_ID = <?= (int)$resource->getResourceId() ?>;
@@ -90,6 +92,32 @@ $title = 'StudTraj - ' . $resTitle;
         .badge-mid  { background: #fff3cd; color: #856404; }
         .badge-low  { background: #f8d7da; color: #721c24; }
         .badge-none { background: #e2e3e5; color: #383d41; }
+
+        @keyframes ia-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        #ia-generate-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        #ia-generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        #ia-generate-btn.loading {
+            opacity: 0.8;
+        }
+        #ia-generate-btn.loading #ia-generate-icon { display: none; }
+        #ia-generate-btn.loading #ia-generate-spinner { display: inline-block !important; }
+        .ia-info-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+        .ia-info-ready  { background: #d4edda; color: #155724; }
+        .ia-info-missing { background: #fff3cd; color: #856404; }
     </style>
 </head>
 <body>
@@ -214,6 +242,36 @@ $title = 'StudTraj - ' . $resTitle;
         <?php else : ?>
             <p style="color:#888;">Aucun travail pratique disponible pour cette ressource.</p>
         <?php endif; ?>
+    </div>
+
+    <!-- ══ Section IA Macro — Cartographie globale ══ -->
+    <div id="ia-macro-section" class="ia-macro-section" style="max-width: 900px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+            <h2 style="margin:0; color:#333;">🤖 Cartographie IA des codes</h2>
+            <button id="ia-generate-btn" class="btn"
+                    style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px;
+                           background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                           color:#fff; border-radius:6px; border:none; cursor:pointer;
+                           font-size:0.95em; font-weight:600; transition:all 0.3s;"
+                    disabled>
+                <svg id="ia-generate-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"></polygon>
+                </svg>
+                <svg id="ia-generate-spinner" width="18" height="18" viewBox="0 0 24 24"
+                     style="display:none; animation: ia-spin 1s linear infinite; flex-shrink:0;"
+                     fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 2 A10 10 0 0 1 22 12" stroke-linecap="round"></path>
+                </svg>
+                <span>Générer la cartographie IA</span>
+            </button>
+        </div>
+
+        <div id="ia-data-info" style="margin-bottom:10px; font-size:0.9em;"></div>
+        <div id="ia-macro-status" style="display:none; padding:12px; background:#f8f9fa; border-radius:6px; color:#555; font-size:0.9em; margin-bottom:10px;"></div>
+        <div id="ia-macro-meta" style="display:none; margin-bottom:10px; font-size:0.9em; color:#666;"></div>
+        <div id="ia-macro-plot" style="display:none; width:100%; min-height:500px; border:1px solid #eee; border-radius:6px;"></div>
     </div>
 </div>
 
