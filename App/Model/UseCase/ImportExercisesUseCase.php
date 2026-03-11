@@ -79,7 +79,7 @@ class ImportExercisesUseCase
                     ?? $item['exercise_name']
                     ?? $item['name']
                     ?? $item['title']
-                    ?? $item['exo_name']
+                    ?? $item['hash']
                     ?? ''
                 );
 

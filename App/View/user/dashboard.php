@@ -391,11 +391,11 @@ $current_resource_id = $resource_id ?? 'null';
 
             var exercises = (respEx.data && respEx.data.exercises) ? respEx.data.exercises : [];
             exercises.filter(function (e) {
-                return ((e.funcname || '') + ' ' + (e.exo_name || '') + ' ' + (e.extention || ''))
+                return ((e.funcname || '') + ' ' + (e.hash || '') + ' ' + (e.extention || ''))
                     .toLowerCase().indexOf(q) !== -1;
             }).forEach(function (e) {
                 var id   = e.exercise_id || e.exercice_id;
-                var name = e.funcname || e.exo_name || 'TP sans titre';
+                var name = e.funcname || e.hash || 'TP sans titre';
                 var rate = e.success_rate != null ? ' — ' + e.success_rate + '% réussite' : '';
                 results.push({
                     text:  '📝 ' + name + rate,

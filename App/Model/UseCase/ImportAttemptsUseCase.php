@@ -71,7 +71,7 @@ class ImportAttemptsUseCase
                     $rawName = trim(
                         $item['exercice_name']
                         ?? $item['exercise_name']
-                        ?? $item['exo_name']
+                        ?? $item['hash']
                         ?? $item['name']
                         ?? ''
                     );
@@ -139,7 +139,7 @@ class ImportAttemptsUseCase
                     'user_id'     => mb_substr((string) ($item['user_id'] ?? $item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''), 0, 20),
                     'correct'     => $correct,
                     'eval_set'    => mb_substr((string) ($item['eval_set'] ?? ''), 0, 20),
-                    'upload'      => mb_substr((string) ($item['upload'] ?? $item['code'] ?? ''), 0, 20),
+                    'upload'      => (string) ($item['upload'] ?? $item['code'] ?? ''),
                     'aes0'        => mb_substr($this->normalizeScalarField($item['aes0'] ?? null), 0, 20),
                     'aes1'        => mb_substr($this->normalizeScalarField($item['aes1'] ?? null), 0, 20),
                     'aes2'        => mb_substr($this->normalizeScalarField($item['aes2'] ?? null), 0, 20),
