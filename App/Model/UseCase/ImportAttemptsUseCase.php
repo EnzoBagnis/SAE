@@ -3,7 +3,7 @@
 namespace App\Model\UseCase;
 
 use App\Model\UseCase\Ports\AttemptBulkInserterPort;
-use App\Model\UseCase\Ports\ExerciseLookupPort;
+use App\Model\UseCase\Ports\ExerciseImporterPort;
 
 /**
  * ImportAttemptsUseCase.
@@ -28,17 +28,17 @@ use App\Model\UseCase\Ports\ExerciseLookupPort;
 class ImportAttemptsUseCase
 {
     private AttemptBulkInserterPort $attemptRepository;
-    private ExerciseLookupPort $exerciseRepository;
+    private ExerciseImporterPort $exerciseRepository;
 
     /**
      * Constructor.
      *
      * @param AttemptBulkInserterPort $attemptRepository  Port for bulk-inserting attempts.
-     * @param ExerciseLookupPort      $exerciseRepository Port for exercise name-based lookup.
+     * @param ExerciseImporterPort    $exerciseRepository Port for exercise lookup and auto-creation.
      */
     public function __construct(
         AttemptBulkInserterPort $attemptRepository,
-        ExerciseLookupPort $exerciseRepository
+        ExerciseImporterPort $exerciseRepository
     ) {
         $this->attemptRepository  = $attemptRepository;
         $this->exerciseRepository = $exerciseRepository;
@@ -46,6 +46,8 @@ class ImportAttemptsUseCase
 
     /**
      * Execute the import of a list of attempts, optionally scoped to a resource.
+     * If an exercise referenced by name does not exist yet and a ressourceId is provided,
+     * it will be created automatically (upsert behaviour).
      *
      * @param array<array<string,mixed>> $attempts    List of attempt data arrays
      * @param int|null                   $ressourceId Optional resource ID to scope exercise lookup
@@ -97,13 +99,27 @@ class ImportAttemptsUseCase
                             : $this->exerciseRepository->findByName($exerciceName);
 
                         if ($exercise === null) {
-                            throw new \RuntimeException(
-                                "Exercice introuvable : \"$exerciceName\""
-                                . ($ressourceId !== null ? " (ressource $ressourceId)" : '')
+                            if ($ressourceId === null) {
+                                throw new \RuntimeException(
+                                    "Exercice introuvable : \"$exerciceName\" et resource_id manquant pour le créer"
+                                );
+                            }
+                            // Auto-create the exercise so attempts are not lost
+                            $extention = mb_substr($item['extension'] ?? $item['extention'] ?? 'py', 0, 20);
+                            $date      = $item['date'] ?? date('Y-m-d');
+                            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                                $date = date('Y-m-d');
+                            }
+                            $newId = $this->exerciseRepository->insertExercice(
+                                $ressourceId,
+                                $exerciceName,
+                                $extention,
+                                $date
                             );
+                            $exerciceCache[$cacheKey] = $newId;
+                        } else {
+                            $exerciceCache[$cacheKey] = $exercise->getExerciseId();
                         }
-
-                        $exerciceCache[$cacheKey] = $exercise->getExerciseId();
                     }
 
                     $exerciceId = $exerciceCache[$cacheKey];
