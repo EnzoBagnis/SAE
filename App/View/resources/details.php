@@ -138,6 +138,10 @@ $title = 'StudTraj - ' . $resTitle;
 <body>
 <header class="top-menu">
     <div class="logo"><h1>StudTraj</h1></div>
+    <div class="header-search">
+        <input type="search" id="resourceSearchInput" placeholder="Rechercher un TP ou un étudiant par mot-clé…" autocomplete="off" />
+        <button id="clearSearchBtn" title="Effacer">&#x2715;</button>
+    </div>
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
     </button>
@@ -218,12 +222,6 @@ $title = 'StudTraj - ' . $resTitle;
     <div class="tp-list-container">
         <h2>Travaux Pratiques</h2>
 
-        <!-- Barre de recherche spécifique à la ressource -->
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
-            <input type="search" id="resourceSearchInput" placeholder="Rechercher un TP ou un étudiant par mot-clé…"
-                   style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;" />
-            <button id="clearSearchBtn" style="padding:8px 12px;border-radius:4px;border:1px solid #ddd;background:#f5f5f5;">Effacer</button>
-        </div>
 
         <div id="searchResults" style="margin-bottom:12px;display:none;">
             <!-- Résultats pour les élèves -->
