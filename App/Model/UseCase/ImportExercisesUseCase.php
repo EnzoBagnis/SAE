@@ -102,6 +102,20 @@ class ImportExercisesUseCase
                     throw new \InvalidArgumentException("Nom de l'exercice manquant");
                 }
 
+                // Garder le hash original (avant résolution)
+                $originalHash = null;
+                $firstKey = trim(
+                    $item['exercice_name']
+                    ?? $item['exercise_name']
+                    ?? $item['name']
+                    ?? $item['title']
+                    ?? $item['hash']
+                    ?? ''
+                );
+                if ($this->isMd5Hash($firstKey)) {
+                    $originalHash = $firstKey;
+                }
+
                 $extention = mb_substr($item['extention'] ?? $item['extension'] ?? 'py', 0, 20);
                 $date      = $item['date'] ?? date('Y-m-d');
 
@@ -110,20 +124,29 @@ class ImportExercisesUseCase
                     $date = date('Y-m-d');
                 }
 
-                // Check if the exercise already exists for this resource
+                // 1. Chercher par nom exact
                 $existing = $this->exerciseRepository->findByRessourceIdAndName($ressourceId, $exerciceName);
 
+                // 2. Si pas trouvé par nom et qu'on a un hash, chercher par hash
+                if ($existing === null && $originalHash !== null) {
+                    $existing = $this->exerciseRepository->findByRessourceIdAndHash($ressourceId, $originalHash);
+                }
+
                 if ($existing !== null) {
-                    // Update extension and date if exercise already exists
+                    // Mettre à jour extension, date et le nom lisible si on a résolu depuis un hash
                     $this->exerciseRepository->updateExtentionAndDate(
                         $existing->getExerciseId(),
                         $extention,
                         $date
                     );
+                    // Si le nom stocké est un hash et qu'on a maintenant le vrai nom, mettre à jour
+                    if ($originalHash !== null && $existing->getExoName() !== $exerciceName) {
+                        $this->exerciseRepository->updateName($existing->getExerciseId(), $exerciceName);
+                    }
                     $updated++;
                 } else {
-                    // Insert new exercise
-                    $this->exerciseRepository->insertExercice($ressourceId, $exerciceName, $extention, $date);
+                    // Insérer avec le hash original pour référence future
+                    $this->exerciseRepository->insertExercice($ressourceId, $exerciceName, $extention, $date, $originalHash);
                     $inserted++;
                 }
             } catch (\Throwable $e) {
