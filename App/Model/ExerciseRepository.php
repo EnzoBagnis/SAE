@@ -179,7 +179,7 @@ class ExerciseRepository extends AbstractRepository implements
         $stmt = $this->pdo->prepare(
             "SELECT * FROM exercices WHERE ressource_id = :ressource_id AND exercice_name = :name LIMIT 1"
         );
-        $stmt->execute(['ressource_id' => $ressourceId, 'name' => mb_substr($name, 0, 20)]);
+        $stmt->execute(['ressource_id' => $ressourceId, 'name' => mb_substr($name, 0, 80)]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
     }
@@ -189,7 +189,7 @@ class ExerciseRepository extends AbstractRepository implements
         $stmt = $this->pdo->prepare(
             "SELECT * FROM exercices WHERE exercice_name = :name ORDER BY exercice_id DESC LIMIT 1"
         );
-        $stmt->execute(['name' => mb_substr($name, 0, 20)]);
+        $stmt->execute(['name' => mb_substr($name, 0, 80)]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
     }
@@ -211,7 +211,7 @@ class ExerciseRepository extends AbstractRepository implements
         );
         $stmt->execute([
             'ressource_id'  => $ressourceId,
-            'exercice_name' => mb_substr($exerciceName, 0, 20),
+            'exercice_name' => mb_substr($exerciceName, 0, 80),
             'extention'     => mb_substr($extention, 0, 20),
             'date'          => $date,
         ]);

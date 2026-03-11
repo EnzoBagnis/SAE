@@ -67,25 +67,29 @@ class ImportAttemptsUseCase
                 $exerciceId = isset($item['exercice_id']) ? (int) $item['exercice_id'] : null;
 
                 if (!$exerciceId) {
-                    // Try to resolve by name (truncated to varchar(20))
+                    // Try to resolve by name (truncated to varchar(80))
                     $rawName = trim(
                         $item['exercice_name']
                         ?? $item['exercise_name']
+                        ?? $item['funcname']
                         ?? $item['hash']
                         ?? $item['name']
                         ?? ''
                     );
 
-                    // If the name looks like a MD5 hash, extract the function name
-                    // from the uploaded Python code (same logic as ImportExercisesUseCase)
-                    if ($this->isMd5Hash($rawName) && !empty($item['upload'])) {
-                        $funcName = $this->extractPythonFuncName((string) $item['upload']);
-                        if ($funcName !== null) {
-                            $rawName = $funcName;
+                    // If the name looks like a MD5 hash, prefer funcname then upload
+                    if ($this->isMd5Hash($rawName)) {
+                        if (!empty($item['funcname'])) {
+                            $rawName = trim($item['funcname']);
+                        } elseif (!empty($item['upload'])) {
+                            $funcName = $this->extractPythonFuncName((string) $item['upload']);
+                            if ($funcName !== null) {
+                                $rawName = $funcName;
+                            }
                         }
                     }
 
-                    $exerciceName = mb_substr($rawName, 0, 20);
+                    $exerciceName = mb_substr($rawName, 0, 80);
 
                     if ($exerciceName === '') {
                         throw new \InvalidArgumentException("exercice_id ou exercice_name manquant");
