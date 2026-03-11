@@ -289,25 +289,19 @@ export class VizManager {
 
         bc = document.createElement('nav');
         bc.className = 'viz-breadcrumb';
-        crumbs.forEach((crumb, i) => {
+        const clickableCrumbs = crumbs.filter(c => c.action);
+        clickableCrumbs.forEach((crumb, i) => {
             if (i > 0) {
                 const sep = document.createElement('span');
                 sep.className = 'viz-bc-sep';
                 sep.textContent = ' › ';
                 bc.appendChild(sep);
             }
-            if (crumb.action) {
-                const btn = document.createElement('button');
-                btn.className = 'viz-bc-btn';
-                btn.textContent = crumb.label;
-                btn.addEventListener('click', crumb.action);
-                bc.appendChild(btn);
-            } else {
-                const span = document.createElement('span');
-                span.className = 'viz-bc-current';
-                span.textContent = crumb.label;
-                bc.appendChild(span);
-            }
+            const btn = document.createElement('button');
+            btn.className = 'viz-bc-btn';
+            btn.textContent = crumb.label;
+            btn.addEventListener('click', crumb.action);
+            bc.appendChild(btn);
         });
 
         container.insertBefore(bc, container.firstChild);
@@ -1094,4 +1088,3 @@ function htmlEscape(str) {
     if (str == null) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
-
