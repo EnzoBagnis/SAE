@@ -23,6 +23,12 @@ register_shutdown_function(function (): void {
 
         if (!headers_sent()) {
             http_response_code(500);
+            $uri = $_SERVER['REQUEST_URI'] ?? '';
+            if (strpos($uri, '/api/') !== false) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(['success' => false, 'message' => 'Erreur fatale du serveur'], JSON_UNESCAPED_UNICODE);
+                return;
+            }
         }
 
         $uri = $_SERVER['REQUEST_URI'] ?? '';
@@ -98,6 +104,33 @@ set_exception_handler(function (\Throwable $e): void {
             echo '<h1>Erreur interne du serveur</h1><p>Une erreur est survenue. Veuillez réessayer.</p>';
         }
     }
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($uri, '/api/') !== false) {
+        if (!headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: application/json; charset=utf-8');
+        }
+        $env = defined('APP_ENV') ? APP_ENV : (\Core\Config\EnvLoader::get('APP_ENV', 'production'));
+        $payload = ['success' => false, 'message' => 'Erreur interne du serveur'];
+        if ($env === 'development') {
+            $payload['message'] = get_class($e) . ': ' . $msg;
+            $payload['file'] = $file . ':' . $line;
+            $payload['trace'] = $e->getTraceAsString();
+        }
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+        return;
+    }
+
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: text/html; charset=utf-8');
+    }
+
+    // TOUJOURS afficher les détails pour le debug
+    echo '<h1>Erreur 500 – Exception non gérée</h1>';
+    echo '<p><b>' . htmlspecialchars(get_class($e)) . ':</b> ' . htmlspecialchars($msg) . '</p>';
+    echo '<p>dans <b>' . htmlspecialchars($file) . '</b> ligne <b>' . $line . '</b></p>';
+    echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
 });
 
 // Initialize router
@@ -130,6 +163,12 @@ require_once __DIR__ . '/App/routes.php';
 // Set 404 handler
 $router->setNotFoundHandler(function() {
     http_response_code(404);
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($uri, '/api/') !== false) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'message' => 'Route API non trouvée'], JSON_UNESCAPED_UNICODE);
+        return;
+    }
     if (file_exists(__DIR__ . '/App/View/errors/404.php')) {
         require __DIR__ . '/App/View/errors/404.php';
     } else {
