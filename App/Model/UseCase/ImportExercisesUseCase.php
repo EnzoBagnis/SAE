@@ -69,23 +69,30 @@ class ImportExercisesUseCase
     {
         $inserted = 0;
         $updated  = 0;
+        $skipped  = 0;  // doublons dans le JSON lui-même
         $errors   = [];
+
+        // Cache mémoire des noms déjà traités dans cet import (évite faux "mis à jour")
+        $seenNames  = [];   // nom résolu => exercice_id
+        $seenHashes = [];   // hash       => exercice_id
 
         foreach ($exercises as $index => $item) {
             try {
-                // Normalize the exercise name from various possible keys
+                // Capturer le nom brut tel qu'il arrive (peut être un hash)
                 $rawName = trim(
                     $item['exercice_name']
                     ?? $item['exercise_name']
-                    ?? $item['funcname']
                     ?? $item['name']
                     ?? $item['title']
                     ?? $item['hash']
                     ?? ''
                 );
 
-                // If the name looks like a MD5 hash, prefer funcname if present, then try upload
-                if ($this->isMd5Hash($rawName)) {
+                // Garder le hash original si c'est bien un hash MD5
+                $originalHash = $this->isMd5Hash($rawName) ? $rawName : null;
+
+                // Résoudre le vrai nom lisible
+                if ($originalHash !== null) {
                     if (!empty($item['funcname'])) {
                         $rawName = trim($item['funcname']);
                     } elseif (!empty($item['upload'])) {
@@ -94,6 +101,11 @@ class ImportExercisesUseCase
                             $rawName = $funcName;
                         }
                     }
+                    if ($this->isMd5Hash($rawName) && !empty($item['funcname'])) {
+                        $rawName = trim($item['funcname']);
+                    }
+                } elseif (!empty($item['funcname']) && $rawName === '') {
+                    $rawName = trim($item['funcname']);
                 }
 
                 $exerciceName = mb_substr($rawName, 0, 80);
@@ -102,51 +114,55 @@ class ImportExercisesUseCase
                     throw new \InvalidArgumentException("Nom de l'exercice manquant");
                 }
 
-                // Garder le hash original (avant résolution)
-                $originalHash = null;
-                $firstKey = trim(
-                    $item['exercice_name']
-                    ?? $item['exercise_name']
-                    ?? $item['name']
-                    ?? $item['title']
-                    ?? $item['hash']
-                    ?? ''
-                );
-                if ($this->isMd5Hash($firstKey)) {
-                    $originalHash = $firstKey;
-                }
-
                 $extention = mb_substr($item['extention'] ?? $item['extension'] ?? 'py', 0, 20);
                 $date      = $item['date'] ?? date('Y-m-d');
 
-                // Validate date format
                 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
                     $date = date('Y-m-d');
                 }
 
-                // 1. Chercher par nom exact
+                $nameLower = mb_strtolower($exerciceName);
+
+                // Doublon dans le JSON lui-même (même nom déjà traité dans ce batch) ?
+                if (isset($seenNames[$nameLower])) {
+                    $skipped++;
+                    continue;
+                }
+                if ($originalHash !== null && isset($seenHashes[$originalHash])) {
+                    $skipped++;
+                    continue;
+                }
+
+                // 1. Chercher par nom en BDD
                 $existing = $this->exerciseRepository->findByRessourceIdAndName($ressourceId, $exerciceName);
 
-                // 2. Si pas trouvé par nom et qu'on a un hash, chercher par hash
+                // 2. Si pas trouvé par nom et qu'on a un hash, chercher par hash en BDD
                 if ($existing === null && $originalHash !== null) {
                     $existing = $this->exerciseRepository->findByRessourceIdAndHash($ressourceId, $originalHash);
                 }
 
                 if ($existing !== null) {
-                    // Mettre à jour extension, date et le nom lisible si on a résolu depuis un hash
                     $this->exerciseRepository->updateExtentionAndDate(
                         $existing->getExerciseId(),
                         $extention,
                         $date
                     );
-                    // Si le nom stocké est un hash et qu'on a maintenant le vrai nom, mettre à jour
-                    if ($originalHash !== null && $existing->getExoName() !== $exerciceName) {
+                    if ($originalHash !== null && mb_strtolower($existing->getExoName()) !== $nameLower) {
                         $this->exerciseRepository->updateName($existing->getExerciseId(), $exerciceName);
+                    }
+                    $seenNames[$nameLower] = $existing->getExerciseId();
+                    if ($originalHash !== null) {
+                        $seenHashes[$originalHash] = $existing->getExerciseId();
                     }
                     $updated++;
                 } else {
-                    // Insérer avec le hash original pour référence future
-                    $this->exerciseRepository->insertExercice($ressourceId, $exerciceName, $extention, $date, $originalHash);
+                    $newId = $this->exerciseRepository->insertExercice(
+                        $ressourceId, $exerciceName, $extention, $date, $originalHash
+                    );
+                    $seenNames[$nameLower] = $newId;
+                    if ($originalHash !== null) {
+                        $seenHashes[$originalHash] = $newId;
+                    }
                     $inserted++;
                 }
             } catch (\Throwable $e) {
@@ -158,6 +174,7 @@ class ImportExercisesUseCase
         return [
             'inserted' => $inserted,
             'updated'  => $updated,
+            'skipped'  => $skipped,
             'errors'   => $errors,
         ];
     }

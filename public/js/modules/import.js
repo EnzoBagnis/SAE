@@ -164,12 +164,13 @@ async function importExercises() {
         return;
     }
 
-    const CHUNK_SIZE = 50;
+    const CHUNK_SIZE = 500;
     showImportStatus(`Importation des exercices...`, 'warning');
 
     try {
         let totalInserted = 0;
         let totalUpdated  = 0;
+        let totalSkipped  = 0;
 
         for (let i = 0; i < list.length; i += CHUNK_SIZE) {
             const chunk = list.slice(i, i + CHUNK_SIZE);
@@ -203,11 +204,15 @@ async function importExercises() {
                 throw new Error(errMsg);
             }
 
-            totalInserted += (result?.inserted || 0);
-            totalUpdated  += (result?.updated  || 0);
+        totalInserted += (result?.inserted || 0);
+        totalUpdated  += (result?.updated  || 0);
+        totalSkipped  += (result?.skipped  || 0);
         }
 
-        showImportStatus(`✓ Import terminé ! ${totalInserted} ajouté(s), ${totalUpdated} mis à jour.`, 'success');
+        let msg = `✓ Import terminé ! ${totalInserted} ajouté(s)`;
+        if (totalUpdated > 0) msg += `, ${totalUpdated} mis à jour`;
+        if (totalSkipped > 0) msg += `, ${totalSkipped} doublon(s) ignoré(s)`;
+        showImportStatus(msg, 'success');
         setTimeout(() => window.location.reload(), 2000);
     } catch (error) {
         console.error('Erreur import exercices :', error);
