@@ -31,10 +31,6 @@ $title = 'StudTraj - Exercices';
         <span></span><span></span><span></span>
     </button>
 
-    <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/index.php?action=resources_list">Ressources</a>
-        <a href="<?= BASE_URL ?>/index.php?action=exercises" class="active">Exercices</a>
-    </nav>
 
     <div class="header-right">
         <div class="user-profile">

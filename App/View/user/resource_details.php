@@ -107,8 +107,6 @@
             <span></span><span></span><span></span>
         </button>
 
-        <nav class="nav-menu">
-        </nav>
         <div class="header-right">
             <button onclick="openImportModal(<?= $resource->resource_id ?>)" class="btn-import-trigger">
                 <svg style="width: 20px; height: 15px;" viewBox="0 0 24 24" fill="none"

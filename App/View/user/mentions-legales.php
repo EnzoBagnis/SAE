@@ -34,8 +34,6 @@ $isLoggedIn = isset($_SESSION['id']);
             <span></span>
         </button>
 
-        <nav class="nav-menu">
-        </nav>
         <div class="user-info">
             <span>
                 <?php echo htmlspecialchars($_SESSION['prenom']); ?>
