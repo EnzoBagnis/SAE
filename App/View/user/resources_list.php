@@ -61,8 +61,6 @@ try {
         <span></span>
     </button>
 
-    <nav class="nav-menu">
-    </nav>
 
     <div class="header-right">
         <!-- Affichage Profil -->

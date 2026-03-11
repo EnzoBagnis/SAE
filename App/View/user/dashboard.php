@@ -234,10 +234,6 @@ $current_resource_id = $resource_id ?? 'null';
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
     </button>
-    <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
-        <a href="<?= BASE_URL ?>/ia">IA</a>
-    </nav>
     <div class="header-right">
         <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">
             <svg style="width:20px;height:15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -14,9 +14,6 @@
     <div class="logo">
         <h1>StudTraj</h1>
     </div>
-    <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/admin/dashboard" class="active">Administration</a>
-    </nav>
     <div class="user-info">
         <span>
             <?= htmlspecialchars($_SESSION['prenom'] ?? 'Admin') ?>
