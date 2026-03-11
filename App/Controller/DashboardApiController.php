@@ -140,18 +140,20 @@ class DashboardApiController extends AbstractController
             // Fetch attempts for this student (optionally scoped to a resource)
             if ($resourceId !== null) {
                 $stmt = $pdo->prepare(
-                    "SELECT a.*, e.exercice_name, e.ressource_id
+                    "SELECT a.*, COALESCE(c.funcname, e.exercice_name) AS exercice_name, e.ressource_id
                      FROM attempts a
                      INNER JOIN exercices e ON a.exercice_id = e.exercice_id
+                     LEFT JOIN corrections c ON e.exercice_name = c.exercice_name
                      WHERE a.user_id = :user_id AND e.ressource_id = :rid
                      ORDER BY a.attempt_id DESC"
                 );
                 $stmt->execute(['user_id' => $identifier, 'rid' => $resourceId]);
             } else {
                 $stmt = $pdo->prepare(
-                    "SELECT a.*, e.exercice_name
+                    "SELECT a.*, COALESCE(c.funcname, e.exercice_name) AS exercice_name
                      FROM attempts a
                      LEFT JOIN exercices e ON a.exercice_id = e.exercice_id
+                     LEFT JOIN corrections c ON e.exercice_name = c.exercice_name
                      WHERE a.user_id = :user_id
                      ORDER BY a.attempt_id DESC"
                 );
@@ -230,8 +232,11 @@ class DashboardApiController extends AbstractController
             // Single exercise detail with per-student attempts
             if ($exerciseId !== null) {
                 $stmt = $pdo->prepare(
-                    "SELECT e.exercice_id, e.ressource_id, e.exercice_name, e.extention, e.`date`
+                    "SELECT e.exercice_id, e.ressource_id,
+                            COALESCE(c.funcname, e.exercice_name) AS exercice_name,
+                            e.extention, e.`date`
                      FROM exercices e
+                     LEFT JOIN corrections c ON e.exercice_name = c.exercice_name
                      WHERE e.exercice_id = :eid"
                 );
                 $stmt->execute(['eid' => $exerciseId]);
@@ -266,8 +271,8 @@ class DashboardApiController extends AbstractController
                     'data'    => [
                         'exercise' => [
                             'exercise_id' => (int)$exRow['exercice_id'],
-                            'exo_name'    => $exRow['exercice_name'],   // nom lisible
-                            'funcname'    => $exRow['exercice_name'],   // identique pour compatibilité
+                            'exo_name'    => $exRow['exercice_name'],
+                            'funcname'    => $exRow['exercice_name'],
                         ],
                         'students' => $students,
                     ],
@@ -278,33 +283,39 @@ class DashboardApiController extends AbstractController
             // List of exercises
             if ($resourceId !== null) {
                 $stmt = $pdo->prepare(
-                    "SELECT e.exercice_id, e.ressource_id, e.exercice_name, e.extention, e.`date`,
+                    "SELECT e.exercice_id, e.ressource_id,
+                            COALESCE(c.funcname, e.exercice_name) AS exercice_name,
+                            e.extention, e.`date`,
                             COUNT(a.attempt_id)                              AS total_attempts,
                             SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END)  AS successful_attempts
                      FROM exercices e
+                     LEFT JOIN corrections c ON e.exercice_name = c.exercice_name
                      LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
                      WHERE e.ressource_id = :rid
                      GROUP BY e.exercice_id
-                     ORDER BY e.exercice_name ASC"
+                     ORDER BY COALESCE(c.funcname, e.exercice_name) ASC"
                 );
                 $stmt->execute(['rid' => $resourceId]);
             } else {
                 $stmt = $pdo->query(
-                    "SELECT e.exercice_id, e.ressource_id, e.exercice_name, e.extention, e.`date`,
+                    "SELECT e.exercice_id, e.ressource_id,
+                            COALESCE(c.funcname, e.exercice_name) AS exercice_name,
+                            e.extention, e.`date`,
                             COUNT(a.attempt_id)                              AS total_attempts,
                             SUM(CASE WHEN a.correct = 1 THEN 1 ELSE 0 END)  AS successful_attempts
                      FROM exercices e
+                     LEFT JOIN corrections c ON e.exercice_name = c.exercice_name
                      LEFT JOIN attempts a ON e.exercice_id = a.exercice_id
                      GROUP BY e.exercice_id
-                     ORDER BY e.exercice_name ASC"
+                     ORDER BY COALESCE(c.funcname, e.exercice_name) ASC"
                 );
             }
 
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             $exercises = array_map(fn($r) => [
                 'exercise_id'         => (int) $r['exercice_id'],
-                'exo_name'            => $r['exercice_name'],        // nom lisible affiché partout
-                'funcname'            => $r['exercice_name'],         // identique pour compatibilité JS
+                'exo_name'            => $r['exercice_name'],
+                'funcname'            => $r['exercice_name'],
                 'extention'           => $r['extention'],
                 'date'                => $r['date'],
                 'total_attempts'      => (int) $r['total_attempts'],
