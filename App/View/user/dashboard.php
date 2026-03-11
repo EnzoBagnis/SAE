@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿<?php
+﻿﻿﻿﻿﻿﻿﻿﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -86,13 +86,14 @@ $current_resource_id = $resource_id ?? 'null';
         .viz-bc-current {
             display: inline-flex;
             align-items: center;
-            color: #2c3e50;
+            color: #fff;
             font-weight: 600;
-            background: #f0f2f5;
+            background: linear-gradient(135deg, #3498db, #2980b9);
             padding: 7px 18px;
             border-radius: 20px;
             font-size: 1rem;
-            border: 1px solid #dde1e7;
+            box-shadow: 0 2px 6px rgba(52,152,219,0.35);
+            opacity: 0.75;
         }
         /* Titres et hints */
         .viz-title { color: #2c3e50; margin: 0 0 0.5rem; font-size: 1.4rem; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
