@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿<?php
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -61,12 +61,13 @@ $current_resource_id = $resource_id ?? 'null';
         .viz-bc-btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             color: #fff;
             font-weight: 600;
             background: linear-gradient(135deg, #3498db, #2980b9);
-            padding: 7px 18px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 1rem;
+            font-size: 0.8rem;
             box-shadow: 0 2px 6px rgba(52,152,219,0.35);
             border: none;
             cursor: pointer;
