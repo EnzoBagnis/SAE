@@ -43,7 +43,7 @@
             <property name="absoluteLineLimit" value="150"/>
         </properties>
     </rule>
-    
+
     <!-- Sécurité -->
     <rule ref="Generic.PHP.ForbiddenFunctions">
         <properties>

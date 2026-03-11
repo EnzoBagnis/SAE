@@ -9,6 +9,7 @@
 
 import { StatsRenderer } from '/public/js/modules/statsRenderer.js';
 import { AttemptsRenderer } from '/public/js/modules/attemptsRenderer.js';
+import { renderMacroSection, renderMicroSection } from '/public/js/modules/iaIntegration.js';
 
 export class VizManager {
     constructor() {
@@ -96,6 +97,19 @@ export class VizManager {
             this._renderStudentsBarChart(studentsData, 'viz-chart-students');
             this._renderTPBarChart(exercisesData, 'viz-chart-tp');
             this._renderGlobalPieChart(totalCorrect, totalAttempts - totalCorrect, 'viz-chart-global');
+
+            // ── Section IA Macro (Cartographie globale des TDs) ──
+            if (this.resourceId) {
+                const self = this;
+                await renderMacroSection(container, this.resourceId, (exerciseId, exerciseName) => {
+                    // Callback : clic sur un centroïde → navigation vers la vue Micro du TD
+                    const dataZone = document.querySelector('.viz-data-zone');
+                    if (dataZone) {
+                        self.renderLevel2TP(dataZone, exerciseId, exerciseName);
+                        dataZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            }
 
         } catch (err) {
             console.error('[VizManager] renderLevel1 error:', err);
@@ -215,6 +229,9 @@ export class VizManager {
 
             this._renderTPStudentLines(students, 'viz-tp-lines', container, { id: exerciseId, name: displayName });
             this._renderTPStackedBar(students, 'viz-tp-stacked', container, { id: exerciseId, name: displayName });
+
+            // ── Section IA Micro (Trajectoires pour ce TD) ──
+            await renderMicroSection(container, exerciseId, displayName);
 
         } catch (err) {
             console.error('[VizManager] renderLevel2TP:', err);
