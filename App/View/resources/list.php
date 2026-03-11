@@ -43,9 +43,6 @@ $errorMsg = htmlspecialchars($_GET['error'] ?? '');
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
     </button>
-    <nav class="nav-menu">
-        <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
-    </nav>
     <div class="header-right">
         <div class="user-profile">
             <div class="user-avatar"><?= htmlspecialchars($initials) ?></div>
