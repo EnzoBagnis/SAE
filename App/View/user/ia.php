@@ -169,7 +169,6 @@ $exercises = $exercises ?? [];
         <button class="ia-tab-btn active" onclick="switchIaTab('overview', this)">Vue d'ensemble</button>
         <button class="ia-tab-btn" onclick="switchIaTab('macro', this)">🗺️ Vue Macro (tous les TDs)</button>
         <button class="ia-tab-btn" onclick="switchIaTab('micro', this)">🔬 Vue Micro (1 TD + trajectoires)</button>
-        <button class="ia-tab-btn" onclick="switchIaTab('clustering', this)">Cartographie (ancien)</button>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════
@@ -399,67 +398,6 @@ $exercises = $exercises ?? [];
             </div>
         </div>
     </div>
-
-    <!-- ═══════════════════════════════════════════════════════════════════
-         ONGLET 4 : Cartographie des codes (ancien, rétro-compatibilité)
-         ═══════════════════════════════════════════════════════════════════ -->
-    <div id="tab-clustering" class="ia-tab-content">
-        <div class="ia-section">
-            <h2>Cartographie des codes (image statique)</h2>
-            <p style="color:#7f8c8d; font-size:.9rem; margin-bottom:1.25rem;">
-                Version originale : génère une image PNG du scatter plot via matplotlib.
-            </p>
-
-            <div class="cluster-form">
-                <div class="form-field">
-                    <label for="clusterResource">Ressource</label>
-                    <select id="clusterResource" onchange="filterExercises()">
-                        <option value="">— Toutes —</option>
-                        <?php foreach ($resources as $r) : ?>
-                        <option value="<?= (int)$r['ressource_id'] ?>">
-                            <?= htmlspecialchars($r['ressource_name']) ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-field">
-                    <label for="clusterExercise">Exercice</label>
-                    <select id="clusterExercise">
-                        <option value="">— Choisir un exercice —</option>
-                    </select>
-                </div>
-                <div class="form-field">
-                    <label for="clusterK">Clusters (K)</label>
-                    <input type="number" id="clusterK" value="8" min="2" max="20" style="min-width:80px;">
-                </div>
-                <div class="form-field">
-                    <label for="clusterPerplexity">Perplexité t-SNE</label>
-                    <input type="number" id="clusterPerplexity" value="30" min="2" max="100" style="min-width:80px;">
-                </div>
-                <button class="btn-generate" id="btnGenerate" onclick="generateClusters()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                    Générer les clusters
-                </button>
-            </div>
-
-            <div class="loading-overlay" id="loadingOverlay">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">Analyse en cours…</div>
-                <div class="loading-detail">Entraînement Doc2Vec → K-Means → t-SNE (peut prendre 10-30 secondes)</div>
-            </div>
-
-            <div class="error-box" id="errorBox"></div>
-
-            <div class="cluster-result" id="clusterResult">
-                <div class="chart-container">
-                    <img id="clusterImage" src="" alt="Scatter plot t-SNE des clusters" />
-                    <div class="chart-meta" id="chartMeta"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Footer -->
@@ -580,106 +518,7 @@ function goToMicro(exerciseId, exerciseName) {
     }, 50);
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  ANCIEN ONGLET "CARTOGRAPHIE" (rétro-compatibilité)
-// ══════════════════════════════════════════════════════════════════════════════
-function filterExercises() {
-    const rid = document.getElementById('clusterResource').value;
-    const sel = document.getElementById('clusterExercise');
-    sel.innerHTML = '<option value="">— Choisir un exercice —</option>';
-
-    const filtered = ALL_EXERCISES.filter(e => {
-        if (rid && String(e.ressource_id) !== String(rid)) return false;
-        return parseInt(e.nb_attempts) >= 5;
-    });
-
-    filtered.forEach(e => {
-        const opt = document.createElement('option');
-        opt.value = e.exercice_id;
-        const res = e.ressource_name ? ` [${e.ressource_name}]` : '';
-        opt.textContent = `${e.exercice_name}${res} — ${e.nb_attempts} tentatives`;
-        sel.appendChild(opt);
-    });
-
-    if (filtered.length === 0) {
-        sel.innerHTML = '<option value="">Aucun exercice analysable</option>';
-    }
-}
-
-function generateClusters() {
-    const exerciseId = document.getElementById('clusterExercise').value;
-    if (!exerciseId) {
-        alert('Veuillez sélectionner un exercice.');
-        return;
-    }
-
-    const nClusters  = parseInt(document.getElementById('clusterK').value) || 8;
-    const perplexity = parseInt(document.getElementById('clusterPerplexity').value) || 30;
-    const btn        = document.getElementById('btnGenerate');
-    const loading    = document.getElementById('loadingOverlay');
-    const errorBox   = document.getElementById('errorBox');
-    const resultDiv  = document.getElementById('clusterResult');
-
-    btn.disabled = true;
-    loading.classList.add('visible');
-    errorBox.classList.remove('visible');
-    resultDiv.classList.remove('visible');
-
-    fetch(BASE_URL + '/api/ia/clustering', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            exercise_id: parseInt(exerciseId),
-            n_clusters: nClusters,
-            perplexity: perplexity,
-        })
-    })
-    .then(r => {
-        const contentType = r.headers.get('content-type') || '';
-        if (!contentType.includes('application/json')) {
-            return r.text().then(text => {
-                throw new Error('Le serveur a renvoyé du HTML au lieu de JSON (HTTP ' + r.status + ').');
-            });
-        }
-        return r.json();
-    })
-    .then(res => {
-        loading.classList.remove('visible');
-        btn.disabled = false;
-
-        if (res.success) {
-            document.getElementById('clusterImage').src = res.image_base64;
-            const meta = document.getElementById('chartMeta');
-            meta.innerHTML = `
-                <div class="meta-item"><strong>${res.n_points}</strong> tentatives analysées</div>
-                <div class="meta-item"><strong>${res.n_clusters}</strong> clusters identifiés</div>
-                <div class="meta-item">Exercice : <strong>${htmlEsc(res.exercise_name)}</strong></div>
-            `;
-            resultDiv.classList.add('visible');
-        } else {
-            errorBox.textContent = '❌ ' + (res.message || res.error || 'Erreur inconnue');
-            errorBox.classList.add('visible');
-        }
-    })
-    .catch(err => {
-        loading.classList.remove('visible');
-        btn.disabled = false;
-        errorBox.textContent = '❌ Erreur réseau : ' + err;
-        errorBox.classList.add('visible');
-    });
-}
-
-function htmlEsc(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function toggleBurgerMenu() {
-    document.getElementById('burgerNav')?.classList.toggle('active');
-    document.getElementById('burgerBtn')?.classList.toggle('open');
-}
-
 // ── Initialiser les listes d'exercices ──────────────────────────────────────
-filterExercises();
 filterMicroExercises();
 </script>
 </body>

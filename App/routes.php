@@ -36,9 +36,6 @@ $router->get('/dashboard', App\Controller\DashboardController::class, 'index');
 // IA route
 $router->get('/ia', App\Controller\IaController::class, 'index');
 
-// IA API route (clustering pipeline)
-$router->post('/api/ia/clustering', App\Controller\IaController::class, 'clustering');
-
 // IA API routes (vue Macro / Micro)
 $router->post('/api/ia/macro', App\Controller\IaController::class, 'macro');
 $router->post('/api/ia/micro', App\Controller\IaController::class, 'micro');
@@ -46,8 +43,6 @@ $router->post('/api/ia/micro', App\Controller\IaController::class, 'micro');
 // IA API : vérifier si des données AES existent pour une ressource
 $router->get('/api/ia/status', App\Controller\IaController::class, 'status');
 
-// IA diagnostic route (TEMPORAIRE - à supprimer après debug)
-$router->get('/api/ia/debug-python', App\Controller\IaController::class, 'debugPython');
 
 // Exercise routes
 $router->get('/exercises', App\Controller\ExercisesController::class, 'index');

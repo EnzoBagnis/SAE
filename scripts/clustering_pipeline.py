@@ -305,12 +305,6 @@ def run_pipeline_global(data, perplexity=30):
     }
 
 
-# ── Ancien pipeline (rétro-compatibilité) ────────────────────────────────────
-def run_pipeline(data, n_clusters=8, perplexity=30, exercise_id=None):
-    """Rétro-compatibilité : appelle run_pipeline_micro."""
-    return run_pipeline_micro(data, n_clusters, perplexity, exercise_id)
-
-
 # ── Lecture depuis stdin (mode appelé par PHP) ───────────────────────────────
 def run_from_stdin():
     """Lit le JSON depuis stdin et lance le pipeline approprié."""
