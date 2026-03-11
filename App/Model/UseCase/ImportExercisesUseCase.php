@@ -33,6 +33,32 @@ class ImportExercisesUseCase
     }
 
     /**
+     * Extract the first function name from Python source code.
+     * Returns null if no function definition is found.
+     *
+     * @param string $code Python source code
+     * @return string|null Function name or null
+     */
+    private function extractPythonFuncName(string $code): ?string
+    {
+        if (preg_match('/def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/', $code, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * Determine whether a string looks like a MD5 hash (32 hex chars).
+     *
+     * @param string $name Name to test
+     * @return bool
+     */
+    private function isMd5Hash(string $name): bool
+    {
+        return (bool) preg_match('/^[0-9a-f]{32}$/i', $name);
+    }
+
+    /**
      * Execute the import of a list of exercises for a given resource.
      *
      * @param int                        $ressourceId  Target resource ID
@@ -48,13 +74,25 @@ class ImportExercisesUseCase
         foreach ($exercises as $index => $item) {
             try {
                 // Normalize the exercise name from various possible keys
-                $exerciceName = mb_substr(trim(
+                $rawName = trim(
                     $item['exercice_name']
+                    ?? $item['exercise_name']
                     ?? $item['name']
                     ?? $item['title']
                     ?? $item['exo_name']
                     ?? ''
-                ), 0, 20);
+                );
+
+                // If the name looks like a MD5 hash, try to extract the function name
+                // from the uploaded Python code instead
+                if ($this->isMd5Hash($rawName) && !empty($item['upload'])) {
+                    $funcName = $this->extractPythonFuncName((string) $item['upload']);
+                    if ($funcName !== null) {
+                        $rawName = $funcName;
+                    }
+                }
+
+                $exerciceName = mb_substr($rawName, 0, 20);
 
                 if ($exerciceName === '') {
                     throw new \InvalidArgumentException("Nom de l'exercice manquant");
