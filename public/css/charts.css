@@ -312,3 +312,150 @@
     }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   SECTION IA CLUSTERING — Dashboard intégré
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.ai-clustering-section {
+    background: #fff;
+    border: 1px solid #e1e5ea;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.3s ease;
+}
+
+.ai-clustering-section:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.ai-clustering-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.ai-clustering-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.ai-clustering-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-ai-back,
+.btn-ai-refresh {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+    background: #fff;
+    color: #2c3e50;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.btn-ai-back:hover,
+.btn-ai-refresh:hover {
+    background: #3498db;
+    color: #fff;
+    border-color: #3498db;
+}
+
+.btn-ai-back {
+    background: #f0f3f5;
+}
+
+.btn-ai-back:hover {
+    background: #2980b9;
+    border-color: #2980b9;
+}
+
+.ai-clustering-status {
+    display: none;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 6px;
+    background: #fef9e7;
+    color: #7d6608;
+    font-size: 0.9rem;
+    border: 1px solid #f9e79f;
+    animation: fadeIn 0.3s ease;
+}
+
+.ai-clustering-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: #5d6d7e;
+}
+
+.ai-clustering-meta span {
+    background: #f0f3f5;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+}
+
+.ai-clustering-meta strong {
+    color: #2c3e50;
+}
+
+.ai-clustering-plot {
+    width: 100%;
+    min-height: 420px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ai-clustering-section {
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .ai-clustering-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .ai-clustering-plot {
+        min-height: 300px;
+    }
+
+    .ai-clustering-meta {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ai-clustering-section {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .ai-clustering-header h3 {
+        font-size: 1rem;
+    }
+
+    .ai-clustering-plot {
+        min-height: 250px;
+    }
+}

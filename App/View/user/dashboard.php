@@ -32,6 +32,8 @@ $current_resource_id = $resource_id ?? 'null';
     <script src="<?= BASE_URL ?>/public/js/modules/import.js"></script>
     <script src="<?= BASE_URL ?>/public/js/modules/charts.js"></script>
     <script src="<?= BASE_URL ?>/public/js/modules/detailedCharts.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script src="<?= BASE_URL ?>/public/js/modules/dashboardIaChart.js"></script>
     <script>
         // Inject server-side context for JS modules — doit être AVANT dashboard-main.js
         window.BASE_URL    = '<?= BASE_URL ?>';
@@ -124,6 +126,24 @@ $current_resource_id = $resource_id ?? 'null';
     <main class="main-content">
         <div class="data-zone">
             <p class="placeholder-message">Les données de l'étudiant seront affichées ici</p>
+        </div>
+
+        <!-- ── Conteneur IA Clustering (Macro / Micro) ── -->
+        <div id="ai-clustering-chart" class="ai-clustering-section">
+            <div class="ai-clustering-header">
+                <h3>🤖 Cartographie IA des codes</h3>
+                <div class="ai-clustering-controls">
+                    <button id="ai-clustering-back-btn" class="btn-ai-back" style="display:none;" onclick="DashboardIaChart.backToMacro()">
+                        ← Retour vue globale
+                    </button>
+                    <button id="ai-clustering-refresh-btn" class="btn-ai-refresh" onclick="DashboardIaChart.refresh()">
+                        ⟳ Rafraîchir
+                    </button>
+                </div>
+            </div>
+            <div id="ai-clustering-status" class="ai-clustering-status"></div>
+            <div id="ai-clustering-meta" class="ai-clustering-meta"></div>
+            <div id="ai-clustering-plot" class="ai-clustering-plot"></div>
         </div>
     </main>
 </div>

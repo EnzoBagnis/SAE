@@ -67,6 +67,10 @@ $router->get('/api/dashboard/student/{id}', App\Controller\DashboardApiControlle
 $router->get('/api/dashboard/exercises', App\Controller\DashboardApiController::class, 'exercises');
 $router->get('/api/dashboard/students-stats', App\Controller\DashboardApiController::class, 'studentsStats');
 
+// Dashboard IA API routes (clustering pipeline intégré au dashboard)
+$router->post('/api/dashboard/ia/macro', App\Controller\DashboardApiController::class, 'iaMacro');
+$router->post('/api/dashboard/ia/micro', App\Controller\DashboardApiController::class, 'iaMicro');
+
 // Admin routes
 $router->get('/admin', App\Controller\AdminController::class, 'loginForm');
 $router->get('/admin/login', App\Controller\AdminController::class, 'loginForm');
