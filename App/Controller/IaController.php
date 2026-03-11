@@ -68,6 +68,82 @@ class IaController extends AbstractController
     }
 
     /**
+     * API endpoint : GET /api/ia/status?resource_id=X
+     * Vérifie si des tentatives avec AES existent pour la ressource (prêtes pour l'IA).
+     */
+    public function status(): void
+    {
+        if (!$this->authService->isAuthenticated()) {
+            $this->jsonError('Non authentifié', 401);
+            return;
+        }
+
+        try {
+            $resourceId = isset($_GET['resource_id']) ? (int)$_GET['resource_id'] : null;
+            $exerciseId = isset($_GET['exercise_id']) ? (int)$_GET['exercise_id'] : null;
+
+            $pdo = DatabaseConnection::getInstance()->getConnection();
+
+            if ($exerciseId) {
+                // Statut micro : nombre de tentatives AES pour un exercice
+                $stmt = $pdo->prepare("
+                    SELECT COUNT(*) FROM attempts a
+                    JOIN exercices e ON a.exercice_id = e.exercice_id
+                    WHERE a.exercice_id = :eid
+                      AND a.aes2 IS NOT NULL AND a.aes2 != ''
+                ");
+                $stmt->execute(['eid' => $exerciseId]);
+                $count = (int)$stmt->fetchColumn();
+
+                $this->jsonResponse([
+                    'success' => true,
+                    'available' => $count >= 5,
+                    'aes_count' => $count,
+                    'exercise_id' => $exerciseId,
+                    'message' => $count >= 5
+                        ? "Données IA disponibles ($count tentatives avec AES)."
+                        : "Pas assez de données AES ($count/5 minimum).",
+                ]);
+            } elseif ($resourceId) {
+                // Statut macro : nombre de tentatives AES pour la ressource
+                $stmt = $pdo->prepare("
+                    SELECT COUNT(*) FROM attempts a
+                    JOIN exercices e ON a.exercice_id = e.exercice_id
+                    WHERE e.ressource_id = :rid
+                      AND a.aes2 IS NOT NULL AND a.aes2 != ''
+                ");
+                $stmt->execute(['rid' => $resourceId]);
+                $count = (int)$stmt->fetchColumn();
+
+                // Nombre d'exercices avec AES
+                $stmt2 = $pdo->prepare("
+                    SELECT COUNT(DISTINCT e.exercice_id) FROM attempts a
+                    JOIN exercices e ON a.exercice_id = e.exercice_id
+                    WHERE e.ressource_id = :rid
+                      AND a.aes2 IS NOT NULL AND a.aes2 != ''
+                ");
+                $stmt2->execute(['rid' => $resourceId]);
+                $exCount = (int)$stmt2->fetchColumn();
+
+                $this->jsonResponse([
+                    'success' => true,
+                    'available' => $count >= 5,
+                    'aes_count' => $count,
+                    'exercise_count' => $exCount,
+                    'resource_id' => $resourceId,
+                    'message' => $count >= 5
+                        ? "Données IA disponibles ($count tentatives AES, $exCount exercices)."
+                        : "Pas assez de données AES ($count/5 minimum).",
+                ]);
+            } else {
+                $this->jsonError('resource_id ou exercise_id requis.');
+            }
+        } catch (\Throwable $e) {
+            $this->jsonError('Erreur serveur : ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * TEMPORAIRE — diagnostic Python sur le serveur.
      * GET /api/ia/debug-python → JSON avec les chemins testés et le Python utilisé.
      * À SUPPRIMER après résolution du problème.
