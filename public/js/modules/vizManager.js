@@ -314,6 +314,33 @@ export class VizManager {
     }
 
     // =========================================================================
+    // Helper : tri des données
+    // =========================================================================
+
+    _sortData(data, order, nameKey) {
+        const copy = [...data];
+        switch (order) {
+            case 'asc':
+                return copy.sort((a, b) => (a.success_rate || 0) - (b.success_rate || 0));
+            case 'alpha':
+                return copy.sort((a, b) => {
+                    const na = (a[nameKey] || a.identifier || '').toString().toLowerCase();
+                    const nb = (b[nameKey] || b.identifier || '').toString().toLowerCase();
+                    return na.localeCompare(nb, 'fr');
+                });
+            case 'alpha-desc':
+                return copy.sort((a, b) => {
+                    const na = (a[nameKey] || a.identifier || '').toString().toLowerCase();
+                    const nb = (b[nameKey] || b.identifier || '').toString().toLowerCase();
+                    return nb.localeCompare(na, 'fr');
+                });
+            case 'desc':
+            default:
+                return copy.sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
+        }
+    }
+
+    // =========================================================================
     // Graphique 1 : Barres élèves (niveau 1)
     // =========================================================================
 
@@ -322,10 +349,20 @@ export class VizManager {
         if (!container) return;
         container.innerHTML = '';
 
-        // En-tête avec titre uniquement
         const header = document.createElement('div');
         header.className = 'viz-chart-header';
         header.innerHTML = `<h3 class="viz-chart-title" style="margin:0;">Visualisation élèves</h3>`;
+
+        const select = document.createElement('select');
+        select.className = 'viz-sort-select';
+        select.title = 'Trier les élèves';
+        select.innerHTML = `
+            <option value="desc">↓ Taux décroissant</option>
+            <option value="asc">↑ Taux croissant</option>
+            <option value="alpha">A→Z Alphabétique</option>
+            <option value="alpha-desc">Z→A Alphabétique inversé</option>
+        `;
+        header.appendChild(select);
         container.appendChild(header);
 
         if (!data || data.length === 0) {
@@ -336,67 +373,58 @@ export class VizManager {
             return;
         }
 
-        const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
-
-        const margin = { top: 10, right: 100, bottom: 20, left: 50 };
-        const vw = 500, vh = 300;
-        const w = vw - margin.left - margin.right;
-        const h = vh - margin.top - margin.bottom;
-
-        const svg = d3.select(`#${containerId}`).append('svg')
-            .attr('viewBox', `0 0 ${vw} ${vh}`)
-            .style('width', '100%')
-            .append('g')
-            .attr('transform', `translate(${margin.left},${margin.top})`);
-
-        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.2);
-        const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
-
-        const tooltip = this._createTooltip(containerId);
         const self = this;
+        const drawStudentsBars = (order) => {
+            const oldSvg = container.querySelector('svg');
+            if (oldSvg) oldSvg.remove();
 
-        svg.selectAll('rect.bar')
-            .data(sorted)
-            .enter()
-            .append('rect')
-            .attr('class', 'bar')
-            .attr('x', (_, i) => x(i))
-            .attr('y', d => y(d.success_rate || 0))
-            .attr('width', x.bandwidth())
-            .attr('height', d => h - y(d.success_rate || 0))
-            .attr('fill', d => VizManager.gradeColor(d.success_rate || 0))
-            .attr('rx', 2)
-            .style('cursor', 'pointer')
-            .on('mouseover', function(event, d) {
-                d3.select(this).attr('opacity', 0.75);
-                const rate = d.success_rate || 0;
-                const rateColor = VizManager.gradeColor(rate);
-                const name = htmlEscape(d.identifier || d.student_id);
-                tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
-                    .html(`
-                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div>
-                        <div style="color:${rateColor};font-weight:600">Réussite : ${rate}%</div>
-                        <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
-                        <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
-                    `);
-            })
-            .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', function() {
-                d3.select(this).attr('opacity', 1);
-                tooltip.style('visibility', 'hidden');
-            })
-            .on('click', (event, d) => {
-                tooltip.style('visibility', 'hidden');
-                const dataZone = document.querySelector('.viz-data-zone');
-                if (dataZone) self.renderLevel2Student(dataZone, d.identifier || d.student_id);
-            });
+            const sorted = self._sortData(data, order, 'identifier');
+            const margin = { top: 10, right: 100, bottom: 20, left: 50 };
+            const vw = 500, vh = 300;
+            const w = vw - margin.left - margin.right;
+            const h = vh - margin.top - margin.bottom;
 
-        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => ''))
-            .selectAll('text').remove();
+            const svg = d3.select(`#${containerId}`).append('svg')
+                .attr('viewBox', `0 0 ${vw} ${vh}`)
+                .style('width', '100%')
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
 
-        svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
+            const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.2);
+            const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
+            const tooltip = self._createTooltip(containerId);
 
-        this._renderGradeLegend(svg, w + 5, 0);
+            svg.selectAll('rect.bar').data(sorted).enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', (_, i) => x(i))
+                .attr('y', d => y(d.success_rate || 0))
+                .attr('width', x.bandwidth())
+                .attr('height', d => h - y(d.success_rate || 0))
+                .attr('fill', d => VizManager.gradeColor(d.success_rate || 0))
+                .attr('rx', 2).style('cursor', 'pointer')
+                .on('mouseover', function(event, d) {
+                    d3.select(this).attr('opacity', 0.75);
+                    const rate = d.success_rate || 0;
+                    const rateColor = VizManager.gradeColor(rate);
+                    const name = htmlEscape(d.identifier || d.student_id);
+                    tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
+                        .html(`<div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div><div style="color:${rateColor};font-weight:600">Réussite : ${rate}%</div><div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div><div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>`);
+                })
+                .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
+                .on('mouseout', function() { d3.select(this).attr('opacity', 1); tooltip.style('visibility', 'hidden'); })
+                .on('click', (event, d) => {
+                    tooltip.style('visibility', 'hidden');
+                    const dataZone = document.querySelector('.viz-data-zone');
+                    if (dataZone) self.renderLevel2Student(dataZone, d.identifier || d.student_id);
+                });
+
+            svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => '')).selectAll('text').remove();
+            svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
+            self._renderGradeLegend(svg, w + 5, 0);
+        };
+
+        drawStudentsBars('desc');
+        select.addEventListener('change', () => drawStudentsBars(select.value));
     }
 
     // =========================================================================
@@ -408,10 +436,20 @@ export class VizManager {
         if (!container) return;
         container.innerHTML = '';
 
-        // En-tête avec titre uniquement
         const header = document.createElement('div');
         header.className = 'viz-chart-header';
         header.innerHTML = `<h3 class="viz-chart-title" style="margin:0;">Visualisation TP</h3>`;
+
+        const select = document.createElement('select');
+        select.className = 'viz-sort-select';
+        select.title = 'Trier les TP';
+        select.innerHTML = `
+            <option value="desc">↓ Taux décroissant</option>
+            <option value="asc">↑ Taux croissant</option>
+            <option value="alpha">A→Z Alphabétique</option>
+            <option value="alpha-desc">Z→A Alphabétique inversé</option>
+        `;
+        header.appendChild(select);
         container.appendChild(header);
 
         if (!data || data.length === 0) {
@@ -422,69 +460,59 @@ export class VizManager {
             return;
         }
 
-        const sorted = [...data].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
-
-        const margin = { top: 10, right: 100, bottom: 20, left: 50 };
-        const vw = 500, vh = 300;
-        const w = vw - margin.left - margin.right;
-        const h = vh - margin.top - margin.bottom;
-
-        const svg = d3.select(`#${containerId}`).append('svg')
-            .attr('viewBox', `0 0 ${vw} ${vh}`)
-            .style('width', '100%')
-            .append('g')
-            .attr('transform', `translate(${margin.left},${margin.top})`);
-
-        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.2);
-        const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
-
-        const tooltip = this._createTooltip(containerId);
         const self = this;
+        const drawTPBars = (order) => {
+            const oldSvg = container.querySelector('svg');
+            if (oldSvg) oldSvg.remove();
 
-        // Label SVG flottant au survol
-        svg.selectAll('rect.bar')
-            .data(sorted)
-            .enter()
-            .append('rect')
-            .attr('class', 'bar')
-            .attr('x', (_, i) => x(i))
-            .attr('y', d => y(d.success_rate != null ? d.success_rate : 0))
-            .attr('width', x.bandwidth())
-            .attr('height', d => h - y(d.success_rate != null ? d.success_rate : 0))
-            .attr('fill', d => d.success_rate != null ? VizManager.gradeColor(d.success_rate) : '#95a5a6')
-            .attr('rx', 2)
-            .style('cursor', 'pointer')
-            .on('mouseover', function(event, d) {
-                d3.select(this).attr('opacity', 0.75);
-                const rate = d.success_rate != null ? d.success_rate : null;
-                const rateColor = rate != null ? VizManager.gradeColor(rate) : '#95a5a6';
-                const name = htmlEscape(d.funcname || d.exo_name);
-                const rateStr = rate != null ? rate + '%' : 'N/A';
-                tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
-                    .html(`
-                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div>
-                        <div style="color:${rateColor};font-weight:600">Réussite : ${rateStr}</div>
-                        <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
-                        <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
-                    `);
-            })
-            .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', function() {
-                d3.select(this).attr('opacity', 1);
-                tooltip.style('visibility', 'hidden');
-            })
-            .on('click', (event, d) => {
-                tooltip.style('visibility', 'hidden');
-                const dataZone = document.querySelector('.viz-data-zone');
-                if (dataZone) self.renderLevel2TP(dataZone, d.exercise_id, d.funcname || d.exo_name);
-            });
+            const sorted = self._sortData(data, order, 'funcname');
+            const margin = { top: 10, right: 100, bottom: 20, left: 50 };
+            const vw = 500, vh = 300;
+            const w = vw - margin.left - margin.right;
+            const h = vh - margin.top - margin.bottom;
 
-        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => ''))
-            .selectAll('text').remove();
+            const svg = d3.select(`#${containerId}`).append('svg')
+                .attr('viewBox', `0 0 ${vw} ${vh}`)
+                .style('width', '100%')
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
 
-        svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
+            const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.2);
+            const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
+            const tooltip = self._createTooltip(containerId);
 
-        this._renderGradeLegend(svg, w + 5, 0);
+            svg.selectAll('rect.bar').data(sorted).enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', (_, i) => x(i))
+                .attr('y', d => y(d.success_rate != null ? d.success_rate : 0))
+                .attr('width', x.bandwidth())
+                .attr('height', d => h - y(d.success_rate != null ? d.success_rate : 0))
+                .attr('fill', d => d.success_rate != null ? VizManager.gradeColor(d.success_rate) : '#95a5a6')
+                .attr('rx', 2).style('cursor', 'pointer')
+                .on('mouseover', function(event, d) {
+                    d3.select(this).attr('opacity', 0.75);
+                    const rate = d.success_rate != null ? d.success_rate : null;
+                    const rateColor = rate != null ? VizManager.gradeColor(rate) : '#95a5a6';
+                    const name = htmlEscape(d.funcname || d.exo_name);
+                    const rateStr = rate != null ? rate + '%' : 'N/A';
+                    tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
+                        .html(`<div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div><div style="color:${rateColor};font-weight:600">Réussite : ${rateStr}</div><div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div><div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>`);
+                })
+                .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
+                .on('mouseout', function() { d3.select(this).attr('opacity', 1); tooltip.style('visibility', 'hidden'); })
+                .on('click', (event, d) => {
+                    tooltip.style('visibility', 'hidden');
+                    const dataZone = document.querySelector('.viz-data-zone');
+                    if (dataZone) self.renderLevel2TP(dataZone, d.exercise_id, d.funcname || d.exo_name);
+                });
+
+            svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => '')).selectAll('text').remove();
+            svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
+            self._renderGradeLegend(svg, w + 5, 0);
+        };
+
+        drawTPBars('desc');
+        select.addEventListener('change', () => drawTPBars(select.value));
     }
 
     // =========================================================================
@@ -840,73 +868,85 @@ export class VizManager {
     _renderTPStudentLines(students, containerId, container, tpContext) {
         const el = document.getElementById(containerId);
         if (!el) return;
-        el.innerHTML = '<h3 class="viz-chart-title">Performance par étudiant</h3>';
+        el.innerHTML = '';
+
+        // En-tête avec titre + menu déroulant de tri
+        const header = document.createElement('div');
+        header.className = 'viz-chart-header';
+        header.innerHTML = `<h3 class="viz-chart-title" style="margin:0;">Performance par étudiant</h3>`;
+
+        const select = document.createElement('select');
+        select.className = 'viz-sort-select';
+        select.title = 'Trier les étudiants';
+        select.innerHTML = `
+            <option value="desc">↓ Taux décroissant</option>
+            <option value="asc">↑ Taux croissant</option>
+            <option value="alpha">A→Z Alphabétique</option>
+            <option value="alpha-desc">Z→A Alphabétique inversé</option>
+        `;
+        header.appendChild(select);
+        el.appendChild(header);
 
         if (!students || students.length === 0) {
-            el.innerHTML += '<p class="viz-no-data">Aucun étudiant.</p>';
+            const p = document.createElement('p');
+            p.className = 'viz-no-data';
+            p.textContent = 'Aucun étudiant.';
+            el.appendChild(p);
             return;
         }
 
-        const sorted = [...students].sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
-        const margin = { top: 10, right: 100, bottom: 20, left: 50 };
-        const vw = 500, vh = 300;
-        const w = vw - margin.left - margin.right;
-        const h = vh - margin.top - margin.bottom;
-
-        const svg = d3.select(`#${containerId}`).append('svg')
-            .attr('viewBox', `0 0 ${vw} ${vh}`)
-            .style('width', '100%')
-            .append('g')
-            .attr('transform', `translate(${margin.left},${margin.top})`);
-
-        const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.3);
-        const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
-
-        const tooltip = this._createTooltip(containerId);
         const self = this;
+        const drawTPLines = (order) => {
+            const oldSvg = el.querySelector('svg');
+            if (oldSvg) oldSvg.remove();
 
+            const sorted = self._sortData(students, order, 'identifier');
+            const margin = { top: 10, right: 100, bottom: 20, left: 50 };
+            const vw = 500, vh = 300;
+            const w = vw - margin.left - margin.right;
+            const h = vh - margin.top - margin.bottom;
 
-        // Points colorés
-        svg.selectAll('circle')
-            .data(sorted)
-            .enter()
-            .append('circle')
-            .attr('cx', (_, i) => x(i) + x.bandwidth() / 2)
-            .attr('cy', d => y(d.success_rate || 0))
-            .attr('r', 6)
-            .attr('fill', d => VizManager.gradeColor(d.success_rate || 0))
-            .attr('stroke', '#fff')
-            .attr('stroke-width', 2)
-            .style('cursor', 'pointer')
-            .on('mouseover', function(event, d) {
-                d3.select(this).attr('r', 9);
-                const rate = d.success_rate || 0;
-                const rateColor = VizManager.gradeColor(rate);
-                const name = htmlEscape(d.identifier);
-                tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
-                    .html(`
-                        <div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div>
-                        <div style="color:${rateColor};font-weight:600">Réussite : ${rate}%</div>
-                        <div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div>
-                        <div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>
-                    `);
-            })
-            .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
-            .on('mouseout', function() {
-                d3.select(this).attr('r', 6);
-                tooltip.style('visibility', 'hidden');
-            })
-            .on('click', (event, d) => {
-                tooltip.style('visibility', 'hidden');
-                const dataZone = document.querySelector('.viz-data-zone');
-                if (dataZone) self.renderLevel3Student(dataZone, d.identifier, true, tpContext);
-            });
+            const svg = d3.select(`#${containerId}`).append('svg')
+                .attr('viewBox', `0 0 ${vw} ${vh}`)
+                .style('width', '100%')
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
 
-        svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => ''))
-            .selectAll('text').remove();
-        svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
+            const x = d3.scaleBand().range([0, w]).domain(sorted.map((_, i) => i)).padding(0.3);
+            const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
+            const tooltip = self._createTooltip(containerId);
 
-        this._renderGradeLegend(svg, w + 5, 0);
+            svg.selectAll('circle').data(sorted).enter().append('circle')
+                .attr('cx', (_, i) => x(i) + x.bandwidth() / 2)
+                .attr('cy', d => y(d.success_rate || 0))
+                .attr('r', 6)
+                .attr('fill', d => VizManager.gradeColor(d.success_rate || 0))
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2)
+                .style('cursor', 'pointer')
+                .on('mouseover', function(event, d) {
+                    d3.select(this).attr('r', 9);
+                    const rate = d.success_rate || 0;
+                    const rateColor = VizManager.gradeColor(rate);
+                    const name = htmlEscape(d.identifier);
+                    tooltip.style('visibility', 'visible').style('border-left', `3px solid ${rateColor}`)
+                        .html(`<div style="font-size:13px;font-weight:700;margin-bottom:5px;color:#fff">${name}</div><div style="color:${rateColor};font-weight:600">Réussite : ${rate}%</div><div style="color:#ccc;font-size:11px;margin-top:3px">🎯 ${d.total_attempts} tentative${d.total_attempts > 1 ? 's' : ''}</div><div style="color:#aaa;font-size:10px;margin-top:4px">Cliquer pour explorer →</div>`);
+                })
+                .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
+                .on('mouseout', function() { d3.select(this).attr('r', 6); tooltip.style('visibility', 'hidden'); })
+                .on('click', (event, d) => {
+                    tooltip.style('visibility', 'hidden');
+                    const dataZone = document.querySelector('.viz-data-zone');
+                    if (dataZone) self.renderLevel3Student(dataZone, d.identifier, true, tpContext);
+                });
+
+            svg.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat(() => '')).selectAll('text').remove();
+            svg.append('g').call(d3.axisLeft(y).tickFormat(d => d + '%'));
+            self._renderGradeLegend(svg, w + 5, 0);
+        };
+
+        drawTPLines('desc');
+        select.addEventListener('change', () => drawTPLines(select.value));
     }
 
     // =========================================================================
