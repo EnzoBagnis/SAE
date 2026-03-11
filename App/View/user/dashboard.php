@@ -1,4 +1,4 @@
-﻿﻿﻿﻿<?php
+﻿﻿﻿﻿﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -166,7 +166,6 @@ $current_resource_id = $resource_id ?? 'null';
             color: #2c3e50;
         }
         #rsr-list li[data-clickable]:hover { background: #f0f7ff; cursor: pointer; color: #3498db; }
-        .header-search { position: relative; }
         @media (max-width: 768px) { .header-search { display: none; } }
     </style>
     <meta name="description" content="Hub principal du site, vous pourrez y visionner les différents TD.">
