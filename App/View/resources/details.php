@@ -90,6 +90,49 @@ $title = 'StudTraj - ' . $resTitle;
         .badge-mid  { background: #fff3cd; color: #856404; }
         .badge-low  { background: #f8d7da; color: #721c24; }
         .badge-none { background: #e2e3e5; color: #383d41; }
+
+        /* Barre de recherche dans le header */
+        .header-search {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            max-width: 420px;
+            margin: 0 2rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .header-search input[type="search"] {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            padding: 7px 12px;
+            font-size: 0.9em;
+        }
+        .header-search input[type="search"]::placeholder {
+            color: rgba(255,255,255,0.55);
+        }
+        .header-search button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            padding: 7px 10px;
+            cursor: pointer;
+            font-size: 1em;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .header-search button:hover {
+            color: #fff;
+        }
+        @media (max-width: 768px) {
+            .header-search {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
