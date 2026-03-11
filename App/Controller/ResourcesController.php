@@ -5,7 +5,6 @@ namespace App\Controller;
 use Core\Controller\AbstractController;
 use App\Model\ResourceRepositoryInterface;
 use App\Model\AuthenticationServiceInterface;
-use App\Model\ExerciseRepository;
 
 /**
  * Resources Controller
@@ -18,7 +17,6 @@ class ResourcesController extends AbstractController
 {
     private ResourceRepositoryInterface $resourceRepository;
     private AuthenticationServiceInterface $authService;
-    private ExerciseRepository $exerciseRepository;
 
     /** Allowed MIME types for resource images */
     private const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -41,7 +39,6 @@ class ResourcesController extends AbstractController
     ) {
         $this->resourceRepository = $resourceRepository;
         $this->authService        = $authService;
-        $this->exerciseRepository = new ExerciseRepository();
     }
 
     /**
@@ -165,19 +162,10 @@ class ResourcesController extends AbstractController
         $firstname = $this->authService->getUserFirstName() ?? '';
         $lastname  = $this->authService->getUserLastName() ?? '';
 
-        // Charger les exercices avec stats pour la vue détaillée
         try {
-            $exercises = $this->exerciseRepository->findByResourceIdWithStats($resourceId);
-        } catch (\Throwable $e) {
-            error_log('[ResourcesController::show] findByResourceIdWithStats: ' . $e->getMessage());
-            $exercises = [];
-        }
-
-        try {
-            $this->renderView('resources/details', [
+            $this->renderView('user/dashboard', [
                 'resource'       => $resource,
                 'resource_id'    => $resourceId,
-                'exercises'      => $exercises,
                 'user_firstname' => $firstname,
                 'user_lastname'  => $lastname,
                 'title'          => 'StudTraj - ' . htmlspecialchars($resource->getResourceName()),

@@ -1,14 +1,11 @@
 /**
- * dashboardIaChart.js — Module de visualisation IA intégré au Dashboard (Vue TD / Micro)
+ * dashboardIaChart.js — Module de visualisation IA intégré au Dashboard
  *
- * Ce module gère UNIQUEMENT la vue Micro (détail d'un exercice / TD).
- * La vue Macro (globale) est gérée par resourceIaChart.js sur la page Ressource.
+ * Deux modes :
+ *   - Macro (Global)  : t-SNE global, centroïdes par exercice, clic → zoom Micro
+ *   - Micro (Détail)  : K-Means + t-SNE pour un exercice, trajectoires par étudiant
  *
- * Comportement :
- *   - Au chargement, vérifie si des données IA existent via /api/dashboard/ia/check-data
- *   - Si pas de données : affiche un message invitant à générer depuis la page Ressource
- *   - Quand un exercice est sélectionné : charge et affiche le graphe Micro (trajectoires)
- *   - Ne touche PAS aux vues étudiants
+ * Se synchronise avec le reste du dashboard via des événements custom.
  */
 const DashboardIaChart = (function () {
     'use strict';
@@ -24,10 +21,11 @@ const DashboardIaChart = (function () {
     // ── État interne ────────────────────────────────────────────────────────
     let _baseUrl          = '';
     let _resourceId       = null;
+    let _currentMode      = 'macro';   // 'macro' | 'micro'
     let _currentExerciseId = null;
+    let _macroCache       = null;
     let _microCache       = null;
     let _loading          = false;
-    let _dataAvailable    = false;  // true si des données AES existent
 
     // Références aux traces pour le hover-focus micro
     let _microTraces         = [];
@@ -46,19 +44,8 @@ const DashboardIaChart = (function () {
         _baseUrl    = window.BASE_URL || '';
         _resourceId = window.RESOURCE_ID || null;
 
-        // Vérifier si des données IA existent (sans lancer Python)
-        _checkDataAndShowStatus();
-
-        // Si un exercise_id est fourni dans le contexte (arrivée depuis le graphe Macro),
-        // charger directement la vue Micro pour ce TD
-        var initialExerciseId = window.EXERCISE_ID || null;
-        if (initialExerciseId && parseInt(initialExerciseId) > 0) {
-            // Attendre que le check-data ait eu le temps de s'exécuter
-            setTimeout(function () {
-                _dataAvailable = true; // On force — si on arrive ici c'est que les données existent
-                loadMicro(parseInt(initialExerciseId));
-            }, 800);
-        }
+        // Charger la vue macro au démarrage
+        loadMacro();
 
         // Écouter les événements de sélection d'exercice depuis le dashboard
         document.addEventListener('exercise-chart-click', function (e) {
@@ -77,59 +64,145 @@ const DashboardIaChart = (function () {
 
         // Écouter le retour à la vue globale (quand l'utilisateur quitte le détail)
         window.addEventListener('dashboardBackToGlobal', function () {
-            backToIdle();
+            backToMacro();
         });
 
-        console.log('[DashboardIaChart] Initialisé (mode Micro uniquement).');
+        console.log('[DashboardIaChart] Initialisé.');
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    //  VÉRIFICATION DES DONNÉES
+    //  VUE MACRO (Global)
     // ══════════════════════════════════════════════════════════════════════════
 
-    /**
-     * Vérifie si des données AES existent pour la ressource courante.
-     * Si non, affiche un message d'information.
-     * Ne lance PAS le pipeline Python.
-     */
-    function _checkDataAndShowStatus() {
-        const url = _baseUrl + '/api/dashboard/ia/check-data'
-            + (_resourceId ? '?resource_id=' + _resourceId : '');
+    function loadMacro() {
+        if (_loading) return;
+        _currentMode = 'macro';
+        _currentExerciseId = null;
+        _loading = true;
 
-        fetch(url)
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.success && data.has_data) {
-                    _dataAvailable = true;
-                    _showStatus('ℹ️ Sélectionnez un exercice (TD) dans la liste pour afficher son analyse IA détaillée.');
-                } else {
-                    _dataAvailable = false;
-                    _showNoDataMessage();
-                }
-            })
-            .catch(function (err) {
-                console.error('[DashboardIaChart] Erreur check-data:', err);
-                _showStatus('⚠️ Impossible de vérifier les données IA.');
+        _showStatus('⏳ Chargement de la cartographie globale…');
+        _hideBackBtn();
+
+        const body = { perplexity: 30 };
+        if (_resourceId) body.resource_id = parseInt(_resourceId);
+
+        fetch(_baseUrl + '/api/dashboard/ia/macro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        })
+        .then(r => r.json())
+        .then(data => {
+            _loading = false;
+            if (data.success) {
+                _macroCache = data;
+                _renderMacro(data);
+                _showStatus('');
+            } else {
+                _showStatus('⚠️ ' + (data.message || data.error || 'Impossible de charger la vue globale.'));
+            }
+        })
+        .catch(err => {
+            _loading = false;
+            _showStatus('❌ Erreur réseau : ' + err.message);
+        });
+    }
+
+    function _renderMacro(data) {
+        const container = document.getElementById('ai-clustering-plot');
+        if (!container) return;
+
+        const traces = [];
+
+        // Nuage de fond (tous les points, colorés par exercice, faible opacité)
+        if (data.all_points && data.all_points.length > 0) {
+            const byExo = {};
+            data.all_points.forEach(p => {
+                if (!byExo[p.exercise_name]) byExo[p.exercise_name] = { x: [], y: [], ids: [] };
+                byExo[p.exercise_name].x.push(p.x);
+                byExo[p.exercise_name].y.push(p.y);
+                byExo[p.exercise_name].ids.push(p.exercice_id);
             });
-    }
 
-    /**
-     * Affiche un message indiquant qu'il faut générer les données depuis la page Ressource.
-     */
-    function _showNoDataMessage() {
-        var container = document.getElementById('ai-clustering-plot');
-        if (container) {
-            container.innerHTML = '';
+            let colorIdx = 0;
+            Object.keys(byExo).forEach(exName => {
+                const grp = byExo[exName];
+                const col = COLORS_10[colorIdx % COLORS_10.length];
+                traces.push({
+                    x: grp.x, y: grp.y,
+                    mode: 'markers', type: 'scatter',
+                    name: exName,
+                    marker: { size: 5, color: col, opacity: 0.2 },
+                    hoverinfo: 'text',
+                    text: grp.x.map(() => exName),
+                    showlegend: false,
+                    customdata: grp.ids,
+                });
+                colorIdx++;
+            });
         }
 
-        var resourceUrl = _resourceId
-            ? (_baseUrl + '/resources/' + _resourceId)
-            : (_baseUrl + '/resources');
+        // Centroïdes cliquables
+        if (data.centroids && data.centroids.length > 0) {
+            const cx     = data.centroids.map(c => c.x);
+            const cy     = data.centroids.map(c => c.y);
+            const labels = data.centroids.map(c => c.exercise_name);
+            const sizes  = data.centroids.map(c => Math.max(14, Math.min(40, 8 + Math.sqrt(c.n_attempts) * 3)));
+            const colors = data.centroids.map((_, i) => COLORS_10[i % COLORS_10.length]);
+            const ids    = data.centroids.map(c => c.exercice_id);
+            const hovers = data.centroids.map(c =>
+                `<b>${_esc(c.exercise_name)}</b><br>${c.n_attempts} tentatives<br><i>Cliquer pour détailler</i>`
+            );
 
-        _showStatus(
-            '📊 Aucune donnée IA disponible pour cette ressource. ' +
-            '<a href="' + resourceUrl + '" style="color:#007bff; text-decoration:underline;">' +
-            'Veuillez générer l\'analyse IA depuis la page de la ressource.</a>'
+            traces.push({
+                x: cx, y: cy,
+                mode: 'markers+text', type: 'scatter',
+                name: 'Centroïdes TDs',
+                marker: { size: sizes, color: colors, line: { width: 2, color: '#fff' }, opacity: 0.9 },
+                text: labels,
+                textposition: 'top center',
+                textfont: { size: 11, color: '#2c3e50', family: 'sans-serif' },
+                hoverinfo: 'text',
+                hovertext: hovers,
+                customdata: ids,
+                showlegend: true,
+            });
+        }
+
+        const layout = {
+            title: {
+                text: 'Vue Macro — Cartographie globale des exercices',
+                font: { size: 15, color: '#2c3e50' },
+            },
+            xaxis: { title: 't-SNE dim. 1', zeroline: false, showgrid: true, gridcolor: '#ecf0f1' },
+            yaxis: { title: 't-SNE dim. 2', zeroline: false, showgrid: true, gridcolor: '#ecf0f1' },
+            hovermode: 'closest',
+            plot_bgcolor: '#fafbfc',
+            paper_bgcolor: '#fff',
+            margin: { t: 60, b: 50, l: 60, r: 30 },
+            legend: { orientation: 'h', y: -0.15 },
+        };
+
+        Plotly.newPlot(container, traces, layout, { responsive: true }).then(() => {
+            container.on('plotly_click', function (evtData) {
+                if (!evtData || !evtData.points || evtData.points.length === 0) return;
+                const pt = evtData.points[0];
+                const exerciseId = pt.customdata;
+                if (exerciseId && typeof exerciseId === 'number' && exerciseId > 0) {
+                    loadMicro(exerciseId);
+
+                    // Émettre un événement pour synchroniser le reste du dashboard
+                    document.dispatchEvent(new CustomEvent('exercise-chart-click', {
+                        detail: { exerciseId: exerciseId }
+                    }));
+                }
+            });
+        });
+
+        // Métadonnées
+        _setMeta(
+            `<span><strong>${data.n_points || 0}</strong> tentatives analysées</span>` +
+            `<span style="margin-left:1.5rem;"><strong>${data.n_exercises || 0}</strong> exercices</span>`
         );
     }
 
@@ -141,12 +214,7 @@ const DashboardIaChart = (function () {
         if (_loading) return;
         if (!exerciseId || exerciseId <= 0) return;
 
-        // Si pas de données disponibles, afficher le message
-        if (!_dataAvailable) {
-            _showNoDataMessage();
-            return;
-        }
-
+        _currentMode = 'micro';
         _currentExerciseId = exerciseId;
         _loading = true;
 
@@ -162,8 +230,8 @@ const DashboardIaChart = (function () {
                 perplexity: 30,
             }),
         })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
+        .then(r => r.json())
+        .then(data => {
             _loading = false;
             if (data.success) {
                 _microCache = data;
@@ -173,7 +241,7 @@ const DashboardIaChart = (function () {
                 _showStatus('⚠️ ' + (data.message || data.error || 'Impossible de charger le clustering.'));
             }
         })
-        .catch(function (err) {
+        .catch(err => {
             _loading = false;
             _showStatus('❌ Erreur réseau : ' + err.message);
         });
@@ -435,43 +503,30 @@ const DashboardIaChart = (function () {
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Retour à l'état initial (pas de graphe, message d'info).
-     * Remplace l'ancien backToMacro() — plus de vue Macro ici.
+     * Retour à la vue macro depuis la vue micro.
      */
     function backToMacro() {
-        backToIdle();
-    }
-
-    /**
-     * Retour à l'état idle : pas de graphe affiché, message d'aide.
-     */
-    function backToIdle() {
+        _currentMode = 'macro';
         _currentExerciseId = null;
-        _microCache = null;
-
-        var container = document.getElementById('ai-clustering-plot');
-        if (container) container.innerHTML = '';
-
-        _hideBackBtn();
-
-        if (_dataAvailable) {
-            _showStatus('ℹ️ Sélectionnez un exercice (TD) dans la liste pour afficher son analyse IA détaillée.');
+        if (_macroCache) {
+            _renderMacro(_macroCache);
+            _hideBackBtn();
+            _showStatus('');
         } else {
-            _showNoDataMessage();
+            loadMacro();
         }
-
-        _setMeta('');
     }
 
     /**
      * Rafraîchir la vue courante.
      */
     function refresh() {
+        _macroCache = null;
         _microCache = null;
-        if (_currentExerciseId) {
+        if (_currentMode === 'micro' && _currentExerciseId) {
             loadMicro(_currentExerciseId);
         } else {
-            _checkDataAndShowStatus();
+            loadMacro();
         }
     }
 
@@ -479,13 +534,13 @@ const DashboardIaChart = (function () {
      * Appelé par le dashboard quand on change de vue exercice.
      * Permet la synchronisation externe.
      *
-     * @param {number|null} exerciseId - ID exercice ou null pour revenir en idle
+     * @param {number|null} exerciseId - ID exercice ou null pour revenir en macro
      */
     function syncWithDashboard(exerciseId) {
         if (exerciseId && exerciseId > 0) {
             loadMicro(exerciseId);
         } else {
-            backToIdle();
+            backToMacro();
         }
     }
 
@@ -496,7 +551,7 @@ const DashboardIaChart = (function () {
     function _showStatus(msg) {
         const el = document.getElementById('ai-clustering-status');
         if (el) {
-            el.innerHTML = msg;
+            el.textContent = msg;
             el.style.display = msg ? 'block' : 'none';
         }
     }
@@ -523,20 +578,19 @@ const DashboardIaChart = (function () {
 
     // ── Auto-init ───────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function () {
-        // S'initialiser seulement si le conteneur dashboard IA existe
-        if (document.getElementById('ai-clustering-chart')) {
-            setTimeout(init, 500);
-        }
+        // Petit délai pour laisser le dashboard se charger d'abord
+        setTimeout(init, 500);
     });
 
     // ── API publique ────────────────────────────────────────────────────────
     return {
         init:               init,
+        loadMacro:          loadMacro,
         loadMicro:          loadMicro,
         backToMacro:        backToMacro,
-        backToIdle:         backToIdle,
         refresh:            refresh,
         syncWithDashboard:  syncWithDashboard,
     };
 
 })();
+
