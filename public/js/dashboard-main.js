@@ -51,22 +51,12 @@ function setupEventListeners() {
         const studentId = e.detail;
         studentContentManager.selectStudent(studentId);
         burgerMenuManager.updateActiveStudent(studentId);
-
-        // Retour en vue macro quand on sélectionne un étudiant (pas un exercice)
-        if (typeof DashboardIaChart !== 'undefined') {
-            DashboardIaChart.backToMacro();
-        }
     });
 
     // Écouter la sélection d'un exercice
     window.addEventListener('exerciseSelected', (e) => {
         const exerciseId = e.detail;
         studentContentManager.selectExercise(exerciseId);
-
-        // Synchroniser le graphique IA : passer en vue micro
-        if (typeof DashboardIaChart !== 'undefined') {
-            DashboardIaChart.syncWithDashboard(exerciseId);
-        }
     });
 
     // Listen for chart clicks
@@ -78,11 +68,6 @@ function setupEventListeners() {
     document.addEventListener('exercise-chart-click', (e) => {
         const exerciseId = e.detail.exerciseId;
         studentContentManager.selectExercise(exerciseId);
-
-        // Synchroniser le graphique IA : passer en vue micro
-        if (typeof DashboardIaChart !== 'undefined') {
-            DashboardIaChart.syncWithDashboard(exerciseId);
-        }
     });
 
     // Check if ChartModule is available
@@ -107,6 +92,8 @@ function setupEventListeners() {
                             if(resp.success) {
                                 // Find the data-zone and clear specific content to avoid overlap
                                 const dataZone = document.querySelector('.data-zone');
+
+                                // Clear content but keep structure if needed, or fully reset
                                 dataZone.innerHTML = '';
 
                                 let chartContainer = document.createElement('div');
@@ -124,11 +111,6 @@ function setupEventListeners() {
                                 ChartModule.renderStudentChart(resp.data, 'global-student-chart');
                             }
                         });
-
-                    // Retour en vue macro IA quand on passe en mode étudiants
-                    if (typeof DashboardIaChart !== 'undefined') {
-                        DashboardIaChart.backToMacro();
-                    }
                 }
             } else {
                 document.getElementById('btnExercises').classList.add('active');
@@ -190,11 +172,6 @@ function setupEventListeners() {
                              console.error('Error loading completion stats:', err);
                              completionContainer.innerHTML = '<p>Erreur lors du chargement des statistiques</p>';
                          });
-
-                     // Retour en vue macro IA quand on passe en mode exercices global
-                     if (typeof DashboardIaChart !== 'undefined') {
-                         DashboardIaChart.backToMacro();
-                     }
                  }
             }
         };
