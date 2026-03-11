@@ -177,9 +177,22 @@ class ExerciseRepository extends AbstractRepository implements
     public function findByRessourceIdAndName(int $ressourceId, string $name): ?Exercise
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM exercices WHERE ressource_id = :ressource_id AND exercice_name = :name LIMIT 1"
+            "SELECT * FROM exercices WHERE ressource_id = :ressource_id AND LOWER(exercice_name) = LOWER(:name) LIMIT 1"
         );
-        $stmt->execute(['ressource_id' => $ressourceId, 'name' => mb_substr($name, 0, 20)]);
+        $stmt->execute(['ressource_id' => $ressourceId, 'name' => mb_substr($name, 0, 80)]);
+        $data = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $data ? $this->hydrate($data) : null;
+    }
+
+    /**
+     * Find an exercise by resource ID and hash (original hash field).
+     */
+    public function findByRessourceIdAndHash(int $ressourceId, string $hash): ?Exercise
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM exercices WHERE ressource_id = :ressource_id AND hash = :hash LIMIT 1"
+        );
+        $stmt->execute(['ressource_id' => $ressourceId, 'hash' => mb_substr($hash, 0, 80)]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
     }
@@ -187,9 +200,9 @@ class ExerciseRepository extends AbstractRepository implements
     public function findByName(string $name): ?Exercise
     {
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM exercices WHERE exercice_name = :name ORDER BY exercice_id DESC LIMIT 1"
+            "SELECT * FROM exercices WHERE LOWER(exercice_name) = LOWER(:name) ORDER BY exercice_id DESC LIMIT 1"
         );
-        $stmt->execute(['name' => mb_substr($name, 0, 20)]);
+        $stmt->execute(['name' => mb_substr($name, 0, 80)]);
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data ? $this->hydrate($data) : null;
     }
@@ -203,19 +216,31 @@ class ExerciseRepository extends AbstractRepository implements
      * @param string $date         Date (Y-m-d)
      * @return int New exercise ID
      */
-    public function insertExercice(int $ressourceId, string $exerciceName, string $extention, string $date): int
+    public function insertExercice(int $ressourceId, string $exerciceName, string $extention, string $date, ?string $hash = null): int
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO exercices (ressource_id, exercice_name, extention, `date`)
-             VALUES (:ressource_id, :exercice_name, :extention, :date)"
+            "INSERT INTO exercices (ressource_id, exercice_name, extention, `date`, hash)
+             VALUES (:ressource_id, :exercice_name, :extention, :date, :hash)"
         );
         $stmt->execute([
             'ressource_id'  => $ressourceId,
-            'exercice_name' => mb_substr($exerciceName, 0, 20),
+            'exercice_name' => mb_substr($exerciceName, 0, 80),
             'extention'     => mb_substr($extention, 0, 20),
             'date'          => $date,
+            'hash'          => $hash ? mb_substr($hash, 0, 80) : null,
         ]);
         return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * Update the exercice_name of an existing exercise (replace hash by readable name).
+     */
+    public function updateName(int $exerciceId, string $exerciceName): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE exercices SET exercice_name = :name WHERE exercice_id = :id"
+        );
+        $stmt->execute(['name' => mb_substr($exerciceName, 0, 80), 'id' => $exerciceId]);
     }
 
     /**

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<?php
+﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 

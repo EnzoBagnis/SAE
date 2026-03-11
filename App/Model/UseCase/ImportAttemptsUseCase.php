@@ -3,7 +3,7 @@
 namespace App\Model\UseCase;
 
 use App\Model\UseCase\Ports\AttemptBulkInserterPort;
-use App\Model\UseCase\Ports\ExerciseLookupPort;
+use App\Model\UseCase\Ports\ExerciseImporterPort;
 
 /**
  * ImportAttemptsUseCase.
@@ -28,17 +28,17 @@ use App\Model\UseCase\Ports\ExerciseLookupPort;
 class ImportAttemptsUseCase
 {
     private AttemptBulkInserterPort $attemptRepository;
-    private ExerciseLookupPort $exerciseRepository;
+    private ExerciseImporterPort $exerciseRepository;
 
     /**
      * Constructor.
      *
      * @param AttemptBulkInserterPort $attemptRepository  Port for bulk-inserting attempts.
-     * @param ExerciseLookupPort      $exerciseRepository Port for exercise name-based lookup.
+     * @param ExerciseImporterPort    $exerciseRepository Port for exercise lookup and auto-creation.
      */
     public function __construct(
         AttemptBulkInserterPort $attemptRepository,
-        ExerciseLookupPort $exerciseRepository
+        ExerciseImporterPort $exerciseRepository
     ) {
         $this->attemptRepository  = $attemptRepository;
         $this->exerciseRepository = $exerciseRepository;
@@ -46,6 +46,8 @@ class ImportAttemptsUseCase
 
     /**
      * Execute the import of a list of attempts, optionally scoped to a resource.
+     * If an exercise referenced by name does not exist yet and a ressourceId is provided,
+     * it will be created automatically (upsert behaviour).
      *
      * @param array<array<string,mixed>> $attempts    List of attempt data arrays
      * @param int|null                   $ressourceId Optional resource ID to scope exercise lookup
@@ -65,14 +67,29 @@ class ImportAttemptsUseCase
                 $exerciceId = isset($item['exercice_id']) ? (int) $item['exercice_id'] : null;
 
                 if (!$exerciceId) {
-                    // Try to resolve by name (truncated to varchar(20))
-                    $exerciceName = mb_substr(trim(
+                    // Try to resolve by name (truncated to varchar(80))
+                    $rawName = trim(
                         $item['exercice_name']
                         ?? $item['exercise_name']
-                        ?? $item['exo_name']
+                        ?? $item['funcname']
+                        ?? $item['hash']
                         ?? $item['name']
                         ?? ''
-                    ), 0, 20);
+                    );
+
+                    // If the name looks like a MD5 hash, prefer funcname then upload
+                    if ($this->isMd5Hash($rawName)) {
+                        if (!empty($item['funcname'])) {
+                            $rawName = trim($item['funcname']);
+                        } elseif (!empty($item['upload'])) {
+                            $funcName = $this->extractPythonFuncName((string) $item['upload']);
+                            if ($funcName !== null) {
+                                $rawName = $funcName;
+                            }
+                        }
+                    }
+
+                    $exerciceName = mb_substr($rawName, 0, 80);
 
                     if ($exerciceName === '') {
                         throw new \InvalidArgumentException("exercice_id ou exercice_name manquant");
@@ -86,13 +103,27 @@ class ImportAttemptsUseCase
                             : $this->exerciseRepository->findByName($exerciceName);
 
                         if ($exercise === null) {
-                            throw new \RuntimeException(
-                                "Exercice introuvable : \"$exerciceName\""
-                                . ($ressourceId !== null ? " (ressource $ressourceId)" : '')
+                            if ($ressourceId === null) {
+                                throw new \RuntimeException(
+                                    "Exercice introuvable : \"$exerciceName\" et resource_id manquant pour le créer"
+                                );
+                            }
+                            // Auto-create the exercise so attempts are not lost
+                            $extention = mb_substr($item['extension'] ?? $item['extention'] ?? 'py', 0, 20);
+                            $date      = $item['date'] ?? date('Y-m-d');
+                            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                                $date = date('Y-m-d');
+                            }
+                            $newId = $this->exerciseRepository->insertExercice(
+                                $ressourceId,
+                                $exerciceName,
+                                $extention,
+                                $date
                             );
+                            $exerciceCache[$cacheKey] = $newId;
+                        } else {
+                            $exerciceCache[$cacheKey] = $exercise->getExerciseId();
                         }
-
-                        $exerciceCache[$cacheKey] = $exercise->getExerciseId();
                     }
 
                     $exerciceId = $exerciceCache[$cacheKey];
@@ -112,7 +143,7 @@ class ImportAttemptsUseCase
                     'user_id'     => mb_substr((string) ($item['user_id'] ?? $item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''), 0, 20),
                     'correct'     => $correct,
                     'eval_set'    => mb_substr((string) ($item['eval_set'] ?? ''), 0, 20),
-                    'upload'      => mb_substr((string) ($item['upload'] ?? $item['code'] ?? ''), 0, 20),
+                    'upload'      => (string) ($item['upload'] ?? $item['code'] ?? ''),
                     'aes0'        => mb_substr($this->normalizeScalarField($item['aes0'] ?? null), 0, 20),
                     'aes1'        => mb_substr($this->normalizeScalarField($item['aes1'] ?? null), 0, 20),
                     'aes2'        => mb_substr($this->normalizeScalarField($item['aes2'] ?? null), 0, 20),
@@ -130,6 +161,31 @@ class ImportAttemptsUseCase
             'inserted' => $result['inserted'],
             'errors'   => array_merge($errors, $result['errors']),
         ];
+    }
+
+    /**
+     * Extract the first function name from Python source code.
+     *
+     * @param string $code Python source code
+     * @return string|null Function name or null
+     */
+    private function extractPythonFuncName(string $code): ?string
+    {
+        if (preg_match('/def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/', $code, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * Determine whether a string looks like a MD5 hash (32 hex chars).
+     *
+     * @param string $name Name to test
+     * @return bool
+     */
+    private function isMd5Hash(string $name): bool
+    {
+        return (bool) preg_match('/^[0-9a-f]{32}$/i', $name);
     }
 
     /**
