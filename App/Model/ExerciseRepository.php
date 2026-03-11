@@ -216,8 +216,13 @@ class ExerciseRepository extends AbstractRepository implements
      * @param string $date         Date (Y-m-d)
      * @return int New exercise ID
      */
-    public function insertExercice(int $ressourceId, string $exerciceName, string $extention, string $date, ?string $hash = null): int
-    {
+    public function insertExercice(
+        int $ressourceId,
+        string $exerciceName,
+        string $extention,
+        string $date,
+        ?string $hash = null
+    ): int {
         $stmt = $this->pdo->prepare(
             "INSERT INTO exercices (ressource_id, exercice_name, extention, `date`, hash)
              VALUES (:ressource_id, :exercice_name, :extention, :date, :hash)"

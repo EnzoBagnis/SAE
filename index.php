@@ -128,7 +128,7 @@ $router->setContainer($container);
 require_once __DIR__ . '/App/routes.php';
 
 // Set 404 handler
-$router->setNotFoundHandler(function() {
+$router->setNotFoundHandler(function () {
     http_response_code(404);
     if (file_exists(__DIR__ . '/App/View/errors/404.php')) {
         require __DIR__ . '/App/View/errors/404.php';

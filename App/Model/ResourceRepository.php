@@ -283,11 +283,12 @@ class ResourceRepository extends AbstractRepository implements ResourceRepositor
         $resource->setResourceId(isset($data['ressource_id']) ? (int) $data['ressource_id'] : null);
         $resource->setOwnerMail($data['mail'] ?? '');
         $resource->setResourceName($data['ressource_name'] ?? '');
-        $resource->setDescription(($data['ressource_description'] ?? '') !== '' ? $data['ressource_description'] : null);
+        $resource->setDescription(
+            ($data['ressource_description'] ?? '') !== '' ? $data['ressource_description'] : null
+        );
         $resource->setImagePath(($data['image_path'] ?? '') !== '' ? $data['image_path'] : null);
         $resource->setAccessType($data['access_type'] ?? 'owner');
         $resource->setSharedMails($data['shared_mails'] ?? null);
         return $resource;
     }
 }
-

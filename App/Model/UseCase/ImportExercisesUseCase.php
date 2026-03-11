@@ -79,7 +79,8 @@ class ImportExercisesUseCase
         foreach ($exercises as $index => $item) {
             try {
                 // L'identifiant unique est l'exo_name (hash MD5 du TP source)
-                // Plusieurs exercices peuvent avoir le même funcname mais des hashs différents (exercices de TPs différents)
+                // Plusieurs exercices peuvent avoir le même funcname mais des hashs différents
+                // (exercices de TPs différents)
                 $rawName = trim(
                     $item['exercice_name']
                     ?? $item['exercise_name']
@@ -158,7 +159,11 @@ class ImportExercisesUseCase
                     $updated++;
                 } else {
                     $newId = $this->exerciseRepository->insertExercice(
-                        $ressourceId, $exerciceName, $extention, $date, $originalHash
+                        $ressourceId,
+                        $exerciceName,
+                        $extention,
+                        $date,
+                        $originalHash
                     );
                     if ($originalHash !== null) {
                         $seenHashes[$originalHash] = $newId;

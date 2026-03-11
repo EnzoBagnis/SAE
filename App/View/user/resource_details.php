@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
@@ -12,7 +12,9 @@
     <script src="/public/js/modules/import.js"></script>
     <script>
         window.BASE_URL    = '';
-        window.RESOURCE_ID = <?= isset($resource) ? (int)($resource->resource_id ?? $resource->getResourceId()) : 'null' ?>;
+        window.RESOURCE_ID = <?= isset($resource)
+            ? (int)($resource->resource_id ?? $resource->getResourceId())
+            : 'null' ?>;
     </script>
     <script type="module" src="/public/js/dashboard-main.js"></script>
 
@@ -98,7 +100,8 @@
     <!-- Menu du haut -->
     <header class="top-menu">
         <div class="logo">
-            <a href="<?= BASE_URL ?>/index.php?action=resources_list" style="text-decoration:none;color:inherit;"><h1>StudTraj</h1></a>
+            <a href="<?= BASE_URL ?>/index.php?action=resources_list"
+               style="text-decoration:none;color:inherit;"><h1>StudTraj</h1></a>
         </div>
         <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
             <span></span><span></span><span></span>

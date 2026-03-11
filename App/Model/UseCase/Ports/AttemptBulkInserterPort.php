@@ -20,4 +20,3 @@ interface AttemptBulkInserterPort
      */
     public function bulkInsert(array $rows): array;
 }
-

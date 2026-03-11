@@ -1,6 +1,10 @@
-﻿<?php
-if (!defined('BASE_URL')) { define('BASE_URL', ''); }
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+<?php
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '');
+}
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Support both old session keys (prenom/nom) and new keys (user_firstname/user_lastname)
 $user_firstname = $user_firstname ?? $_SESSION['user_firstname'] ?? $_SESSION['prenom'] ?? 'Utilisateur';
@@ -77,15 +81,25 @@ $current_resource_id = $resource_id ?? 'null';
         .viz-bc-btn:hover { opacity: 0.85; }
         .viz-bc-sep { color: #bdc3c7; font-size: 1.1rem; }
         /* Titres et hints */
-        .viz-title { color: #2c3e50; margin: 0 0 0.5rem; font-size: 1.4rem; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
+        .viz-title {
+            color: #2c3e50; margin: 0 0 0.5rem; font-size: 1.4rem;
+            border-bottom: 2px solid #3498db; padding-bottom: 0.5rem;
+        }
         .viz-hint { color: #7f8c8d; font-size: 0.88rem; margin: 0 0 1.5rem; }
         /* Grilles de graphiques */
         .viz-top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
         @media (max-width: 768px) { .viz-top-grid { grid-template-columns: 1fr; } }
-        .viz-chart-card { background: #f8f9fa; border-radius: 8px; padding: 1rem 1.25rem 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden; }
+        .viz-chart-card {
+            background: #f8f9fa; border-radius: 8px;
+            padding: 1rem 1.25rem 1.25rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden;
+        }
         .viz-chart-full { grid-column: 1 / -1; max-width: 480px; margin: 0 auto; width: 100%; }
         .viz-chart-title { color: #34495e; font-size: 1rem; margin: 0 0 0.75rem; font-weight: 600; }
-        .viz-chart-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .viz-chart-header {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem;
+        }
         .viz-sort-select {
             padding: 4px 8px;
             font-size: 0.8rem;
@@ -99,20 +113,36 @@ $current_resource_id = $resource_id ?? 'null';
         .viz-sort-select:hover, .viz-sort-select:focus { border-color: #3498db; outline: none; }
         .viz-no-data { color: #95a5a6; font-size: 0.9rem; text-align: center; padding: 1rem 0; }
         /* Cartes de stats */
-        .viz-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .viz-stat-card { background: #f8f9fa; border-radius: 8px; padding: 1rem 1.25rem; border-left: 4px solid #3498db; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+        .viz-stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .viz-stat-card {
+            background: #f8f9fa; border-radius: 8px; padding: 1rem 1.25rem;
+            border-left: 4px solid #3498db; box-shadow: 0 1px 4px rgba(0,0,0,.07);
+        }
         .viz-stat-value { font-size: 1.8rem; font-weight: bold; }
         .viz-stat-label { color: #7f8c8d; font-size: 0.85rem; margin-top: 0.25rem; }
         /* Grade badges */
-        .grade-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.9rem; font-weight: bold; margin-left: 8px; }
+        .grade-badge {
+            display: inline-block; padding: 2px 10px; border-radius: 12px;
+            font-size: 0.9rem; font-weight: bold; margin-left: 8px;
+        }
         .grade-a { background: #d5f5e3; color: #1e8449; }
         .grade-b { background: #fef9e7; color: #b7950b; }
         .grade-c { background: #fadbd8; color: #922b21; }
         /* Loading */
         .viz-loading { text-align: center; padding: 3rem; color: #7f8c8d; font-size: 1.1rem; }
         /* En-tête ressource */
-        .viz-resource-header { background: #fff; border-radius: 10px; padding: 1rem 2rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); border-left: 4px solid #3498db; }
-        .viz-resource-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #3498db; font-weight: 600; }
+        .viz-resource-header {
+            background: #fff; border-radius: 10px; padding: 1rem 2rem;
+            margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+            border-left: 4px solid #3498db;
+        }
+        .viz-resource-label {
+            font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 1px; color: #3498db; font-weight: 600;
+        }
         .viz-resource-name { margin: 0.2rem 0 0; color: #2c3e50; font-size: 1.5rem; }
         .viz-resource-desc { margin: 0.3rem 0 0; color: #7f8c8d; font-size: 0.9rem; }
         /* Barre de recherche dans le header */
@@ -187,9 +217,14 @@ $current_resource_id = $resource_id ?? 'null';
 </head>
 <body>
 <header class="top-menu">
-    <div class="logo"><a href="<?= BASE_URL ?>/resources" style="text-decoration:none;color:inherit;"><h1>StudTraj</h1></a></div>
+    <div class="logo">
+        <a href="<?= BASE_URL ?>/resources" style="text-decoration:none;color:inherit;">
+            <h1>StudTraj</h1>
+        </a>
+    </div>
     <div class="header-search">
-        <input type="text" id="resourceSearchInput" placeholder="Rechercher un TP ou un étudiant par mot-clé…" autocomplete="off" />
+        <input type="text" id="resourceSearchInput"
+               placeholder="Rechercher un TP ou un étudiant par mot-clé…" autocomplete="off" />
         <button id="resourceClearBtn" title="Effacer">&#x2715;</button>
         <div id="resourceSearchResults">
             <strong id="rsr-label"></strong>
@@ -268,13 +303,17 @@ $current_resource_id = $resource_id ?? 'null';
         <span class="close" onclick="closeImportModal()">&times;</span>
         <h2>Importer des données JSON</h2>
         <div class="import-tabs">
-            <button class="import-tab active" onclick="switchImportTab('exercises')" data-tab="exercises">Exercices de TP</button>
-            <button class="import-tab" onclick="switchImportTab('attempts')" data-tab="attempts">Tentatives d'élèves</button>
+            <button class="import-tab active"
+                    onclick="switchImportTab('exercises')" data-tab="exercises">Exercices de TP</button>
+            <button class="import-tab"
+                    onclick="switchImportTab('attempts')" data-tab="attempts">Tentatives d'élèves</button>
         </div>
         <div id="exercisesTab" class="import-tab-content active">
             <div class="import-zone" id="exercisesDropZone">
-                <input type="file" id="exercisesFileInput" accept=".json" style="display:none;" onchange="handleFileSelect(event, 'exercises')">
-                <div class="drop-zone-content" onclick="document.getElementById('exercisesFileInput').click()">
+                <input type="file" id="exercisesFileInput" accept=".json"
+                       style="display:none;" onchange="handleFileSelect(event, 'exercises')">
+                <div class="drop-zone-content"
+                     onclick="document.getElementById('exercisesFileInput').click()">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
@@ -292,8 +331,10 @@ $current_resource_id = $resource_id ?? 'null';
         </div>
         <div id="attemptsTab" class="import-tab-content">
             <div class="import-zone" id="attemptsDropZone">
-                <input type="file" id="attemptsFileInput" accept=".json" style="display:none;" onchange="handleFileSelect(event, 'attempts')">
-                <div class="drop-zone-content" onclick="document.getElementById('attemptsFileInput').click()">
+                <input type="file" id="attemptsFileInput" accept=".json"
+                       style="display:none;" onchange="handleFileSelect(event, 'attempts')">
+                <div class="drop-zone-content"
+                     onclick="document.getElementById('attemptsFileInput').click()">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
@@ -385,8 +426,10 @@ $current_resource_id = $resource_id ?? 'null';
 
         try {
             var [respEx, respSt] = await Promise.all([
-                fetch(BASE + '/api/dashboard/exercises' + (RID ? '?resource_id=' + RID : '')).then(r => r.json()),
-                fetch(BASE + '/api/dashboard/students?page=1&perPage=100000' + (RID ? '&resource_id=' + RID : '')).then(r => r.json())
+                fetch(BASE + '/api/dashboard/exercises'
+                    + (RID ? '?resource_id=' + RID : '')).then(r => r.json()),
+                fetch(BASE + '/api/dashboard/students?page=1&perPage=100000'
+                    + (RID ? '&resource_id=' + RID : '')).then(r => r.json())
             ]);
 
             var exercises = (respEx.data && respEx.data.exercises) ? respEx.data.exercises : [];

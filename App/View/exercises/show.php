@@ -108,7 +108,8 @@ $title = 'StudTraj - ' . $exoTitle;
                 <?php endif; ?>
                 <li style="padding:8px 0;">
                     <strong>Ressource :</strong>
-                    <a href="<?= BASE_URL ?>/index.php?action=resource_details&id=<?= (int)$exercise->getResourceId() ?>">
+                    <a href="<?= BASE_URL ?>/index.php?action=resource_details
+                        &id=<?= (int)$exercise->getResourceId() ?>">
                         Voir la ressource associée
                     </a>
                 </li>

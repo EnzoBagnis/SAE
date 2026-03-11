@@ -22,4 +22,3 @@ interface ExerciseListReaderPort
      */
     public function findAllWithAttempts(?int $resourceId = null): array;
 }
-

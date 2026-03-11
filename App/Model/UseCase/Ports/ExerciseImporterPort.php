@@ -50,5 +50,11 @@ interface ExerciseImporterPort extends ExerciseFinderPort
      * @param string|null $hash         Original hash from source JSON (optional).
      * @return int The new exercise ID.
      */
-    public function insertExercice(int $ressourceId, string $exerciceName, string $extention, string $date, ?string $hash = null): int;
+    public function insertExercice(
+        int $ressourceId,
+        string $exerciceName,
+        string $extention,
+        string $date,
+        ?string $hash = null
+    ): int;
 }

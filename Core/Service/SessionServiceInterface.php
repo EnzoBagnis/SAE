@@ -63,4 +63,3 @@ interface SessionServiceInterface
      */
     public function regenerate(): void;
 }
-

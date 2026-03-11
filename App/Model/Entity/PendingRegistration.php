@@ -152,4 +152,3 @@ class PendingRegistration
         return $this->firstName . ' ' . $this->lastName;
     }
 }
-

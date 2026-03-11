@@ -277,4 +277,3 @@ abstract class AbstractRepository
      */
     abstract protected function getEntityClass(): string;
 }
-

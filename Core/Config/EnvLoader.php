@@ -28,7 +28,10 @@ class EnvLoader
 
         if (!file_exists($envPath)) {
             // Affichage direct de l'erreur pour débogage immédiat
-            die("CRITICAL: Fichier .env introuvable. Chemin testé : " . realpath($envPath) . " (Brut: " . $envPath . ")");
+            die(
+                "CRITICAL: Fichier .env introuvable. Chemin testé : "
+                . realpath($envPath) . " (Brut: " . $envPath . ")"
+            );
         }
 
         // Use parse_ini_file to parse the .env file
@@ -103,4 +106,3 @@ class EnvLoader
         self::$config[$key] = $value;
     }
 }
-

@@ -5,7 +5,6 @@
  * Initializes autoloader and configuration
  */
 
-
 // Define base path
 define('BASE_PATH', __DIR__ . '/..');
 
@@ -107,4 +106,3 @@ if (!defined('BASE_URL')) {
     }
     define('BASE_URL', rtrim($baseUrl, '/'));
 }
-

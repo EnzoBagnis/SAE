@@ -1,4 +1,8 @@
-<?php if (!defined('BASE_URL')) { define('BASE_URL', ''); } ?>
+<?php
+
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '');
+} ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -11,8 +15,11 @@
 
     <!-- SEO Meta Tags -->
     <title>StudTraj - Plateforme de gestion de trajectoires étudiantes</title>
-    <meta name="description" content="StudTraj est une plateforme innovante de gestion et de suivi des trajectoires étudiantes. Créez votre compte et suivez votre parcours académique facilement.">
-    <meta name="keywords" content="trajectoires étudiantes, gestion étudiants, plateforme éducative, suivi académique, StudTraj">
+    <meta name="description"
+          content="StudTraj est une plateforme innovante de gestion et de suivi des trajectoires étudiantes.
+          Créez votre compte et suivez votre parcours académique facilement.">
+    <meta name="keywords"
+          content="trajectoires étudiantes, gestion étudiants, plateforme éducative, suivi académique, StudTraj">
     <meta name="author" content="StudTraj">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://studtraj.alwaysdata.net/">
@@ -69,8 +76,10 @@
 
         <div class="card" style="text-align: center;">
             <h2>Accédez à votre compte</h2>
-            <button class="btn-submit" onclick="window.location.href='<?= BASE_URL ?>/auth/login'">Se connecter</button>
-            <button class="btn-secondary" onclick="window.location.href='<?= BASE_URL ?>/auth/register'">S'inscrire</button>
+            <button class="btn-submit"
+                    onclick="window.location.href='<?= BASE_URL ?>/auth/login'">Se connecter</button>
+            <button class="btn-secondary"
+                    onclick="window.location.href='<?= BASE_URL ?>/auth/register'">S'inscrire</button>
         </div>
     </div>
 </div>

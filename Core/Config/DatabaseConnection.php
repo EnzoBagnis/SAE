@@ -90,4 +90,3 @@ class DatabaseConnection
         throw new \Exception("Cannot unserialize singleton");
     }
 }
-

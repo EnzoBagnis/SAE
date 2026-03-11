@@ -105,7 +105,10 @@ class DashboardApiController extends AbstractController
             ]);
         } catch (\Throwable $e) {
             error_log('[DashboardApiController::students] ' . $e->__toString());
-            $this->jsonResponse(['success' => false, 'message' => 'Erreur interne lors du chargement des étudiants.'], 500);
+            $this->jsonResponse(
+                ['success' => false, 'message' => 'Erreur interne lors du chargement des étudiants.'],
+                500
+            );
         }
     }
 
@@ -169,7 +172,7 @@ class DashboardApiController extends AbstractController
             $attempts = array_map(fn($r) => [
                 'attempt_id'   => (int) $r['attempt_id'],
                 'exercice_id'  => (int) $r['exercice_id'],
-                'exercice_name'=> $r['exercice_name'] ?? '',
+                'exercice_name' => $r['exercice_name'] ?? '',
                 'correct'      => (bool) $r['correct'],
                 'eval_set'     => $r['eval_set'] ?? '',
                 'upload'       => $r['upload'] ?? '',
@@ -196,7 +199,10 @@ class DashboardApiController extends AbstractController
             ]);
         } catch (\Throwable $e) {
             error_log('[DashboardApiController::student] ' . $e->__toString());
-            $this->jsonResponse(['success' => false, 'message' => 'Erreur interne lors du chargement de l\'étudiant.'], 500);
+            $this->jsonResponse(
+                ['success' => false, 'message' => 'Erreur interne lors du chargement de l\'étudiant.'],
+                500
+            );
         }
     }
 
@@ -331,7 +337,10 @@ class DashboardApiController extends AbstractController
             ]);
         } catch (\Throwable $e) {
             error_log('[DashboardApiController::exercises] ' . $e->__toString());
-            $this->jsonResponse(['success' => false, 'message' => 'Erreur interne lors du chargement des exercices.'], 500);
+            $this->jsonResponse(
+                ['success' => false, 'message' => 'Erreur interne lors du chargement des exercices.'],
+                500
+            );
         }
     }
 
@@ -398,8 +407,10 @@ class DashboardApiController extends AbstractController
             $this->jsonResponse(['success' => true, 'data' => $stats]);
         } catch (\Throwable $e) {
             error_log('[DashboardApiController::studentsStats] ' . $e->__toString());
-            $this->jsonResponse(['success' => false, 'message' => 'Erreur interne lors du calcul des statistiques.'], 500);
+            $this->jsonResponse(
+                ['success' => false, 'message' => 'Erreur interne lors du calcul des statistiques.'],
+                500
+            );
         }
     }
 }
-
