@@ -108,10 +108,10 @@ export class AttemptsRenderer {
         // Extraire les exercices uniques des tentatives avec leurs informations
         const uniqueExercises = new Map();
         attempts.forEach(attempt => {
-            if (attempt.exercise_id && attempt.funcname) {
-                uniqueExercises.set(attempt.exercise_id, {
-                    funcname: attempt.funcname
-                });
+            const exId = attempt.exercice_id || attempt.exercise_id;
+            const exName = attempt.funcname || attempt.exo_name || attempt.exercice_name || attempt.exercise_name;
+            if (exId && exName) {
+                uniqueExercises.set(exId, { funcname: exName });
             }
         });
 
@@ -187,7 +187,8 @@ export class AttemptsRenderer {
 
             // Filtre par exercice
             if (this.currentExerciseFilter !== 'all') {
-                if (String(attempt.exercise_id) !== String(this.currentExerciseFilter)) {
+                const aId = attempt.exercice_id || attempt.exercise_id;
+                if (String(aId) !== String(this.currentExerciseFilter)) {
                     return false;
                 }
             }
@@ -332,7 +333,7 @@ export class AttemptsRenderer {
                 minute: '2-digit'
             }) : 'Date inconnue';
 
-        const exerciseName = attempt.funcname || attempt.exo_name || 'Exercice inconnu';
+        const exerciseName = attempt.funcname || attempt.exo_name || attempt.exercice_name || attempt.exercise_name || 'Exercice inconnu';
         metaInfo.innerHTML = `📅 ${dateStr} | 📝 <strong>${exerciseName}</strong>`;
 
         attemptInfo.appendChild(attemptNumber);
@@ -382,9 +383,9 @@ export class AttemptsRenderer {
         table.style.marginTop = '1rem';
 
         const details = [
-            { label: 'Extension', value: attempt.extension || 'N/A' },
+            { label: 'Extension', value: attempt.extention || attempt.extension || 'N/A' },
             { label: 'Eval Set', value: attempt.eval_set || 'N/A' },
-            { label: 'Ressource', value: attempt.resource_name || 'N/A' }
+            { label: 'Exercice', value: attempt.funcname || attempt.exo_name || attempt.exercice_name || attempt.exercise_name || 'N/A' }
         ];
 
         details.forEach(detail => {

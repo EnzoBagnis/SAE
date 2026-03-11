@@ -484,9 +484,31 @@ const DetailedCharts = (function() {
             .value(d => d.value)
             .sort(null);
 
-        const arc = d3.arc()
-            .innerRadius(radius * 0.5)
-            .outerRadius(radius);
+        const arc       = d3.arc().innerRadius(radius * 0.5).outerRadius(radius);
+        const arcHover  = d3.arc().innerRadius(radius * 0.5).outerRadius(radius * 1.12);
+        const arcShrink = d3.arc().innerRadius(radius * 0.5).outerRadius(radius * 0.90);
+
+        // Total calculé tôt pour usage dans le tooltip
+        const totalFromData = data.reduce((sum, d) => sum + d.value, 0);
+
+        // Tooltip
+        d3.select('.dc-donut-tooltip').remove();
+        const tooltip = d3.select('body').append('div')
+            .attr('class', 'dc-donut-tooltip')
+            .style('position', 'absolute')
+            .style('visibility', 'hidden')
+            .style('background', 'rgba(15,15,15,0.93)')
+            .style('color', '#fff')
+            .style('padding', '10px 14px')
+            .style('border-radius', '6px')
+            .style('font-size', '12px')
+            .style('font-family', 'system-ui, sans-serif')
+            .style('pointer-events', 'none')
+            .style('z-index', '9999')
+            .style('min-width', '150px')
+            .style('line-height', '1.5')
+            .style('box-shadow', '0 4px 16px rgba(0,0,0,0.5)')
+            .style('border-left', '3px solid #ccc');
 
         const arcs = svg.selectAll('.arc')
             .data(pie(data))
@@ -494,19 +516,26 @@ const DetailedCharts = (function() {
             .append('g')
             .attr('class', 'arc');
 
-        arcs.append('path')
+        const arcPaths = arcs.append('path')
             .attr('d', arc)
             .attr('fill', d => d.data.color)
             .attr('stroke', 'white')
             .attr('stroke-width', 2)
             .style('cursor', 'pointer')
             .on('mouseover', function(event, d) {
-                d3.select(this).transition().duration(200)
-                    .attr('d', d3.arc().innerRadius(radius * 0.5).outerRadius(radius * 1.1));
+                arcPaths.transition().duration(200).attr('d', function(pd) {
+                    return pd === d ? arcHover(pd) : arcShrink(pd);
+                });
+                const pct = totalFromData > 0 ? ((d.data.value / totalFromData) * 100).toFixed(1) : 0;
+                tooltip
+                    .style('visibility', 'visible')
+                    .style('border-left', `3px solid ${d.data.color}`)
+                    .html(`<strong style="color:${d.data.color}">${d.data.label}</strong><br>${d.data.value} tentatives<br>${pct}%`);
             })
+            .on('mousemove', event => tooltip.style('top', (event.pageY - 40) + 'px').style('left', (event.pageX + 12) + 'px'))
             .on('mouseout', function() {
-                d3.select(this).transition().duration(200)
-                    .attr('d', arc);
+                arcPaths.transition().duration(200).attr('d', arc);
+                tooltip.style('visibility', 'hidden');
             });
 
         arcs.append('text')
@@ -517,15 +546,7 @@ const DetailedCharts = (function() {
             .style('fill', 'white')
             .text(d => d.data.value > 0 ? d.data.value : '');
 
-        // Legend with percentages - positioned bottom left with absolute coordinates
-        // Calculate total from actual data values, not from stats.total_attempts
-        const totalFromData = data.reduce((sum, d) => sum + d.value, 0);
-
-        console.log('📊 Legend calculation:', {
-            data: data,
-            totalFromData: totalFromData,
-            statsTotal: totalAttempts
-        });
+        // Legend with percentages
 
         const legend = svg.selectAll('.legend')
             .data(data)
