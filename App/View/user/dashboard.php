@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿<?php
+﻿﻿﻿﻿﻿﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -55,13 +55,45 @@ $current_resource_id = $resource_id ?? 'null';
         /* Breadcrumb */
         .viz-breadcrumb {
             display: flex; align-items: center; flex-wrap: wrap;
-            gap: 2px; padding: 0.5rem 0 1rem;
+            gap: 6px; padding: 0.5rem 0 1rem;
             font-size: 0.9rem; color: #7f8c8d;
         }
-        .viz-bc-btn { background: none; border: none; color: #3498db; cursor: pointer; font-size: 0.9rem; padding: 0; text-decoration: underline; }
-        .viz-bc-btn:hover { color: #2980b9; }
-        .viz-bc-sep { color: #bdc3c7; }
-        .viz-bc-current { color: #2c3e50; font-weight: 600; }
+        .viz-bc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            box-shadow: 0 2px 6px rgba(52,152,219,0.35);
+            transition: all 0.2s ease;
+        }
+        .viz-bc-btn::before { content: '🏠'; font-size: 0.8rem; }
+        .viz-bc-btn:hover {
+            background: linear-gradient(135deg, #2980b9, #1f6aa5);
+            box-shadow: 0 4px 10px rgba(52,152,219,0.5);
+            transform: translateY(-1px);
+        }
+        .viz-bc-btn:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(52,152,219,0.3); }
+        .viz-bc-sep { color: #bdc3c7; font-size: 1rem; }
+        .viz-bc-current {
+            display: inline-flex;
+            align-items: center;
+            color: #2c3e50;
+            font-weight: 600;
+            background: #f0f2f5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            border: 1px solid #dde1e7;
+        }
         /* Titres et hints */
         .viz-title { color: #2c3e50; margin: 0 0 0.5rem; font-size: 1.4rem; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
         .viz-hint { color: #7f8c8d; font-size: 0.88rem; margin: 0 0 1.5rem; }
