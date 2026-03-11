@@ -142,6 +142,10 @@ $current_resource_id = $resource_id ?? 'null';
 <body>
 <header class="top-menu">
     <div class="logo"><a href="<?= BASE_URL ?>/resources" style="text-decoration:none;color:inherit;"><h1>StudTraj</h1></a></div>
+    <div class="header-search">
+        <input type="text" id="resourceSearchInput" placeholder="Rechercher un TP ou un étudiant par mot-clé…" autocomplete="off" />
+        <button id="resourceClearBtn" title="Effacer">&#x2715;</button>
+    </div>
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
     </button>
@@ -202,27 +206,10 @@ $current_resource_id = $resource_id ?? 'null';
     </div>
     <?php endif; ?>
 
-    <!-- ── Barre de recherche générale ── -->
-    <div style="background:#fff;border-radius:10px;padding:14px 20px;margin-bottom:1rem;
-                box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <input type="text" id="resourceSearchInput"
-               placeholder="Rechercher un TP ou un étudiant par mot-clé…"
-               style="flex:1;min-width:200px;padding:8px 10px;border:1px solid #ddd;
-                      border-radius:4px;font-size:.9em;" />
-        <button id="resourceClearBtn"
-                style="padding:8px 14px;border-radius:4px;border:1px solid #ddd;
-                       background:#f5f5f5;font-size:.9em;cursor:pointer;">
-            Effacer
-        </button>
-    </div>
     <!-- Résultats de recherche -->
-    <div id="resourceSearchResults"
-         style="background:#fff;border-radius:10px;padding:14px 20px;margin-bottom:1rem;
-    <!-- Barre de recherche -->
     <div id="resourceSearchResults" style="display:none;background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:8px;margin-bottom:8px;">
         <strong id="rsr-label" style="font-size:.85rem;color:#555;"></strong>
-        <ul id="rsr-list"
-            style="list-style:none;padding:0;margin:0;max-height:280px;overflow-y:auto;"></ul>
+        <ul id="rsr-list" style="list-style:none;padding:0;margin:0;max-height:280px;overflow-y:auto;"></ul>
     </div>
 
     <div class="viz-data-zone">
