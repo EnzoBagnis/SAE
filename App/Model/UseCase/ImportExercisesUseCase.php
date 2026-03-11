@@ -78,7 +78,8 @@ class ImportExercisesUseCase
 
         foreach ($exercises as $index => $item) {
             try {
-                // Capturer le nom brut tel qu'il arrive (peut être un hash)
+                // L'identifiant unique est l'exo_name (hash MD5 du TP source)
+                // Plusieurs exercices peuvent avoir le même funcname mais des hashs différents (exercices de TPs différents)
                 $rawName = trim(
                     $item['exercice_name']
                     ?? $item['exercise_name']
@@ -91,7 +92,7 @@ class ImportExercisesUseCase
                 // Garder le hash original si c'est bien un hash MD5
                 $originalHash = $this->isMd5Hash($rawName) ? $rawName : null;
 
-                // Résoudre le vrai nom lisible
+                // Résoudre le vrai nom lisible depuis funcname ou upload
                 if ($originalHash !== null) {
                     if (!empty($item['funcname'])) {
                         $rawName = trim($item['funcname']);
@@ -100,9 +101,6 @@ class ImportExercisesUseCase
                         if ($funcName !== null) {
                             $rawName = $funcName;
                         }
-                    }
-                    if ($this->isMd5Hash($rawName) && !empty($item['funcname'])) {
-                        $rawName = trim($item['funcname']);
                     }
                 } elseif (!empty($item['funcname']) && $rawName === '') {
                     $rawName = trim($item['funcname']);
@@ -121,24 +119,27 @@ class ImportExercisesUseCase
                     $date = date('Y-m-d');
                 }
 
-                $nameLower = mb_strtolower($exerciceName);
-
-                // Doublon dans le JSON lui-même (même nom déjà traité dans ce batch) ?
-                if (isset($seenNames[$nameLower])) {
-                    $skipped++;
-                    continue;
-                }
+                // Éviter les doublons de hash dans ce même batch (même hash = même exercice)
                 if ($originalHash !== null && isset($seenHashes[$originalHash])) {
                     $skipped++;
                     continue;
                 }
 
-                // 1. Chercher par nom en BDD
-                $existing = $this->exerciseRepository->findByRessourceIdAndName($ressourceId, $exerciceName);
-
-                // 2. Si pas trouvé par nom et qu'on a un hash, chercher par hash en BDD
-                if ($existing === null && $originalHash !== null) {
+                // 1. Chercher par hash en BDD (priorité absolue — le hash est l'identifiant unique)
+                $existing = null;
+                if ($originalHash !== null) {
                     $existing = $this->exerciseRepository->findByRessourceIdAndHash($ressourceId, $originalHash);
+                }
+
+                // 2. Si pas de hash (exercice sans exo_name), chercher par nom
+                if ($existing === null && $originalHash === null) {
+                    $existing = $this->exerciseRepository->findByRessourceIdAndName($ressourceId, $exerciceName);
+                    // Doublon de nom dans ce batch sans hash
+                    $nameLower = mb_strtolower($exerciceName);
+                    if (isset($seenNames[$nameLower])) {
+                        $skipped++;
+                        continue;
+                    }
                 }
 
                 if ($existing !== null) {
@@ -147,10 +148,10 @@ class ImportExercisesUseCase
                         $extention,
                         $date
                     );
-                    if ($originalHash !== null && mb_strtolower($existing->getExoName()) !== $nameLower) {
+                    // Mettre à jour le nom si le nom stocké est encore un hash
+                    if ($this->isMd5Hash($existing->getExoName()) && !$this->isMd5Hash($exerciceName)) {
                         $this->exerciseRepository->updateName($existing->getExerciseId(), $exerciceName);
                     }
-                    $seenNames[$nameLower] = $existing->getExerciseId();
                     if ($originalHash !== null) {
                         $seenHashes[$originalHash] = $existing->getExerciseId();
                     }
@@ -159,9 +160,11 @@ class ImportExercisesUseCase
                     $newId = $this->exerciseRepository->insertExercice(
                         $ressourceId, $exerciceName, $extention, $date, $originalHash
                     );
-                    $seenNames[$nameLower] = $newId;
                     if ($originalHash !== null) {
                         $seenHashes[$originalHash] = $newId;
+                    } else {
+                        $nameLower = mb_strtolower($exerciceName);
+                        $seenNames[$nameLower] = $newId;
                     }
                     $inserted++;
                 }
