@@ -292,55 +292,59 @@ const IaViz = (function () {
         const nClusters = data.n_clusters || 8;
         const traces = [];
 
-        // ── Palette moderne cohérente avec le reste de l'UI ──
+        // ── Palette de couleurs par cluster ──
         const PALETTE = [
             '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
             '#1abc9c', '#e67e22', '#34495e', '#d35400', '#16a085'
         ];
-        const APP_FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif";
 
-        // ── Opacités par défaut (visibilité améliorée) ──
-        const DIM_OPACITY = 0.65;
-        const DIM_LINE_WIDTH = 1.5;
-
-        // ── Calcul des statistiques par cluster ──
+        // ══════════════════════════════════════════════════════════════
+        //  LOGIQUE 1 — Statistiques par cluster + nommage sémantique
+        // ══════════════════════════════════════════════════════════════
         const clusterStats = {};
-        points.forEach(p => {
-            const c = p.cluster;
-            if (!clusterStats[c]) clusterStats[c] = { total: 0, correct: 0 };
-            clusterStats[c].total++;
-            if (p.correct) clusterStats[c].correct++;
+        points.forEach(point => {
+            const cl = point.cluster;
+            if (!clusterStats[cl]) {
+                clusterStats[cl] = { total: 0, corrects: 0 };
+            }
+            clusterStats[cl].total++;
+            if (point.correct == 1) clusterStats[cl].corrects++;
         });
 
-        // --- 1) Points colorés par cluster avec légende intelligente ---
+        const getClusterName = (clusterId) => {
+            const stats = clusterStats[clusterId];
+            if (!stats) return `Groupe ${clusterId}`;
+            const isSuccess = (stats.corrects / stats.total) > 0.5;
+            return isSuccess
+                ? `✨ Solutions validées (${stats.total} pts)`
+                : `Erreurs / Stratégie ${clusterId} (${stats.total} pts)`;
+        };
+
+        // ══════════════════════════════════════════════════════════════
+        //  LOGIQUE 2 — Traces avec GROS points et lignes épaisses
+        // ══════════════════════════════════════════════════════════════
         for (let c = 0; c < nClusters; c++) {
             const clusterPts = points.filter(p => p.cluster === c);
             if (clusterPts.length === 0) continue;
 
             const col = PALETTE[c % PALETTE.length];
-            const stats = clusterStats[c] || { total: 0, correct: 0 };
-            const successRate = stats.total > 0 ? (stats.correct / stats.total) : 0;
-
-            // Nom intelligent de la légende
-            const clusterLabel = successRate > 0.5
-                ? `Cluster ${c} : Solutions validées (${stats.total} tentatives)`
-                : `Cluster ${c} : Stratégie alternative (${stats.total} tentatives)`;
 
             traces.push({
                 x: clusterPts.map(p => p.x),
                 y: clusterPts.map(p => p.y),
-                mode: 'markers',
+                mode: 'lines+markers',
                 type: 'scatter',
-                name: clusterLabel,
+                name: getClusterName(c),
+                line: {
+                    width: 2.5,
+                    color: 'rgba(150, 150, 150, 0.4)',
+                },
                 marker: {
-                    size: clusterPts.map(p => p.correct ? 14 : 8),
+                    size: 10,
                     color: col,
-                    opacity: DIM_OPACITY,
-                    line: {
-                        width: clusterPts.map(p => p.correct ? 2.5 : 1),
-                        color: clusterPts.map(p => p.correct ? '#FFD700' : 'rgba(255,255,255,0.6)'),
-                    },
+                    opacity: 0.9,
                     symbol: clusterPts.map(p => p.correct ? 'star' : 'circle'),
+                    line: { width: 1, color: '#ffffff' },
                 },
                 hoverinfo: 'text',
                 text: clusterPts.map(p => {
@@ -358,15 +362,14 @@ const IaViz = (function () {
                 hoverlabel: {
                     bgcolor: '#2c3e50',
                     bordercolor: '#ecf0f1',
-                    font: { color: '#fff', size: 12, family: APP_FONT },
+                    font: { color: '#fff', size: 13, family: 'sans-serif' },
                 },
             });
         }
 
-        // Nombre de traces de clusters (pour identifier les traces trajectoires ensuite)
         const nClusterTraces = traces.length;
 
-        // --- 2) Trajectoires par étudiant (lignes avec flèches) ---
+        // --- Trajectoires par étudiant (lignes dédiées avec flèches) ---
         const showTrajectories = document.getElementById('microShowTrajectories')?.checked !== false;
         const trajectoryAnnotations = [];
 
@@ -395,7 +398,7 @@ const IaViz = (function () {
                 });
 
                 const colTemplate = trajColors[colIdx % trajColors.length];
-                const dimCol = colTemplate.replace('{a}', String(DIM_OPACITY * 0.6));
+                const dimCol = colTemplate.replace('{a}', '0.45');
                 colIdx++;
 
                 traces.push({
@@ -406,7 +409,7 @@ const IaViz = (function () {
                     name: `Traj. ${userId}`,
                     line: {
                         color: dimCol,
-                        width: DIM_LINE_WIDTH,
+                        width: 2.5,
                         dash: 'dot',
                     },
                     hoverinfo: 'skip',
@@ -416,7 +419,6 @@ const IaViz = (function () {
                     _colTemplate: colTemplate,
                 });
 
-                // Flèches (annotations) du point N-1 vers N
                 for (let i = 0; i < userPts.length - 1; i++) {
                     const fromPt = userPts[i];
                     const toPt = userPts[i + 1];
@@ -437,11 +439,11 @@ const IaViz = (function () {
                         showarrow: true,
                         arrowhead: 3,
                         arrowsize: 1.4,
-                        arrowwidth: DIM_LINE_WIDTH,
-                        arrowcolor: colTemplate.replace('{a}', String(DIM_OPACITY * 0.5)),
+                        arrowwidth: 2,
+                        arrowcolor: colTemplate.replace('{a}', '0.35'),
                         standoff: 5,
                         startstandoff: 5,
-                        opacity: DIM_OPACITY * 0.6,
+                        opacity: 0.5,
                         _userId: userId,
                         _colTemplate: colTemplate,
                     });
@@ -449,51 +451,24 @@ const IaViz = (function () {
             });
         }
 
-        const exName = data.exercise_name || '';
+        // ══════════════════════════════════════════════════════════════
+        //  LOGIQUE 3 — Layout nettoyé (fond transparent, sans grille)
+        // ══════════════════════════════════════════════════════════════
         const layout = {
-            title: {
-                text: `Vue Micro — ${exName}<br><sup>${data.n_points} tentatives, ${nClusters} clusters · Survolez un point pour isoler la trajectoire</sup>`,
-                font: { size: 15, color: '#2c3e50', family: APP_FONT },
-            },
-            xaxis: {
-                title: { text: 't-SNE dim. 1', font: { family: APP_FONT, size: 12, color: '#7f8c8d' } },
-                zeroline: false,
-                showgrid: true,
-                gridcolor: 'rgba(189,195,199,0.25)',
-                gridwidth: 1,
-                showline: false,
-            },
-            yaxis: {
-                title: { text: 't-SNE dim. 2', font: { family: APP_FONT, size: 12, color: '#7f8c8d' } },
-                zeroline: false,
-                showgrid: true,
-                gridcolor: 'rgba(189,195,199,0.25)',
-                gridwidth: 1,
-                showline: false,
-            },
-            font: { family: APP_FONT },
+            title: "Trajectoires d'apprentissage des étudiants",
             hovermode: 'closest',
-            plot_bgcolor: 'rgba(0,0,0,0)',
             paper_bgcolor: 'rgba(0,0,0,0)',
-            margin: { t: 80, b: 60, l: 60, r: 30 },
-            legend: {
-                orientation: 'h',
-                y: -0.22,
-                x: 0.5,
-                xanchor: 'center',
-                font: { size: 11, color: '#2c3e50', family: APP_FONT },
-                bgcolor: 'rgba(255,255,255,0.7)',
-                bordercolor: 'rgba(189,195,199,0.3)',
-                borderwidth: 1,
-            },
-            showlegend: true,
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            xaxis: { showgrid: false, zeroline: false, showticklabels: false },
+            yaxis: { showgrid: false, zeroline: false, showticklabels: false },
+            legend: { itemsizing: 'constant', font: { size: 14 } },
+            margin: { t: 60, b: 40, l: 30, r: 30 },
             annotations: trajectoryAnnotations.length > 300
                 ? trajectoryAnnotations.slice(0, 300)
                 : trajectoryAnnotations,
         };
 
         Plotly.newPlot(container, traces, layout, { responsive: true }).then(() => {
-            // ── Hover Focus : surbrillance de la trajectoire de l'utilisateur survolé ──
             container.on('plotly_hover', function (evtData) {
                 if (!evtData || !evtData.points || evtData.points.length === 0) return;
                 const pt = evtData.points[0];
@@ -518,7 +493,7 @@ const IaViz = (function () {
                 `<span class="meta-item"><strong>${nClusters}</strong> clusters</span>` +
                 `<span class="meta-item"><strong>${uniqueStudents}</strong> étudiants</span>` +
                 `<span class="meta-item">✅ <strong>${correctCount}</strong> réussies (★ = réussite)</span>` +
-                `<span class="meta-item">Exercice : <strong>${_esc(exName)}</strong></span>`;
+                `<span class="meta-item">Exercice : <strong>${_esc(data.exercise_name || '')}</strong></span>`;
         }
     }
 
@@ -526,105 +501,86 @@ const IaViz = (function () {
      * Met en surbrillance la trajectoire d'un utilisateur donné.
      */
     function _highlightUser(container, traces, nClusterTraces, userId, annotations, layout) {
-        const DIM_OPACITY = 0.08;
-        const BRIGHT_OPACITY = 1.0;
+        const FADED = 0.12;
+        const BRIGHT = 1.0;
 
-        const update = {};
-
-        // Mise à jour des traces de clusters (points)
+        // Points de clusters
         for (let i = 0; i < nClusterTraces; i++) {
             const trace = traces[i];
             if (!trace.customdata) continue;
-            const opacities = trace.customdata.map(uid => uid === userId ? BRIGHT_OPACITY : DIM_OPACITY);
-            const sizes = [];
-            // Recalculer les tailles : en surbrillance les points sont plus gros
-            if (trace.marker && trace.marker.symbol) {
-                for (let j = 0; j < trace.customdata.length; j++) {
-                    const isHovered = trace.customdata[j] === userId;
-                    const isStar = trace.marker.symbol[j] === 'star';
-                    if (isHovered) {
-                        sizes.push(isStar ? 18 : 11);
-                    } else {
-                        sizes.push(isStar ? 14 : 8);
-                    }
-                }
-            }
-            update['marker.opacity'] = opacities;
-            if (sizes.length > 0) update['marker.size'] = sizes;
-            Plotly.restyle(container, update, [i]);
+            const opacities = trace.customdata.map(uid => uid === userId ? BRIGHT : FADED);
+            const sizes = trace.customdata.map(uid => uid === userId ? 16 : 10);
+            Plotly.restyle(container, {
+                'marker.opacity': opacities,
+                'marker.size': sizes,
+            }, [i]);
         }
 
-        // Mise à jour des traces de trajectoires (lignes)
+        // Trajectoires (lignes)
         for (let i = nClusterTraces; i < traces.length; i++) {
             const trace = traces[i];
             const isHighlighted = trace._userId === userId;
             Plotly.restyle(container, {
                 'line.color': isHighlighted
-                    ? trace._colTemplate.replace('{a}', '0.9')
-                    : trace._colTemplate.replace('{a}', String(DIM_OPACITY)),
-                'line.width': isHighlighted ? 3 : 0.5,
+                    ? trace._colTemplate.replace('{a}', '0.95')
+                    : trace._colTemplate.replace('{a}', '0.06'),
+                'line.width': isHighlighted ? 4 : 0.5,
                 'line.dash': isHighlighted ? 'solid' : 'dot',
             }, [i]);
         }
 
-        // Mise à jour des annotations (flèches)
+        // Annotations (flèches)
         if (annotations.length > 0) {
-            const updatedAnnotations = annotations.map(ann => {
-                const isHighlighted = ann._userId === userId;
+            const updated = annotations.map(ann => {
+                const isH = ann._userId === userId;
                 return Object.assign({}, ann, {
-                    arrowcolor: ann._colTemplate.replace('{a}', isHighlighted ? '0.9' : String(DIM_OPACITY)),
-                    arrowwidth: isHighlighted ? 2.5 : 0.8,
-                    opacity: isHighlighted ? 1.0 : DIM_OPACITY,
+                    arrowcolor: ann._colTemplate.replace('{a}', isH ? '0.95' : '0.06'),
+                    arrowwidth: isH ? 3 : 0.5,
+                    opacity: isH ? 1.0 : 0.06,
                 });
             });
-            const limited = updatedAnnotations.length > 300 ? updatedAnnotations.slice(0, 300) : updatedAnnotations;
-            Plotly.relayout(container, { annotations: limited });
+            Plotly.relayout(container, {
+                annotations: updated.length > 300 ? updated.slice(0, 300) : updated,
+            });
         }
     }
 
     /**
-     * Réinitialise toutes les opacités (état par défaut : visible).
+     * Réinitialise toutes les opacités (état par défaut : bien visible).
      */
     function _resetHighlight(container, traces, nClusterTraces, annotations, layout) {
-        const DIM_OPACITY = 0.65;
-        const DIM_LINE_WIDTH = 1.5;
-
-        // Reset des points de clusters
+        // Points de clusters → retour à opacity 0.9, size 10
         for (let i = 0; i < nClusterTraces; i++) {
             const trace = traces[i];
             if (!trace.customdata) continue;
-            const opacities = trace.customdata.map(() => DIM_OPACITY);
-            const sizes = [];
-            if (trace.marker && trace.marker.symbol) {
-                for (let j = 0; j < trace.customdata.length; j++) {
-                    const isStar = trace.marker.symbol[j] === 'star';
-                    sizes.push(isStar ? 14 : 8);
-                }
-            }
-            const update = { 'marker.opacity': opacities };
-            if (sizes.length > 0) update['marker.size'] = sizes;
-            Plotly.restyle(container, update, [i]);
+            const opacities = trace.customdata.map(() => 0.9);
+            const sizes = trace.customdata.map(() => 10);
+            Plotly.restyle(container, {
+                'marker.opacity': opacities,
+                'marker.size': sizes,
+            }, [i]);
         }
 
-        // Reset des lignes de trajectoires
+        // Trajectoires → retour à width 2.5, opacité 0.45
         for (let i = nClusterTraces; i < traces.length; i++) {
             const trace = traces[i];
             Plotly.restyle(container, {
-                'line.color': trace._colTemplate.replace('{a}', String(DIM_OPACITY * 0.6)),
-                'line.width': DIM_LINE_WIDTH,
+                'line.color': trace._colTemplate.replace('{a}', '0.45'),
+                'line.width': 2.5,
                 'line.dash': 'dot',
             }, [i]);
         }
 
-        // Reset des annotations
+        // Annotations → retour à opacité 0.5
         if (annotations.length > 0) {
-            const resetAnnotations = annotations.map(ann => Object.assign({}, ann, {
-                arrowcolor: ann._colTemplate.replace('{a}', String(DIM_OPACITY * 0.5)),
-                arrowwidth: DIM_LINE_WIDTH,
-                opacity: DIM_OPACITY * 0.6,
+            const reset = annotations.map(ann => Object.assign({}, ann, {
+                arrowcolor: ann._colTemplate.replace('{a}', '0.35'),
+                arrowwidth: 2,
+                opacity: 0.5,
             }));
-            const limited = resetAnnotations.length > 300 ? resetAnnotations.slice(0, 300) : resetAnnotations;
-            Plotly.relayout(container, { annotations: limited });
+            Plotly.relayout(container, {
+                annotations: reset.length > 300 ? reset.slice(0, 300) : reset,
+            });
         }
     }
 
