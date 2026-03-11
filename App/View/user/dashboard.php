@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿<?php
+﻿﻿﻿﻿﻿﻿﻿<?php
 if (!defined('BASE_URL')) { define('BASE_URL', ''); }
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
@@ -61,37 +61,37 @@ $current_resource_id = $resource_id ?? 'null';
         .viz-bc-btn {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             background: linear-gradient(135deg, #3498db, #2980b9);
             border: none;
             color: #fff;
             cursor: pointer;
-            font-size: 0.82rem;
+            font-size: 1rem;
             font-weight: 600;
-            padding: 4px 12px;
+            padding: 7px 18px;
             border-radius: 20px;
             text-decoration: none;
             letter-spacing: 0.02em;
             box-shadow: 0 2px 6px rgba(52,152,219,0.35);
             transition: all 0.2s ease;
         }
-        .viz-bc-btn::before { content: '🏠'; font-size: 0.8rem; }
+        .viz-bc-btn::before { content: '🏠'; font-size: 0.95rem; }
         .viz-bc-btn:hover {
             background: linear-gradient(135deg, #2980b9, #1f6aa5);
             box-shadow: 0 4px 10px rgba(52,152,219,0.5);
             transform: translateY(-1px);
         }
         .viz-bc-btn:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(52,152,219,0.3); }
-        .viz-bc-sep { color: #bdc3c7; font-size: 1rem; }
+        .viz-bc-sep { color: #bdc3c7; font-size: 1.1rem; }
         .viz-bc-current {
             display: inline-flex;
             align-items: center;
             color: #2c3e50;
             font-weight: 600;
             background: #f0f2f5;
-            padding: 4px 12px;
+            padding: 7px 18px;
             border-radius: 20px;
-            font-size: 0.82rem;
+            font-size: 1rem;
             border: 1px solid #dde1e7;
         }
         /* Titres et hints */
