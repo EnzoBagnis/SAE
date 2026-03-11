@@ -235,6 +235,8 @@ $current_resource_id = $resource_id ?? 'null';
         <span></span><span></span><span></span>
     </button>
     <nav class="nav-menu">
+        <a href="<?= BASE_URL ?>/resources" class="active">Ressources</a>
+        <a href="<?= BASE_URL ?>/ia">IA</a>
     </nav>
     <div class="header-right">
         <button onclick="openImportModal(<?= $current_resource_id ?>)" class="btn-import-trigger">

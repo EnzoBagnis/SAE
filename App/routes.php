@@ -33,6 +33,17 @@ $router->post('/auth/reset-password', App\Controller\ForgotPasswordController::c
 // Dashboard routes (protected)
 $router->get('/dashboard', App\Controller\DashboardController::class, 'index');
 
+// IA route
+$router->get('/ia', App\Controller\IaController::class, 'index');
+
+// IA API routes (vue Macro / Micro)
+$router->post('/api/ia/macro', App\Controller\IaController::class, 'macro');
+$router->post('/api/ia/micro', App\Controller\IaController::class, 'micro');
+
+// IA API : vérifier si des données AES existent pour une ressource
+$router->get('/api/ia/status', App\Controller\IaController::class, 'status');
+
+
 // Exercise routes
 $router->get('/exercises', App\Controller\ExercisesController::class, 'index');
 $router->get('/exercises/{id}', App\Controller\ExercisesController::class, 'show');
