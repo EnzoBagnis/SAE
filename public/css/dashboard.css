@@ -74,6 +74,16 @@
     color: #3498db;
 }
 
+.logo a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+
+.logo a:hover h1 {
+    color: #ffffff;
+}
+
 .nav-menu {
     display: flex;
     gap: 2rem;

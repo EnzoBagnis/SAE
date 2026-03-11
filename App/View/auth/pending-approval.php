@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="page-wrap">
-        <a href="<?= BASE_URL ?>/index.php" class="back-arrow" title="Retour à l'accueil">
+        <a href="<?= BASE_URL ?>/" class="back-arrow" title="Retour à l'accueil">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
@@ -40,7 +40,7 @@
                 <p style="margin-bottom: 25px;">Vous recevrez un email une fois votre compte activé pour pouvoir vous connecter.</p>
 
                 <div class="actions">
-                    <a href="<?= BASE_URL ?>/index.php?action=login" class="btn btn-primary" style="display: inline-block; text-decoration: none;">Retour à la connexion</a>
+                    <a href="<?= BASE_URL ?>/auth/login" class="btn btn-primary" style="display: inline-block; text-decoration: none;">Retour à la connexion</a>
                 </div>
             </div>
         </div>

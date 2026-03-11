@@ -225,9 +225,21 @@ class User
         return $this->accountStatus;
     }
 
+    /**
+     * Check if user account has been approved by an admin.
+     * account_status = 3 means admin-approved and allowed to log in.
+     *
+     * @return bool True if admin-approved
+     */
+    public function isAdminApproved(): bool
+    {
+        return $this->accountStatus === 3;
+    }
+
     public function setAccountStatus(int $accountStatus): void
     {
         $this->accountStatus = $accountStatus;
-        $this->isVerified = ($accountStatus === 1);
+        // isVerified reflects email verification (status >= 1)
+        $this->isVerified = ($accountStatus >= 1);
     }
 }
