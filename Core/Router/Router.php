@@ -273,4 +273,3 @@ class Router
         return $url;
     }
 }
-

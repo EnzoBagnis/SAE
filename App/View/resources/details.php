@@ -139,7 +139,8 @@ $title = 'StudTraj - ' . $resTitle;
 <header class="top-menu">
     <div class="logo"><h1>StudTraj</h1></div>
     <div class="header-search">
-        <input type="search" id="resourceSearchInput" placeholder="Rechercher un TP ou un étudiant par mot-clé…" autocomplete="off" />
+        <input type="search" id="resourceSearchInput"
+               placeholder="Rechercher un TP ou un étudiant par mot-clé…" autocomplete="off" />
         <button id="clearSearchBtn" title="Effacer">&#x2715;</button>
     </div>
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
@@ -226,13 +227,15 @@ $title = 'StudTraj - ' . $resTitle;
 
         <div id="searchResults" style="margin-bottom:12px;display:none;">
             <!-- Résultats pour les élèves -->
-            <div id="studentsResults" style="display:none;background:#fff;padding:10px;border:1px solid #eee;border-radius:6px;">
+            <div id="studentsResults"
+                 style="display:none;background:#fff;padding:10px;border:1px solid #eee;border-radius:6px;">
                 <strong>Étudiants trouvés :</strong>
                 <ul id="studentsList" style="list-style:none;padding-left:0;margin-top:8px;"></ul>
             </div>
 
             <!-- Message pour exercices (pour conservabilité) -->
-            <div id="exercisesResults" style="display:none;background:#fff;padding:10px;border:1px solid #eee;border-radius:6px;">
+            <div id="exercisesResults"
+                 style="display:none;background:#fff;padding:10px;border:1px solid #eee;border-radius:6px;">
                 <strong>Exercices correspondants :</strong>
                 <ul id="exercisesList" style="list-style:none;padding-left:0;margin-top:8px;"></ul>
             </div>
@@ -247,7 +250,9 @@ $title = 'StudTraj - ' . $resTitle;
                             <?php if ($exercise['total_attempts'] > 0) : ?>
                                 <?php
                                     $rate = $exercise['success_rate'];
-                                    $badgeClass = $rate >= 70 ? 'badge-high' : ($rate >= 40 ? 'badge-mid' : 'badge-low');
+                                    $badgeClass = $rate >= 70
+                                        ? 'badge-high'
+                                        : ($rate >= 40 ? 'badge-mid' : 'badge-low');
                                 ?>
                                 <span class="success-badge <?= $badgeClass ?>">
                                     <?= $rate ?>% de réussite
@@ -264,12 +269,15 @@ $title = 'StudTraj - ' . $resTitle;
                         </p>
                         <?php if ($exercise['total_attempts'] > 0) : ?>
                             <p style="font-size:0.85em; color:#999;">
-                                <?= (int)$exercise['successful_attempts'] ?> / <?= (int)$exercise['total_attempts'] ?> tentatives réussies
+                                <?= (int)$exercise['successful_attempts'] ?>
+                                / <?= (int)$exercise['total_attempts'] ?> tentatives réussies
                             </p>
                         <?php endif; ?>
                     </div>
                     <div class="tp-item-actions">
-                        <a href="<?= BASE_URL ?>/resources/<?= (int)$resource->getResourceId() ?>?open_exercise=<?= (int)$exercise['exercice_id'] ?>&exercise_name=<?= urlencode($exercise['exercice_name'] ?? '') ?>"
+                        <a href="<?= BASE_URL ?>/resources/<?= (int)$resource->getResourceId() ?>
+                            ?open_exercise=<?= (int)$exercise['exercice_id'] ?>
+                            &exercise_name=<?= urlencode($exercise['exercice_name'] ?? '') ?>"
                            class="btn">Voir le TP</a>
                     </div>
                 </div>

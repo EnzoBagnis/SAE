@@ -109,7 +109,11 @@ class ImportAttemptsUseCase
                 // 3. Stocker les champs en respectant les contraintes varchar(20) de la BD
                 $rows[] = [
                     'exercice_id' => $exerciceId,
-                    'user_id'     => mb_substr((string) ($item['user_id'] ?? $item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''), 0, 20),
+                    'user_id'     => mb_substr(
+                        (string) ($item['user_id'] ?? $item['user'] ?? $item['student'] ?? $item['eleve'] ?? ''),
+                        0,
+                        20
+                    ),
                     'correct'     => $correct,
                     'eval_set'    => mb_substr((string) ($item['eval_set'] ?? ''), 0, 20),
                     'upload'      => mb_substr((string) ($item['upload'] ?? $item['code'] ?? ''), 0, 20),

@@ -161,7 +161,7 @@ $router->setContainer($container);
 require_once __DIR__ . '/App/routes.php';
 
 // Set 404 handler
-$router->setNotFoundHandler(function() {
+$router->setNotFoundHandler(function () {
     http_response_code(404);
     $uri = $_SERVER['REQUEST_URI'] ?? '';
     if (strpos($uri, '/api/') !== false) {

@@ -3,7 +3,8 @@
     <description>Standards PHP personnalisés pour le projet SAE</description>
 
     <!-- Fichiers à analyser -->
-    <file>./src</file>
+    <file>./App</file>
+    <file>./Core</file>
     <file>./cron</file>
     <file>./index.php</file>
     <file>./sitemap.php</file>
@@ -42,7 +43,7 @@
             <property name="absoluteLineLimit" value="150"/>
         </properties>
     </rule>
-    
+
     <!-- Sécurité -->
     <rule ref="Generic.PHP.ForbiddenFunctions">
         <properties>

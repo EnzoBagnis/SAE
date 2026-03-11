@@ -1,4 +1,4 @@
-﻿<!-- Footer -->
+<!-- Footer -->
 <footer class="site-footer">
     <div class="footer-container">
         <!-- Section 1: À propos -->

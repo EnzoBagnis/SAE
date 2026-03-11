@@ -36,7 +36,8 @@ class IaController extends AbstractController
 
         // Répartition par eval_set
         $evalSets = $pdo->query(
-            "SELECT eval_set, COUNT(*) AS count FROM attempts WHERE eval_set IS NOT NULL GROUP BY eval_set ORDER BY eval_set"
+            "SELECT eval_set, COUNT(*) AS count FROM attempts"
+            . " WHERE eval_set IS NOT NULL GROUP BY eval_set ORDER BY eval_set"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         // Ressources
@@ -194,7 +195,10 @@ class IaController extends AbstractController
             $attempts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             if (count($attempts) < 5) {
-                $this->jsonError('Pas assez de tentatives avec AES pour la vue globale (' . count($attempts) . ' trouvées, minimum 5).');
+                $this->jsonError(
+                    'Pas assez de tentatives avec AES pour la vue globale ('
+                    . count($attempts) . ' trouvées, minimum 5).'
+                );
                 return;
             }
 
@@ -206,7 +210,6 @@ class IaController extends AbstractController
 
             $result = $this->runPythonPipeline($payload);
             $this->jsonResponse($result);
-
         } catch (\Throwable $e) {
             $this->jsonError('Erreur serveur : ' . $e->getMessage(), 500);
         }
@@ -262,7 +265,10 @@ class IaController extends AbstractController
             $attempts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             if (count($attempts) < 5) {
-                $this->jsonError('Pas assez de tentatives avec AES pour cet exercice (' . count($attempts) . ' trouvées, minimum 5).');
+                $this->jsonError(
+                    'Pas assez de tentatives avec AES pour cet exercice ('
+                    . count($attempts) . ' trouvées, minimum 5).'
+                );
                 return;
             }
 
@@ -276,7 +282,6 @@ class IaController extends AbstractController
 
             $result = $this->runPythonPipeline($payload);
             $this->jsonResponse($result);
-
         } catch (\Throwable $e) {
             $this->jsonError('Erreur serveur : ' . $e->getMessage(), 500);
         }
@@ -369,7 +374,8 @@ class IaController extends AbstractController
             $rawOutput = trim($stdout . "\n" . $stderr);
             return [
                 'success' => false,
-                'message' => 'Le script Python n\'a pas renvoyé de JSON valide (exit code: ' . $exitCode . '). Sortie: ' . substr($rawOutput, 0, 800),
+                'message' => 'Le script Python n\'a pas renvoyé de JSON valide (exit code: '
+                    . $exitCode . '). Sortie: ' . substr($rawOutput, 0, 800),
             ];
         }
 

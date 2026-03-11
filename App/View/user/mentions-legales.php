@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Vérifier si l'utilisateur est connecté
 $isLoggedIn = isset($_SESSION['id']);
 ?>

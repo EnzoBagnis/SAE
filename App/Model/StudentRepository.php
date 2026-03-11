@@ -145,4 +145,3 @@ class StudentRepository extends AbstractRepository
         return $student;
     }
 }
-

@@ -54,7 +54,8 @@
 <div class="error-page">
     <p class="error-code">500</p>
     <h1>Erreur interne du serveur</h1>
-    <p>Une erreur inattendue s'est produite. Nos équipes ont été notifiées. Veuillez réessayer dans quelques instants.</p>
+    <p>Une erreur inattendue s'est produite. Nos équipes ont été notifiées.
+        Veuillez réessayer dans quelques instants.</p>
     <a href="<?= BASE_URL ?>/resources" class="btn">← Retour aux ressources</a>
 </div>
 </body>

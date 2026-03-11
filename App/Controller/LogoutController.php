@@ -33,4 +33,3 @@ class LogoutController extends AbstractController
         $this->redirect('/auth/login');
     }
 }
-

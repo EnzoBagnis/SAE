@@ -87,4 +87,3 @@ class SessionService implements SessionServiceInterface
         session_regenerate_id(true);
     }
 }
-

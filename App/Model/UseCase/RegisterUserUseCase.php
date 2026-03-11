@@ -52,7 +52,8 @@ class RegisterUserUseCase
         if (empty($data['password']) || !$this->isPasswordValid($data['password'])) {
             return [
                 'success' => false,
-                'message' => 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule et un caractère spécial',
+                'message' => 'Le mot de passe doit contenir au moins 12 caractères,'
+                    . ' une majuscule, une minuscule et un caractère spécial',
             ];
         }
 

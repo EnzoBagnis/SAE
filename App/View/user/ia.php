@@ -1,6 +1,10 @@
 <?php
-if (!defined('BASE_URL')) { define('BASE_URL', ''); }
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '');
+}
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $user_firstname = $_SESSION['user_firstname'] ?? $_SESSION['prenom'] ?? 'Utilisateur';
 $user_lastname  = $_SESSION['user_lastname']  ?? $_SESSION['nom']   ?? '';
@@ -40,14 +44,29 @@ $exercises = $exercises ?? [];
         .ia-tab-content.active { display: block; }
 
         /* Cartes stats */
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem; }
-        .stat-card { background: #fff; border: 1px solid #e8ecef; border-radius: 10px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-        .stat-card h3 { margin: 0 0 0.4rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: .5px; color: #95a5a6; }
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem; margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: #fff; border: 1px solid #e8ecef; border-radius: 10px;
+            padding: 1.25rem 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        }
+        .stat-card h3 {
+            margin: 0 0 0.4rem; font-size: 0.85rem;
+            text-transform: uppercase; letter-spacing: .5px; color: #95a5a6;
+        }
         .stat-card .stat-value { font-size: 2rem; font-weight: 700; color: #3498db; }
 
         /* Sections */
-        .ia-section { background: #fff; border: 1px solid #e8ecef; border-radius: 10px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 2rem; }
-        .ia-section h2 { margin: 0 0 1.25rem; font-size: 1.1rem; color: #2c3e50; padding-bottom: 0.6rem; border-bottom: 2px solid #3498db; }
+        .ia-section {
+            background: #fff; border: 1px solid #e8ecef; border-radius: 10px;
+            padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 2rem;
+        }
+        .ia-section h2 {
+            margin: 0 0 1.25rem; font-size: 1.1rem; color: #2c3e50;
+            padding-bottom: 0.6rem; border-bottom: 2px solid #3498db;
+        }
 
         /* Barres de progression */
         .bar-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
@@ -64,14 +83,19 @@ $exercises = $exercises ?? [];
             padding: 0.5rem 0.75rem; border: 1px solid #dce1e7; border-radius: 6px;
             font-size: 0.9rem; background: #fff; min-width: 180px;
         }
-        .form-field select:focus, .form-field input:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,.15); }
+        .form-field select:focus, .form-field input:focus {
+            outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,.15);
+        }
 
         .btn-generate {
             background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; border: none;
             padding: 0.6rem 1.6rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
             font-weight: 600; transition: all .25s; display: inline-flex; align-items: center; gap: 0.5rem;
         }
-        .btn-generate:hover { background: linear-gradient(135deg, #2980b9, #1f6da0); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(52,152,219,.3); }
+        .btn-generate:hover {
+            background: linear-gradient(135deg, #2980b9, #1f6da0);
+            transform: translateY(-1px); box-shadow: 0 4px 12px rgba(52,152,219,.3);
+        }
         .btn-generate:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .btn-back {
@@ -90,7 +114,11 @@ $exercises = $exercises ?? [];
             padding: 3rem; background: #f8f9fa; border-radius: 10px; border: 2px dashed #dce1e7; margin-top: 1.5rem;
         }
         .loading-overlay.visible { display: flex; }
-        .loading-spinner { width: 48px; height: 48px; border: 4px solid #ecf0f1; border-top-color: #3498db; border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 1rem; }
+        .loading-spinner {
+            width: 48px; height: 48px; border: 4px solid #ecf0f1;
+            border-top-color: #3498db; border-radius: 50%;
+            animation: spin .8s linear infinite; margin-bottom: 1rem;
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-text { color: #7f8c8d; font-size: 0.95rem; }
         .loading-detail { color: #bdc3c7; font-size: 0.82rem; margin-top: 0.3rem; }
@@ -199,13 +227,13 @@ $exercises = $exercises ?? [];
             if (!empty($sets)) :
                 foreach ($sets as $s) :
                     $pct = $total > 0 ? round($s['count'] / $total * 100, 1) : 0;
-            ?>
+                    ?>
             <div class="bar-row">
                 <span class="bar-label"><?= htmlspecialchars($s['eval_set'] ?? '—') ?></span>
                 <div class="bar-track"><div class="bar-fill" style="width:<?= $pct ?>%"></div></div>
                 <span class="bar-pct"><?= number_format($s['count']) ?> (<?= $pct ?>%)</span>
             </div>
-            <?php   endforeach;
+                <?php   endforeach;
             else : ?>
             <p class="empty-msg">Aucune donnée disponible. Importez des tentatives pour commencer.</p>
             <?php endif; ?>
@@ -220,25 +248,38 @@ $exercises = $exercises ?? [];
             <table style="width:100%; border-collapse:collapse; font-size:.88rem;">
                 <thead>
                     <tr style="background:#f8f9fa;">
-                        <th style="padding:.65rem 1rem; text-align:left; border-bottom:1px solid #ecf0f1; font-weight:600; color:#2c3e50; text-transform:uppercase; font-size:.78rem;">Exercice</th>
-                        <th style="padding:.65rem 1rem; text-align:left; border-bottom:1px solid #ecf0f1; font-weight:600; color:#2c3e50; text-transform:uppercase; font-size:.78rem;">Ressource</th>
-                        <th style="padding:.65rem 1rem; text-align:center; border-bottom:1px solid #ecf0f1; font-weight:600; color:#2c3e50; text-transform:uppercase; font-size:.78rem;">Tentatives AES</th>
-                        <th style="padding:.65rem 1rem; text-align:center; border-bottom:1px solid #ecf0f1; font-weight:600; color:#2c3e50; text-transform:uppercase; font-size:.78rem;">Action</th>
+                        <?php
+                        $thStyle = 'padding:.65rem 1rem; border-bottom:1px solid #ecf0f1;'
+                            . ' font-weight:600; color:#2c3e50; text-transform:uppercase; font-size:.78rem;';
+                        ?>
+                        <th style="<?= $thStyle ?> text-align:left;">Exercice</th>
+                        <th style="<?= $thStyle ?> text-align:left;">Ressource</th>
+                        <th style="<?= $thStyle ?> text-align:center;">Tentatives AES</th>
+                        <th style="<?= $thStyle ?> text-align:center;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($exercises as $exo) : ?>
                     <tr style="border-bottom:1px solid #f0f0f0;">
-                        <td style="padding:.65rem 1rem;"><?= htmlspecialchars($exo['exercice_name'] ?? '') ?></td>
-                        <td style="padding:.65rem 1rem; color:#7f8c8d;"><?= htmlspecialchars($exo['ressource_name'] ?? '—') ?></td>
+                        <td style="padding:.65rem 1rem;">
+                            <?= htmlspecialchars($exo['exercice_name'] ?? '') ?>
+                        </td>
+                        <td style="padding:.65rem 1rem; color:#7f8c8d;">
+                            <?= htmlspecialchars($exo['ressource_name'] ?? '—') ?>
+                        </td>
                         <td style="padding:.65rem 1rem; text-align:center;">
                             <?php $nb = (int)($exo['nb_attempts'] ?? 0); ?>
-                            <span style="font-weight:600; color:<?= $nb >= 5 ? '#27ae60' : '#e74c3c' ?>;"><?= $nb ?></span>
+                            <span style="font-weight:600;
+                                color:<?= $nb >= 5 ? '#27ae60' : '#e74c3c' ?>;"><?= $nb ?></span>
                         </td>
                         <td style="padding:.65rem 1rem; text-align:center;">
                             <?php if ($nb >= 5) : ?>
-                            <button onclick="goToMicro(<?= (int)$exo['exercice_id'] ?>, '<?= htmlspecialchars(addslashes($exo['exercice_name'] ?? ''), ENT_QUOTES) ?>')"
-                                    style="background:#3498db; color:#fff; border:none; padding:.35rem .9rem; border-radius:4px; cursor:pointer; font-size:.82rem;">
+                            <button onclick="goToMicro(
+                                <?= (int)$exo['exercice_id'] ?>,
+                                '<?= htmlspecialchars(addslashes($exo['exercice_name'] ?? ''), ENT_QUOTES) ?>')"
+                                    style="background:#3498db; color:#fff; border:none;
+                                    padding:.35rem .9rem; border-radius:4px;
+                                    cursor:pointer; font-size:.82rem;">
                                 Analyser
                             </button>
                             <?php else : ?>
@@ -287,7 +328,8 @@ $exercises = $exercises ?? [];
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
+                            15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                     </svg>
                     Générer la vue globale
                 </button>

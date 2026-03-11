@@ -197,4 +197,3 @@ class PendingRegistrationRepository extends AbstractRepository
         return $registration;
     }
 }
-

@@ -136,7 +136,8 @@ class ForgotPasswordController extends AbstractController
         if (!$this->isPasswordValid($newPassword)) {
             $this->renderView('auth/reset-password', [
                 'token'         => $token,
-                'error_message' => 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule et un caractère spécial.',
+                'error_message' => 'Le mot de passe doit contenir au moins 12 caractères,'
+                    . ' une majuscule, une minuscule et un caractère spécial.',
             ]);
             return;
         }

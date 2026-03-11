@@ -20,4 +20,3 @@ class HomeController extends AbstractController
         $this->renderView('home/index');
     }
 }
-
