@@ -13,9 +13,25 @@ use App\Model\Entity\Exercise;
 interface ExerciseImporterPort extends ExerciseFinderPort
 {
     /**
-     * Update the extension and date of an existing exercise.
+     * Find an exercise by resource ID and original hash.
      *
-     * Required to refresh metadata when a re-imported exercise already exists.
+     * @param int    $ressourceId Resource ID.
+     * @param string $hash        Original hash.
+     * @return Exercise|null
+     */
+    public function findByRessourceIdAndHash(int $ressourceId, string $hash): ?Exercise;
+
+    /**
+     * Update the exercice_name of an existing exercise (e.g. replace hash by readable name).
+     *
+     * @param int    $exerciceId   Exercise ID.
+     * @param string $exerciceName New readable name.
+     * @return void
+     */
+    public function updateName(int $exerciceId, string $exerciceName): void;
+
+    /**
+     * Update the extension and date of an existing exercise.
      *
      * @param int    $exerciceId Exercise ID.
      * @param string $extention  New file extension.
@@ -27,13 +43,18 @@ interface ExerciseImporterPort extends ExerciseFinderPort
     /**
      * Insert a new exercise row.
      *
-     * Required to persist a newly imported exercise.
-     *
-     * @param int    $ressourceId  Resource ID.
-     * @param string $exerciceName Exercise name.
-     * @param string $extention    File extension.
-     * @param string $date         Date (Y-m-d).
+     * @param int         $ressourceId  Resource ID.
+     * @param string      $exerciceName Exercise name.
+     * @param string      $extention    File extension.
+     * @param string      $date         Date (Y-m-d).
+     * @param string|null $hash         Original hash from source JSON (optional).
      * @return int The new exercise ID.
      */
-    public function insertExercice(int $ressourceId, string $exerciceName, string $extention, string $date): int;
+    public function insertExercice(
+        int $ressourceId,
+        string $exerciceName,
+        string $extention,
+        string $date,
+        ?string $hash = null
+    ): int;
 }

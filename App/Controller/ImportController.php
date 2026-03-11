@@ -132,6 +132,7 @@ class ImportController extends AbstractController
             'message'  => 'Import exercices terminé',
             'inserted' => $result['inserted'],
             'updated'  => $result['updated'],
+            'skipped'  => $result['skipped'] ?? 0,
             'errors'   => array_slice($result['errors'], 0, 50),
         ]);
     }

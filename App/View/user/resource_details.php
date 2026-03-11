@@ -183,7 +183,7 @@
                         <div class="tp-item-info">
                             <h3>
                                 <?= htmlspecialchars(
-                                    $exercise->exo_name ?? $exercise->title ?? 'Exercice sans titre'
+                                    $exercise->hash ?? $exercise->title ?? 'Exercice sans titre'
                                 ) ?>
                             </h3>
                             <p>

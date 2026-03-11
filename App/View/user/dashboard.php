@@ -90,7 +90,8 @@ $current_resource_id = $resource_id ?? 'null';
         .viz-top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
         @media (max-width: 768px) { .viz-top-grid { grid-template-columns: 1fr; } }
         .viz-chart-card {
-            background: #f8f9fa; border-radius: 8px; padding: 1rem 1.25rem 1.25rem;
+            background: #f8f9fa; border-radius: 8px;
+            padding: 1rem 1.25rem 1.25rem;
             box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden;
         }
         .viz-chart-full { grid-column: 1 / -1; max-width: 480px; margin: 0 auto; width: 100%; }
@@ -216,7 +217,20 @@ $current_resource_id = $resource_id ?? 'null';
 </head>
 <body>
 <header class="top-menu">
-    <div class="logo"><h1>StudTraj</h1></div>
+    <div class="logo">
+        <a href="<?= BASE_URL ?>/resources" style="text-decoration:none;color:inherit;">
+            <h1>StudTraj</h1>
+        </a>
+    </div>
+    <div class="header-search">
+        <input type="text" id="resourceSearchInput"
+               placeholder="Rechercher un TP ou un étudiant par mot-clé…" autocomplete="off" />
+        <button id="resourceClearBtn" title="Effacer">&#x2715;</button>
+        <div id="resourceSearchResults">
+            <strong id="rsr-label"></strong>
+            <ul id="rsr-list"></ul>
+        </div>
+    </div>
     <button class="burger-menu" id="burgerBtn" onclick="toggleBurgerMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
     </button>
