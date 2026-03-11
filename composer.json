@@ -1,11 +1,21 @@
 {
   "require": {
-    "php": ">=7.4"
+    "php": ">=7.4",
+    "ext-json": "*",
+    "ext-pdo": "*",
+    "ext-fileinfo": "*",
+    "phpmailer/phpmailer": "^6.8"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.7",
     "friendsofphp/php-cs-fixer": "^3.17",
     "phpunit/phpunit": "^9.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "App/",
+      "Core\\": "Core/"
+    }
   },
   "config": {
     "platform": {
