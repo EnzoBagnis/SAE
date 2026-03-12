@@ -1,3 +1,5 @@
+# La liste des document d'architecture du projet StudTraj se trouve dans docs/ ainsi que liste des prompts
+
 # 📊 StudTraj - Student Trajectory Analysis Platform
 
 **StudTraj** est une plateforme web d'analyse des trajectoires d'apprentissage des étudiants en programmation. Elle permet aux enseignants de suivre et d'analyser les tentatives de résolution d'exercices de leurs étudiants grâce à des visualisations avancées et des analyses vectorielles.
@@ -181,32 +183,8 @@ Content-Type: application/json
 
 ### Documentation technique
 La documentation complète du code est générée automatiquement avec phpDocumentor :
-- Consultez [`docs/README_DOC.md`](docs/README_DOC.md)
-- Ouvrez `docs/index.html` dans votre navigateur pour la documentation interactive
+- https://enzobagnis.github.io/SAE/
 
-### Statistiques du projet
-- **Fichiers PHP :** 38
-- **Lignes de code :** ~4559
-- **Version PHP :** 7.4+
-
----
-
-## 🧪 Tests et qualité du code
-
-### Lancer les tests
-```bash
-vendor/bin/phpunit
-```
-
-### Vérifier le style de code
-```bash
-vendor/bin/phpcs
-```
-
-### Corriger automatiquement le style
-```bash
-vendor/bin/php-cs-fixer fix
-```
 
 ---
 
@@ -241,10 +219,10 @@ Ce projet est développé dans le cadre d'une SAE (Situation d'Apprentissage et 
 ## 👥 Auteurs
 
 - **Équipe StudTraj**
-- **Ilan Stefanovitch**
 - **Enzo Bagnis**
 - **Hamza Koliaï**
 - **Jean-Baptiste Pibouleau**
+- **William Marcus**
 
 ---
 
