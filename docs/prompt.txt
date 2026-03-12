@@ -1,0 +1,87 @@
+- Donnes moi des idées de graphique interactif
+- Expliques moi comment mieux mettre en avant des données dans des graphes
+- Donnes une liste de graphes à mettre en priorité pour montrer les données
+- Explique moi comment je dois m'y prendre pour re structurer mon code
+- Génère moi la documentation de mon projet
+- Génère moi le CSS de mon projet en utilisant le CSS des pages de base
+- Fait une belle page d'erreur 500
+- Fait moi une belle page d'erreur 404
+- Que signifie ce message d'erreur "{inserer n'importe quelle erreur}" et comment la corriger
+- Tu es un expert en Clean Architecture, DDD et principes SOLID. Ta mission est d'auditer la base de code fournie et de produire un rapport d'audit complet.
+
+  CE QUE TU DOIS VÉRIFIER
+
+  1. Séparation des couches
+  Identifie les couches présentes (Domain, Application, Infrastructure, Presentation ou équivalent).
+  Vérifie que :
+  - Les couches internes ne dépendent JAMAIS des couches externes
+  - Le Domain ne connaît ni la base de données, ni le framework, ni l'UI
+  - L'Application ne connaît pas l'Infrastructure (pas d'imports directs d'ORM, de HTTP, de fichiers système...)
+  - Les dépendances pointent toujours vers l'intérieur
+
+  2. Règle de dépendance
+  Pour chaque import/dépendance dans le code, détermine si elle respecte la direction autorisée.
+  Signale chaque violation avec le fichier, la ligne, et pourquoi c'est une violation.
+
+  3. Responsabilité des classes
+  - Les entités du domaine contiennent-elles de la logique métier ou sont-elles de simples conteneurs de données (anémiques) ?
+  - Les services applicatifs font-ils uniquement de l'orchestration ou contiennent-ils de la logique métier qui devrait être dans le domaine ?
+  - Les repositories sont-ils des abstractions ou des accès directs à la DB ?
+
+  4. Cas d'utilisation / Use Cases
+  - Chaque action utilisateur a-t-elle un use case dédié ?
+  - Les use cases sont-ils trop larges (font trop de choses) ou trop fragmentés ?
+
+  5. Dépendances vers des détails techniques
+  Détecte les endroits où du code métier dépend directement de :
+  - Un ORM spécifique (TypeORM, Prisma, Hibernate...)
+  - Un framework HTTP (Express, NestJS, Spring...)
+  - Une librairie de cache, de messaging, de fichiers...
+  Sans passer par une abstraction.
+
+  6. Cohésion et couplage
+  - Les modules/dossiers regroupent-ils des choses qui changent pour la même raison ?
+  - Y a-t-il des modules qui sont modifiés à chaque nouvelle feature (couplage fort) ?
+
+  FORMAT DU RAPPORT
+  RAPPORT D'AUDIT — Clean Architecture
+  Vue d'ensemble
+  [Résumé en 3-5 phrases de l'état général de l'architecture]
+  Points respectés
+  [Liste des bonnes pratiques détectées]
+  Violations détectées
+  Violation #1 — [Nom court]
+
+  Fichier : chemin/vers/fichier.ts (ligne X)
+  Règle violée : [ex: Dépendance inversée / Séparation des couches / SRP...]
+  Problème : [explication claire]
+  Correction suggérée : [solution concrète]
+
+  [répéter pour chaque violation]
+  Points d'attention (pas des violations mais des risques)
+  [Liste des zones fragiles qui pourraient devenir problématiques]
+  Score par principe
+
+  Séparation des couches : X/10
+  Règle de dépendance : X/10
+  Responsabilité unique : X/10
+  Abstraction des détails techniques : X/10
+  Cohésion des modules : X/10
+
+  Priorités de refactoring
+
+  [Le plus urgent]
+  [...]
+  [...]
+
+  - On a un souci de lisibilité sur le nuage de points Plotly à cause de l'overplotting (trop de points superposés). Est-ce que tu peux me montrer comment forcer une bordure blanche (marker.line) sur les points et augmenter leur size de façon globale ? J'aimerais aussi tester une opacité à 0.8 pour que les trajectoires ressortent mieux sur le fond blanc.
+  - Quelles sont les bonnes pratiques pour gérer les erreurs de AES dans mon pipeline ? Si le script rencontre un code Python mal formé ou une séquence vide, comment je peux faire en sorte que le pipeline continue sur le reste du dataset sans crasher, tout en logguant l'erreur pour PHP ?
+  - Voici les scripts pour faire l'IA et voici un pptx qui est la présentation de l'IA (ce qu'elle est censé faire).
+
+    Je dois faire une IA qui prend les donnés des résultats des étudiants et qui me donne un vecteur en 2 dimensions des trajectoires des étudiants.
+
+    Décris moi comment je peux faire et la structure de mon code.
+    Parle moi aussi des bibliothèques disponibles pour réaliser ce projet.
+    Et parle moi des différentes perspectives d'approche potentielles.
+
+    Tu détailleras bien et expliqueras ton raisonnement
